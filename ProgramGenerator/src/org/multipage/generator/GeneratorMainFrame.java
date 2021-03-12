@@ -1506,9 +1506,6 @@ public class GeneratorMainFrame extends JFrame {
 			timerWatchDog.stop();
 		}
 		
-		// Cancel tool tip timer.
-		GeneralDiagram.stopToolTips();
-		
 		// Save windows data.
 		customizeColors.saveIfDirty(false);
 	}
@@ -1587,7 +1584,7 @@ public class GeneratorMainFrame extends JFrame {
 		
 		showIDsExtended(show);
 		
-		ConditionalEvents.transmit(GeneratorMainFrame.this, AreasDiagram.class, Signal.showHideIds);
+		ConditionalEvents.transmit(GeneratorMainFrame.this, AreasDiagram.class, Signal.showOrHideIds);
 	}
 
 	/**

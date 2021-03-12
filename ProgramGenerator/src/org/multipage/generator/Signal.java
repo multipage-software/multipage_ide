@@ -111,7 +111,7 @@ public enum Signal implements EventCondition {
 			),
 	
 	// On show/hide IDs in areas diagram..
-	showHideIds(
+	showOrHideIds(
 			SignalType.guiChange
 			),
 	
@@ -170,6 +170,14 @@ public enum Signal implements EventCondition {
 	// Reactivate GUI
 	reactivateGui(
 			SignalType.guiStateChange
+			),
+	// Display or redraw tool tip.
+	displayOrRedrawToolTip(
+			SignalType.guiChange
+			),
+	// Remove tool tip.
+	removeToolTip(
+			SignalType.guiChange
 			),
 	// Update of area sub relation.
 	updateAreaSubRelation,
@@ -275,8 +283,6 @@ public enum Signal implements EventCondition {
 	removeSlots,
 	// Set slots properties.
 	setSlotsProperties,
-	// Tool tip timer.
-	toolTipTimer,
 	// Remove diagram.
 	removeDiagram,
 	// Update controls.

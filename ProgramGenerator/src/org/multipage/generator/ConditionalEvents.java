@@ -448,8 +448,7 @@ public class ConditionalEvents {
 	private static ScheduledEvent getUpdatedScheduledEvent(EventHandle eventHandle, Message message) {
 		
 		// If the event handle doesn't coalesce messages, return null.
-		// TODO: Write receiver without coalescing for messages like "toolTipTimer" with eventHandle.coalesceTimeSpanMs set to null.
-		if (eventHandle.coalesceTimeSpanMs == null) {
+		if (eventHandle.coalesceTimeSpanMs == null || eventHandle.coalesceTimeSpanMs <= 0L) {
 			return null;
 		}
 		
@@ -489,23 +488,22 @@ public class ConditionalEvents {
 		
 		// Initialize.
 		final LinkedList<ScheduledEvent> processedEvents = new LinkedList<ScheduledEvent>();
-							
+		
 		// Invoke actions on the Swing thread.
 		for (ScheduledEvent scheduledEvent : scheduledEvents) {
 			
 			// Check if the event timeout has elapsed.
 			if (currentTime < scheduledEvent.executionTime) {
-				return;
+				break;
 			}
 			
 			// Invoke the scheduled event action.
 			SwingUtilities.invokeLater(() -> {
 				scheduledEvent.eventHandle.action.accept(scheduledEvent.message);
-				j.enableTimeDelta(true);
-				j.log("ACTION %s", scheduledEvent.message);
+				
 				// Log the event.
 				if (enableMessageLog) {
-					logEvent(scheduledEvent.message, scheduledEvent.message.signal, scheduledEvent.eventHandle);
+					logEvent(scheduledEvent);
 				}
 			});
 			
@@ -523,12 +521,16 @@ public class ConditionalEvents {
 	 * @param eventCondition
 	 * @param eventHandle
 	 */
-	private static void logEvent(Message message, EventCondition eventCondition, EventHandle eventHandle) {
+	private static void logEvent(ScheduledEvent scheduledEvent) {
+		
+		Message message = scheduledEvent.message;
+		EventHandle eventHandle = scheduledEvent.eventHandle;
+		String receivedTimeString = Utility.formatTime(message.receiveTime);
+		String scheduledTimeString = Utility.formatTime(scheduledEvent.executionTime);
 		
 		j.log("-----------------------------------------------------------------");
-		j.log("Event: %s [Source: %s, OID %d]\t\traised    in %s", message.signal, message.source.getClass().getSimpleName(), System.identityHashCode(message.source), message.reflection);
-		j.log("\t-> Action rule: matches %s %s\t\t\tprocessed in %s", eventCondition.getClass().getSimpleName(), eventCondition.name(), eventHandle.reflection);
-		j.log("\tDelay: handle \"%s\" [%d]", eventHandle.identifier(), System.identityHashCode(eventHandle));
+		j.log("Event: %s [Source: %s, OID %d]\t\treveived at %s in %s", message.signal, message.source.getClass().getSimpleName(), System.identityHashCode(message.source), receivedTimeString, message.reflection);
+		j.log("\t-> Action was scheduled for %s and processed in %s", scheduledTimeString, eventHandle.reflection);
 	}
 	
 	/**
@@ -764,7 +766,9 @@ public class ConditionalEvents {
 			auxiliaryTable.addRecord(key, eventCondition, priority, handle);
 			
 			// Retrieve sorted conditional events.
-			conditionalEvents = auxiliaryTable.retrieveSorted();
+			synchronized (conditionalEvents) {
+				conditionalEvents = auxiliaryTable.retrieveSorted();
+			}
 			
 			// Return key.
 			return key;

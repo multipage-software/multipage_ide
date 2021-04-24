@@ -678,7 +678,7 @@ public class GeneratorMainFrame extends JFrame {
 				selectedAreaIds = getAreaDiagram().getSelectedAreaIds();
 			}
 			
-			// SHow selected areas' properties.
+			// Show selected areas' properties.
 			showProperties(selectedAreaIds);
 		});
 		
@@ -990,6 +990,23 @@ public class GeneratorMainFrame extends JFrame {
 		
 		// Update window selection trayMenu.
 		updateWindowSelectionMenu();
+		
+		// Get current tab panel.
+		int tabIndex = tabPanel.getSelectedIndex();
+		if (tabIndex >= 0) {
+			
+			Component tabComponent = tabPanel.getComponentAt(tabIndex);
+			if (tabComponent instanceof TabItemInterface) {
+				
+				TabItemInterface tabItem = (TabItemInterface) tabComponent;
+				HashSet<Long> selectedAreaIds = tabItem.getSelectedAreaIds();
+				
+				// Transmit event.
+				if (selectedAreaIds != null) {
+					ConditionalEvents.transmit(GeneratorMainFrame.this, Signal.showAreasProperties, selectedAreaIds);
+				}
+			}
+		}
 	}
 
 	/**
@@ -1032,9 +1049,11 @@ public class GeneratorMainFrame extends JFrame {
 			
 			JMenuItem test = new JMenuItem(Resources.getString("org.multipage.generator.menuTest"));
 			JMenuItem setUserValue = new JMenuItem(Resources.getString("org.multipage.generator.menuSetUserValue"));
+			JMenuItem loggingDialog = new JMenuItem(Resources.getString("org.multipage.generator.menuLoggingDialog"));
 			
 			debugMenu.add(setUserValue);
 			debugMenu.add(test);
+			debugMenu.add(loggingDialog);
 			
 			setUserValue.addActionListener(new ActionListener() {
 				@Override
@@ -1045,8 +1064,12 @@ public class GeneratorMainFrame extends JFrame {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					onTest();
-				}
-			});
+				}});
+			loggingDialog.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					onLogging();
+				}});
 		}
 		
 		// Conditionally created login trayMenu item.
@@ -1295,6 +1318,14 @@ public class GeneratorMainFrame extends JFrame {
 	}
 	
 	/**
+	 * On logging dialog.
+	 */
+	protected void onLogging() {
+		
+		LoggingDialog.showDialog(GeneratorMainFrame.getFrame());
+	}
+
+	/**
 	 * Add search in text resources trayMenu item.
 	 * @param trayMenu
 	 */
@@ -1393,13 +1424,13 @@ public class GeneratorMainFrame extends JFrame {
 		showIdButton = ToolBarKit.addToggleButton(toolBar, "org/multipage/generator/images/show_hide_id.png", this, "onShowHideIds", "org.multipage.generator.tooltipShowHideIds");
 		addHideSlotsButton(toolBar);
 		toolBar.addSeparator();
-		exposeReadOnly = ToolBarKit.addToggleButton(toolBar, "org/multipage/generator/images/enable_remove.png", this, "onExposeReadOnly", "org.multipage.generator.tooltipExposeReadOnly");
+		exposeReadOnly = ToolBarKit.addToggleButton(toolBar, "org/multipage/generator/images/enable_remove.png", this, "onExposeReadOnly", "org.multipage.generator.tooltipAreasUnprotected");
 		toolBar.addSeparator();
 		ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/reload_icon.png", this, "onUpdate", "org.multipage.generator.tooltipUpdate");
 		toolBar.addSeparator();
 		ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/center_icon.png", this, "onFocusBasicArea", "org.multipage.generator.tooltipFocusWhole");
 		toolBar.addSeparator();
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/focus_tab_big.png", this, "onFocus", "org.multipage.generator.tooltipFocus");
+		ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/focus_tab_big.png", this, "onFocusTabArea", "org.multipage.generator.tooltipFocus");
 		toolBar.addSeparator();
 		ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/home_icon.png", this, "onFocusHome", "org.multipage.generator.tooltipFocusHome");
 		toolBar.addSeparator();
@@ -1584,7 +1615,7 @@ public class GeneratorMainFrame extends JFrame {
 		
 		showIDsExtended(show);
 		
-		ConditionalEvents.transmit(GeneratorMainFrame.this, AreasDiagram.class, Signal.showOrHideIds);
+		ConditionalEvents.transmit(GeneratorMainFrame.this, Signal.showOrHideIds, show);
 	}
 
 	/**
@@ -3055,7 +3086,7 @@ public class GeneratorMainFrame extends JFrame {
 	 * Focus on the tab area.
 	 */
 	@SuppressWarnings("unused")
-	private void onFocus() {
+	private void onFocusTabArea() {
 		
 		Long tabAreaId = tabPanel.getTopAreaIdOfSelectedTab();
 		

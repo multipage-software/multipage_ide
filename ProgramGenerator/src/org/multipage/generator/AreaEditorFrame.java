@@ -1,57 +1,42 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2017 (C) vakol
  * 
- * Created on : 06-04-2020
+ * Created on : 26-04-2017
  *
  */
 
 package org.multipage.generator;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import javax.swing.*;
+import javax.swing.border.*;
+import javax.swing.event.*;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextField;
-import javax.swing.SpringLayout;
-import javax.swing.SwingConstants;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
-import org.multipage.gui.Images;
-import org.multipage.gui.TextFieldAutoSave;
-import org.multipage.gui.TextFieldEx;
+import org.multipage.gui.*;
 import org.multipage.util.Resources;
 
-import com.maclan.Area;
+import com.maclan.*;
+
+import java.awt.*;
+
+import java.awt.event.*;
 
 /**
  * 
  * @author
  *
  */
-public class AreaEditorPanel extends AreaEditorPanelBase {
+public class AreaEditorFrame extends AreaEditorFrameBase {
 
 	// $hide>>$
+
 	/**
 	 * Tab identifiers.
 	 */
 	public static final int NOT_SPECIFIED = -1;
 	public static final int RESOURCES = 0;
 	public static final int DEPENDENCIES = 1;
+
+	private static AreaEditorFrameBase dialog;
 
 	// $hide<<$
 	/**
@@ -99,7 +84,7 @@ public class AreaEditorPanel extends AreaEditorPanelBase {
 		
 		if (dialog == null) {
 			
-			dialog = ProgramGenerator.newAreaEditorPanel(parentFrame, area);
+			dialog = ProgramGenerator.newAreaEditor(parentFrame, area);
 			
 			if (tabIdentifier != -1) {
 				dialog.selectTab(tabIdentifier);
@@ -117,7 +102,7 @@ public class AreaEditorPanel extends AreaEditorPanelBase {
 		
 		if (dialog == null) {
 			
-			dialog = ProgramGenerator.newAreaEditorPanel(parentComponent, area);
+			dialog = ProgramGenerator.newAreaEditor(parentComponent, area);
 			dialog.setVisible(true);
 			dialog = null;
 		}
@@ -128,7 +113,7 @@ public class AreaEditorPanel extends AreaEditorPanelBase {
 	 * @param parentComponent
 	 * @param area 
 	 */
-	public AreaEditorPanel(Component parentComponent, Area area) {
+	public AreaEditorFrame(Component parentComponent, Area area) {
 		super(parentComponent, area);
 		
 		// Initialize components.
@@ -143,11 +128,18 @@ public class AreaEditorPanel extends AreaEditorPanelBase {
 	 * Initialize components.
 	 */
 	private void initComponents() {
-		
-		setLayout(new BorderLayout(0, 0));
+		setMinimumSize(new Dimension(530, 360));
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				onClose();
+			}
+		});
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		setBounds(100, 100, 764, 622);
 		resourcesPane = new JPanel();
 		resourcesPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		add(resourcesPane);
+		setContentPane(resourcesPane);
 		resourcesPane.setLayout(new BorderLayout(0, 0));
 		
 		bottomPanel = new JPanel();
@@ -347,7 +339,7 @@ public class AreaEditorPanel extends AreaEditorPanelBase {
 		buttonSaveFolder.setIconTextGap(0);
 		panel.add(buttonSaveFolder);
 		
-		textFileExtension = new TextFieldAutoSave("FILEEXTENSION");
+		textFileExtension = new TextFieldAutoSave(AreaEditorCommonBase.fileExtension);
 		sl_panel.putConstraint(SpringLayout.NORTH, textFileExtension, 0, SpringLayout.NORTH, labelFileName);
 		sl_panel.putConstraint(SpringLayout.EAST, textFileExtension, 0, SpringLayout.EAST, textDescription);
 		textFileExtension.setColumns(10);
@@ -371,7 +363,7 @@ public class AreaEditorPanel extends AreaEditorPanelBase {
 		buttonDisplay.setMargin(new Insets(0, 0, 0, 0));
 		panel.add(buttonDisplay);
 	}
-
+	
 	/**
 	 * Insert tabs' contents.
 	 */
@@ -416,6 +408,10 @@ public class AreaEditorPanel extends AreaEditorPanelBase {
 	@Override
 	protected void postCreate() {
 		
+		// Set title.
+		String title = String.format(Resources.getString("org.multipage.generator.textAreaEditor"), area.getDescriptionForced());
+		setTitle(title);
+		
 		// Call super class method.
 		super.postCreate();
 		
@@ -426,6 +422,8 @@ public class AreaEditorPanel extends AreaEditorPanelBase {
 		
 		// Initialize display button.
 		initDisplayButton();
+		// Update dialog controls.
+		updateAreaDialog();
 	}
 
 	/**
@@ -436,8 +434,7 @@ public class AreaEditorPanel extends AreaEditorPanelBase {
 		
 		return tabbedPane;
 	}
-
-
+	
 	/**
 	 * Get text of the area identifier.
 	 */
@@ -482,7 +479,7 @@ public class AreaEditorPanel extends AreaEditorPanelBase {
 		
 		return textFileName;
 	}
-	
+
 	/**
 	 * Get text of the area file extension.
 	 */
@@ -541,7 +538,7 @@ public class AreaEditorPanel extends AreaEditorPanelBase {
 	}
 
 	@Override
-	protected JCheckBox getCheckBoxIsStartArea() {
+	protected JCheckBox getCheckBoxHomeArea() {
 		
 		return checkBoxIsStartArea;
 	}
@@ -584,13 +581,6 @@ public class AreaEditorPanel extends AreaEditorPanelBase {
 
 	@Override
 	protected JCheckBox getCheckBoxIsDisabled() {
-		
 		return checkBoxIsDisabled;
-	}
-
-	@Override
-	protected JCheckBox getCheckBoxHomeArea() {
-		
-		return null;
 	}
 }

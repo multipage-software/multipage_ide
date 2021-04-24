@@ -264,12 +264,17 @@ public class AreasDiagram extends GeneralDiagram implements TabItemInterface {
 	private AreasDiagramPanel parentEditor;
 	
 	/**
+	 * Selected area IDs.
+	 */
+	private HashSet<Long> selectedAreaIds = new HashSet<Long>();
+	
+	/**
 	 * Constructor.
 	 * @param parent 
 	 */
 	public AreasDiagram(AreasDiagramPanel parentEditor) {
 		
-		// Remeber reference to the parent editor.
+		// Remember reference to the parent editor.
 		this.parentEditor = parentEditor;
 		
 		// Create components.
@@ -339,12 +344,12 @@ public class AreasDiagram extends GeneralDiagram implements TabItemInterface {
 			repaint();
 			
 			// Get selected area IDs.
-			HashSet<Long> selectedAreaIds = getSelectedAreaIds();
+			HashSet<Long> selectedIds = getSelectedAreaIds();
 			
 			// Propagate the "show areas' properties" signal.
-			ConditionalEvents.transmit(AreasDiagram.this, Signal.showAreasProperties, selectedAreaIds);
+			ConditionalEvents.transmit(AreasDiagram.this, Signal.showAreasProperties, selectedIds);
 			// Propagate the "show areas' relations" signal.
-			ConditionalEvents.transmit(AreasDiagram.this, Signal.showAreasRelations, selectedAreaIds);
+			ConditionalEvents.transmit(AreasDiagram.this, Signal.showAreasRelations, selectedIds);
 		});
 		
 		// Add receiver for the "click areas in diagram" event.
@@ -362,12 +367,12 @@ public class AreasDiagram extends GeneralDiagram implements TabItemInterface {
 				repaint();
 				
 				// Get selected area IDs.
-				HashSet<Long> selectedAreaIds = getSelectedAreaIds();
+				HashSet<Long> selectedIds = getSelectedAreaIds();
 				
 				// Propagate the "show areas' properties" signal.
-				ConditionalEvents.transmit(AreasDiagram.this, Signal.showAreasProperties, selectedAreaIds);
+				ConditionalEvents.transmit(AreasDiagram.this, Signal.showAreasProperties, selectedIds);
 				// Propagate the "show areas' relations" signal.
-				ConditionalEvents.transmit(AreasDiagram.this, Signal.showAreasRelations, selectedAreaIds);
+				ConditionalEvents.transmit(AreasDiagram.this, Signal.showAreasRelations, selectedIds);
 			}
 		});
 		
@@ -378,12 +383,12 @@ public class AreasDiagram extends GeneralDiagram implements TabItemInterface {
 			if (AreasDiagram.this.equals(message.source)) {
 				
 				// Get selected area IDs.
-				HashSet<Long> selectedAreaIds = getSelectedAreaIds();
+				HashSet<Long> selectedIds = getSelectedAreaIds();
 				
 				// Propagate the "show areas' properties" signal.
-				ConditionalEvents.transmit(AreasDiagram.this, Signal.showAreasProperties, selectedAreaIds);
+				ConditionalEvents.transmit(AreasDiagram.this, Signal.showAreasProperties, selectedIds);
 				// Propagate the "show areas' relations" signal.
-				ConditionalEvents.transmit(AreasDiagram.this, Signal.showAreasRelations, selectedAreaIds);
+				ConditionalEvents.transmit(AreasDiagram.this, Signal.showAreasRelations, selectedIds);
 			}
 		});
 		
@@ -393,11 +398,11 @@ public class AreasDiagram extends GeneralDiagram implements TabItemInterface {
 			if (message.relatedInfo instanceof HashSet<?>) {
 				
 				// Pull set of area IDs.
-				HashSet<Long> selectedAreaIds = (HashSet<Long>) message.relatedInfo;
+				HashSet<Long> selectedIds = (HashSet<Long>) message.relatedInfo;
 				// Remove selection.
 				removeSelection();
 				// Select the areas.
-				selectAreas(selectedAreaIds);
+				selectAreas(selectedIds);
 				// Set overview and repaint the GUI.
 				setOverview();
 				repaint();
@@ -472,6 +477,39 @@ public class AreasDiagram extends GeneralDiagram implements TabItemInterface {
 			
 			// Hide tool tip window.
 			tooltipWindow.hidew();
+		});
+		
+		// Add receiver for the "show or hide" event.
+		ConditionalEvents.receiver(this, Signal.showOrHideIds, message -> {
+			
+			// Set overview and repaint the GUI.
+			setOverview();
+			repaint();
+		});
+		
+		// Add receiver for the "on tab change" event.
+		ConditionalEvents.receiver(this, Signal.mainTabChange, message -> {
+			
+			if (AreasDiagram.this.isShowing()) {
+				
+				// Get selected area IDs.
+				HashSet<Long> selectedIds = getSelectedAreaIds();
+				
+				// Remove selection.
+				removeSelection();
+				
+				// Selected area IDs.
+				for (long areaId : selectedIds) {
+					
+					Area area = ProgramGenerator.getArea(areaId);
+					selectRecursive(area, true, false);
+				}
+				
+				// Propagate the "show areas' properties" signal.
+				ConditionalEvents.transmit(AreasDiagram.this, Signal.showAreasProperties, selectedIds);
+				// Propagate the "show areas' relations" signal.
+				ConditionalEvents.transmit(AreasDiagram.this, Signal.showAreasRelations, selectedIds);
+			}
 		});
 	}
 	
@@ -602,7 +640,7 @@ public class AreasDiagram extends GeneralDiagram implements TabItemInterface {
 		}
 		
 		// Transmit "display or redraw tool tip" signal.
-		//ConditionalEvents.transmit(this, Signal.displayOrRedrawToolTip);
+		ConditionalEvents.transmit(this, Signal.displayOrRedrawToolTip);
 	}
 
 	/**
@@ -626,7 +664,7 @@ public class AreasDiagram extends GeneralDiagram implements TabItemInterface {
 		hideConstructorsDisplay();
 		
 		// Transmit "remove tool tip" signal.
-		//ConditionalEvents.transmit(this, Signal.removeToolTip);
+		ConditionalEvents.transmit(this, Signal.removeToolTip);
 	}
 
 	/**
@@ -727,7 +765,7 @@ public class AreasDiagram extends GeneralDiagram implements TabItemInterface {
 		}
 		
 		// Transmit "display or redraw tool tip" signal.
-		//ConditionalEvents.transmit(this, Signal.displayOrRedrawToolTip);
+		ConditionalEvents.transmit(this, Signal.displayOrRedrawToolTip);
 	}
 
 	/**
@@ -1918,7 +1956,7 @@ public class AreasDiagram extends GeneralDiagram implements TabItemInterface {
 			}
 		}
 		
-		// Select area and possibly subareas (depending on captionHit flag).
+		// Select area and possibly sub areas (depending on captionHit flag).
 		if (affectedArea != null) {
 			boolean select = true;
 			Object user = affectedArea.getUser();
@@ -1939,7 +1977,7 @@ public class AreasDiagram extends GeneralDiagram implements TabItemInterface {
 			select(ProgramGenerator.getAreasModel().getRootArea(), false, true);
 		}
 	}
-
+	
 	/**
 	 * Select area and its sub areas.
 	 * @param area
@@ -1951,6 +1989,8 @@ public class AreasDiagram extends GeneralDiagram implements TabItemInterface {
 		this.affectSubareas = affectSubareas;
 		
 		selectRecursive(area, selected, affectSubareas);
+		
+		this.selectedAreaIds = getSelectedAreaIds();
 	}
 	
 	/**
@@ -1983,7 +2023,7 @@ public class AreasDiagram extends GeneralDiagram implements TabItemInterface {
 						continue;
 					}
 					
-					select(child, selected, true);
+					selectRecursive(child, selected, true);
 				}
 			}
 		}

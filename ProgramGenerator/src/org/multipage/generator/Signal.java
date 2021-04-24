@@ -133,6 +133,12 @@ public enum Signal implements EventCondition {
 			SignalType.guiChange
 			),
 	
+	// Redraw GUI.
+	updateGui(
+			SignalType.areaViewStateChange,
+			SignalType.guiChange
+			),
+	
 	// Focus on the Basic Area.
 	focusBasicArea(
 			SignalType.guiChange
@@ -291,6 +297,11 @@ public enum Signal implements EventCondition {
 	treeFlagChange;
 	
 	/**
+	 * Unnecessary signals.
+	 */
+	private static final Signal [] unnecessarySignals = { displayOrRedrawToolTip, removeToolTip };
+	
+	/**
 	 * Signal is included in the following signal types.
 	 */
 	private HashSet<SignalType> includedInTypes = new HashSet<SignalType>();
@@ -336,6 +347,21 @@ public enum Signal implements EventCondition {
 		// Try to find the type.
 		boolean isIncluded = includedInTypes.contains(signalType);
 		return isIncluded;
+	}
+	
+	/**
+	 * For debugging purposes it returns true if the signal is unnecessary.
+	 * @return
+	 */
+	boolean isUnnecessary() {
+		
+		for (Signal unnecessarySignal : unnecessarySignals) {
+			
+			if (this.equals(unnecessarySignal)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/**

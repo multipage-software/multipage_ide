@@ -419,7 +419,7 @@ public class AreaLocalMenu {
 		menuEditAreaResources.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				onEditArea(AreaEditor.RESOURCES);
+				onEditArea(AreaEditorFrame.RESOURCES);
 			}
 		});
 		
@@ -447,6 +447,9 @@ public class AreaLocalMenu {
 		
 		Area area = listener.getCurrentArea();
 		CreateAreasFromSourceCode.showDialog(parentComponent, area);
+		
+		// Transmit "request update all" signal.
+		ConditionalEvents.transmit(this, Signal.requestUpdateAll);
 	}
 
 	/**
@@ -483,7 +486,7 @@ public class AreaLocalMenu {
 		JMenuItem menuAreaEdit = new JMenuItem(Resources.getString("org.multipage.generator.menuAreaEdit"));
 		menuAreaEdit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				onEditArea(AreaEditor.NOT_SPECIFIED);
+				onEditArea(AreaEditorFrame.NOT_SPECIFIED);
 			}
 		});
 		menuEditArea.add(menuAreaEdit);
@@ -493,7 +496,7 @@ public class AreaLocalMenu {
 		menuEditResources.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				onEditArea(AreaEditor.RESOURCES);
+				onEditArea(AreaEditorFrame.RESOURCES);
 			}
 		});
 		
@@ -502,7 +505,7 @@ public class AreaLocalMenu {
 		JMenuItem menuEditDependencies = new JMenuItem(Resources.getString("org.multipage.generator.menuAreaEditDependencies"));
 		menuEditDependencies.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				onEditArea(AreaEditor.DEPENDENCIES);
+				onEditArea(AreaEditorFrame.DEPENDENCIES);
 			}
 		});
 		menuEditArea.add(menuEditDependencies);
@@ -703,7 +706,7 @@ public class AreaLocalMenu {
 		}
 
 		// Execute area editor.
-		AreaEditor.showDialog(null, area, tabIdentifier);
+		AreaEditorFrame.showDialog(null, area, tabIdentifier);
 	}
 
 	/**
@@ -789,6 +792,9 @@ public class AreaLocalMenu {
 		}
 		
 		GeneratorMainFrame.getFrame().getVisibleAreasEditor().getDiagram().selectArea(area.getId(), true);
+		
+		// Transmit "update GUI" signal.
+		ConditionalEvents.transmit(this, Signal.updateGui);
 	}
 
 	/**
@@ -803,6 +809,9 @@ public class AreaLocalMenu {
 		}
 		
 		GeneratorMainFrame.getFrame().getVisibleAreasEditor().getDiagram().selectArea(area.getId(), false);
+		
+		// Transmit "update GUI" signal.
+		ConditionalEvents.transmit(this, Signal.updateGui);
 	}
 
 	/**
@@ -817,6 +826,9 @@ public class AreaLocalMenu {
 		}
 		
 		GeneratorMainFrame.getFrame().getVisibleAreasEditor().getDiagram().selectAreaWithSubareas(area.getId(), true);
+		
+		// Transmit "update GUI" signal.
+		ConditionalEvents.transmit(this, Signal.updateGui);
 	}
 	
 	/**
@@ -831,6 +843,9 @@ public class AreaLocalMenu {
 		}
 		
 		GeneratorMainFrame.getFrame().getVisibleAreasEditor().getDiagram().selectAreaWithSubareas(area.getId(), false);
+		
+		// Transmit "update GUI" signal.
+		ConditionalEvents.transmit(this, Signal.updateGui);
 	}
 
 	/**
@@ -864,6 +879,9 @@ public class AreaLocalMenu {
 		}
 		
 		GeneratorMainFrame.getFrame().setHomeArea(parentComponent, area);
+		
+		// Transmit "request update all" signal.
+		ConditionalEvents.transmit(this, Signal.requestUpdateAll);
 	}
 
 	/**
@@ -876,6 +894,9 @@ public class AreaLocalMenu {
 		Area parentArea = listener.getCurrentParentArea();
 		
 		GeneratorMainFrame.getFrame().copyAreaTree(area, parentArea);
+		
+		// Transmit "request update all" signal.
+		ConditionalEvents.transmit(this, Signal.requestUpdateAll);
 	}
 
 	/**
@@ -887,6 +908,9 @@ public class AreaLocalMenu {
 		Area area = listener.getCurrentArea();
 		
 		GeneratorMainFrame.getFrame().pasteAreaTree(area);
+		
+		// Transmit "request update all" signal.
+		ConditionalEvents.transmit(this, Signal.requestUpdateAll);
 	}
 
 	/**

@@ -23,8 +23,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
 
 import org.multipage.basic.ProgramBasic;
 import org.multipage.gui.Images;
@@ -32,6 +30,7 @@ import org.multipage.gui.TextFieldAutoSave;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
+import org.multipage.util.j;
 
 import com.maclan.Area;
 import com.maclan.Middle;
@@ -474,7 +473,7 @@ public class AreasPropertiesBase extends JPanel {
 			enableEditing(false);
 			
 			// Propagate update event
-			ConditionalEvents.transmit(AreasPropertiesBase.this, Signal.requestUpdateAll);
+			//ConditionalEvents.transmit(AreasPropertiesBase.this, Signal.updateAll);
 		};
 		
 		textDescription.updateLambda = updateEvent;
@@ -522,44 +521,26 @@ public class AreasPropertiesBase extends JPanel {
 	 * Set listeners.
 	 */
 	private void setListeners() {
-		
-		addAncestorListener(new AncestorListener() {
-			
-			// On panel added.
-			@Override
-			public void ancestorAdded(AncestorEvent event) {
 				
-				// "Model updated" event receiver.
-				ConditionalEvents.receiver(AreasPropertiesBase.this, Signal.modelUpdated, message -> {
-					
-					// Update the list of areas.
-					LinkedList areas = getAreas();
-					if (areas == null) {
-						return;
-					}
-					areas = ProgramGenerator.getUpdatedAreas(areas);
-					
-					// Set the areas.
-					setAreas(areas);
-					
-					// Enable editing in the main frame window.
-					enableEditing(true);
-				});
-			}
+		// "Model updated" event receiver.
+		ConditionalEvents.receiver(AreasPropertiesBase.this, Signal.updateAll, message -> {
+	    	
+			// Disable the signal temporarily.
+			Signal.updateAll.disable();
 			
-			// On panel removed.
-			@Override
-			public void ancestorRemoved(AncestorEvent event) {
-				
-				// Remove listeners.
-				ConditionalEvents.removeReceivers(AreasPropertiesBase.this);
-			}
+			// Update the list of areas.
+			areas = ProgramGenerator.getUpdatedAreas(areas);
 			
-			@Override
-			public void ancestorMoved(AncestorEvent event) {
-				
-				// Nothing to do.
-			}
+			// Set the areas.
+			setAreas(areas);
+			
+			// Enable editing in the main frame window.
+			enableEditing(true);
+			
+			// Enable the signal.
+			SwingUtilities.invokeLater(() -> {
+				Signal.updateAll.enable();
+			});
 		});
 	}
 	

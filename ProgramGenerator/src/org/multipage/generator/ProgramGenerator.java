@@ -179,6 +179,7 @@ public class ProgramGenerator {
 		PathSelectionDialog.setDefaultData();
 		CreateAreasFromSourceCode.setDefaultData();
 		ClonedDiagramDialog.setDefaultData();
+		LoggingDialog.setDefaultData();
 	}
 	
 	/**
@@ -239,6 +240,7 @@ public class ProgramGenerator {
 		PathSelectionDialog.serializeData(inputStream);
 		CreateAreasFromSourceCode.serializeData(inputStream);
 		ClonedDiagramDialog.serializeData(inputStream);
+		LoggingDialog.serializeData(inputStream);
 	}
 	
 	/**
@@ -298,6 +300,7 @@ public class ProgramGenerator {
 		PathSelectionDialog.serializeData(outputStream);
 		CreateAreasFromSourceCode.serializeData(outputStream);
 		ClonedDiagramDialog.serializeData(outputStream);
+		LoggingDialog.serializeData(outputStream);
 	}
 	
 	/**
@@ -570,6 +573,17 @@ public class ProgramGenerator {
 		
 		return areasModel.getArea(id);
 	}
+	
+	/**
+	 * Update ara.
+	 * @param area
+	 * @return
+	 */
+	public static Area updateArea(Area area) {
+		
+		long id = area.getId();
+		return areasModel.getArea(id);
+	}
 
 	/**
 	 * Get home area.
@@ -688,12 +702,6 @@ public class ProgramGenerator {
 			// Load areas model from database.
 			MiddleResult result = ProgramBasic.getMiddle().loadAreasModel(properties, model, loadHiddenSlots);
 			
-			// LOG
-			System.out.format("RELOAD MODEL: operation time span %sms\n", new Date().getTime() - start);
-			
-			// Propagate event which informs about model update.
-			ConditionalEvents.transmit(model, Signal.modelUpdated);
-			
 			return result;
 		}
 	}
@@ -758,5 +766,17 @@ public class ProgramGenerator {
 			}
 		}
 		return areas;
+	}
+	
+	/**
+	 * Get model identifier for debugging purposes.
+	 * @return
+	 */
+	public static String getModelIdentifier() {
+		
+		if (areasModel == null) {
+			return "unknown";
+		}
+		return areasModel.getTimeStamp();
 	}
 }

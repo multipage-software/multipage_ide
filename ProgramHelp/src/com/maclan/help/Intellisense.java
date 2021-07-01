@@ -14,6 +14,9 @@ import java.util.regex.Pattern;
 
 import org.multipage.gui.TextEditorPane;
 import org.multipage.util.Obj;
+import org.multipage.util.j;
+
+import com.maclan.help.gnu_prolog.PrologUtility;
 
 import gnu.prolog.term.AtomTerm;
 import gnu.prolog.term.CompoundTerm;
@@ -33,6 +36,46 @@ import gnu.prolog.vm.PrologCode;
 public class Intellisense {
 	
 	/**
+	 * Suggestion class.
+	 */
+	public static class Suggestion {
+		
+		/**
+		 * Source Prolog term.
+		 */
+		public Term sourceTerm = null;
+		
+		/**
+		 * Caption.
+		 */
+		public String caption = null;
+		
+		/**
+		 * Add all suggestion terms.
+		 * @param suggestions
+		 * @param terms
+		 */
+		public static void addAll(LinkedList<Suggestion> suggestions, LinkedList<Term> terms) {
+			
+			terms.forEach(term -> {
+					Suggestion suggestion = new Suggestion();
+					suggestion.sourceTerm = term;
+					suggestion.caption = term.toString();
+					suggestions.add(suggestion);
+				}); 
+		}
+		
+		/**
+		 * Get caption.
+		 */
+		@Override
+		public String toString() {
+			return caption;
+		}
+		
+	}
+	
+	/**
 	 * GNU Prolog environment.
 	 */
 	private static Environment prologEnvironment;
@@ -45,16 +88,18 @@ public class Intellisense {
 	/**
 	 * Regular enum and expressions for the tokenizer.
 	 */
-	private static enum TokenType { initial, tag_start, property_name, equal_sign, property_value, property_separator, tag_closing, text, end_tag };
+	private static enum TokenType { initial, tag_start, white_space_speparator, property_name, equal_sign, property_value, property_separator, tag_closing, text, end_tag };
 	
-	private static final Pattern tagStartRegex = Pattern.compile("\\[\\s*@\\s*(\\w*)");
-	private static final Pattern tagPropertyNameRegex = Pattern.compile("(\\w+)");
-	private static final Pattern tagEqualSignRegex = Pattern.compile("=");
-	private static final Pattern tagPropertyValueRegex = Pattern.compile("(\\S*)|(\"\\S*\")");
-	private static final Pattern tagPropertySeparatorRegex = Pattern.compile("(,)");
-	private static final Pattern tagClosingRegex = Pattern.compile("(])");
-	private static final Pattern tagTextRegex = Pattern.compile("(.*?)");
-	private static final Pattern endTagRegex = Pattern.compile("\\[\\s*@\\s*(\\w)\\s*\\]");
+	private static final Pattern tagStartRegex = Pattern.compile("\\G\\s*\\[\\s*@\\s*(\\w*)");
+	private static final Pattern whiteSpaceSeparatorRegex = Pattern.compile("\\G\\s");
+	private static final Pattern tagPropertyNameRegex = Pattern.compile("\\G\\s*(\\w+)");
+	private static final Pattern tagEqualSignRegex = Pattern.compile("\\G\\s*=");
+	private static final Pattern tagPropertyValueRegex = Pattern.compile("\\G\\s*([^\\s\\]]*|\"\\S*\")");
+	private static final Pattern tagPropertySeparatorRegex = Pattern.compile("\\G(?:\\s*,|\\s)");
+	private static final Pattern tagClosingRegex = Pattern.compile("\\G\\s*\\]");
+	private static final Pattern tagTextRegex = Pattern.compile("\\G(.+?)(?=\\[\\s*\\/?\\s*@)");
+	private static final Pattern endTagRegex = Pattern.compile("\\G\\s*\\[\\s*\\/\\s*@\\s*(\\w*)");
+	
 
 	/**
 	 * Initialization.
@@ -84,7 +129,7 @@ public class Intellisense {
 	 * Make source code suggestions.
 	 * @param cursorPosition 
 	 */
-	public static LinkedList<String> makeSuggestions(String sourceCode, Integer cursorPosition) {
+	public static LinkedList<Suggestion> makeSuggestions(String sourceCode, Integer cursorPosition) {
 		
 		// Check input value.
 		if (cursorPosition == null) {
@@ -92,17 +137,19 @@ public class Intellisense {
 		}
 		
 		// Prepare source code.
-		Term inputTokens = prepareForIntelisense(sourceCode, cursorPosition);
+		Term inputTokens = prepareForIntellisense(sourceCode, cursorPosition);
 		if (inputTokens == null) {
 			return null;
 		}
 		
+		j.log("TOKENS %s", inputTokens.toString());
+		
 		// Initialization.
-		LinkedList<String> suggestions = new LinkedList<String>();
+		LinkedList<Suggestion> suggestions = new LinkedList<Suggestion>();
 		
 		// Create query term.
 		Term suggestionsAnswer = new VariableTerm("Suggestions");
-		Term suggestionsGoal = new CompoundTerm(AtomTerm.get("suggestion"), new Term [] { inputTokens, suggestionsAnswer });
+		Term suggestionsGoal = new CompoundTerm(AtomTerm.get("get_suggestions"), new Term [] { inputTokens, suggestionsAnswer });
 		
 		// Run Prolog interpreter and get answer.
 		synchronized (prologInterpreter) {
@@ -111,6 +158,7 @@ public class Intellisense {
 				
 				Goal theGoal = prologInterpreter.prepareGoal(suggestionsGoal);
 				int result;
+				LinkedList<Term> terms = new LinkedList<Term>();
 				
 				do {
 					
@@ -120,7 +168,9 @@ public class Intellisense {
 					}
 					
 					Term resultingSuggestion = suggestionsAnswer.dereference();
-					suggestions.add(resultingSuggestion.toString());
+					PrologUtility.addList(resultingSuggestion, terms);
+					
+					Suggestion.addAll(suggestions, terms);
 				}
 				while (result != PrologCode.SUCCESS_LAST);
 			}
@@ -140,7 +190,7 @@ public class Intellisense {
 	 * @param cursorPosition
 	 * @return
 	 */
-	private static Term prepareForIntelisense(String sourceCode, int cursorPosition) {
+	private static Term prepareForIntellisense(String sourceCode, int cursorPosition) {
 		
 		final Pattern tagOpeningRegex = Pattern.compile("\\[\\s*@+", Pattern.MULTILINE);
 		
@@ -177,6 +227,12 @@ public class Intellisense {
 			term.ref = consume(preparedSourceCode.ref, position, tagStartRegex, "tag_start");
 			if (term.ref != null) {
 				termType.ref = TokenType.tag_start;
+			}
+		};
+		Runnable whiteSpaceSeparatorLambda = () -> {
+			term.ref = consume(preparedSourceCode.ref, position, whiteSpaceSeparatorRegex, "white_space_speparator");
+			if (term.ref != null) {
+				termType.ref = TokenType.white_space_speparator;
 			}
 		};
 		Runnable tagPropertyNameLambda = () -> {
@@ -226,14 +282,15 @@ public class Intellisense {
 		LinkedHashMap<TokenType, Runnable []> tokenizerRules = new LinkedHashMap<TokenType, Runnable []>();
 		
 		tokenizerRules.put(TokenType.initial, new Runnable [] { tagStartLambda });
-		tokenizerRules.put(TokenType.tag_start, new Runnable [] { tagPropertyNameLambda, tagClosingLambda });
-		tokenizerRules.put(TokenType.property_name, new Runnable [] { tagPropertyValueLambda, tagEqualSignLambda, tagPropertySeparatorLambda, tagClosingLambda });
+		tokenizerRules.put(TokenType.tag_start, new Runnable [] { tagClosingLambda, whiteSpaceSeparatorLambda });
+		tokenizerRules.put(TokenType.white_space_speparator, new Runnable [] { tagPropertyNameLambda });
+		tokenizerRules.put(TokenType.property_name, new Runnable [] { tagEqualSignLambda, tagClosingLambda, tagPropertySeparatorLambda });
 		tokenizerRules.put(TokenType.equal_sign, new Runnable [] { tagPropertyValueLambda });
-		tokenizerRules.put(TokenType.property_value, new Runnable [] { tagPropertySeparatorLambda, tagClosingLambda });
+		tokenizerRules.put(TokenType.property_value, new Runnable [] { tagClosingLambda, tagPropertySeparatorLambda });
 		tokenizerRules.put(TokenType.property_separator, new Runnable [] { tagPropertyNameLambda });
-		tokenizerRules.put(TokenType.tag_closing, new Runnable [] { tagStartLambda, endTagLambda, textLambda });
+		tokenizerRules.put(TokenType.tag_closing, new Runnable [] {textLambda, endTagLambda, tagStartLambda });
 		tokenizerRules.put(TokenType.text, new Runnable [] { tagStartLambda, endTagLambda });
-		tokenizerRules.put(TokenType.end_tag, new Runnable [] { tagStartLambda, endTagLambda, textLambda });
+		tokenizerRules.put(TokenType.end_tag, new Runnable [] { tagClosingLambda });
 
 		// Tokenize the source code.
 		while (position.ref < sourceLength) {
@@ -245,10 +302,14 @@ public class Intellisense {
 			}
 			
 			for (Runnable lambdaFunction : lambdaFunctions) {
+				
 				lambdaFunction.run();
+				if (term.ref != null) {
+					break;
+				}
 			}
 			
-			if (term.ref == null || termType.ref == null || position.ref == null) {
+			if (term.ref == null) {
 				break;
 			}
 			
@@ -258,6 +319,10 @@ public class Intellisense {
 		
 		// Create compound term.
 		Term tokensTerm = CompoundTerm.getList(terms.toArray(new Term [0]));
+		
+		if (ProgramHelp.logLambda != null) {
+			ProgramHelp.logLambda.accept(tokensTerm.toString());
+		}
 		return tokensTerm;
 	}
 	
@@ -272,25 +337,38 @@ public class Intellisense {
 		Matcher matcher = regex.matcher(preparedSourceCode);
 		boolean found = matcher.find(position.ref);
 		
+		Term resultingTerm = null;
+		
 		if (!found) {
 			return null;
 		}
 		
-		int groupCount = matcher.groupCount();
-		if (groupCount != 1) {
+		int start = matcher.start();
+		if (start != position.ref) {
 			return null;
 		}
 		
 		position.ref = matcher.end();
 		
+		int groupCount = matcher.groupCount();
+		if (groupCount <= 0) {
+			
+			resultingTerm = AtomTerm.get(termName);
+			return resultingTerm;
+		}
+		
+		if (groupCount > 1) {
+			return null;
+		}
+		
 		String atomTerm = matcher.group(1);
 		
-		Term resultingTerm = new CompoundTerm(CompoundTermTag.get(termName, 1), AtomTerm.get(atomTerm));
+		resultingTerm = new CompoundTerm(CompoundTermTag.get(termName, 1), AtomTerm.get(atomTerm));
 		return resultingTerm;
 	}
 	
 	/**
-	 * Apply intellisense to the text .
+	 * Apply intellisense to the text.
 	 * @param textEditorPanel
 	 */
 	public static void applyTo(TextEditorPane textEditorPanel) {
@@ -299,11 +377,14 @@ public class Intellisense {
 		textEditorPanel.intellisenseLambda = sourceCode -> cursorPosition -> caret -> textPane -> {
 			
 			// Get suggestions.
-			LinkedList<String> suggestions = makeSuggestions(sourceCode, cursorPosition);
+			LinkedList<Suggestion> suggestions = makeSuggestions(sourceCode, cursorPosition);
 			
 			// Display the suggestions.
 			if (suggestions != null &&!suggestions.isEmpty()) {
 				IntellisenseWindow.displayAtCaret(textPane, caret, suggestions);
+			}
+			else {
+				IntellisenseWindow.hideWindow();
 			}
 			
 			return suggestions;

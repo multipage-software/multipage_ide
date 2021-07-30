@@ -86,7 +86,7 @@ maclan(tag('SUBAREAS'), property('list'), type('List')).
 maclan(tag('SUBAREAS'), property('first'), type('Any')).
 maclan(tag('SUBAREAS'), property('last'), type('Any')).
 maclan(tag('SUBAREAS'), property('cond'), type('Boolean')).
-maclan(tag('SUBAREAS'), property('reversed')).
+maclan(tag('SUBAREAS'), property('reversed'), type('Void')).
 maclan(tag('SUBAREAS'), property('areaId'), type('AreaId')).
 maclan(tag('SUBAREAS'), property('areaAlias'), type('AreaAlias')).
 maclan(tag('SUBAREAS'), property('area'), type('Area')).
@@ -100,7 +100,7 @@ maclan(tag('SUPERAREAS'), property('list'), type('List')).
 maclan(tag('SUPERAREAS'), property('first'), type('Any')).
 maclan(tag('SUPERAREAS'), property('last'), type('Any')).
 maclan(tag('SUPERAREAS'), property('cond'), type('Boolean')).
-maclan(tag('SUPERAREAS'), property('reversed')).
+maclan(tag('SUPERAREAS'), property('reversed', type('Void'))).
 maclan(tag('SUPERAREAS'), property('areaId'), type('AreaId')).
 maclan(tag('SUPERAREAS'), property('areaAlias'), type('AreaAlias')).
 maclan(tag('SUPERAREAS'), property('area'), type('Area')).
@@ -110,11 +110,11 @@ maclan(tag('SUPERAREAS'), property('requestedArea'), type('Area')).
 maclan(tag('SUPERAREAS'), property('thisArea'), type('Area')).
 maclan(tag('SUPERAREAS'), property('areaSlot'), type('Area')).
 
-maclan(tag('TAG'), property('slot')).
-maclan(tag('TAG'), property('local')).
-maclan(tag('TAG'), property('skipDefault')).
-maclan(tag('TAG'), property('parent')).
-maclan(tag('TAG'), property('enableSpecialValue')).
+maclan(tag('TAG'), property('slot'), type('String')).
+maclan(tag('TAG'), property('local'), type('Void')).
+maclan(tag('TAG'), property('skipDefault'), type('Void')).
+maclan(tag('TAG'), property('parent'), type('Void')).
+maclan(tag('TAG'), property('enableSpecialValue'), type('Void')).
 maclan(tag('TAG'), property('areaId'), type('AreaId')).
 maclan(tag('TAG'), property('areaAlias'), type('AreaAlias')).
 maclan(tag('TAG'), property('area'), type('Area')).
@@ -124,10 +124,10 @@ maclan(tag('TAG'), property('requestedArea'), type('Area')).
 maclan(tag('TAG'), property('thisArea'), type('Area')).
 maclan(tag('TAG'), property('areaSlot'), type('Area')).
 
-maclan(tag('LANGUAGES'), property('divider')).
-maclan(tag('LANGUAGES'), property('transparent')).
+maclan(tag('LANGUAGES'), property('divider'), type('String')).
+maclan(tag('LANGUAGES'), property('transparent'), type('Void')).
 
-maclan(tag('RESOURCE_ID'), property('res')).
+maclan(tag('RESOURCE_ID'), property('res'), type('String')).
 maclan(tag('RESOURCE_ID'), property('render')).
 maclan(tag('RESOURCE_ID'), property('areaId'), type('AreaId')).
 maclan(tag('RESOURCE_ID'), property('areaAlias'), type('AreaAlias')).

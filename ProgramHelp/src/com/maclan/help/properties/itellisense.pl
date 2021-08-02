@@ -102,18 +102,18 @@ statement_match(maclan(tag(TAG_BEGIN)), maclan(tag(TAG))) :-
 
 /* Tag and properties without value. */
 statement_match(maclan(tag(TAG_BEGIN), property), maclan(tag(TAG), property(PROPERTY))) :-
-    maclan(tag(TAG), property(PROPERTY)),
+    maclan(tag(TAG), property(PROPERTY), type(_TYPE)),
     begin_match(TAG_BEGIN, TAG).
 
 /* Tag and properties without value. */
 statement_match(maclan(tag(TAG_BEGIN), property), EXCLUDED_PROPERTIES, maclan(tag(TAG), property(PROPERTY))) :-
-    maclan(tag(TAG), property(PROPERTY)),
+    maclan(tag(TAG), property(PROPERTY), type(_TYPE)),
     begin_match(TAG_BEGIN, TAG),
     \+member(PROPERTY, EXCLUDED_PROPERTIES).
 
 /* Tag and property without value. */
 statement_match(maclan(tag(TAG_BEGIN), property(PROPERTY_BEGIN)), EXCLUDED_PROPERTIES, maclan(tag(TAG), property(PROPERTY))) :-
-    maclan(tag(TAG), property(PROPERTY)),
+    maclan(tag(TAG), property(PROPERTY), type(_TYPE)),
     begin_match(TAG_BEGIN, TAG),
     begin_match(PROPERTY_BEGIN, PROPERTY),
     \+member(PROPERTY, EXCLUDED_PROPERTIES).

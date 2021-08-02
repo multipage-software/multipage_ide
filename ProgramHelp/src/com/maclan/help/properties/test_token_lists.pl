@@ -13,6 +13,9 @@ test :-
     test_property_sep_property,
     test_property_sep_property_sep_property.
     
+my_test :-
+    print('test_tags: '), get_suggestions([tag_start('AREA_ID'),whitespace_separator], Suggestions), print(Suggestions), write('\n\n').
+    
 test_tags :-
     print('test_tags: '), get_suggestions([tag_start('AREA')], SUGGESTIONS), print(SUGGESTIONS), write('\n\n').
 

@@ -123,7 +123,7 @@ public class IntellisenseItemPanel extends JPanel {
 	public void setSuggestion(Suggestion suggestion, int index, boolean isSelected, boolean cellHasFocus) {
 		
 		// Set the caption and flags.
-		labelCaption.setText(suggestion.caption);
+		labelCaption.setText(suggestion.toString());
 		this.isSelected = isSelected;
 		this.hasFocus = cellHasFocus;
 	}

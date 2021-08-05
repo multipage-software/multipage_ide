@@ -10,6 +10,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -32,6 +33,11 @@ public class IntellisenseItemPanel extends JPanel {
 	 * Version.
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	/**
+	 * The link button size.
+	 */
+	public static Dimension linkButtonSize = null;
 	
 	/**
 	 * Cell is selected.
@@ -78,6 +84,7 @@ public class IntellisenseItemPanel extends JPanel {
 		add(labelCaption);
 		
 		buttonLink = new JButton("");
+		buttonLink.setBorder(null);
 		springLayout.putConstraint(SpringLayout.WEST, buttonLink, -14, SpringLayout.EAST, this);
 		springLayout.putConstraint(SpringLayout.EAST, buttonLink, 0, SpringLayout.EAST, this);
 		buttonLink.setBackground(Color.WHITE);
@@ -93,8 +100,9 @@ public class IntellisenseItemPanel extends JPanel {
 	 */
 	private void postCreation(IntellisenseWindow intellisenseWindow) {
 		
-		// Set icon.
-		buttonLink.setIcon(Images.getIcon("/org/multipage/gui/images/right.png"));
+		// Set icons.
+		ImageIcon icon = Images.getIcon("com/maclan/help/images/intellisense_help.png");
+		buttonLink.setIcon(icon);
 		
 		// Set width and height.
 		int verticalScrollBarSize = ((Integer) UIManager.get("ScrollBar.width")).intValue();
@@ -110,7 +118,13 @@ public class IntellisenseItemPanel extends JPanel {
 		
 		super.paint(g);
 		
+		// Highlight selection.
 		GraphUtility.drawSelection(g, this, isSelected, hasFocus);
+		
+		// Load link buttons size.
+		if (linkButtonSize == null) {
+			linkButtonSize = buttonLink.getSize();
+		}
 	}
 	
 	/**

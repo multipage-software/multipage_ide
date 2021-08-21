@@ -16,15 +16,14 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.SpringLayout;
 
+import org.maclan.Area;
+import org.maclan.ConstructorHolder;
+import org.maclan.Middle;
+import org.maclan.MiddleResult;
 import org.multipage.basic.ProgramBasic;
 import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
-
-import com.maclan.Area;
-import com.maclan.ConstructorHolder;
-import com.maclan.Middle;
-import com.maclan.MiddleResult;
 
 /**
  * 
@@ -151,11 +150,14 @@ public class AreaConstructorPanel extends JPanel {
 			MiddleResult result = middle.loadAreaConstructor(areaId, constructorId);
 			result.throwPossibleException();
 			
-			result = middle.loadConstructorHolder(constructorId.ref, constructor);
-			result.throwPossibleException();
-			
-			// Set the constructor.
-			this.constructor = constructor;
+			if (constructorId.ref != null) {
+				
+				result = middle.loadConstructorHolder(constructorId.ref, constructor);
+				result.throwPossibleException();
+				
+				// Set the constructor.
+				this.constructor = constructor;
+			}
 		}
 		catch (Exception e) {
 			
@@ -185,6 +187,11 @@ public class AreaConstructorPanel extends JPanel {
 			
 			long areaId = this.constructor.getAreaId();
 			constructorArea = ProgramGenerator.getArea(areaId);
+		}
+		
+		// Check if constructor area exists.
+		if (constructorArea == null) {
+			return;
 		}
 		
 		// Load slot values.

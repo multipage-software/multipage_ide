@@ -55,6 +55,8 @@ import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import org.maclan.Area;
+import org.maclan.AreasModel;
 import org.multipage.gui.DefaultMutableTreeNodeDnD;
 import org.multipage.gui.GraphUtility;
 import org.multipage.gui.Images;
@@ -65,9 +67,6 @@ import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
 import org.multipage.util.j;
-
-import com.maclan.Area;
-import com.maclan.AreasModel;
 
 /**
  * 
@@ -650,7 +649,7 @@ public class AreasTreeEditorPanel extends JPanel implements TabItemInterface  {
 			protected Area getCurrentArea() {
 				// Get selected area.
 				TreePath [] selectedPaths = tree.getSelectionPaths();
-				if (selectedPaths.length != 1) {
+				if (selectedPaths == null || selectedPaths.length != 1) {
 					return null;
 				}
 				DefaultMutableTreeNode node = (DefaultMutableTreeNode) selectedPaths[0].getLastPathComponent();

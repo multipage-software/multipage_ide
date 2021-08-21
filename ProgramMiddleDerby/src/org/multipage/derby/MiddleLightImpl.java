@@ -36,28 +36,27 @@ import java.util.function.Function;
 
 import javax.sql.DataSource;
 
+import org.maclan.Area;
+import org.maclan.AreaResource;
+import org.maclan.EnumerationObj;
+import org.maclan.EnumerationValue;
+import org.maclan.Language;
+import org.maclan.LoadSlotHint;
+import org.maclan.MiddleLight;
+import org.maclan.MiddleListener;
+import org.maclan.MiddleResult;
+import org.maclan.MiddleUtility;
+import org.maclan.MimeType;
+import org.maclan.Resource;
+import org.maclan.ServerCache;
+import org.maclan.Slot;
+import org.maclan.StartResource;
+import org.maclan.VersionData;
+import org.maclan.VersionObj;
 import org.multipage.gui.Utility;
 import org.multipage.util.ImgUtility;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
-
-import com.maclan.Area;
-import com.maclan.AreaResource;
-import com.maclan.EnumerationObj;
-import com.maclan.EnumerationValue;
-import com.maclan.Language;
-import com.maclan.LoadSlotHint;
-import com.maclan.MiddleLight;
-import com.maclan.MiddleListener;
-import com.maclan.MiddleResult;
-import com.maclan.MiddleUtility;
-import com.maclan.MimeType;
-import com.maclan.Resource;
-import com.maclan.ServerCache;
-import com.maclan.Slot;
-import com.maclan.StartResource;
-import com.maclan.VersionData;
-import com.maclan.VersionObj;
 
 /**
  * @author
@@ -94,16 +93,21 @@ public class MiddleLightImpl implements MiddleLight {
 	 */
 	private static void addMiddleResultExtension() {
 		
-		MiddleResult.sqlToResultLambdas.add(e -> {
+		MiddleResult.sqlToResultLambdas.add(exception -> {
 			
-			if (e instanceof SQLException) {
-				SQLException sqlException = (SQLException)e;
-				
-				// When the database is already opened.
-				if (sqlException.getNextException().getErrorCode() ==  45000) {
-	                return MiddleResult.DATABASE_ALREADY_OPENED;
-	            }
+			try {
+				if (exception instanceof SQLException) {
+					SQLException sqlException = (SQLException) exception;
+					
+					// When the database is already opened.
+					if (sqlException.getNextException().getErrorCode() ==  45000) {
+		                return MiddleResult.DATABASE_ALREADY_OPENED;
+		            }
+				}
 			}
+			catch (Exception e) {
+			}
+			
 			return null;
 		});
 	}
@@ -190,28 +194,28 @@ public class MiddleLightImpl implements MiddleLight {
 
 	protected static final String selectAreaSlotValue = "SELECT alias, revision, get_localized_text(localized_text_value_id, ?) AS localized_text_value, text_value, integer_value, real_value, boolean_value, enumeration_value_id, color, area_value, is_default, value_meaning " +
 	                                                    "FROM area_slot " +
-	                                                    "INNER JOIN (SELECT alias AS slot_alias, MAX(revision) AS last_revision FROM area_slot GROUP BY alias) lst " +
-		                                                "ON alias = slot_alias AND revision = last_revision " +
+		                                                "INNER JOIN (SELECT alias AS slot_alias, area_id AS slot_area_id, MAX(revision) AS last_revision FROM area_slot GROUP BY alias, area_id) lst " +
+		                                                "ON alias = slot_alias AND area_id = slot_area_id AND revision = last_revision " +
 	                                                    "WHERE alias = ? " +
 	                                                    "AND area_id = ?";
 
 	private static final String selectAreaSlotsRef = "SELECT alias, revision, access, is_default, special_value, external_provider, external_change, reads_input, writes_output, id " +
 	                                                 "FROM area_slot " +
-	                                                 "INNER JOIN (SELECT alias AS slot_alias, MAX(revision) AS last_revision FROM area_slot GROUP BY alias) lst " +
-	                                                 "ON alias = slot_alias AND revision = last_revision " +
+	                                                 "INNER JOIN (SELECT alias AS slot_alias, area_id AS slot_area_id, MAX(revision) AS last_revision FROM area_slot GROUP BY alias, area_id) lst " +
+	                                                 "ON alias = slot_alias AND area_id = slot_area_id AND revision = last_revision " +
 	                                                 "WHERE area_id = ?";
 	
 	private static final String selectAreaSlotsRefEx = "SELECT alias, revision, access, special_value, external_provider, external_change, reads_input, writes_output, id " +
 													   "FROM area_slot " +
-													   "INNER JOIN (SELECT alias AS slot_alias, MAX(revision) AS last_revision FROM area_slot GROUP BY alias) lst " +
-		                                               "ON alias = slot_alias AND revision = last_revision " +
+		                                               "INNER JOIN (SELECT alias AS slot_alias, area_id AS slot_area_id, MAX(revision) AS last_revision FROM area_slot GROUP BY alias, area_id) lst " +
+		                                               "ON alias = slot_alias AND area_id = slot_area_id AND revision = last_revision " +
 													   "WHERE area_id = ? " +
 													   "AND is_default = ?";
 	
 	private static final String selectSlotTextDirectly = "SELECT alias, revision, text_value " +
             											 "FROM area_slot " +
-            											 "INNER JOIN (SELECT alias AS slot_alias, MAX(revision) AS last_revision FROM area_slot GROUP BY alias) lst " +
-            											 "ON alias = slot_alias AND revision = last_revision " +
+    	                                                 "INNER JOIN (SELECT alias AS slot_alias, area_id AS slot_area_id, MAX(revision) AS last_revision FROM area_slot GROUP BY alias, area_id) lst " +
+    	                                                 "ON alias = slot_alias AND area_id = slot_area_id AND revision = last_revision " +
             											 "WHERE id = ? ";
 	
 	protected static final String selectStartArea = "SELECT area_id " +
@@ -391,7 +395,7 @@ public class MiddleLightImpl implements MiddleLight {
 	public MiddleLightImpl() {
 
 		// Add resource.
-		Resources.loadResource("com.maclan.properties.messages");
+		Resources.loadResource("org.maclan.properties.messages");
 	}
 	
 	/**
@@ -2349,11 +2353,16 @@ public class MiddleLightImpl implements MiddleLight {
 		Obj<Slot> lastFoundDefaultSlot = new Obj<Slot>();
 		
 		MiddleResult result = loadSlotPrivate(area, alias, inherit, skipDefault, slot,
-				lastFoundDefaultSlot, LoadSlotHint.superAreas, false, null, parent, loadValue);
+				lastFoundDefaultSlot, LoadSlotHint.area, false, null, parent, loadValue);
 		if (result.isNotOK()) {
 			
 			result = loadSlotPrivate(area, alias, inherit, skipDefault, slot,
-				lastFoundDefaultSlot, LoadSlotHint.subAreas, false, null, parent, loadValue);
+					lastFoundDefaultSlot, LoadSlotHint.superAreas, false, null, parent, loadValue);
+			if (result.isNotOK()) {
+				
+				result = loadSlotPrivate(area, alias, inherit, skipDefault, slot,
+					lastFoundDefaultSlot, LoadSlotHint.subAreas, false, null, parent, loadValue);
+			}
 		}
 		
 		return MiddleResult.OK;

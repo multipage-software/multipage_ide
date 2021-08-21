@@ -18,10 +18,9 @@ import java.util.regex.Pattern;
 
 import javax.sql.rowset.serial.SerialBlob;
 
+import org.maclan.*;
 import org.multipage.gui.Utility;
 import org.multipage.util.*;
-
-import com.maclan.*;
 
 /**
  * @author
@@ -9552,6 +9551,17 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			}
 		}
 		
+		// Load start resource IDs located in areas.
+		for (AreaData areaData : areaTreeData.areaDataList) {
+			
+			// Add ID only when it is not yet included in list.
+			Long startResourceId = areaData.startResourceId;
+			if (startResourceId != null && !resourcesIds.contains(startResourceId)) {
+				
+				resourcesIds.add(startResourceId);
+			}
+		}
+		
 		LinkedList<Long> mimeIds = new LinkedList<Long>();
 		
 		progressStep = 100.0F / (float) resourcesIds.size();
@@ -10838,11 +10848,12 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	/**
 	 * Insert areas' start resources.
 	 * @param areaTreeData
+	 * @param datBlocks 
 	 * @param swingWorkerHelper
 	 * @return
 	 */
 	public MiddleResult updateStartResourcesData(AreaTreeData areaTreeData,
-			SwingWorkerHelper<MiddleResult> swingWorkerHelper) {
+			LinkedList<DatBlock> datBlocks, SwingWorkerHelper<MiddleResult> swingWorkerHelper) {
 		
 		// Check connection.
 		MiddleResult result = checkConnection();
@@ -10850,7 +10861,7 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			return result;
 		}
 		
-		boolean isCopied = areaTreeData.isCopied();
+		boolean isCloned = areaTreeData.isCloned();
 		
 		double progress2Step = 100.0f / (double) areaTreeData.areaDataList.size();
 		double progress2 = progress2Step;
@@ -10869,22 +10880,35 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 				
 			}
 			
-			if (areaData.startResourceId == null) {
+			Long oldStartResourceId = areaData.startResourceId;
+			
+			if (oldStartResourceId == null) {
 				continue;
 			}
 			
 			// Get resource ID.
-			Long newStartResourceId;
+			Obj<Long> newStartResourceId = new Obj<Long>(null);
 			
-			if (isCopied) {
-				newStartResourceId = areaData.startResourceId;
+			if (isCloned) {
+				newStartResourceId.ref = oldStartResourceId;
 			}
 			else {
-				newStartResourceId = areaTreeData.getNewResourceRefId(areaData.startResourceId);
-				if (newStartResourceId == null) {
+				newStartResourceId.ref = areaTreeData.getNewResourceRefId(oldStartResourceId);
+				if (newStartResourceId.ref == null) {
+					
+					// Get start resource.
+					ResourceRef resourceRef = areaTreeData.getResourceRef(oldStartResourceId);
+					if (resourceRef == null) {
+						return MiddleResult.RESOURCE_NOT_FOUND;
+					}
+					
+					// Insert resource into the database.	
+					result = insertResourceData(resourceRef, areaTreeData, datBlocks, newStartResourceId,
+							swingWorkerHelper);
 				
-					result = MiddleResult.RESOURCE_NOT_FOUND;
-					break;
+					if (result.isNotOK()) {
+						return result;
+					}
 				}
 			}
 			
@@ -10892,7 +10916,7 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			Long versionId = areaData.versionId;
 			Long newVersionId = null;
 			if (versionId != null) {
-				newVersionId = isCopied ? versionId : areaTreeData.getNewVersionId(versionId);
+				newVersionId = isCloned ? versionId : areaTreeData.getNewVersionId(versionId);
 			}
 			else {
 				newVersionId = 0L;
@@ -10903,7 +10927,7 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			}
 			
 			// Update area start resource.
-			result = updateStartResource(areaData.newId, newStartResourceId, newVersionId,
+			result = updateStartResource(areaData.newId, newStartResourceId.ref, newVersionId,
 					notLocalized);
 			if (result.isNotOK()) {
 				break;

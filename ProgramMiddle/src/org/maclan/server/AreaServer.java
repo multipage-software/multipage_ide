@@ -261,7 +261,7 @@ public class AreaServer {
 		clonedState.defaultVersionId = state.defaultVersionId;
 		clonedState.trayMenu = state.trayMenu;
 		clonedState.newLine = state.newLine;
-		clonedState.enableMetaInfo = state.enableMetaInfo;
+		clonedState.enableMetaTags = state.enableMetaTags;
 		
 		return clonedState;
 	}
@@ -284,7 +284,7 @@ public class AreaServer {
 		
 		// Simple language tags processors.
 		simpleLanguagesTagsProcessors();
-		// Area procesor.
+		// Area processor.
 		areaProcessor();
 		// Resource processor.
 		resourceProcessor();
@@ -1454,7 +1454,7 @@ public class AreaServer {
 				String href = properties.getProperty("href");
 				
 				// Evaluate the URL string.
-				href = server.evaluateText(href, String.class, false);
+				href = server.evaluateText(href, String.class, true);
 				
 				// Get extra properties.
 				String extraProperties = getExtraProperties(properties,
@@ -2647,13 +2647,13 @@ public class AreaServer {
 					
 					// Change current Area Server state.
 					if ("false".equals(metaInfo)) {
-						server.state.enableMetaInfo = AreaServerState.metaInfoFalse;
+						server.state.enableMetaTags = AreaServerState.metaInfoFalse;
 					}
 					else if ("true".equals(metaInfo)) {
-						server.state.enableMetaInfo = AreaServerState.metaInfoTrue;
+						server.state.enableMetaTags = AreaServerState.metaInfoTrue;
 					}
 					else if ("temporary".equals(metaInfo)) {
-						server.state.enableMetaInfo = AreaServerState.metaInfoTemporary;
+						server.state.enableMetaTags = AreaServerState.metaInfoTemporary;
 					}
 				}
 				
@@ -5358,14 +5358,14 @@ public class AreaServer {
 		throws Exception {
 
 		state.analysis.process_area_calls++;
-
+		
 		// Find tag start.
 		while (true) {
 			
 			// If an exception has been thrown, exit the loop.
 			if (state.exceptionThrown) {
 				break;
-			}
+			}	
 			
 			// Find tag start.
 			Obj<Integer> positionOut = new Obj<Integer>(state.position);
@@ -5453,7 +5453,7 @@ public class AreaServer {
 			String tagName = ServerUtilities.readTagName(state.text, positionOut);
 			
 			// Decrement tag name except META tag.
-			if (!tagName.isEmpty() && !"@META".equals(tagName)) {
+			if (!tagName.isEmpty() && !("@META_TAG".equals(tagName) || "@META_SOURCE".equals(tagName) || "@META_LINE".equals(tagName))) {
 				
 				char firstCharacter = tagName.charAt(0);
 				if (firstCharacter == '@') {
@@ -5493,7 +5493,7 @@ public class AreaServer {
 			String tagName = ServerUtilities.readTagName(state.text, positionOut);
 			
 			// Decrement tag name except META tag.
-			if (!tagName.isEmpty() && !"@META".equals(tagName)) {
+			if (!tagName.isEmpty() && !("@META_TAG".equals(tagName) || "@META_SOURCE".equals(tagName) || "@META_LINE".equals(tagName))) {
 				
 				char firstCharacter = tagName.charAt(0);
 				if (firstCharacter == '@') {
@@ -5551,23 +5551,27 @@ public class AreaServer {
 	/**
 	 * Add meta information regarding the source of resulting text.
 	 * @param replacement 
-	 * @param source
+	 * @param tagsSource
 	 * @return
 	 */
-	protected String addMetaInformation(String replacement, TagsSource source, AreaServerState state) {
+	protected String addMetaInformation(String replacement, TagsSource tagsSource, AreaServerState state) {
 		
 		// If the PRAGMA "meta" property is set to false, return the result without changes.
-		if (state.enableMetaInfo == AreaServerState.metaInfoFalse) {
+		if (state.enableMetaTags == AreaServerState.metaInfoFalse) {
 			return replacement;
 		}
 		
 		// Add meta info for each line of code.
 		StringBuilder replacementLines = new StringBuilder();
-		Obj<Long> line = new Obj<Long>(0L);
-		replacement.lines().forEachOrdered(lineText -> replacementLines.append(!lineText.strip().isEmpty() ? String.format("[@@META line=%d]%s[/@@META]\n", line.ref++, lineText) : lineText));
+		Obj<Long> lineNumber = new Obj<Long>(0L);
+		replacement.lines().forEachOrdered(lineText -> {
+			
+			lineText = String.format("[@@META_LINE line=%d]%s[/@@META_LINE]", lineNumber.ref++, lineText);
+			replacementLines.append(lineText + '\n');
+		});
 		
 		// Wrap text into META tag.
-		return String.format("[@@META source=#%s]%s[/@@META]", source,  replacementLines.toString());
+		return String.format("[@@META_SOURCE source=#%s]%s[/@@META_SOURCE]", tagsSource,  replacementLines.toString());
 	}
 	
 	/**
@@ -5580,11 +5584,12 @@ public class AreaServer {
 	private String addMetaInformation(String tagName, String replacement, AreaServerState state) {
 		
 		// If the PRAGMA "meta" property is set to false, return the result without changes.
-		if (state.enableMetaInfo == AreaServerState.metaInfoFalse) {
+		if (state.enableMetaTags == AreaServerState.metaInfoFalse) {
 			return replacement;
 		}
 		
-		return String.format("[@@META tag=#%s]%s[/@@META]", tagName, replacement);
+		// Wrap result into a META tag.
+		return String.format("[@@META_TAG tag=#%s]%s[/@@META_TAG]", tagName, replacement);
 	}
 	
 	/**
@@ -5596,7 +5601,7 @@ public class AreaServer {
 			throws Exception {
 		
 		// If the PRAGMA "meta" property is set to false or , return the result without changes.
-		if (state.enableMetaInfo == AreaServerState.metaInfoFalse) {
+		if (state.enableMetaTags == AreaServerState.metaInfoFalse) {
 			return string;
 		}
 		
@@ -5619,7 +5624,7 @@ public class AreaServer {
 			String tagName = ServerUtilities.readTagName(text, positionOut);
 			
 			// Remove META tag.
-			if ("@META".equals(tagName)) {
+			if ("@META_TAG".equals(tagName) || "@META_SOURCE".equals(tagName) || "@META_LINE".equals(tagName)) {
 				
 				// Parse properties.
 				Properties properties = new Properties();
@@ -5650,7 +5655,7 @@ public class AreaServer {
 			String tagName = ServerUtilities.readTagName(text, positionOut);
 			
 			// Remove META tag.
-			if ("@META".equals(tagName)) {
+			if ("@META_TAG".equals(tagName) || "@META_SOURCE".equals(tagName) || "@META_LINE".equals(tagName)) {
 				
 				text.replace(tagStartPositionOut.ref, positionOut.ref + 1, "");
 				positionOut.ref = tagStartPositionOut.ref;
@@ -6780,15 +6785,12 @@ public class AreaServer {
 		throws Exception {
 
 		Obj<Slot> slot = new Obj<Slot>();
-		MiddleResult result = state.middle.loadSlotInheritanceLevel(area, slotAlias, LoadSlotHint.superAreas, skipDefault, parent, inheritanceLevel, slot, loadValue);
+		
+		MiddleResult result = state.middle.loadSlotInheritanceLevel(area, slotAlias, LoadSlotHint.area | LoadSlotHint.superAreas | LoadSlotHint.subAreas, skipDefault, parent, inheritanceLevel, slot, loadValue);
 		if (result.isNotOK()) {
-			
-			result = state.middle.loadSlotInheritanceLevel(area, slotAlias, LoadSlotHint.subAreas, skipDefault, parent, inheritanceLevel, slot, loadValue);
-			if (result.isNotOK()) {
-				throwError("server.messageSlotNotFoundOrNotInheritable");
-			}
+			throwError("server.messageSlotNotFoundOrNotInheritable");
 		}
-
+		
 		if (slot.ref == null) {
 			return null;
 		}

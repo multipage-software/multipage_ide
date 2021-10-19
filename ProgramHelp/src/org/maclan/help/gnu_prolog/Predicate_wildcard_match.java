@@ -8,8 +8,6 @@ package org.maclan.help.gnu_prolog;
 
 import java.util.regex.Pattern;
 
-import org.multipage.util.j;
-
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.ExecuteOnlyCode;
 import gnu.prolog.vm.Interpreter;

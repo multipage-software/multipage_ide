@@ -26,9 +26,9 @@ maclan(tag('GET'), type('Simple')).
 maclan(tag('A'), type('Complex')).
 maclan(tag('ANCHOR'), type('Complex')).
 maclan(tag('REM'), type('Complex')).
-maclan(tag('IF'), type('ComplexConditions')).
-maclan(tag('ELSEIF'), type('ComplexConditions')).
-maclan(tag('ELSE'), type('ComplexConditions')).
+maclan(tag('IF'), type('ComplexCondition')).
+maclan(tag('ELSEIF'), type('ComplexCondition')).
+maclan(tag('ELSE'), type('ComplexCondition')).
 maclan(tag('PROCEDURE'), type('Complex')).
 maclan(tag('CALL'), type('SimpleOrComplex')).
 maclan(tag('PACK'), type('Complex')).
@@ -301,6 +301,7 @@ maclan(tag('PRAGMA'), property('php'), type('Boolean')).
 maclan(tag('PRAGMA'), property('tabulator'), type('String')).
 maclan(tag('PRAGMA'), property('webInterface'), type('FolderPath')).
 maclan(tag('PRAGMA'), property('metaCharset'), type('String')).
+maclan(tag('PRAGMA'), property('metaInfo'), type('String')).
 
 maclan(tag('UNZIP'), property('areaId'), type('AreaId')).
 maclan(tag('UNZIP'), property('areaAlias'), type('AreaAlias')).

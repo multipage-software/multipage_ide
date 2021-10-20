@@ -175,6 +175,58 @@ public class SearchDialog extends JDialog {
      * AreasModel reference.
      */
 	private AreasModel model;
+	
+	/**
+	 * Area coordinates cell.
+	 */
+	private static class AreaCoordinatesTableItem  {
+		
+		AreaCoordinates coordinate;
+	
+		/**
+		 * Constructor.
+		 * @param coordinate
+		 */
+		public AreaCoordinatesTableItem(AreaCoordinates coordinate) {
+			
+			this.coordinate = coordinate;
+		}
+	
+		/* (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			
+			if (coordinate != null) {
+				
+				Area parentArea = coordinate.getParentArea();
+				
+				if (parentArea != null) {
+					return parentArea.getDescriptionForDiagram();
+				}
+			}
+			
+			return "";
+		}
+		
+		/**
+		 * Convert to decorated string.
+		 */
+		public String toDecoratedString() {
+			
+			if (coordinate != null) {
+				
+				Area parentArea = coordinate.getParentArea();
+				
+				if (parentArea != null) {
+					return parentArea.getDescriptionForcedAndDecorated(true);
+				}
+			}
+			
+			return "";
+		}
+	}
 
 	/**
 	 * Add popup trayMenu.
@@ -1050,60 +1102,5 @@ public class SearchDialog extends JDialog {
 			// Create cell renderer for parent areas.
 			Utility.setTableCellRenderer(resultsTable, 4, value -> isSelected -> hasFocus -> row -> ((AreaCoordinatesTableItem) value).toDecoratedString());
 		}
-	}
-}
-
-/**
- * 
- * @author
- *
- */
-class AreaCoordinatesTableItem  {
-	
-	AreaCoordinates coordinate;
-
-	/**
-	 * Constructor.
-	 * @param coordinate
-	 */
-	public AreaCoordinatesTableItem(AreaCoordinates coordinate) {
-		
-		this.coordinate = coordinate;
-	}
-
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		
-		if (coordinate != null) {
-			
-			Area parentArea = coordinate.getParentArea();
-			
-			if (parentArea != null) {
-				return parentArea.getDescriptionForDiagram();
-			}
-		}
-		
-		return "";
-	}
-	
-
-	/**
-	 * Convert to decorated string.
-	 */
-	public String toDecoratedString() {
-		
-		if (coordinate != null) {
-			
-			Area parentArea = coordinate.getParentArea();
-			
-			if (parentArea != null) {
-				return parentArea.getDescriptionForcedAndDecorated(true);
-			}
-		}
-		
-		return "";
 	}
 }

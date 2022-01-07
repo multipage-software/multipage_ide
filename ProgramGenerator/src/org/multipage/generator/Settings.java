@@ -15,8 +15,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -36,6 +34,8 @@ import org.maclan.server.ProgramServlet;
 import org.multipage.basic.ProgramBasic;
 import org.multipage.gui.CallbackNoArg;
 import org.multipage.gui.Images;
+import org.multipage.gui.StateInputStream;
+import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
@@ -61,7 +61,7 @@ public class Settings extends JDialog {
 	private static boolean isRemovePartiallyRenderedPages;
 	private static int httpPortNumber;
 	private static boolean commonResourceFileNames;
-	private static boolean enableDebugging;
+	private static boolean enableDebugging = false;
 	
 	/**
 	 * Set maximum text resource size.
@@ -105,6 +105,9 @@ public class Settings extends JDialog {
 		
 		// Enable @META tags in the area server.
 		ProgramServlet.enableMetaTags(enable);
+		
+		// Set servlet listener that can check if debugging is enabled.
+		ProgramServlet.setDebuggingEnabledListener(() -> enableDebugging);
 	}
 	
 	/**
@@ -143,7 +146,7 @@ public class Settings extends JDialog {
 		textResourcesRenderFolder.setText("");
 		textMaxTextResourceSize.setText("1048576");
 		textExtractCharacters.setText("100");
-		textPortNumber.setText("80");
+		textPortNumber.setText("8080");
 		//MiddleUtility.webInterfaceDir = "";
 		//MiddleUtility.databaseAccess = "";
 		commonResourceFileNames = false;
@@ -155,7 +158,7 @@ public class Settings extends JDialog {
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
-	public static void serializeData(ObjectInputStream inputStream)
+	public static void serializeData(StateInputStream inputStream)
 					throws IOException, ClassNotFoundException {
 		
 		// Read maximum text resource size.
@@ -168,7 +171,7 @@ public class Settings extends JDialog {
 		//MiddleUtility.databaseAccess = inputStream.readUTF();
 		commonResourceFileNames = inputStream.readBoolean();
 		enableDebugging = inputStream.readBoolean();
-		setEnableDebugging(enableDebugging);  // This command sets a listener for servlet
+		setEnableDebugging(false);  // This command sets a listener for servlet
 	}
 
 	/**
@@ -176,7 +179,7 @@ public class Settings extends JDialog {
 	 * @param outputStream
 	 * @throws IOException
 	 */
-	public static void serializeData(ObjectOutputStream outputStream)
+	public static void serializeData(StateOutputStream outputStream)
 					throws IOException {
 
 		// Write maximum text resource size.
@@ -397,7 +400,7 @@ public class Settings extends JDialog {
 		
 		// If application must restart, inform user.
 		if (restartRequired) {
-			MiddleUtility.saveServersProperties();
+			MiddleUtility.saveServerProperties();
 			Utility.show(this, "org.multipage.generator.messageRestartApplication");
 		}
 		

@@ -73,7 +73,7 @@ import org.multipage.util.j;
  * @author
  *
  */
-public class AreasTreeEditorPanel extends JPanel implements TabItemInterface  {
+public class AreasTreeEditorPanel extends JPanel implements TabItemInterface, Update  {
 	
 	/**
 	 * Version.
@@ -849,7 +849,6 @@ public class AreasTreeEditorPanel extends JPanel implements TabItemInterface  {
 		    	
 		    	onSelectedTreeItem();
 		    	
-		    	j.log("TRANSMITTED 9 showAreasProperties %s", selectedTreeAreaIds.toString());
 		    	// Propagate the "show areas' properties" event.
 		    	ConditionalEvents.transmitRenewed(AreasTreeEditorPanel.this, Signal.showAreasProperties, selectedTreeAreaIds);
 		    }
@@ -866,17 +865,18 @@ public class AreasTreeEditorPanel extends JPanel implements TabItemInterface  {
 				
 				onSelectedListItem();
 				
-				j.log("TRANSMITTED 10 showAreasProperties %s", selectedListAreaIds.toString());
 		    	// Propagate the "show areas' properties" event.
 		    	ConditionalEvents.transmitRenewed(AreasTreeEditorPanel.this, Signal.showAreasProperties, selectedListAreaIds);
 			}
 		});
 		
 		// "Update all request" event receiver.
-		ConditionalEvents.receiver(this, Signal.updateAll, message -> {
+		ConditionalEvents.receiver(this, Signal.updateAreasTreeEditor, message -> {
 			
-			// Disable the signal temporarily.
-			Signal.updateAll.disable();
+			// Check if the message determines itself. If so, avoid infinite loop of messages.
+			if (message.isSelfDetermined(AreasTreeEditorPanel.this)) {
+				return;
+			}
 			
 			// Reload editor.
 			reload();
@@ -888,10 +888,8 @@ public class AreasTreeEditorPanel extends JPanel implements TabItemInterface  {
 				setAllSelection(false);
 			}
 			
-			// Enable the signal.
-			SwingUtilities.invokeLater(() -> {
-				Signal.updateAll.enable();
-			});
+			// TODO: debug
+			//ProgramGenerator.machineUpdate(ProgramGenerator.GUI_GROUP_ALL);
 		});
 		
 		// "Update GUI" event receiver.
@@ -1468,9 +1466,6 @@ public class AreasTreeEditorPanel extends JPanel implements TabItemInterface  {
 				// Restore selection.
 				list.setSelectedIndices(selectedIndices);
 			}
-			
-			// Transmit the "update all" signal.
-			ConditionalEvents.transmit(this, Signal.updateAll);
 		});
 	}
 	

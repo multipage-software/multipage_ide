@@ -16,6 +16,25 @@ public enum Signal implements EventCondition {
 	// Enables target signal.
 	_enableTargetSignal,
 	
+	// Update areas' model for the GUI.
+	updateAreasModel(
+			SignalType.guiChangeByUser
+			),
+	// Update GUI components.
+	updateAreasDiagram(
+			SignalType.guiChangeByUser
+			),
+	updateAreasTreeEditor(
+			SignalType.guiChangeByUser
+			),
+	updateMonitorPanel(
+			SignalType.guiChangeByUser
+			),
+	
+	updateAreasProperties,
+	// TODO: remove it
+	updateAll,
+	
 	// Load diagrams on application start up.
 	loadDiagrams(
 			SignalType.areaViewStateChange,
@@ -111,19 +130,6 @@ public enum Signal implements EventCondition {
 			SignalType.guiChange
 			),
 	
-	// Request update of all information.
-	updateAll(
-			SignalType.areaModelChange,
-			SignalType.slotModelChange,
-			SignalType.areaViewStateChange,
-			SignalType.slotViewStateChange,
-			SignalType.guiStateChange,
-			SignalType.areaViewChange,
-			SignalType.slotViewChange,
-			SignalType.guiStateChange,
-			SignalType.guiChange
-			),
-	
 	// Redraw GUI.
 	updateGui(
 			SignalType.areaViewStateChange,
@@ -182,6 +188,18 @@ public enum Signal implements EventCondition {
 	// Enable or disable debugging.
 	debugging(
 			SignalType.serverStateChange
+			),
+	stepLog(
+			SignalType.guiStateChange,
+			SignalType.guiChange
+			),
+	runLogging(
+			SignalType.guiStateChange,
+			SignalType.guiChange
+			),
+	breakLogging(
+			SignalType.guiStateChange,
+			SignalType.guiChange
 			),
 	// Update of area sub relation.
 	updateAreaSubRelation,
@@ -259,8 +277,6 @@ public enum Signal implements EventCondition {
 	updateAreaFileNames,
 	// When area tree was created.
 	createAreasTree,
-	// Update whole model.
-	updateAreasModel,
 	// On new basic area (database changed).
 	newBasicArea,
 	// Transfer area with drag and drop.
@@ -303,11 +319,6 @@ public enum Signal implements EventCondition {
 	 * Signal is included in the following signal types.
 	 */
 	private HashSet<SignalType> includedInTypes = new HashSet<SignalType>();
-	
-	/**
-	 * Priority of the signal.
-	 */
-	private int priority = ConditionalEvents.MIDDLE_PRIORITY;
 	
 	/**
 	 * Enable or disable this signal.
@@ -416,28 +427,15 @@ public enum Signal implements EventCondition {
 	}
 	
 	/**
-	 * Set priority.
-	 */
-	@Override
-	public void setPriority(int priority) {
-		
-		this.priority = priority;
-	}
-	
-	/**
-	 * Get priority.
-	 */
-	@Override
-	public int getPriority() {
-		
-		return priority;
-	}
-	
-	/**
 	 * Get types.
 	 */
 	public HashSet<SignalType> getTypes() {
 		
 		return includedInTypes;
+	}
+
+	static Signal update(Class<AreasTreeEditorPanel> class1) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -41,8 +41,8 @@ public class Message {
 	// Receive time.
 	public Long receiveTime;
 	
-	// Event handler key.
-	public Object key;
+	// Reference to the object that receives the message.
+	public Object receiverObject;
 	
 	/**
 	 * Dump message.
@@ -294,8 +294,14 @@ public class Message {
 	 * @return
 	 */
 	public <T> T getRelatedInfo() {
-		
+				
 		try {
+			
+			if (relatedInfo == null) {
+				return null;
+			}
+			
+			@SuppressWarnings("unchecked")
 			T info = (T) relatedInfo;
 			return info;
 		}
@@ -313,11 +319,43 @@ public class Message {
 	public <T> T getAdditionalInfo(int index) {
 		
 		try {
+			
+			int length = additionalInfos.length;
+			if (index >= length || additionalInfos[index] == null) {
+				return null;
+			}
+			
+			@SuppressWarnings("unchecked")
 			T info = (T) additionalInfos[index];
 			return info;
 		}
 		catch (Throwable e) {
 			return null;
 		}
+	}
+	
+	/**
+	 * Check if the message determines itself.
+	 * @param receivingObject
+	 * @return
+	 */
+	public boolean isSelfDetermined(Object receivingObject) {
+		
+		// Initialize output value.
+		boolean isSelfDetermined = false;
+		
+		// Try to get event source.
+		if (source instanceof EventSource) {
+			
+			// Get event source..
+			EventSource eventSource = (EventSource) source;
+			
+			// Get the initiator message.
+			Message initiatorMessage = eventSource.getInitiatorMessage();
+			
+			// TODO: match this message with previous messages.
+		}
+		
+		return isSelfDetermined;
 	}
 }

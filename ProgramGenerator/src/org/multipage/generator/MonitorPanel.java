@@ -25,7 +25,7 @@ import javafx.scene.web.WebView;
  * @author user
  *
  */
-public class MonitorPanel extends Panel implements TabItemInterface {
+public class MonitorPanel extends Panel implements TabItemInterface, Update {
 
 	/**
 	 * Version
@@ -147,22 +147,22 @@ public class MonitorPanel extends Panel implements TabItemInterface {
 	private void setListeners() {
 		
 		// The "update all" request receiver.
-		ConditionalEvents.receiver(this, Signal.updateAll, message -> {
+		ConditionalEvents.receiver(this, Signal.updateMonitorPanel, message -> {
+			
+			// Check if the message determines itself. If so, avoid infinite loop of messages.
+			if (message.isSelfDetermined(MonitorPanel.this)) {
+				return;
+			}
 			
 			// Reload content of the monitor.
 			if (isShowing()) {
 				
-				// Disable the signal temporarily.
-				Signal.updateAll.disable();
-				
 				// Reload the content.
 				reloadContent();
-				
-				// Enable the signal.
-				SwingUtilities.invokeLater(() -> {
-					Signal.updateAll.enable();
-				});
 			}
+			
+			// TODO: debug
+			//ProgramGenerator.machineUpdate(ProgramGenerator.GUI_GROUP_ALL);
 		});
 	}
 	

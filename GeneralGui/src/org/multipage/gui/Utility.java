@@ -57,9 +57,11 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.Charset;
+import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -552,7 +554,7 @@ public class Utility {
 			button.setToolTipText(Resources.getString(tooltip));
 		}
 	}
-
+	
 	/**
 	 * Performs label localization.
 	 * @param label
@@ -561,7 +563,7 @@ public class Utility {
 		
 		label.setText(Resources.getString(label.getText()));
 	}
-
+	
 	/**
 	 * Performs check box localization.
 	 * @param checkBox
@@ -895,6 +897,15 @@ public class Utility {
 	public static void show2(Component component, String text) {
 
 		JOptionPane.showMessageDialog(component, text);
+	}
+
+	/**
+	 * Show message.t
+	 * @param text
+	 */
+	public static void show2(String text) {
+
+		JOptionPane.showMessageDialog(null, text);
 	}
 	
 	/**
@@ -3866,21 +3877,21 @@ public class Utility {
 			// Wait given time span for process termination.
 			if (timeout != null) {
 				process.waitFor(timeout, unit);
-			}
 	        
-	        // Get its stdout and read the output text.
-	        standardOutput = process.getInputStream();
-			reader = new BufferedReader(new InputStreamReader(standardOutput));
-			
-			while (true) {
+		        // Get its stdout and read the output text.
+		        standardOutput = process.getInputStream();
+				reader = new BufferedReader(new InputStreamReader(standardOutput));
 				
-				String line = reader.readLine();
-				if (line == null) {
-					break;
+				while (true) {
+					
+					String line = reader.readLine();
+					if (line == null) {
+						break;
+					}
+					
+					text.append(line);
+					text.append("\n");
 				}
-				
-				text.append(line);
-				text.append("\n");
 			}
 		}
 		catch (Exception e) {
@@ -3913,6 +3924,33 @@ public class Utility {
 		}
         
 		return text.toString();
+	}
+	
+	/**
+	 * Run executable JAR using java.exe.
+	 * @param workingDirectory
+	 * @param executableJarPath
+	 * @param parameters
+	 */
+	public static String runExecutableJar(String workingDirectory, String executableJarPath, String [] parameters)
+			throws Exception {
+		
+		// Get Java home directory.
+		String javaExePath = System.getProperty("java.home") + File.separatorChar + "bin" + File.separatorChar + "java.exe";
+		
+		// Compile java execution command.
+		StringBuilder javaCommand = new StringBuilder();
+		javaCommand.append('\"').append(javaExePath).append("\" -jar \"").append(executableJarPath).append('\"');
+		
+		for (String parameter : parameters) {
+			javaCommand.append(" \"").append(parameter).append('\"');
+		}
+		
+		// TODO: do it like following well stated command "C:\library\graalvm-ce-java17-21.3.0\bin\java.exe" -jar "C:\Users\vacla\AppData\Local\Temp\ProgramGenerator_2930131809177417903\AddInLoader.jar"
+		
+		// Run java command.
+		String result = runExecutable(workingDirectory, javaCommand.toString(), null, TimeUnit.SECONDS);
+		return result;
 	}
 	
 	/**
@@ -5203,7 +5241,8 @@ public class Utility {
 		byte [] bytesToFind = text.getBytes(charset);
 		
 		
-		// Read bytes from the input stream. If there is any mismatch, throw an exception.
+		// Read bytes from the input stream. If there is any mismatch, throw an
+		// exception.
 		for (byte checkByte : bytesToFind) {
 			byte readByte = (byte) inputStream.read();
 			
@@ -5214,6 +5253,171 @@ public class Utility {
 		}
 	}
 	
+	/**
+	 * Copy source directory to a target JAR file system.
+	 * @param sourcePath
+	 * @param destinationFoldersPath
+	 * @param destinationFileSystem 
+	 * @throws Exception
+	 */
+	public static void copyDirToJar(Path sourcePath, String [] destinationFoldersPath, FileSystem destinationFileSystem)
+			throws Exception {
+		
+		// Get destination file system path separator.
+		String destinationSeparator = destinationFileSystem.getSeparator();
+		
+		// Compile destination path.
+		Path destinationPath = destinationFileSystem.getPath(destinationSeparator, destinationFoldersPath);
+		
+		// Delegate the call.
+		copyFromDirToJar(sourcePath, destinationPath, destinationFileSystem);
+	}
+	
+	/**
+	 * Copy source directory to a target JAR file system.
+	 * @param sourcePath
+	 * @param destinationPath
+	 * @param destinationFileSystem
+	 */
+	private static void copyFromDirToJar(Path sourcePath, Path destinationPath, FileSystem destinationFileSystem)
+			throws Exception {
+		
+		// Create destination directory if it doesn't exist.
+	    if (!Files.exists(destinationPath)) {
+	    	Files.createDirectories(destinationPath);
+	    }
+	    
+	    // If the source and destination paths designate files, copy the source
+	    // file directly to the destination file.
+	    if (Files.isRegularFile(sourcePath) && Files.isRegularFile(destinationPath)) {
+	    	Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
+	    }
+	    
+	    // List child source paths.
+	    Obj<Exception> exception = new Obj<Exception>();
+	    Files.list(sourcePath).forEachOrdered(sourceSubPath -> {
+	    	try {
+	    		Path fileOrFolder = sourceSubPath.getFileName();
+	    		Path destinationSubPath = destinationFileSystem.getPath(destinationPath.toString(), fileOrFolder.toString());
+	    		
+	    		// Copy the directory or the file.
+	    	    if (Files.isDirectory(sourceSubPath)) {
+	    	        copyFromDirToJar(sourceSubPath, destinationSubPath, destinationFileSystem);
+	    	    }
+	    	    else {
+	    			Files.copy(sourceSubPath, destinationSubPath, StandardCopyOption.REPLACE_EXISTING);
+	    	    }
+	    	}
+	    	catch (Exception e) {
+	    		exception.ref = e;
+	    	}
+	    });
+	    
+	    // Throw exception.
+	    if (exception.ref != null) {
+	    	throw exception.ref;
+	    }
+	}
+	
+	/**
+	 * Copy JAR source directory to a target JAR file system.
+	 * @param sourcePath
+	 * @param destinationPath
+	 * @param fileSystemLoader
+	 * @throws IOException 
+	 */
+	public static void copyFromJarToJar(Path sourcePath, Path destinationPath, FileSystem destinationFileSystem)
+			throws Exception {
+		
+		// Create destination directory if it doesn't exist.
+	    if (!Files.exists(destinationPath)) {
+	    	Files.createDirectories(destinationPath);
+	    }
+	    
+	    // If the source and destination paths designate files, copy the source
+	    // file directly to the destination file.
+	    Obj<Exception> exception = new Obj<Exception>();
+	    if (Files.isRegularFile(sourcePath) && Files.isRegularFile(destinationPath)) {
+	    	Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
+	    	return;
+	    }
+	    
+	    // List child source paths.
+	    Files.list(sourcePath).forEachOrdered(sourcePathEntry -> {
+	    	
+	    	try {
+	    		Path fileOrFolder = sourcePathEntry.getFileName();
+	    		Path newDestination = destinationFileSystem.getPath(destinationPath.toString(), fileOrFolder.toString());
+	    		
+	    		// Copy the directory or the file.
+	    	    if (Files.isDirectory(sourcePathEntry)) {
+	    	        copyFromDirToJar(sourcePathEntry, newDestination, destinationFileSystem);
+	    	    }
+	    	    else {
+	    			Files.copy(sourcePathEntry, newDestination, StandardCopyOption.REPLACE_EXISTING);
+	    	    }
+	    	}
+	    	catch (Exception e) {
+	    		exception.ref = e;
+	    	}
+	    });
+	    
+	    // Throw exception.
+	    if (exception.ref != null) {
+	    	throw exception.ref;
+	    }
+	}
+	
+	/**
+	 * Returns true if this application is zipped in JAR file.
+	 * @return
+	 */
+	public static boolean isApplicationZipped() {
+		
+		// Get application path.
+		URL applicationUrl = Utility.class.getProtectionDomain().getCodeSource().getLocation();
+		String applicationPathName = applicationUrl.getPath();
+		File fileOrFolder = new File(applicationPathName);
+
+		// If the path is a file return true.
+		if (fileOrFolder.exists() && fileOrFolder.isFile()) {
+			return true;
+		}
+		
+		// Otherwise return false.
+		return false;
+	}
+	
+	/**
+	 * Returns true if this application is zipped in JAR file.
+	 * @return
+	 */
+	public static File getApplicationJarFile() {
+		
+		// Get application file.
+		URL applicationUrl = Utility.class.getProtectionDomain().getCodeSource().getLocation();
+		String applicationPathName = applicationUrl.getPath();
+		
+		File applicationFile = new File(applicationPathName);
+		
+		// Otherwise return false.
+		return applicationFile;
+	}
+	
+	/**
+	 * Get application path.
+	 * @return
+	 * @throws Exception 
+	 */
+	public static String getApplicationPath(Class<?> mainClass)
+			throws Exception {
+		
+		// Get application file.
+		URL applicationUrl = mainClass.getProtectionDomain().getCodeSource().getLocation();
+		String applicationPath = new File(applicationUrl.getPath()).getCanonicalPath();
+		return applicationPath;
+	}
+
 	/**
 	 * Check occurrence of XML header in the input stream.
 	 * @param inputStream

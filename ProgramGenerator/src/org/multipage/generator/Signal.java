@@ -32,8 +32,9 @@ public enum Signal implements EventCondition {
 			),
 	
 	updateAreasProperties,
-	// TODO: remove it
-	updateAll,
+	
+	// TODO: finish the definition
+	terminate,
 	
 	// Load diagrams on application start up.
 	loadDiagrams(

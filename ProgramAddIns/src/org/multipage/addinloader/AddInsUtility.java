@@ -7,6 +7,7 @@
 
 package org.multipage.addinloader;
 
+import java.awt.Component;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,12 +17,16 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JTree;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
 
 /**
  * Miscellaneous helper functions.
@@ -241,6 +246,9 @@ public class AddInsUtility {
 		
 		String outputString = null;
 		
+		// Trim identifier.
+		identifier = identifier.trim();
+		
 		// Search in list of named properties.
 		for (NamedProperties item : namedProperties) {			
 			
@@ -343,8 +351,10 @@ public class AddInsUtility {
 	 * @param key - Resource bundle key.
 	 */
 	public static void localize(JFrame frame) {
-
-		frame.setTitle(getString(frame.getTitle()));
+		
+		String title = frame.getTitle();
+		title = getString(title);
+		frame.setTitle(title);
 	}
 
 	/**
@@ -353,7 +363,9 @@ public class AddInsUtility {
 	 */
 	public static void localize(JLabel label) {
 		
-		label.setText(getString(label.getText()));
+		String caption = label.getText();
+		caption = getString(caption);
+		label.setText(caption);
 	}
 	
 	/**
@@ -373,5 +385,210 @@ public class AddInsUtility {
 		if (tooltip != null && !tooltip.isEmpty()) {
 			button.setToolTipText(getString(tooltip));
 		}
+	}
+	
+	/**
+	 * Show message.
+	 * @param parent
+	 * @param message
+	 * @param parameters
+	 */
+	public static void show(Component parent, String message,
+			Object ... parameters) {
+
+		message = String.format(getString(message), parameters);
+		JOptionPane.showMessageDialog(parent, message);
+	}
+	
+	/**
+	 * Run executable file using given command that is placed in directory
+	 * designated by "path" argument.
+	 * @param workingDirectoryPath
+	 * @param command
+	 * @param timeout
+	 * @param unit
+	 * @return
+	 * @throws Exception 
+	 */
+	public static String runExecutable(String workingDirectoryPath, String command, Integer timeout, TimeUnit unit)
+			throws Exception {
+		
+		StringBuilder text = new StringBuilder("");
+		Exception exception = null;
+		
+		// Check working directory.
+		File workingDirectory = new File(workingDirectoryPath);
+		if (!workingDirectory.isDirectory()) {
+			throw new Exception(String.format(
+					getString("org.multipage.gui.messageUnknownWorkingDirectoryForExecutable"),
+					workingDirectoryPath,
+					command));
+		}
+		
+		InputStream standardOutput = null;
+		BufferedReader reader = null;
+		try {
+			
+			// Run the command as a process and wait for it.
+			Process process = Runtime.getRuntime().exec(command, null, workingDirectory);
+			
+			// Wait given time span for process termination.
+			if (timeout != null && unit != null) {
+				process.waitFor(timeout, unit);
+	        
+		        // Get its stdout and read the output text.
+		        standardOutput = process.getInputStream();
+				reader = new BufferedReader(new InputStreamReader(standardOutput));
+				
+				while (true) {
+					
+					String line = reader.readLine();
+					if (line == null) {
+						break;
+					}
+					
+					text.append(line);
+					text.append("\n");
+				}
+			}
+			else {
+				standardOutput = process.getInputStream();
+			}
+		}
+		catch (Exception e) {
+			exception = e;
+		}
+		finally {
+			
+			// Close stdout.
+			if (standardOutput != null) {
+				try {
+					standardOutput.close();
+				}
+				catch (Exception e) {
+				}
+			}
+			
+			// Close reader.
+			if (reader != null) {
+				try {
+					reader.close();
+				}
+				catch (Exception e) {
+				}
+			}
+		}
+		
+		// If there is an exception, throw it.
+		if (exception != null) {
+			throw exception;
+		}
+		
+		return text.toString();
+	}
+	
+	/**
+	 * Run executable file using given command that is placed in directory
+	 * designated by "path" argument.
+	 * @param workingDirectory
+	 * @param command
+	 * @return
+	 * @throws Exception 
+	 */
+	public static String runExecutable(String workingDirectory, String command)
+			throws Exception {
+		
+		// Delegate the call.
+		String outputString = runExecutable(workingDirectory, command, null, null);
+		return outputString;
+	}
+	
+	/**
+	 * Run executable JAR using java.exe.
+	 * @param workingDirectory
+	 * @param executableJarPath
+	 * @param parameters
+	 */
+	public static String runExecutableJar(String workingDirectory, String executableJarPath, String [] parameters)
+			throws Exception {
+		
+		// Get Java home directory.
+		String javaExePath = System.getProperty("java.home") + File.separatorChar + "bin" + File.separatorChar + "java.exe";
+		
+		// Compile java execution command.
+		StringBuilder javaCommand = new StringBuilder();
+		javaCommand.append('\"').append(javaExePath).append("\" -jar \"").append(executableJarPath).append('\"');
+		
+		// Add parameters.
+		if (parameters != null) {
+			for (String parameter : parameters) {
+				javaCommand.append(" \"").append(parameter).append('\"');
+			}
+		}
+		
+		// Run java command.
+		String result = runExecutable(workingDirectory, javaCommand.toString());
+		return result;
+	}
+	
+	/**
+	 * Run executable JAR using java.exe.
+	 * @param workingDirectory
+	 * @param executableJarPath
+	 */
+	public static String runExecutableJar(String workingDirectory, String executableJarPath)
+			throws Exception {
+		
+		// Delegate the call.
+		String outputString = runExecutableJar(workingDirectory, executableJarPath, null);
+		return outputString;
+	}
+
+	/**
+	 * Expand / collapse all.
+	 * @param tree
+	 * @param expand
+	 */
+	public static void expandAll(JTree tree, boolean expand) {
+		
+		TreeModel model = tree.getModel();
+		if (model != null) {
+			TreePath parent = new TreePath(model.getRoot());
+			expandAll(tree, model, parent, expand);
+		}
+	}
+	
+	/**
+	 * Expand / collapse all.
+	 * @param tree
+	 * @param model
+	 * @param parent
+	 * @param expand
+	 */
+	private static void expandAll(JTree tree, TreeModel model, TreePath parent,
+			boolean expand) {
+		
+		// Check input values.
+		if (tree == null || model == null || parent == null) {
+			return;
+		}
+		
+		// Traverse children
+		Object node = parent.getLastPathComponent();
+		int count = model.getChildCount(node);
+		
+		for (int index = 0; index < count; index++) {
+
+			Object child = model.getChild(node, index);
+			TreePath path = parent.pathByAddingChild(child);
+			expandAll(tree, model, path, expand);
+	    }
+
+	    // Expansion or collapse must be done bottom-up
+	    if (expand) {
+	        tree.expandPath(parent);
+	    } else {
+	        tree.collapsePath(parent);
+	    }
 	}
 }

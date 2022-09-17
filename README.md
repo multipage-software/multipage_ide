@@ -12,7 +12,7 @@ efficient source code can reduce power consumpsion of computers running their co
 Open source projects that facilitate application development emphasize rapidness of writing source
 code and better expression of algorithms. They make it easier to implement ideas of us, developers.
 Many popular computer languages help us in this endeavor. The question is, what if we can
-have a common framework with macrolanguage and templates used for different kinds of software
+have a framework with macrolanguage and templates used for different kinds of software
 problems? An example of such framework for front end is an open source integrated development
 environment, the Multipage IDE, available at www.multipage-software.org with a macrolanguage named
 Maclan. It does not use folders and source code files to build applications, such as a conventional

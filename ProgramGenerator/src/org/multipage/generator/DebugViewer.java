@@ -12,6 +12,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -22,11 +23,17 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.net.URI;
+import java.nio.channels.AsynchronousServerSocketChannel;
+import java.nio.channels.AsynchronousSocketChannel;
 import java.util.LinkedList;
+import java.util.List;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -35,36 +42,46 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.JToolBar;
 import javax.swing.ListCellRenderer;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SpringLayout;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.StyleSheet;
 
+import org.maclan.server.AreaServerSignal;
 import org.maclan.server.DebugListener;
-import org.maclan.server.XdebugListener;
-import org.maclan.server.XdebugPacket;
+import org.maclan.server.DebugListenerSession;
+import org.maclan.server.XdebugListenerOld;
+import org.maclan.server.XdebugPacketOld;
 import org.multipage.gui.AlertWithTimeout;
 import org.multipage.gui.Callback;
+import org.multipage.gui.ConditionalEvents;
 import org.multipage.gui.Images;
 import org.multipage.gui.RendererJLabel;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
+import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.Utility;
 import org.multipage.util.DOM;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
 import org.multipage.util.j;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * This is GUI for debugging
- * @author dvchance
+ * @author vakol
  *
  */
 public class DebugViewer extends JFrame {
@@ -74,6 +91,11 @@ public class DebugViewer extends JFrame {
 	 */
 	private static final long serialVersionUID = 1L;
 	
+	/**
+	 * GUI watchdog timeout in ms.
+	 */
+	private static final int WATCHDOG_TIMEOUT_MS = 1000;
+	
 	// $hide>>$
 	/**
 	 * Window boundary
@@ -81,11 +103,30 @@ public class DebugViewer extends JFrame {
 	private static Rectangle bounds;
 	
 	/**
+	 * Text constants that are dislpayed with the dialog.
+	 */
+	private static String textConnected = "org.multipage.generator.textDebuggerConnected";
+    private static String textNotConnected = "org.multipage.generator.textDebuggerNotConnected";
+    
+    /**
+     * Load text resources.
+     */
+    private static void loadTextResources() {
+    		
+    	// Load static texts from text resources.
+		textConnected = Resources.getString(textConnected);
+		textNotConnected = Resources.getString(textNotConnected);
+    }
+    
+	/**
 	 * Set default data.
 	 */
 	public static void setDefaultData() {
 		
 		bounds = new Rectangle();
+		
+		// Load static texts from text resources.
+		loadTextResources();
 	}
 	
 	/**
@@ -98,6 +139,9 @@ public class DebugViewer extends JFrame {
 			throws IOException, ClassNotFoundException {
 		
 		bounds = Utility.readInputStreamObject(inputStream, Rectangle.class);
+		
+		// Load static texts from text resources.
+		loadTextResources();
 	}
 	
 	/**
@@ -111,14 +155,36 @@ public class DebugViewer extends JFrame {
 	}
 	
 	/**
+	 * Debug viewer singleton object.
+	 */
+    private static DebugViewer instance;
+    
+    /**
+     * Get debug viewer singleton.
+     * @param parent 
+     * @return
+     */
+    public static DebugViewer getInstance(Component parent) {
+        if (instance == null) {
+            instance = new DebugViewer(parent);
+        }
+        return instance;
+    }
+    
+    /**
+     * Get debug viewer singleton.
+     * @return
+     */
+	public static DebugViewer getInstance() {
+		
+		// Delegate the call.
+		return getInstance(null);
+	}
+	
+	/**
 	 * Header to display
 	 */
 	private String header;
-	
-	/**
-	 * URI to get the source code.
-	 */
-	private String uriRequestSourceCode = null;
 	
 	/**
 	 * Lines of code to display or null if there is nothing to display
@@ -146,6 +212,103 @@ public class DebugViewer extends JFrame {
 	private DefaultListModel<Node> listStackModel;
 	
 	/**
+	 * Class for log items.
+	 */
+	private static class LogMessage extends LoggingDialog.LoggedMessage {
+		
+		/**
+		 * List of log messages.
+		 */
+		private static LinkedList<LogMessage> listLoggedMessages = new LinkedList<LogMessage>();
+		
+		/**
+		 * Filter string.
+		 */
+		private static String filterString = "*";
+		
+		/**
+		 * Filter flags.
+		 */
+		private static boolean caseSensitive = false;
+		private static boolean wholeWords = false;
+		private static boolean exactMatch = false;
+		
+		/**
+		 * Constructor.
+		 * @param message
+		 */
+		public LogMessage(String message) {
+			super(message);
+		}
+		
+		/**
+		 * Add new log message.
+		 * @param message
+		 */
+		public static void addLogMessage(String message) {
+			
+			LogMessage logMessage = new LogMessage(message);
+			listLoggedMessages.addLast(logMessage);
+		}
+		
+		/**
+		 * Display HTML log.
+		 * @param textPane
+		 */
+		public static void displayHtmlLog(JTextPane textPane) {
+			
+			String logContent = "";
+			
+			for (LogMessage logMessage : listLoggedMessages) {
+				
+				String messageText = logMessage.getText();
+				
+				// Filter messages.
+				if (!filter(messageText)) {
+					continue;
+				}
+				
+				// Append message text.
+				logContent += messageText + "<br/>";
+			}
+			
+			// Wrap content with HTML tags.
+			logContent = String.format("<html>%s</html>", logContent);
+			textPane.setText(logContent);
+		}
+		
+		/**
+		 * Returns false if the message is filtered or true if the message passes.
+		 * @param messageText
+		 * @return
+		 */
+		private static boolean filter(String messageText) {
+
+			boolean matches = Utility.matches(messageText, filterString, caseSensitive, wholeWords, exactMatch);
+			
+			// TODO: <---DEBUGGER Check filter match.
+			j.log("FILTER MATCH %b", matches);
+			
+			return matches;
+		}
+
+		/**
+		 * Set filter and display filtered log messages.
+		 * @param filterString
+		 * @param caseSensitive
+		 * @param wholeWords
+		 * @param exactMatch
+		 */
+		public static void setFulltextFilter(String filterString, boolean caseSensitive, boolean wholeWords, boolean exactMatch) {
+			
+			LogMessage.filterString = !filterString.isEmpty() ?  filterString : "*";
+			LogMessage.caseSensitive = caseSensitive;
+			LogMessage.wholeWords = wholeWords;
+			LogMessage.exactMatch = exactMatch;
+		}
+	}
+	
+	/**
 	 * Display code callbacks
 	 */
 	private class DisplayCodeInterface {
@@ -157,11 +320,31 @@ public class DebugViewer extends JFrame {
 			return "";
 		}
 	}
-	
+		
+	/**
+	 * Reference to currently attached debug listener;
+	 */
+	private DebugListener attachedDebugger = null;
+
 	/**
 	 * Object status
 	 */
 	private Object status;
+	
+	/**
+	 * GUI watchdog timer.
+	 */
+	private Timer watchdogTimer = null;
+	
+	/**
+	 * List of current debug sessions or null.
+	 */
+	private List<DebugListenerSession> sessions = null;
+	
+	/**
+	 * Current debug session ID.
+	 */
+	private int debugSessionId = -1;
 
 	// $hide<<$
 	
@@ -193,16 +376,16 @@ public class DebugViewer extends JFrame {
 	private JButton buttonStepOver;
 	private JList listWatch;
 	private JList listStack;
-	
-	/**
-	 * Create the frame.
-	 * @param parentComponent 
-	 */
-	public DebugViewer(Component parentComponent) {
-		
+
+    /**
+     * Constructor.
+     * @param parent 
+     */
+    private DebugViewer(Component parent) {
+    	
 		initComponents();
-		postCreate(); // $hide$
-	}
+		postCreate(); // $hide$    	
+    }
 
 	/**
 	 * Initialize components
@@ -293,6 +476,133 @@ public class DebugViewer extends JFrame {
 		
 		buttonSend = new JButton("Send");
 		panelBottom.add(buttonSend, BorderLayout.EAST);
+		
+		panelExceptions = new JPanel();
+		panelExceptions.setBackground(Color.WHITE);
+		panelExceptions.setOpaque(false);
+		tabbedPane.addTab("Exceptions", null, panelExceptions, null);
+		panelExceptions.setLayout(new BorderLayout(0, 0));
+		
+		scrollPaneExceptions = new JScrollPane();
+		scrollPaneExceptions.setBorder(null);
+		scrollPaneExceptions.setOpaque(false);
+		scrollPaneExceptions.setBackground(Color.WHITE);
+		panelExceptions.add(scrollPaneExceptions, BorderLayout.CENTER);
+		
+		textExceptions = new JTextPane();
+		textExceptions.setContentType("text/html");
+		textExceptions.setBorder(null);
+		scrollPaneExceptions.setViewportView(textExceptions);
+		
+		panelSearch = new JPanel();
+		panelSearch.setBorder(null);
+		panelSearch.setOpaque(false);
+		panelSearch.setBackground(Color.WHITE);
+		panelSearch.setPreferredSize(new Dimension(10, 52));
+		panelExceptions.add(panelSearch, BorderLayout.SOUTH);
+		SpringLayout sl_panelSearch = new SpringLayout();
+		panelSearch.setLayout(sl_panelSearch);
+		
+		labelFilter = new JLabel("org.multipage.generator.messageFilterDebugVievewLog");
+		sl_panelSearch.putConstraint(SpringLayout.NORTH, labelFilter, 6, SpringLayout.NORTH, panelSearch);
+		sl_panelSearch.putConstraint(SpringLayout.WEST, labelFilter, 10, SpringLayout.WEST, panelSearch);
+		panelSearch.add(labelFilter);
+		
+		textFilter = new TextFieldEx();
+		sl_panelSearch.putConstraint(SpringLayout.NORTH, textFilter, 6, SpringLayout.NORTH, panelSearch);
+		sl_panelSearch.putConstraint(SpringLayout.WEST, textFilter, 3, SpringLayout.EAST, labelFilter);
+		sl_panelSearch.putConstraint(SpringLayout.EAST, textFilter, -10, SpringLayout.EAST, panelSearch);
+		panelSearch.add(textFilter);
+		textFilter.setColumns(10);
+		
+		checkCaseSensitive = new JCheckBox("org.multipage.generator.textCaseSensitive");
+		checkCaseSensitive.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				onCaseSensitiveChange();
+			}
+		});
+		checkCaseSensitive.setOpaque(false);
+		sl_panelSearch.putConstraint(SpringLayout.NORTH, checkCaseSensitive, 6, SpringLayout.SOUTH, labelFilter);
+		sl_panelSearch.putConstraint(SpringLayout.WEST, checkCaseSensitive, 0, SpringLayout.WEST, labelFilter);
+		panelSearch.add(checkCaseSensitive);
+		
+		checkWholeWords = new JCheckBox("org.multipage.generator.textWholeWords");
+		checkWholeWords.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				onWholeWordsChange();
+			}
+		});
+		sl_panelSearch.putConstraint(SpringLayout.WEST, checkWholeWords, 6, SpringLayout.EAST, checkCaseSensitive);
+		sl_panelSearch.putConstraint(SpringLayout.SOUTH, checkWholeWords, 0, SpringLayout.SOUTH, checkCaseSensitive);
+		checkWholeWords.setOpaque(false);
+		panelSearch.add(checkWholeWords);
+		
+		checkExactMatch = new JCheckBox("org.multipage.generator.textExactMatch");
+		checkExactMatch.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				onExactMatchChange();
+			}
+		});
+		sl_panelSearch.putConstraint(SpringLayout.WEST, checkExactMatch, 6, SpringLayout.EAST, checkWholeWords);
+		sl_panelSearch.putConstraint(SpringLayout.SOUTH, checkExactMatch, 0, SpringLayout.SOUTH, checkCaseSensitive);
+		checkExactMatch.setOpaque(false);
+		panelSearch.add(checkExactMatch);
+		
+		panelDebuggers = new JPanel();
+		tabbedPane.addTab("Processes", null, panelDebuggers, null);
+		SpringLayout sl_panelDebuggers = new SpringLayout();
+		panelDebuggers.setLayout(sl_panelDebuggers);
+		
+		scrollPaneThreads = new JScrollPane();
+		sl_panelDebuggers.putConstraint(SpringLayout.NORTH, scrollPaneThreads, 106, SpringLayout.NORTH, panelDebuggers);
+		sl_panelDebuggers.putConstraint(SpringLayout.WEST, scrollPaneThreads, 3, SpringLayout.WEST, panelDebuggers);
+		sl_panelDebuggers.putConstraint(SpringLayout.SOUTH, scrollPaneThreads, -3, SpringLayout.SOUTH, panelDebuggers);
+		panelDebuggers.add(scrollPaneThreads);
+		
+		scrollPaneAreaServerStack = new JScrollPane();
+		sl_panelDebuggers.putConstraint(SpringLayout.WEST, scrollPaneAreaServerStack, 156, SpringLayout.WEST, panelDebuggers);
+		sl_panelDebuggers.putConstraint(SpringLayout.EAST, scrollPaneAreaServerStack, -3, SpringLayout.EAST, panelDebuggers);
+		sl_panelDebuggers.putConstraint(SpringLayout.EAST, scrollPaneThreads, -3, SpringLayout.WEST, scrollPaneAreaServerStack);
+		sl_panelDebuggers.putConstraint(SpringLayout.NORTH, scrollPaneAreaServerStack, 3, SpringLayout.NORTH, panelDebuggers);
+		sl_panelDebuggers.putConstraint(SpringLayout.SOUTH, scrollPaneAreaServerStack, -3, SpringLayout.SOUTH, panelDebuggers);
+		
+		JLabel labelThreads = new JLabel("Threads:");
+		scrollPaneThreads.setColumnHeaderView(labelThreads);
+		
+		JPanel panelAuxThreads = new JPanel();
+		scrollPaneThreads.setViewportView(panelAuxThreads);
+		panelAuxThreads.setLayout(new BorderLayout(0, 0));
+		
+		tableThreads = new JTable();
+		panelAuxThreads.add(tableThreads, BorderLayout.CENTER);
+		panelDebuggers.add(scrollPaneAreaServerStack);
+		
+		JLabel labelAreaServerStack = new JLabel("Stack:");
+		scrollPaneAreaServerStack.setColumnHeaderView(labelAreaServerStack);
+		
+		JPanel panelAuxAreaServerStack = new JPanel();
+		scrollPaneAreaServerStack.setViewportView(panelAuxAreaServerStack);
+		panelAuxAreaServerStack.setLayout(new BorderLayout(0, 0));
+		
+		tableAreaServerStack = new JTable();
+		panelAuxAreaServerStack.add(tableAreaServerStack, BorderLayout.CENTER);
+		
+		JPanel panelProcesses = new JPanel();
+		sl_panelDebuggers.putConstraint(SpringLayout.WEST, panelProcesses, 3, SpringLayout.WEST, panelDebuggers);
+		panelProcesses.setPreferredSize(new Dimension(150, 100));
+		sl_panelDebuggers.putConstraint(SpringLayout.NORTH, panelProcesses, 3, SpringLayout.NORTH, panelDebuggers);
+		panelDebuggers.add(panelProcesses);
+		panelProcesses.setLayout(new BorderLayout(0, 0));
+		
+		labelProcesses = new JLabel("org.multipage.generator.textDebuggedProcesses");
+		panelProcesses.add(labelProcesses, BorderLayout.NORTH);
+		
+		JScrollPane scrollPaneProcesses = new JScrollPane();
+		panelProcesses.add(scrollPaneProcesses, BorderLayout.CENTER);
+		
+		tableProcesses = new JTable();
+		tableProcesses.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+		scrollPaneProcesses.setViewportView(tableProcesses);
 		buttonSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				onSendCommand();
@@ -362,10 +672,21 @@ public class DebugViewer extends JFrame {
 		toolBar.add(buttonExit);
 				
 		panelStatus = new JPanel();
-		panelStatus.setPreferredSize(new Dimension(10, 18));
+		panelStatus.setPreferredSize(new Dimension(10, 25));
 		getContentPane().add(panelStatus, BorderLayout.SOUTH);
 		FlowLayout fl_panelStatus = new FlowLayout(FlowLayout.RIGHT, 5, 5);
 		panelStatus.setLayout(fl_panelStatus);
+		
+		buttonConnected = new JButton("");
+		buttonConnected.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				onConnectedClick();
+			}
+		});
+		buttonConnected.setPreferredSize(new Dimension(80, 16));
+		buttonConnected.setAlignmentY(0.0f);
+		buttonConnected.setMargin(new Insets(0, 0, 0, 0));
+		panelStatus.add(buttonConnected);
 		
 		labelStatus = new JLabel("status");
 		panelStatus.add(labelStatus);
@@ -378,13 +699,269 @@ public class DebugViewer extends JFrame {
 		
 		localize();
 		setIcons();
-		setCallbacks();
+		createViews();
+		setListeners();
+		
 		establishWatchDog();
 		
 		initStackDump();
 		initWatch();
 		
 		loadDialog();
+		
+		// Update dialog status panel.
+		updateStatusPanel();
+		
+		// Start watch dog.
+		startWatchDog();
+	}
+	
+	/**
+	 * Create views placed in this dialog that display debug information.
+	 */
+	private void createViews() {
+		
+		// Create processes view.
+		createProcessesView();
+	}
+	
+	/**
+	 * Create table that can display debugged processes.
+	 */
+	private void createProcessesView() {
+		
+		// Create the table model.
+        @SuppressWarnings("serial")
+		DefaultTableModel model = new DefaultTableModel() {
+        	// Disable cell modification.
+			@Override
+			public void setValueAt(Object aValue, int row, int column) {
+				// Do nothing.
+			}
+        };
+        model.addColumn(Resources.getString("org.multipage.generator.textDebuggedHost"));
+        model.addColumn(Resources.getString("org.multipage.generator.textDebuggedPort"));
+        model.addColumn(Resources.getString("org.multipage.generator.textDebuggedProcess"));
+        tableProcesses.setModel(model);
+        
+        // Create column model.
+        TableColumnModel columnModel = tableProcesses.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(100);
+        columnModel.getColumn(1).setPreferredWidth(50);
+        columnModel.getColumn(2).setPreferredWidth(50);
+
+        // Create the table renderer.
+        DefaultTableCellRenderer renderer = new DefaultTableCellRenderer();
+        renderer.setHorizontalAlignment(JLabel.CENTER);
+        tableProcesses.setDefaultRenderer(Object.class, renderer);
+        
+        // Set the JTable properties.
+        tableProcesses.setPreferredScrollableViewportSize(tableProcesses.getPreferredSize());
+	}
+
+	/**
+	 * Starts watch dog that polls miscelaneous debug states.
+	 */
+	private void startWatchDog() {
+		
+		watchdogTimer = new Timer(WATCHDOG_TIMEOUT_MS, new ActionListener() {
+		    public void actionPerformed(ActionEvent e) {
+		        onWatchdogTick();
+		    }
+		});
+		watchdogTimer.setRepeats(true);
+		watchdogTimer.setCoalesce(true);
+		watchdogTimer.setInitialDelay(WATCHDOG_TIMEOUT_MS);
+		watchdogTimer.setDelay(WATCHDOG_TIMEOUT_MS);
+		watchdogTimer.start();
+	}
+	
+	/**
+	 * Dospose watchdog.
+	 */
+	private void disposeWatchdog() {
+		
+		// Stop GUI watchdog.
+		if (watchdogTimer != null) {
+			watchdogTimer.stop();
+		}
+	}
+
+
+	/**
+	 * Attach debugger.
+	 * @param debugger
+	 */
+	public void attachDebugger(DebugListener debugger) {
+		
+		// Remember debugger reference.
+		this.attachedDebugger = debugger;
+		
+		// Add new lambda methods to the DebugListener object to connect callbacks comming from the debug listener (server).
+		debugger.acceptConnectionLambda = session -> {
+			
+			try {
+				
+				// Get session list of the debugger.
+				sessions = attachedDebugger.getSessions();
+				
+				// Set current debug session ID.
+				this.debugSessionId = session.getSessionId();
+
+				SwingUtilities.invokeLater(() -> {
+					
+					// Update dialog status panel.
+					updateStatusPanel();
+					
+					// Show dialog window.
+					DebugViewer.this.setVisible(true);
+				});
+				
+				// TODO: <---REMOVE IT
+				j.log("\nVIEW ACCEPTED CONNECTION %s", session.getRemoteProbeSocket().toString());
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
+		};
+		debugger.inputPacketLambda = inputPacket -> {
+			
+			// TODO: <---REMOVE IT
+			j.log("VIEW INPUT PACKET %s", inputPacket);
+		};
+	}
+	
+	/**
+	 * Get current debug session.
+	 * @return
+	 */
+	private DebugListenerSession getDebugSession() {
+		
+		if (debugSessionId < 0) {
+			return null;
+		}
+		
+		for (DebugListenerSession session : sessions) {
+			
+			int sessionId = session.getSessionId();
+			if (sessionId < 0) {
+				continue;
+			}
+			
+			if (sessionId == debugSessionId) {
+				return session;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * On repeated watchdog ticks.
+	 */
+	protected void onWatchdogTick() {
+		
+		// Update GUI elements.
+		updateSessionView();
+		updateStatusPanel();
+	}
+
+	/**
+	 * Update session view with list of current debug sessions.
+	 */
+	private void updateSessionView() {
+		
+		// Check attached debugger..
+		if (attachedDebugger == null || sessions == null || debugSessionId < 0) {
+			return;
+		}
+		
+		// Diaplay session.
+		if (sessions != null && !sessions.isEmpty()) {
+			displaySessions(sessions);
+		}
+	}
+	
+	/**
+	 * Display list of sessions.
+	 * @param sessions
+	 */
+	private void displaySessions(List<DebugListenerSession> sessions) {
+		
+		TableModel model = tableProcesses.getModel();
+		if (!(model instanceof DefaultTableModel)) {
+			return;
+		}
+		
+		// Remember current row selection.
+		int selectedRow = tableProcesses.getSelectedRow();
+		
+		// Load table items.
+		DefaultTableModel modelProcesses = (DefaultTableModel) model;
+		modelProcesses.setRowCount(0);
+		
+		try {
+			for (DebugListenerSession session : sessions) {
+				SocketAddress remoteAddress = (SocketAddress) session.getRemoteProbeSocket().getRemoteAddress();
+				if (remoteAddress instanceof InetSocketAddress) {
+					
+					InetSocketAddress inetAddress = (InetSocketAddress) remoteAddress;
+					
+					String hostName = inetAddress.getHostName();
+					int port = inetAddress.getPort();
+					
+					modelProcesses.addRow(new Object [] { hostName, port });
+				}
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		// Restote table row selection.
+		tableProcesses.setRowSelectionInterval(selectedRow, selectedRow);
+	}
+
+	/**
+	 * Update status panel.
+	 */
+	private void updateStatusPanel() {
+		
+		DebugListenerSession debugSession = getDebugSession();
+		if (debugSession == null) {
+			return;
+		}
+		
+		AsynchronousServerSocketChannel serverSocketAddress = debugSession.getListenerSocket();
+		AsynchronousSocketChannel clientSocketAddress = debugSession.getRemoteProbeSocket();
+		
+		if (serverSocketAddress != null && clientSocketAddress != null) {
+			
+			buttonConnected.setText(textConnected);
+			buttonConnected.setBackground(Color.GREEN);
+		}
+		else {
+			buttonConnected.setText(textNotConnected);
+			buttonConnected.setBackground(Color.RED);
+		}
+	}
+	
+	/**
+	 * On click "connected/not connected button".
+	 */
+	protected void onConnectedClick() {
+		
+		DebugListenerSession debugSession = getDebugSession();
+		if (debugSession == null) {
+			return;
+		}
+		
+		AsynchronousServerSocketChannel serverSocketAddress = debugSession.getListenerSocket();
+		AsynchronousSocketChannel clientSocketAddress = debugSession.getRemoteProbeSocket();
+		
+		if (serverSocketAddress != null && clientSocketAddress != null) {
+			
+			Utility.show(this, "org.multipage.generator.messageDebuggerConnectionDetails", serverSocketAddress, clientSocketAddress);
+		}
 	}
 
 	/**
@@ -393,7 +970,7 @@ public class DebugViewer extends JFrame {
 	protected void onOpen() {
 		
 		// Start debugger
-		XdebugListener.getSingleton().startDebugging();
+		XdebugListenerOld.getSingleton().startDebugging();
 	}
 	
 	/**
@@ -402,12 +979,13 @@ public class DebugViewer extends JFrame {
 	protected void onClose() {
 		
 		// Stop debugger
-		XdebugListener.getSingleton().stopDebugging();
+		XdebugListenerOld.getSingleton().stopDebugging();
 		
 		saveDialog();
+		disposeWatchdog();
 		dispose();
 	}
-
+	
 	/**
 	 * Load dialog
 	 */
@@ -438,6 +1016,12 @@ public class DebugViewer extends JFrame {
 		
 		// Set window title
 		setTitle(Resources.getString("org.multipage.generator.textApplicationDebug"));
+		
+		Utility.localize(labelFilter);
+		Utility.localize(checkCaseSensitive);
+		Utility.localize(checkWholeWords);
+		Utility.localize(checkExactMatch);
+		Utility.localize(labelProcesses);
 	}
 
 	/**
@@ -491,10 +1075,10 @@ public class DebugViewer extends JFrame {
 			else if ("debug".equals(scheme)) {
 				
 				// Set source link for future load operation
-				uriRequestSourceCode = sourceUri;
+				this.header = sourceUri;
 
-				// Open source code in the viewer.
-				openSource(header, "");
+				// Transmit the "source" statement as a signal.
+				ConditionalEvents.transmit(this, AreaServerSignal.debugStatement, "source", sourceUri);
 			}
 		}
 		catch (Exception e) {
@@ -547,19 +1131,7 @@ public class DebugViewer extends JFrame {
 	 */
 	public void onSessionStateChanged(DebugListener debugger, boolean ready) {
 		
-		try {
-			// If there is a request to load a source code from the Xdebug client, do it.
-			if (ready && uriRequestSourceCode != null && debugger instanceof XdebugListener) {
-				
-				XdebugListener xebugListener = (XdebugListener) debugger;
-				String data = "-f " + uriRequestSourceCode;
-				XdebugPacket packet = xebugListener.postCommandT("source", data);
-				// TODO: <---DEBUG
-				j.log("SOURCE CODE: %s", packet.getPacketText());
-			}			
-		}
-		catch (Exception e) {
-		}
+		// TODO: <---DEBUGGER FINISH IT OR REMOVE IT
 	}
 
 	/**
@@ -652,15 +1224,8 @@ public class DebugViewer extends JFrame {
 		if (command.isEmpty()) {
 			return;
 		}
-		try {
-			XdebugPacket responsePacket = XdebugListener.getSingleton().postCommand(command);
-			String resultText = responsePacket.getPacketText();
-			consolePrint(resultText);
-		}
-		catch (Exception e) {
-			consolePrint("");
-			Utility.show2(this, e.getMessage());
-		}
+		
+		// TODO: <---DEBUGGER FINISH
 	}
 	
 	/**
@@ -683,7 +1248,7 @@ public class DebugViewer extends JFrame {
 	private void startDebugging() throws Exception {
 		
 		// Start debug viewer.
-		boolean accepted = XdebugListener.getSingleton().startDebugging();
+		boolean accepted = XdebugListenerOld.getSingleton().startDebugging();
 		//pageReloadException(!accepted);
 	}
 	
@@ -709,9 +1274,9 @@ public class DebugViewer extends JFrame {
 		// Process run command
 		try {
 			startDebugging();
-			XdebugPacket responsePacket = XdebugListener.getSingleton().postCommand("run");
-			String resultText = responsePacket.getPacketText();
-			consolePrint(resultText);
+			// TODO: <---DEBUGGER FINISH
+			//String resultText = responsePacket.getPacketText();
+			//consolePrint(resultText);
 		}
 		catch (Exception e) {
 		}
@@ -721,6 +1286,23 @@ public class DebugViewer extends JFrame {
 	private JPanel panelOutput;
 	private JScrollPane scrollPane;
 	private JTextArea textOutput;
+	private JPanel panelExceptions;
+	private JScrollPane scrollPaneExceptions;
+	private JPanel panelSearch;
+	private JLabel labelFilter;
+	private TextFieldEx textFilter;
+	private JTextPane textExceptions;
+	private JCheckBox checkCaseSensitive;
+	private JCheckBox checkWholeWords;
+	private JCheckBox checkExactMatch;
+	private JPanel panelDebuggers;
+	private JScrollPane scrollPaneThreads;
+	private JScrollPane scrollPaneAreaServerStack;
+	private JTable tableThreads;
+	private JTable tableAreaServerStack;
+	private JButton buttonConnected;
+	private JTable tableProcesses;
+	private JLabel labelProcesses;
 
 	
 	/**
@@ -728,43 +1310,46 @@ public class DebugViewer extends JFrame {
 	 */
 	protected void step(String command) {
 		
-		// Process step into command
-		try {
-			startDebugging();
-			XdebugPacket responsePacket = XdebugListener.getSingleton().postCommand(command);
-			if (responsePacket.isEmpty()) {
-				return;
-			}
-			String resultText = responsePacket.getPacketText();
-			consolePrint(resultText);
-			
-			String filename = responsePacket.getString("/response/message/@filename");
-			if (!filename.isEmpty() && !filename.equals(scriptFileName)) {
-				openFile(filename);
-			}
-			
-			String lineNumber = responsePacket.getString("/response/message/@lineno");
-			if (!lineNumber.isEmpty()) {
-				resetStepHighlight();
-				
-				final Color color = new Color(255, 255, 255);
-				final Color bkColor = new Color(255, 0, 0);
-				
-				highlightCurrentStep(Integer.parseInt(lineNumber),  color, bkColor);
-				
-				listWatchModel.clear();
-			}
-			
-			// Show output buffer content, stack dump and breakpoint context
-			showOutput();
-			showStackDump();
-			processContext(3);
-			processContext(1);
-			
-		}
-		catch (Exception e) {
-			j.log("Xdebug: " + e.getLocalizedMessage());
-		}
+		// TODO: <---DEBUGGER MAKE Transmit "step" Xdebug signal.
+		ConditionalEvents.transmit(this, AreaServerSignal.debugStatement, command);
+		
+//		// Process step into command
+//		try {
+//			startDebugging();
+//			XdebugPacket responsePacket = XdebugListener.getSingleton().postCommand(command);
+//			if (responsePacket.isEmpty()) {
+//				return;
+//			}
+//			String resultText = responsePacket.getPacketText();
+//			consolePrint(resultText);
+//			
+//			String filename = responsePacket.getString("/response/message/@filename");
+//			if (!filename.isEmpty() && !filename.equals(scriptFileName)) {
+//				openFile(filename);
+//			}
+//			
+//			String lineNumber = responsePacket.getString("/response/message/@lineno");
+//			if (!lineNumber.isEmpty()) {
+//				resetStepHighlight();
+//				
+//				final Color color = new Color(255, 255, 255);
+//				final Color bkColor = new Color(255, 0, 0);
+//				
+//				highlightCurrentStep(Integer.parseInt(lineNumber),  color, bkColor);
+//				
+//				listWatchModel.clear();
+//			}
+//			
+//			// Show output buffer content, stack dump and breakpoint context
+//			showOutput();
+//			showStackDump();
+//			processContext(3);
+//			processContext(1);
+//			
+//		}
+//		catch (Exception e) {
+//			j.log("Xdebug: " + e.getLocalizedMessage());
+//		}
 	}
 	
 	/**
@@ -772,6 +1357,8 @@ public class DebugViewer extends JFrame {
 	 */
 	private void showOutput() {
 		
+		// TODO: <---DEBUGGER FINISH
+		/*
 		try {
 			XdebugPacket responsePacket = XdebugListener.getSingleton().postCommandT("eval", "ob_get_contents()");
 			if (!responsePacket.isEmpty()) {
@@ -786,6 +1373,7 @@ public class DebugViewer extends JFrame {
 		catch (Exception e) {
 			j.log(e.getMessage());
 		}
+		*/
 	}
 
 	/**
@@ -793,8 +1381,8 @@ public class DebugViewer extends JFrame {
 	 */
 	private void showStackDump() {
 		
-		// Process run command
-		try {
+		// TODO: <---DEBUGGER REFACTOR Process run command
+		/*try {
 			XdebugPacket responsePacket = XdebugListener.getSingleton().postCommand("stack_get");
 			if (!responsePacket.isEmpty()) {
 				
@@ -821,7 +1409,7 @@ public class DebugViewer extends JFrame {
 		}
 		catch (Exception e) {
 			j.log(e.getMessage());
-		}
+		}*/
 	}
 	
 	/**
@@ -901,8 +1489,9 @@ public class DebugViewer extends JFrame {
 	 */
 	protected void processContext(int number) {
 		
+		// TODO: <---DEBUGGER REFACTOR
 		// Process context_get command
-		try {
+		/*try {
 			String command = String.format("context_get -c %s", number);
 			XdebugPacket responsePacket = XdebugListener.getSingleton().postCommand(command);
 			if (responsePacket.isEmpty()) {
@@ -975,6 +1564,7 @@ public class DebugViewer extends JFrame {
 		}
 		catch (Exception e) {
 		}
+		*/
 	}
 
 	/**
@@ -1101,7 +1691,7 @@ public class DebugViewer extends JFrame {
 	 */
 	protected void onExit() {
 		
-		XdebugListener client = XdebugListener.getSingleton();
+		XdebugListenerOld client = XdebugListenerOld.getSingleton();
 		if (client == null) {
 			return;
 		}
@@ -1115,7 +1705,7 @@ public class DebugViewer extends JFrame {
 	 */
 	private void establishWatchDog() {
 		
-		XdebugListener client = XdebugListener.getSingleton();
+		XdebugListenerOld client = XdebugListenerOld.getSingleton();
 		if (client == null) {
 			return;
 		}
@@ -1136,16 +1726,126 @@ public class DebugViewer extends JFrame {
 	}
 	
 	/**
-	 * Sets callbacks
+	 * Update log. Use control values.
 	 */
-	private void setCallbacks() {
+	private void updateLog() {
 		
-		XdebugListener client = XdebugListener.getSingleton();
-		if (client == null) {
-			return;
+		// Get filter string.
+		String filterString = textFilter.getText();
+		
+		// Get filter flags.
+		boolean caseSensitive = checkCaseSensitive.isSelected();
+		boolean wholeWords = checkWholeWords.isSelected();
+		boolean exactMatch = checkExactMatch.isSelected();
+		
+		// Display filtered log.
+		LogMessage.setFulltextFilter(filterString, caseSensitive, wholeWords, exactMatch);
+		LogMessage.displayHtmlLog(textExceptions);		
+	}
+	
+	/**
+	 * Sets listeners.
+	 */
+	private void setListeners() {
+		
+		// Receive debug signals.
+		ConditionalEvents.receiver(this, AreaServerSignal.debugResponse, message -> {
+			
+			// Get response packet.
+			XdebugPacketOld responsePacket = message.getRelatedInfo();
+			if (responsePacket == null) {
+				logException("org.multipage.generator.messageNullDebugResponsePacket");
+				return;
+			}
+			
+			// On error display exception message.
+			String errorMessage = responsePacket.getString("/response/error/message/text()");
+			if (errorMessage != null) {
+				logException(responsePacket);
+				return;
+			}
+		});
+		
+		// Full text filter.
+		Utility.onChangeText(textFilter, filterString -> {
+			
+			updateLog();
+		});
+	}
+	
+	
+	/**
+	 * On change filter case sensitive.
+	 */
+	protected void onCaseSensitiveChange() {
+		
+		updateLog();
+	}
+
+	/**
+	 * On change filter whole words.
+	 */
+	protected void onWholeWordsChange() {
+		
+		updateLog();
+	}
+
+	/**
+	 * On change filter exact match.
+	 */
+	protected void onExactMatchChange() {
+		
+		updateLog();
+	}
+	
+
+	/**
+	 * Write exception message to log panel.
+	 * @param message
+	 */
+	private void logException(String message) {
+		
+		// Create new log message.
+		LogMessage.addLogMessage(message);
+		
+		// Get log content.
+		LogMessage.displayHtmlLog(textExceptions);
+		
+		// Select panel with exceptions.
+		int tabIndex = tabbedPane.indexOfComponent(panelExceptions);
+		if (tabIndex >= 0) {
+			tabbedPane.setSelectedIndex(tabIndex);
 		}
 	}
 	
+	/**
+	 * Write error packet to log panel.
+	 * @param errorPacket
+	 */
+	private void logException(XdebugPacketOld errorPacket) {
+		
+		// Get transaction ID.
+		String transactionId = errorPacket.getString("/response/@transaction_id");
+		
+		// Get statement name.
+		String debugStatement = errorPacket.getString("/response/@command");
+		
+		// Get error code.
+		String errorCode = errorPacket.getString("/response/error/@code");
+		
+		// Application specific code.
+		String applicationCode = errorPacket.getString("/response/error/@apperr");
+		
+		// Get response message.
+		String errorMessage = errorPacket.getString("/response/error/message/text()");
+		
+		// Format final message.
+		String finalMessage = String.format("%s\t%s\terr%s.%s:\n<b>%s</b>", transactionId, debugStatement, errorCode, applicationCode, errorMessage);
+		
+		// Write message to log panel.
+		logException(finalMessage);
+	}
+
 	/**
 	 * Processes Xdebug server status
 	 * @param status 

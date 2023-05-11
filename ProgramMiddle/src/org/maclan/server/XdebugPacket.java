@@ -1,208 +1,128 @@
-/**
+/*
+ * Copyright 2010-2023 (C) vakol
  * 
+ * Created on : 09-05-2023
+ *
  */
 package org.maclan.server;
-
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.util.Base64;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
 
-import org.multipage.gui.Utility;
-import org.multipage.util.Obj;
-import org.multipage.util.j;
 import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
+import org.w3c.dom.Element;
+import org.w3c.dom.bootstrap.DOMImplementationRegistry;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSSerializer;
 
 /**
- * @author user
+ * Xdebug packet object.
+ * @author vakol
  *
  */
 public class XdebugPacket {
 	
 	/**
-	 * Empty packet
+	 * XML serializer.
 	 */
-	public final static XdebugPacket empty = new XdebugPacket();
-
+    private static LSSerializer lsSerializer = null;
+	
+    /**
+     * Static constructor.
+     */
+    static {
+		try {
+			DOMImplementationLS domImplementationLS = (DOMImplementationLS) DOMImplementationRegistry.newInstance().getDOMImplementation("LS");
+			lsSerializer = domImplementationLS.createLSSerializer();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+    }
+    
 	/**
-	 * XML Document
+	 * XML Document representing the packet.
 	 */
-	private Document xml;
+	private Document xml = null;
 	
 	/**
-	 * Original message
+	 * Constructor.
+	 * @param xml
 	 */
-	private String packetText;
-	
-	/**
-	 * XPATH object
-	 */
-	private final XPath xpath = XPathFactory.newInstance().newXPath();
-	
-	/**
-	 * Constructs empty packet
-	 */
-	public XdebugPacket() {
+	public XdebugPacket(Document xml) {
 		
-		xml = null;
-		packetText = "";
+		this.xml = xml;
 	}
 
 	/**
-	 * Constructor of the packet object
-	 * @param packetText
-	 * @throws ParserConfigurationException 
-	 * @throws IOException 
-	 * @throws SAXException 
+	 * Create INIT packet.
+	 * @return
+	 * @throws Exception 
 	 */
-	public XdebugPacket(String packetText)
+	public static XdebugPacket createInitPacket(String areaServerStateLocator)
 			throws Exception {
 		
-		// Prepare XML DOM parser prerequisites
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder builder = factory.newDocumentBuilder();
+		// Set packet content.
+		Document xml = newXmlDocument();
+		Element rootElement = xml.createElement("init");
+		rootElement.setAttribute("appid", "AREA_SERVER");
+		rootElement.setAttribute("idekey", "MULTIPAGE_IDE");
+		rootElement.setAttribute("session", "");
+		rootElement.setAttribute("thread", "");
+		rootElement.setAttribute("parent", "");
+		rootElement.setAttribute("language", "Maclan");
+		rootElement.setAttribute("protocol_version", "1.0");
+		rootElement.setAttribute("fileuri", areaServerStateLocator);
+		xml.appendChild(rootElement);
+        
+				// Create new p cket.
+		XdebugPacket initPacket = new XdebugPacket(xml);
+		return initPacket;
+	}
+	
+	/**
+	 * Creates new XML DOM document object.
+	 * @return
+	 * @throws ParserConfigurationException 
+	 */
+	private static Document newXmlDocument() 
+			throws Exception {
 		
-		// Remember Packet text
-		this.packetText = packetText;
+        // Create a new DocumentBuilderFactory.
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+
+        // Use the factory to create a new DocumentBuilder.
+        DocumentBuilder builder = factory.newDocumentBuilder();
+
+        // Create a new Document object.
+        Document document = builder.newDocument();
+		return document;
+	}
+	
+	/**
+	 * Get packet text.
+	 * @return
+	 * @throws Exception 
+	 */
+	public String getText() 
+			throws Exception {
 		
-		// Parse packet text
-		InputSource source = new InputSource(new StringReader(packetText));
-		xml = builder.parse(source);
-		
-		// TODO: <---DEBUG
-		j.log("PARSED XML PACKET: %s", packetText);
+        String text = lsSerializer.writeToString(xml);
+        return text;
 	}
 
 	/**
-	 * Gets DOM type based on XPath expression
-	 * @param xpathExpression
+	 * Get packet bytes.
 	 * @return
+	 * @throws Exception 
 	 */
-	public String getString(String xpathExpression) {
+	public byte [] getBytes() 
+			throws Exception {
 		
-		if (xml == null) {
-			return null;
-		}
-		try {
-			Object object = xpath.evaluate(xpathExpression, xml, XPathConstants.STRING);
-			return (String) object;
-		}
-		catch (Exception e) {
-		}
-		return null;
-	}
-	
-	/**
-	 * Get DOM type based on XPath expression
-	 * @param xpathExpression
-	 * @return
-	 */
-	public String getBase64String(String xpathExpression) {
-		
-		String base64 = getString(xpathExpression);
-		if (base64 == null) {
-			return null;
-		}
-		byte [] bytes = Base64.getDecoder().decode(base64);
-		return new String(bytes);
-	}
-	
-	/**
-	 * Gets DOM type based on XPath expression
-	 * @param xpathExpression
-	 * @return
-	 */
-	public NodeList getNodes(String xpathExpression) {
-		
-		if (xml == null) {
-			return null;
-		}
-		try {
-			Object object = xpath.evaluate(xpathExpression, xml, XPathConstants.NODESET);
-			return (NodeList) object;
-		}
-		catch (Exception e) {
-		}
-		return null;
-	}
-	
-	/**
-	 * Gets a number
-	 */
-	public Double getNumber(String xpathExpression) {
-		
-		if (xml == null) {
-			return null;
-		}
-		try {
-		}
-		catch (Exception e) {
-		}
-		return null;	
-	}
-	
-	/**
-	 * Get boolean value
-	 * @param xpathExpression
-	 * @return
-	 */
-	public Boolean getBoolean(String xpathExpression) {
-		
-		if (xml == null) {
-			return null;
-		}
-		try {
-			return (Boolean) xpath.evaluate(xpathExpression, xml, XPathConstants.BOOLEAN);
-		}
-		catch (Exception e) {
-		}
-		return null;
-	}
-
-	/**
-	 * Returns packet text
-	 * @return
-	 */
-	public String getPacketText() {
-		
-		return packetText;
-	}
-	
-	/**
-	 * Convert packet to text line
-	 */
-	@Override
-	public String toString() {
-		return packetText.replaceAll("\n"," ");
-	}
-	
-	/**
-	 * Checks if the packet is empty
-	 * @return
-	 */
-	public boolean isEmpty() {
-		
-		return equals(empty);
-	}
-	
-	/**
-	 * Gets result status
-	 * @return
-	 */
-	public String status() {
-		
-		return getString("/response/@status");
+        // Delegate the call to get string buffer with XML text representation.
+		String text = getText();
+		byte [] bytes = text.getBytes("UTF-8");
+		return bytes;
 	}
 }

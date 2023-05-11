@@ -5055,6 +5055,27 @@ public class Utility {
 		long now = calendar.getTimeInMillis();
 		return now;
 	}
+	
+	/**
+	 * Check if two input values are equal.
+	 * @param value1
+	 * @param value2
+	 * @return
+	 */
+	public static boolean equalsShallow(Object value1, Object value2) {
+		
+		if (value1 == null && value2 == null) {
+			return true;
+		}
+		boolean success = false;
+		if (value1 != null) {
+			success = value1.equals(value2);
+		}
+		else if (value2 != null) {
+			success = value2.equals(value1);
+		}
+		return success;
+	}
 
 	/**
 	 * Make deep check of equivalence of two input objects.
@@ -5887,7 +5908,7 @@ public class Utility {
 			IOUtils.copy(inputStream, outputStream);
 		}
 		catch (Exception e) {
-			// TODO: <---DEBUG Eexception.
+			// TODO: <---DEBUG Exception.
 			show2("Expose %s error. Line no. %d", fileName, e.getStackTrace()[0].getLineNumber());
 			throwException("org.multipage.gui.messageCannotExposeApplicationFile", e.getLocalizedMessage());
 		}
@@ -6058,5 +6079,42 @@ public class Utility {
 		}
 		String commonName = "CN=" + matcher.group("commonName");
 		return commonName;
+	}
+	
+	/**
+	 *  When content of text field is changed, the method calls input lambda function.
+	 * @param textField
+	 * @param callbackLambda
+	 */
+	public static void onChangeText(JTextField textField, Consumer<String> callbackLambda) {
+		
+		final String alreadySet = "set";
+		
+		// If the component is already set, exit the method.
+		String componentFlag = textField.getName();
+		if (alreadySet.equals(componentFlag)) {
+			return;
+		}
+		
+		// Get text field document and create new document listener.
+		Document document = textField.getDocument();
+		DocumentListener listener = new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				callbackLambda.accept(textField.getText());
+			}
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				callbackLambda.accept(textField.getText());
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				callbackLambda.accept(textField.getText());
+			}
+		};
+		
+		// Add listener and set component flag.
+		document.addDocumentListener(listener);
+		textField.setName(alreadySet);
 	}
 }

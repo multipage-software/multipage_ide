@@ -13,7 +13,6 @@ import java.nio.channels.SocketChannel;
 
 import org.maclan.server.XdebugClientOld.Callback;
 import org.multipage.gui.Utility;
-import org.multipage.util.j;
 
 /**
  * Xdebug probe for Area Server (a client connected to the XdebugServer).
@@ -88,7 +87,7 @@ public class XdebugClient {
 	        clientSocketChannel = SocketChannel.open();
 	        clientSocketChannel.configureBlocking(false);
 	
-	        // Connect to the server
+	        // Connect to the server.
 	        clientSocketChannel.connect(serverSocketAddress);
 			
 	        while (!clientSocketChannel.finishConnect()) {

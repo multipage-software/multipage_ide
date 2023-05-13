@@ -10,6 +10,7 @@ package org.maclan.server;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.multipage.gui.CallbackNoArg;
@@ -39,7 +40,7 @@ public abstract class DebugListener {
     /**
      * Invoked when input packet has been received by the debug server.
      */
-    public Consumer<XdebugInputPacket> inputPacketLambda = null;
+    public BiConsumer<DebugListenerSession, XdebugPacket> inputPacketLambda = null;
     
 	
 	/**

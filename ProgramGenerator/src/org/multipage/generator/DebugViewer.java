@@ -26,8 +26,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URI;
-import java.nio.channels.AsynchronousServerSocketChannel;
-import java.nio.channels.AsynchronousSocketChannel;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -62,7 +60,10 @@ import javax.swing.text.html.StyleSheet;
 import org.maclan.server.AreaServerSignal;
 import org.maclan.server.DebugListener;
 import org.maclan.server.DebugListenerSession;
+import org.maclan.server.XdebugListener;
 import org.maclan.server.XdebugListenerOld;
+import org.maclan.server.XdebugListenerSession;
+import org.maclan.server.XdebugPacket;
 import org.maclan.server.XdebugPacketOld;
 import org.multipage.gui.AlertWithTimeout;
 import org.multipage.gui.Callback;
@@ -95,6 +96,13 @@ public class DebugViewer extends JFrame {
 	 * GUI watchdog timeout in ms.
 	 */
 	private static final int WATCHDOG_TIMEOUT_MS = 1000;
+	
+	/**
+	 * Xdebug protocol constants.
+	 */
+	private static final int UNINITIALIZED = 0;
+	private static final int NEGOTIATE_XDEBUG_FEATURES = 1;
+	private static final int ACCEPT_XDEBUG_COMMANDS = 2;
 	
 	// $hide>>$
 	/**
@@ -320,11 +328,6 @@ public class DebugViewer extends JFrame {
 			return "";
 		}
 	}
-		
-	/**
-	 * Reference to currently attached debug listener;
-	 */
-	private DebugListener attachedDebugger = null;
 
 	/**
 	 * Object status
@@ -337,14 +340,14 @@ public class DebugViewer extends JFrame {
 	private Timer watchdogTimer = null;
 	
 	/**
-	 * List of current debug sessions or null.
+	 * Attached listener.
 	 */
-	private List<DebugListenerSession> sessions = null;
+	private DebugListener attachedListener = null;
 	
 	/**
-	 * Current debug session ID.
+	 * Xdebug protocol state.
 	 */
-	private int debugSessionId = -1;
+	private int xdebugProtocolState = UNINITIALIZED;
 
 	// $hide<<$
 	
@@ -789,25 +792,17 @@ public class DebugViewer extends JFrame {
 
 
 	/**
-	 * Attach debugger.
-	 * @param debugger
+	 * Attach debug listener.
+	 * @param listener
 	 */
-	public void attachDebugger(DebugListener debugger) {
-		
-		// Remember debugger reference.
-		this.attachedDebugger = debugger;
+	public void attachDebugger(DebugListener listener) {
 		
 		// Add new lambda methods to the DebugListener object to connect callbacks comming from the debug listener (server).
-		debugger.acceptConnectionLambda = session -> {
+		
+		// Accept incomming debug connections.
+		listener.acceptConnectionLambda = session -> {
 			
 			try {
-				
-				// Get session list of the debugger.
-				sessions = attachedDebugger.getSessions();
-				
-				// Set current debug session ID.
-				this.debugSessionId = session.getSessionId();
-
 				SwingUtilities.invokeLater(() -> {
 					
 					// Update dialog status panel.
@@ -816,43 +811,164 @@ public class DebugViewer extends JFrame {
 					// Show dialog window.
 					DebugViewer.this.setVisible(true);
 				});
-				
-				// TODO: <---REMOVE IT
-				j.log("\nVIEW ACCEPTED CONNECTION %s", session.getRemoteProbeSocket().toString());
 			}
 			catch (Exception e) {
-				e.printStackTrace();
+				onDebugProtocolError(e);
 			}
 		};
-		debugger.inputPacketLambda = inputPacket -> {
+		
+		// Accept incomming debug packets.
+		listener.inputPacketLambda = (session, inputPacket) -> {
 			
-			// TODO: <---REMOVE IT
-			j.log("VIEW INPUT PACKET %s", inputPacket);
+			try {
+				// Xdebug protocol rules.
+				if (listener instanceof XdebugListener && session instanceof XdebugListenerSession) {
+					processXdebugProtocol((XdebugListener) listener, (XdebugListenerSession) session, inputPacket);
+				}
+			}
+			catch (Exception e) {
+				onDebugProtocolError(e);
+			}
 		};
+		attachedListener = listener;
 	}
 	
 	/**
-	 * Get current debug session.
+	 * On debug protocol exception
+	 * @param exception
+	 */
+	private void onDebugProtocolError(Exception exception) {
+		
+		Utility.show(this, "org.multipage.generator.messageXdebugProtocolException", exception.getLocalizedMessage());
+	}
+
+	/**
+	 * Process Xdebug protocol.
+	 * @param listener
+	 * @param session 
+	 * @param inputPacket
+	 * @throws Exception 
+	 */
+	private void processXdebugProtocol(XdebugListener listener, XdebugListenerSession session, XdebugPacket inputPacket)
+			throws Exception {
+		
+		// On INIT packet
+		if (xdebugProtocolState == UNINITIALIZED && inputPacket.isInit()) {
+			
+			// Initialize session.
+			initializeXdebugSession(session, listener, inputPacket);
+			// Start negotiating features.
+			xdebugProtocolState = NEGOTIATE_XDEBUG_FEATURES;
+			
+			SwingUtilities.invokeLater(() -> {
+				// Do negotiate.
+				negotiateXdebugFeatures(session);
+				// Enable to accept Xdebug commands.
+				xdebugProtocolState = ACCEPT_XDEBUG_COMMANDS;
+			});
+			return;
+		}
+		
+		// On NEGOTIATE FEATURES.
+		if (xdebugProtocolState == NEGOTIATE_XDEBUG_FEATURES) {
+			// Process feature responses.
+			SwingUtilities.invokeLater(() -> processXdebugFeatureResponse(inputPacket));
+			return;
+		}
+		
+		// On Xdebug command response.
+		if (xdebugProtocolState == ACCEPT_XDEBUG_COMMANDS) {
+			// Process command response.
+			SwingUtilities.invokeLater(() -> {
+				// Do process command response.
+				processXdebugCommandResponse(session, inputPacket);
+			});
+		}
+	}
+	
+	/**
+	 * Initialize Xdebug session.
+	 * @param session 
+	 * @param listener 
+	 * @param inputPacket
+	 * @throws Exception 
+	 */
+	private void initializeXdebugSession(XdebugListenerSession session, XdebugListener listener, XdebugPacket inputPacket)
+			throws Exception {
+		
+		// Check IDE key.
+		Obj<String> foundIdeKey = new Obj<String>();
+		boolean matches = inputPacket.checkIdeKey(XdebugPacket.MULTIPAGE_IDE_KEY, foundIdeKey);
+		if (!matches) {
+			Utility.throwException("org.multipage.generator.messageXdebugIdeKeyDoesntMatch",
+					foundIdeKey.ref, XdebugPacket.MULTIPAGE_IDE_KEY);
+		}
+		
+		// Check debugged application ID.
+		Obj<String> foundAppId = new Obj<String>();
+		matches = inputPacket.checkAppId(XdebugPacket.APPLICATION_ID, foundAppId);
+		if (!matches) {
+			Utility.throwException("org.multipage.generator.messageXdebugAppIdDoesntMatch",
+					foundAppId.ref, XdebugPacket.APPLICATION_ID);
+		}
+		
+		// Check debugged language name.
+		Obj<String> languageName = new Obj<String>();
+		matches = inputPacket.checkLanguage(XdebugPacket.LANGUAGE_NAME, languageName);
+		if (!matches) {
+			Utility.throwException("org.multipage.generator.messageXdebugLanguageNameDoesntMatch",
+					languageName.ref, XdebugPacket.LANGUAGE_NAME);
+		}
+		
+		// Check debugged protocol version.
+		Obj<String> protocolVersion = new Obj<String>();
+		matches = inputPacket.checkProtocolVersion(XdebugPacket.PROTOCOL_VERSION, protocolVersion);
+		if (!matches) {
+			Utility.throwException("org.multipage.generator.messageXdebugProtocolVersionDoesntMatch",
+					protocolVersion.ref, XdebugPacket.PROTOCOL_VERSION);
+		}
+		
+		// Get debugged process URI.
+		String debuggedUri = inputPacket.GetDebuggedUri();
+		if (debuggedUri == null) {
+			Utility.throwException("org.multipage.generator.messageXdebugNullFileUri");
+		}
+		
+		// Check debugged URIs.
+		if (!debuggedUri.equals(session.debuggedUri)) {
+			Utility.throwException("org.multipage.generator.messageXdebugBadSession");
+		}
+		
+		// Assign Xdebug listener.
+		session.listener = listener;
+	}
+	
+	/**
+	 * Negotiate Xdebug features.
+	 * @param session 
+	 */
+	private void negotiateXdebugFeatures(XdebugListenerSession session) {
+		// TODO Auto-generated method stub
+	}
+	
+	/**
+	 * Process Xdebug feature response.
+	 * @param inputPacket
 	 * @return
 	 */
-	private DebugListenerSession getDebugSession() {
-		
-		if (debugSessionId < 0) {
-			return null;
-		}
-		
-		for (DebugListenerSession session : sessions) {
-			
-			int sessionId = session.getSessionId();
-			if (sessionId < 0) {
-				continue;
-			}
-			
-			if (sessionId == debugSessionId) {
-				return session;
-			}
-		}
+	private Object processXdebugFeatureResponse(XdebugPacket inputPacket) {
+		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	/**
+	 * Process Xdebug command response.
+	 * @param session 
+	 * @param inputPacket
+	 */
+	private void processXdebugCommandResponse(XdebugListenerSession session, XdebugPacket inputPacket) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 	/**
@@ -871,14 +987,13 @@ public class DebugViewer extends JFrame {
 	private void updateSessionView() {
 		
 		// Check attached debugger..
-		if (attachedDebugger == null || sessions == null || debugSessionId < 0) {
+		if (attachedListener == null) {
 			return;
 		}
 		
-		// Diaplay session.
-		if (sessions != null && !sessions.isEmpty()) {
-			displaySessions(sessions);
-		}
+		// Display session.
+		List<DebugListenerSession> sessions = attachedListener.getSessions();
+		displaySessions(sessions);
 	}
 	
 	/**
@@ -901,15 +1016,16 @@ public class DebugViewer extends JFrame {
 		
 		try {
 			for (DebugListenerSession session : sessions) {
-				SocketAddress remoteAddress = (SocketAddress) session.getRemoteProbeSocket().getRemoteAddress();
+				SocketAddress remoteAddress = (SocketAddress) session.getClientSocket();
 				if (remoteAddress instanceof InetSocketAddress) {
 					
 					InetSocketAddress inetAddress = (InetSocketAddress) remoteAddress;
 					
 					String hostName = inetAddress.getHostName();
 					int port = inetAddress.getPort();
+					String pid = session.getPid();
 					
-					modelProcesses.addRow(new Object [] { hostName, port });
+					modelProcesses.addRow(new Object [] { hostName, port, pid});
 				}
 			}
 		}
@@ -918,22 +1034,16 @@ public class DebugViewer extends JFrame {
 		}
 		
 		// Restote table row selection.
-		tableProcesses.setRowSelectionInterval(selectedRow, selectedRow);
+		if (selectedRow >= 0) {
+			tableProcesses.setRowSelectionInterval(selectedRow, selectedRow);
+		}
 	}
 
 	/**
 	 * Update status panel.
 	 */
 	private void updateStatusPanel() {
-		
-		DebugListenerSession debugSession = getDebugSession();
-		if (debugSession == null) {
-			return;
-		}
-		
-		AsynchronousServerSocketChannel serverSocketAddress = debugSession.getListenerSocket();
-		AsynchronousSocketChannel clientSocketAddress = debugSession.getRemoteProbeSocket();
-		
+		/*
 		if (serverSocketAddress != null && clientSocketAddress != null) {
 			
 			buttonConnected.setText(textConnected);
@@ -943,25 +1053,19 @@ public class DebugViewer extends JFrame {
 			buttonConnected.setText(textNotConnected);
 			buttonConnected.setBackground(Color.RED);
 		}
+		*/
 	}
 	
 	/**
 	 * On click "connected/not connected button".
 	 */
 	protected void onConnectedClick() {
-		
-		DebugListenerSession debugSession = getDebugSession();
-		if (debugSession == null) {
-			return;
-		}
-		
-		AsynchronousServerSocketChannel serverSocketAddress = debugSession.getListenerSocket();
-		AsynchronousSocketChannel clientSocketAddress = debugSession.getRemoteProbeSocket();
-		
+		/*
 		if (serverSocketAddress != null && clientSocketAddress != null) {
 			
 			Utility.show(this, "org.multipage.generator.messageDebuggerConnectionDetails", serverSocketAddress, clientSocketAddress);
 		}
+		*/
 	}
 
 	/**

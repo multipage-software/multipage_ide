@@ -6,8 +6,13 @@
  */
 package org.maclan.server;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
+
+import org.multipage.util.Obj;
 
 /**
  * Debug listener session object that stores session states.
@@ -24,58 +29,52 @@ public class DebugListenerSession {
 	/**
 	 * Current session ID.
 	 */
-	private static Integer currentSessionId = 0;
+	private static Obj<Integer> generatedSessionId = new Obj<Integer>(0);
 	
 	/**
 	 * Get session ID.
 	 */
 	protected static int generateNewSessionId() {
 		
-		synchronized (currentSessionId) {	
-			if (currentSessionId < MAXIMUM_SESSION_ID) {
-				currentSessionId++;
+		synchronized (generatedSessionId) {	
+			if (generatedSessionId.ref < MAXIMUM_SESSION_ID) {
+				generatedSessionId.ref++;
 			}
 			else {
-				currentSessionId = 1;
+				generatedSessionId.ref = 1;
 			}
-			return currentSessionId;
+			return generatedSessionId.ref;
 		}
 	}
 	
 	/**
 	 * Session ID.
 	 */
-	protected int sessionId = -1;
+	public int sessionId = -1;
 
 	/**
-	 * Server socket reference.
+	 * Client socket address.
 	 */
-	protected AsynchronousServerSocketChannel listenerSocket = null;
+	public InetSocketAddress clientSocket = null;
 	
 	/**
-	 * Remote client socket reference.
+	 * Socket servver reference.
 	 */
-	protected AsynchronousSocketChannel remoteProbeSocket = null;
-	
-	/**
-	 * Connection attachment.
-	 */
-	protected Void connectionAttachment = null;
+	public AsynchronousServerSocketChannel server = null;
 	
 	/**
 	 * Cosntructor.
-	 * @param serverSocket
-	 * @param remoteClientSocket
-	 * @param attachment
+	 * @param server 
+	 * @param client
+	 * @throws Exception 
 	 */
-	public DebugListenerSession(AsynchronousServerSocketChannel serverSocket, AsynchronousSocketChannel remoteClientSocket,
-			Void attachment) {
+	public DebugListenerSession(AsynchronousServerSocketChannel server, AsynchronousSocketChannel client)
+			throws Exception {
 		
 		// Set members.
 		this.sessionId = generateNewSessionId();
-		this.listenerSocket = serverSocket;
-		this.remoteProbeSocket = remoteClientSocket;
-		this.connectionAttachment = attachment;
+		this.clientSocket = (InetSocketAddress) client.getLocalAddress();
+		this.server = server;
 	}
 	
 	/**
@@ -91,18 +90,19 @@ public class DebugListenerSession {
 	}
 	
 	/**
-	 * Get debug listener socket address.
+	 * Get debug client (the probe) socket address.
 	 */
-	public AsynchronousServerSocketChannel getListenerSocket() {
+	public InetSocketAddress getClientSocket() {
 		
-		return listenerSocket;
+		return clientSocket;
 	}
-	
+
 	/**
-	 * Get connected remote debugger probe address of socket.
+	 * Get process ID.
+	 * @return
 	 */
-	public AsynchronousSocketChannel getRemoteProbeSocket() {
+	public String getPid() {
 		
-		return remoteProbeSocket;
+		return "";
 	}
 }

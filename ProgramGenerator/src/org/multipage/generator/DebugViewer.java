@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URI;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -46,12 +47,16 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JToolBar;
 import javax.swing.ListCellRenderer;
+import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SpringLayout;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.text.html.HTMLDocument;
@@ -60,10 +65,10 @@ import javax.swing.text.html.StyleSheet;
 import org.maclan.server.AreaServerSignal;
 import org.maclan.server.DebugListener;
 import org.maclan.server.DebugListenerSession;
+import org.maclan.server.XdebugClientParameters;
 import org.maclan.server.XdebugListener;
 import org.maclan.server.XdebugListenerOld;
 import org.maclan.server.XdebugListenerSession;
-import org.maclan.server.XdebugPacket;
 import org.maclan.server.XdebugPacketOld;
 import org.multipage.gui.AlertWithTimeout;
 import org.multipage.gui.Callback;
@@ -79,6 +84,10 @@ import org.multipage.util.Obj;
 import org.multipage.util.Resources;
 import org.multipage.util.j;
 import org.w3c.dom.Node;
+import javax.swing.JPopupMenu;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import javax.swing.JMenuItem;
 
 /**
  * This is GUI for debugging
@@ -98,11 +107,14 @@ public class DebugViewer extends JFrame {
 	private static final int WATCHDOG_TIMEOUT_MS = 1000;
 	
 	/**
-	 * Xdebug protocol constants.
+	 * Table font size.
 	 */
-	private static final int UNINITIALIZED = 0;
-	private static final int NEGOTIATE_XDEBUG_FEATURES = 1;
-	private static final int ACCEPT_XDEBUG_COMMANDS = 2;
+	private static final int TABLE_FONT_SIZE = 9;
+	
+	/**
+	 * Table header height.
+	 */
+	private static final int TABLE_HEADER_HEIGHT = 12;
 	
 	// $hide>>$
 	/**
@@ -343,11 +355,6 @@ public class DebugViewer extends JFrame {
 	 * Attached listener.
 	 */
 	private DebugListener attachedListener = null;
-	
-	/**
-	 * Xdebug protocol state.
-	 */
-	private int xdebugProtocolState = UNINITIALIZED;
 
 	// $hide<<$
 	
@@ -556,40 +563,6 @@ public class DebugViewer extends JFrame {
 		SpringLayout sl_panelDebuggers = new SpringLayout();
 		panelDebuggers.setLayout(sl_panelDebuggers);
 		
-		scrollPaneThreads = new JScrollPane();
-		sl_panelDebuggers.putConstraint(SpringLayout.NORTH, scrollPaneThreads, 106, SpringLayout.NORTH, panelDebuggers);
-		sl_panelDebuggers.putConstraint(SpringLayout.WEST, scrollPaneThreads, 3, SpringLayout.WEST, panelDebuggers);
-		sl_panelDebuggers.putConstraint(SpringLayout.SOUTH, scrollPaneThreads, -3, SpringLayout.SOUTH, panelDebuggers);
-		panelDebuggers.add(scrollPaneThreads);
-		
-		scrollPaneAreaServerStack = new JScrollPane();
-		sl_panelDebuggers.putConstraint(SpringLayout.WEST, scrollPaneAreaServerStack, 156, SpringLayout.WEST, panelDebuggers);
-		sl_panelDebuggers.putConstraint(SpringLayout.EAST, scrollPaneAreaServerStack, -3, SpringLayout.EAST, panelDebuggers);
-		sl_panelDebuggers.putConstraint(SpringLayout.EAST, scrollPaneThreads, -3, SpringLayout.WEST, scrollPaneAreaServerStack);
-		sl_panelDebuggers.putConstraint(SpringLayout.NORTH, scrollPaneAreaServerStack, 3, SpringLayout.NORTH, panelDebuggers);
-		sl_panelDebuggers.putConstraint(SpringLayout.SOUTH, scrollPaneAreaServerStack, -3, SpringLayout.SOUTH, panelDebuggers);
-		
-		JLabel labelThreads = new JLabel("Threads:");
-		scrollPaneThreads.setColumnHeaderView(labelThreads);
-		
-		JPanel panelAuxThreads = new JPanel();
-		scrollPaneThreads.setViewportView(panelAuxThreads);
-		panelAuxThreads.setLayout(new BorderLayout(0, 0));
-		
-		tableThreads = new JTable();
-		panelAuxThreads.add(tableThreads, BorderLayout.CENTER);
-		panelDebuggers.add(scrollPaneAreaServerStack);
-		
-		JLabel labelAreaServerStack = new JLabel("Stack:");
-		scrollPaneAreaServerStack.setColumnHeaderView(labelAreaServerStack);
-		
-		JPanel panelAuxAreaServerStack = new JPanel();
-		scrollPaneAreaServerStack.setViewportView(panelAuxAreaServerStack);
-		panelAuxAreaServerStack.setLayout(new BorderLayout(0, 0));
-		
-		tableAreaServerStack = new JTable();
-		panelAuxAreaServerStack.add(tableAreaServerStack, BorderLayout.CENTER);
-		
 		JPanel panelProcesses = new JPanel();
 		sl_panelDebuggers.putConstraint(SpringLayout.WEST, panelProcesses, 3, SpringLayout.WEST, panelDebuggers);
 		panelProcesses.setPreferredSize(new Dimension(150, 100));
@@ -604,8 +577,56 @@ public class DebugViewer extends JFrame {
 		panelProcesses.add(scrollPaneProcesses, BorderLayout.CENTER);
 		
 		tableProcesses = new JTable();
+		tableProcesses.setRowHeight(12);
+		tableProcesses.setFont(new Font("Tahoma", Font.PLAIN, 9));
 		tableProcesses.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 		scrollPaneProcesses.setViewportView(tableProcesses);
+		
+		JPopupMenu popupMenu = new JPopupMenu();
+		menuDisplaySessionProperties = new JMenuItem("org.multipage.generator.messageDisplayXdebugSessionProperties");
+		menuDisplaySessionProperties.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				displaySession();
+			}
+		});
+		popupMenu.add(menuDisplaySessionProperties);
+		addPopup(tableProcesses, popupMenu);
+		
+		JPanel panelThreads = new JPanel();
+		sl_panelDebuggers.putConstraint(SpringLayout.NORTH, panelThreads, 3, SpringLayout.SOUTH, panelProcesses);
+		sl_panelDebuggers.putConstraint(SpringLayout.WEST, panelThreads, 0, SpringLayout.WEST, panelProcesses);
+		sl_panelDebuggers.putConstraint(SpringLayout.SOUTH, panelThreads, -3, SpringLayout.SOUTH, panelDebuggers);
+		sl_panelDebuggers.putConstraint(SpringLayout.EAST, panelThreads, 0, SpringLayout.EAST, panelProcesses);
+		panelDebuggers.add(panelThreads);
+		panelThreads.setLayout(new BorderLayout(0, 0));
+		
+		labelThreads = new JLabel("org.multipage.generator.textDebuggedThreads");
+		panelThreads.add(labelThreads, BorderLayout.NORTH);
+		
+		JScrollPane scrollPaneThreads = new JScrollPane();
+		panelThreads.add(scrollPaneThreads, BorderLayout.CENTER);
+		
+		tableThreads = new JTable();
+		tableThreads.setFont(new Font("Tahoma", Font.PLAIN, 9));
+		tableThreads.setRowHeight(12);
+		scrollPaneThreads.setViewportView(tableThreads);
+		
+		JPanel panelThreadStack = new JPanel();
+		sl_panelDebuggers.putConstraint(SpringLayout.NORTH, panelThreadStack, 3, SpringLayout.NORTH, panelDebuggers);
+		sl_panelDebuggers.putConstraint(SpringLayout.WEST, panelThreadStack, 3, SpringLayout.EAST, panelProcesses);
+		sl_panelDebuggers.putConstraint(SpringLayout.SOUTH, panelThreadStack, -3, SpringLayout.SOUTH, panelDebuggers);
+		sl_panelDebuggers.putConstraint(SpringLayout.EAST, panelThreadStack, 3, SpringLayout.EAST, panelDebuggers);
+		panelDebuggers.add(panelThreadStack);
+		panelThreadStack.setLayout(new BorderLayout(0, 0));
+		
+		labelThreadStack = new JLabel("org.multipage.generator.textDebuggedStack");
+		panelThreadStack.add(labelThreadStack, BorderLayout.NORTH);
+		
+		JScrollPane scrollPaneThreadStack = new JScrollPane();
+		panelThreadStack.add(scrollPaneThreadStack, BorderLayout.CENTER);
+		
+		tableStack = new JTable();
+		scrollPaneThreadStack.setViewportView(tableStack);
 		buttonSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				onSendCommand();
@@ -694,7 +715,7 @@ public class DebugViewer extends JFrame {
 		labelStatus = new JLabel("status");
 		panelStatus.add(labelStatus);
 	}
-	
+
 	/**
 	 * Post creation
 	 */
@@ -702,6 +723,7 @@ public class DebugViewer extends JFrame {
 		
 		localize();
 		setIcons();
+		
 		createViews();
 		setListeners();
 		
@@ -726,6 +748,9 @@ public class DebugViewer extends JFrame {
 		
 		// Create processes view.
 		createProcessesView();
+		
+		// Create thread view.
+		createThreadView();
 	}
 	
 	/**
@@ -742,6 +767,7 @@ public class DebugViewer extends JFrame {
 				// Do nothing.
 			}
         };
+        model.addColumn(Resources.getString("org.multipage.generator.textDebugerSessionId"));
         model.addColumn(Resources.getString("org.multipage.generator.textDebuggedHost"));
         model.addColumn(Resources.getString("org.multipage.generator.textDebuggedPort"));
         model.addColumn(Resources.getString("org.multipage.generator.textDebuggedProcess"));
@@ -749,10 +775,11 @@ public class DebugViewer extends JFrame {
         
         // Create column model.
         TableColumnModel columnModel = tableProcesses.getColumnModel();
-        columnModel.getColumn(0).setPreferredWidth(100);
-        columnModel.getColumn(1).setPreferredWidth(50);
+        columnModel.getColumn(0).setPreferredWidth(50);
+        columnModel.getColumn(1).setPreferredWidth(100);
         columnModel.getColumn(2).setPreferredWidth(50);
-
+        columnModel.getColumn(3).setPreferredWidth(50);
+        
         // Create the table renderer.
         DefaultTableCellRenderer renderer = new DefaultTableCellRenderer();
         renderer.setHorizontalAlignment(JLabel.CENTER);
@@ -760,8 +787,95 @@ public class DebugViewer extends JFrame {
         
         // Set the JTable properties.
         tableProcesses.setPreferredScrollableViewportSize(tableProcesses.getPreferredSize());
+        
+        // Set column editor font size.
+        Font tableFont = tableProcesses.getFont().deriveFont(TABLE_FONT_SIZE);
+        Utility.setCellEditorFont(tableProcesses, tableFont);
+        
+        // Set column font size.
+        JTableHeader header = tableProcesses.getTableHeader();
+        header.setFont(tableFont);
+        header.setPreferredSize(new Dimension(0, TABLE_HEADER_HEIGHT));
 	}
+	
+	/**
+	 * Create thread view.
+	 */
+	private void createThreadView() {
+		
+		// Create the table model.
+        @SuppressWarnings("serial")
+		DefaultTableModel model = new DefaultTableModel() {
+        	// Disable cell modification.
+			@Override
+			public void setValueAt(Object aValue, int row, int column) {
+				// Do nothing.
+			}
+        };
+        model.addColumn(Resources.getString("org.multipage.generator.textDebugerThreadId"));
+        model.addColumn(Resources.getString("org.multipage.generator.textDebuggedThreadName"));
+        tableThreads.setModel(model);
+        
+        // Create column model.
+        TableColumnModel columnModel = tableProcesses.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(50);
+        columnModel.getColumn(1).setPreferredWidth(100);
 
+        // Create the table renderer.
+        DefaultTableCellRenderer renderer = new DefaultTableCellRenderer();
+        renderer.setHorizontalAlignment(JLabel.CENTER);
+        tableThreads.setDefaultRenderer(Object.class, renderer);
+        
+        // Set the JTable properties.
+        tableThreads.setPreferredScrollableViewportSize(tableThreads.getPreferredSize());
+        
+        // Set column editor font size.
+        Font tableFont = tableThreads.getFont().deriveFont(TABLE_FONT_SIZE);
+        Utility.setCellEditorFont(tableThreads, tableFont);
+        
+        // Set column font size.
+        JTableHeader header = tableThreads.getTableHeader();
+        header.setFont(tableFont);
+        header.setPreferredSize(new Dimension(0, TABLE_HEADER_HEIGHT));
+	}
+	
+	/**
+	 * Display session information.
+	 * @throws Exception 
+	 */
+	protected void displaySession() {
+		
+		// Get current selected session.
+		int selectedRow = tableProcesses.getSelectedRow();
+		if (selectedRow < 0) {
+			return;
+		}
+		
+		Object cellValue = tableProcesses.getModel().getValueAt(selectedRow, 0);
+		if (!(cellValue instanceof Long)) {
+			return;
+		}
+		
+		Long sessionId = (Long) cellValue;
+		if (attachedListener == null) {
+			return;
+		}
+		
+		try {
+			// Display session properties. Also dsplay connection URL.
+			DebugListenerSession session = attachedListener.getSession(sessionId);
+			if (session instanceof XdebugListenerSession) {
+				
+				XdebugListenerSession xdebugSession = (XdebugListenerSession) session;
+				XdebugSessionDialog.showDialog(this, xdebugSession);
+			}
+		}
+		catch (Exception e) {
+			String errorMessage = e.getLocalizedMessage();
+			Utility.show2(this, errorMessage);
+		}
+	}
+	
 	/**
 	 * Starts watch dog that polls miscelaneous debug states.
 	 */
@@ -797,10 +911,13 @@ public class DebugViewer extends JFrame {
 	 */
 	public void attachDebugger(DebugListener listener) {
 		
+		// Assign debug viewer.
+		listener.setViewerComponent(this);
+		
 		// Add new lambda methods to the DebugListener object to connect callbacks comming from the debug listener (server).
 		
-		// Accept incomming debug connections.
-		listener.acceptConnectionLambda = session -> {
+		// Accept Xdebug sessions.
+		listener.acceptSessionLambda = session -> {
 			
 			try {
 				SwingUtilities.invokeLater(() -> {
@@ -823,7 +940,7 @@ public class DebugViewer extends JFrame {
 			try {
 				// Xdebug protocol rules.
 				if (listener instanceof XdebugListener && session instanceof XdebugListenerSession) {
-					processXdebugProtocol((XdebugListener) listener, (XdebugListenerSession) session, inputPacket);
+					updateSessionView();
 				}
 			}
 			catch (Exception e) {
@@ -840,135 +957,6 @@ public class DebugViewer extends JFrame {
 	private void onDebugProtocolError(Exception exception) {
 		
 		Utility.show(this, "org.multipage.generator.messageXdebugProtocolException", exception.getLocalizedMessage());
-	}
-
-	/**
-	 * Process Xdebug protocol.
-	 * @param listener
-	 * @param session 
-	 * @param inputPacket
-	 * @throws Exception 
-	 */
-	private void processXdebugProtocol(XdebugListener listener, XdebugListenerSession session, XdebugPacket inputPacket)
-			throws Exception {
-		
-		// On INIT packet
-		if (xdebugProtocolState == UNINITIALIZED && inputPacket.isInit()) {
-			
-			// Initialize session.
-			initializeXdebugSession(session, listener, inputPacket);
-			// Start negotiating features.
-			xdebugProtocolState = NEGOTIATE_XDEBUG_FEATURES;
-			
-			SwingUtilities.invokeLater(() -> {
-				// Do negotiate.
-				negotiateXdebugFeatures(session);
-				// Enable to accept Xdebug commands.
-				xdebugProtocolState = ACCEPT_XDEBUG_COMMANDS;
-			});
-			return;
-		}
-		
-		// On NEGOTIATE FEATURES.
-		if (xdebugProtocolState == NEGOTIATE_XDEBUG_FEATURES) {
-			// Process feature responses.
-			SwingUtilities.invokeLater(() -> processXdebugFeatureResponse(inputPacket));
-			return;
-		}
-		
-		// On Xdebug command response.
-		if (xdebugProtocolState == ACCEPT_XDEBUG_COMMANDS) {
-			// Process command response.
-			SwingUtilities.invokeLater(() -> {
-				// Do process command response.
-				processXdebugCommandResponse(session, inputPacket);
-			});
-		}
-	}
-	
-	/**
-	 * Initialize Xdebug session.
-	 * @param session 
-	 * @param listener 
-	 * @param inputPacket
-	 * @throws Exception 
-	 */
-	private void initializeXdebugSession(XdebugListenerSession session, XdebugListener listener, XdebugPacket inputPacket)
-			throws Exception {
-		
-		// Check IDE key.
-		Obj<String> foundIdeKey = new Obj<String>();
-		boolean matches = inputPacket.checkIdeKey(XdebugPacket.MULTIPAGE_IDE_KEY, foundIdeKey);
-		if (!matches) {
-			Utility.throwException("org.multipage.generator.messageXdebugIdeKeyDoesntMatch",
-					foundIdeKey.ref, XdebugPacket.MULTIPAGE_IDE_KEY);
-		}
-		
-		// Check debugged application ID.
-		Obj<String> foundAppId = new Obj<String>();
-		matches = inputPacket.checkAppId(XdebugPacket.APPLICATION_ID, foundAppId);
-		if (!matches) {
-			Utility.throwException("org.multipage.generator.messageXdebugAppIdDoesntMatch",
-					foundAppId.ref, XdebugPacket.APPLICATION_ID);
-		}
-		
-		// Check debugged language name.
-		Obj<String> languageName = new Obj<String>();
-		matches = inputPacket.checkLanguage(XdebugPacket.LANGUAGE_NAME, languageName);
-		if (!matches) {
-			Utility.throwException("org.multipage.generator.messageXdebugLanguageNameDoesntMatch",
-					languageName.ref, XdebugPacket.LANGUAGE_NAME);
-		}
-		
-		// Check debugged protocol version.
-		Obj<String> protocolVersion = new Obj<String>();
-		matches = inputPacket.checkProtocolVersion(XdebugPacket.PROTOCOL_VERSION, protocolVersion);
-		if (!matches) {
-			Utility.throwException("org.multipage.generator.messageXdebugProtocolVersionDoesntMatch",
-					protocolVersion.ref, XdebugPacket.PROTOCOL_VERSION);
-		}
-		
-		// Get debugged process URI.
-		String debuggedUri = inputPacket.GetDebuggedUri();
-		if (debuggedUri == null) {
-			Utility.throwException("org.multipage.generator.messageXdebugNullFileUri");
-		}
-		
-		// Check debugged URIs.
-		if (!debuggedUri.equals(session.debuggedUri)) {
-			Utility.throwException("org.multipage.generator.messageXdebugBadSession");
-		}
-		
-		// Assign Xdebug listener.
-		session.listener = listener;
-	}
-	
-	/**
-	 * Negotiate Xdebug features.
-	 * @param session 
-	 */
-	private void negotiateXdebugFeatures(XdebugListenerSession session) {
-		// TODO Auto-generated method stub
-	}
-	
-	/**
-	 * Process Xdebug feature response.
-	 * @param inputPacket
-	 * @return
-	 */
-	private Object processXdebugFeatureResponse(XdebugPacket inputPacket) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	/**
-	 * Process Xdebug command response.
-	 * @param session 
-	 * @param inputPacket
-	 */
-	private void processXdebugCommandResponse(XdebugListenerSession session, XdebugPacket inputPacket) {
-		// TODO Auto-generated method stub
-		
 	}
 	
 	/**
@@ -1021,11 +1009,12 @@ public class DebugViewer extends JFrame {
 					
 					InetSocketAddress inetAddress = (InetSocketAddress) remoteAddress;
 					
+					long sessionId = session.getSessionId();
 					String hostName = inetAddress.getHostName();
 					int port = inetAddress.getPort();
 					String pid = session.getPid();
 					
-					modelProcesses.addRow(new Object [] { hostName, port, pid});
+					modelProcesses.addRow(new Object [] { sessionId, hostName, port, pid});
 				}
 			}
 		}
@@ -1039,6 +1028,67 @@ public class DebugViewer extends JFrame {
 		}
 	}
 
+	/**
+	 * Display threads
+	 * @param sessionThread
+	 * @param threadIds
+	 */
+	private synchronized void displayThreads(String sessionThread, LinkedList<String> threadIds) {
+		
+		// Get table model.
+		TableModel model = tableThreads.getModel();
+		if (!(model instanceof DefaultTableModel)) {
+			return;
+		}
+		DefaultTableModel mutableModel = (DefaultTableModel) model;
+		
+		// Check columns.
+		int columnCount = mutableModel.getColumnCount();
+		if (columnCount < 1) {
+			return;
+		}
+		
+		try {
+			// Ensure the table displays same threads as input list.
+			HashSet<Integer> removeRows = new HashSet<Integer>();
+			HashSet<String> newThreadIds = new HashSet<String>(threadIds);
+			
+			int rowCount = mutableModel.getRowCount();
+			for (int row = 0; row < rowCount; row++) {
+				
+				// Get thread ID.
+				Object value = mutableModel.getValueAt(row, 0);
+				if (!(value instanceof String)) {
+					continue;
+				}
+				String threadId = (String) value;
+				
+				// Check if the thread ID is in the input list.
+				boolean success = threadIds.contains(threadId);
+				if (success) {
+					newThreadIds.remove(threadId);
+					continue;
+				}
+				
+				// Save the row to be removed later.
+				removeRows.add(row);
+			}
+			
+			// Remove old table rows.
+			for (int row : removeRows) {
+				mutableModel.removeRow(row);
+			}
+			
+			// Add new thread IDs to the table.
+			for (String newThreadId : newThreadIds) {
+				mutableModel.addRow(new Object [] { newThreadId, "" });
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * Update status panel.
 	 */
@@ -1073,17 +1123,12 @@ public class DebugViewer extends JFrame {
 	 */
 	protected void onOpen() {
 		
-		// Start debugger
-		XdebugListenerOld.getSingleton().startDebugging();
 	}
 	
 	/**
 	 * Called when a user closes this window with click on window close button
 	 */
 	protected void onClose() {
-		
-		// Stop debugger
-		XdebugListenerOld.getSingleton().stopDebugging();
 		
 		saveDialog();
 		disposeWatchdog();
@@ -1126,6 +1171,9 @@ public class DebugViewer extends JFrame {
 		Utility.localize(checkWholeWords);
 		Utility.localize(checkExactMatch);
 		Utility.localize(labelProcesses);
+		Utility.localize(labelThreads);
+		Utility.localize(labelThreadStack);
+		Utility.localize(menuDisplaySessionProperties);
 	}
 
 	/**
@@ -1400,13 +1448,14 @@ public class DebugViewer extends JFrame {
 	private JCheckBox checkWholeWords;
 	private JCheckBox checkExactMatch;
 	private JPanel panelDebuggers;
-	private JScrollPane scrollPaneThreads;
-	private JScrollPane scrollPaneAreaServerStack;
-	private JTable tableThreads;
-	private JTable tableAreaServerStack;
 	private JButton buttonConnected;
 	private JTable tableProcesses;
 	private JLabel labelProcesses;
+	private JLabel labelThreads;
+	private JTable tableThreads;
+	private JLabel labelThreadStack;
+	private JTable tableStack;
+	private JMenuItem menuDisplaySessionProperties;
 
 	
 	/**
@@ -1875,8 +1924,21 @@ public class DebugViewer extends JFrame {
 			
 			updateLog();
 		});
+		
+		// Selection listener.
+        // Get the selection model
+        ListSelectionModel selectionModel = tableProcesses.getSelectionModel();
+
+        // Register the selection listener
+        selectionModel.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                	onProcessSelection();
+                }
+            }
+        });
 	}
-	
 	
 	/**
 	 * On change filter case sensitive.
@@ -1902,7 +1964,97 @@ public class DebugViewer extends JFrame {
 		updateLog();
 	}
 	
-
+	/**
+	 * On selection of debugged process.
+	 */
+	protected void onProcessSelection() {
+		
+		try {
+			// Get selected process.
+			int selectedRow = tableProcesses.getSelectedRow();
+			
+		    // Get the table model
+		    TableModel tableModel = tableProcesses.getModel();
+		    int rowCount = tableModel.getRowCount();
+		    
+		    // Check the row index.
+			if (selectedRow < 0 || selectedRow >= rowCount) {
+				return;
+			}
+			
+			// Get selected session ID.
+		    Object value = tableModel.getValueAt(selectedRow, 0);
+		    if (!(value instanceof Long)) {
+		    	return;
+		    }
+		    long selectedSessionId = (long) value;
+		    
+		    // Find session.
+		    DebugListenerSession session = attachedListener.getSession(selectedSessionId);
+		    if (session == null) {
+		    	Utility.show(this, "org.multipage.generator.messageCannotFindSessionWithId", selectedSessionId);
+		    	return;
+		    }
+		    
+		    // On Xdebug session...
+		    if (session instanceof XdebugListenerSession) {
+		    	
+		    	// Get Xdebug session and its parameters.
+		    	XdebugListenerSession xdebugSession = (XdebugListenerSession) session;
+		    	XdebugClientParameters parameters = xdebugSession.clientParameters;
+		    	if (parameters == null) {
+		    		return;
+		    	}
+		    	
+		    	// Get reference to the Xdebug listener.
+		    	XdebugListener listener = xdebugSession.listener;
+		    	if (listener == null) {
+		    		return;
+		    	}
+		    	
+			    // Get debugged process ID for the selected session.
+			    String pid = xdebugSession.clientParameters.pid;
+			    if (pid == null) {
+			    	return;
+			    }
+			    
+			    // Finad all sessions with above PID and display corresponding debugged thread IDs.
+			    List<DebugListenerSession> sessions = listener.getSessions();
+			    LinkedList<String> threadIds = new LinkedList<String>();
+			    
+			    for (DebugListenerSession listedSession : sessions) {
+			    	
+			    	if (listedSession instanceof XdebugListenerSession) {
+			    		XdebugListenerSession listedXdebugSession = (XdebugListenerSession) listedSession;
+			    		
+			    		XdebugClientParameters listedParameters = listedXdebugSession.clientParameters;
+			    		if (listedParameters == null) {
+			    			continue;
+			    		}
+			    		
+			    		// If a matching PID of the session has been found...
+			    		if (pid.equals(listedParameters.pid)) {
+			    			
+			    			// Get deugged thread ID and add it to the table view.
+			    			String threadId = listedParameters.tid;
+			    			if (threadId != null && !threadId.isEmpty()) {
+			    				threadIds.add(threadId);
+			    			}
+			    		}
+			    	}
+			    }
+			    
+			    String sessionThread = parameters.tid;
+			    
+			    // TODO: <---MAKE Select session thread in the thread view.
+			    displayThreads(sessionThread, threadIds);
+		    }
+		}
+		catch (Exception e) {
+			Utility.show(this, e.getLocalizedMessage());
+		}
+	}
+	
 	/**
 	 * Write exception message to log panel.
 	 * @param message
@@ -1990,7 +2142,7 @@ public class DebugViewer extends JFrame {
 			setState(EditorState.debugging);
 		}
 	}
-
+	
 	/**
 	 * Show user alert
 	 * @param message
@@ -2000,6 +2152,23 @@ public class DebugViewer extends JFrame {
 		
 		SwingUtilities.invokeLater(() -> {
 			AlertWithTimeout.showDialog(this, message, timeout);
+		});
+	}
+	private static void addPopup(Component component, final JPopupMenu popup) {
+		component.addMouseListener(new MouseAdapter() {
+			public void mousePressed(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					showMenu(e);
+				}
+			}
+			public void mouseReleased(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					showMenu(e);
+				}
+			}
+			private void showMenu(MouseEvent e) {
+				popup.show(e.getComponent(), e.getX(), e.getY());
+			}
 		});
 	}
 }

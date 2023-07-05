@@ -7,6 +7,7 @@
 
 package org.maclan.server;
 
+import java.awt.Component;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.multipage.gui.CallbackNoArg;
+import org.multipage.gui.Utility;
 
 /**
  * 
@@ -33,14 +35,14 @@ public abstract class DebugListener {
 	protected static CallbackNoArg enableListener = null;
 	
     /**
-     * Invoked when new connection to debug server has been accepted.
+     * Invoked when a new Xdebug session should be accepted.
      */
-    public Consumer<XdebugListenerSession> acceptConnectionLambda = null;
+    public Consumer<XdebugListenerSession> acceptSessionLambda = null;
 	
     /**
      * Invoked when input packet has been received by the debug server.
      */
-    public BiConsumer<DebugListenerSession, XdebugPacket> inputPacketLambda = null;
+    public BiConsumer<DebugListenerSession, XdebugResponse> inputPacketLambda = null;
     
 	
 	/**
@@ -74,6 +76,34 @@ public abstract class DebugListener {
 		
 		return sessions;
 	}
+	
+	/**
+	 * Find session with session ID.
+	 * @param sessionId
+	 * @throws Exception 
+	 */
+	public DebugListenerSession getSession(long sessionId)
+			throws Exception {
+		
+		DebugListenerSession foundSession = null;
+		
+		for (DebugListenerSession session : sessions) {
+			if (session.sessionId == sessionId) {
+				
+				if (foundSession != null) {
+					Utility.throwException("org.maclan.server.messageDuplicitSessionIds", sessionId);
+				}
+				foundSession = session;
+			}
+		}
+		return foundSession;
+	}
+	
+	/**
+	 * Get current debug viewer component.
+	 * @param debugViewerComponent
+	 */
+	public abstract void setViewerComponent(Component debugViewerComponent);
 	
 	/**
 	 * Stop debugging

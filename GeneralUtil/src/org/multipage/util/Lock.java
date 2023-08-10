@@ -39,14 +39,12 @@ public class Lock {
 	}
 	
 	/**
-	 * Clear lock so that it can be reused.
+	 * Reset the lock state.
 	 * @param lock
 	 */
-	public static void clear(Lock lock) {
+	public static void reset(Lock lock) {
 		
-		synchronized (lock) {
-			lock.notified = false;
-		}
+		lock.notified = false;
 	}
 	
 	/**
@@ -165,6 +163,15 @@ public class Lock {
 	public static void notifyAll(Lock lock) {
 		
 		notifyAll(lock, null);
+	}
+	
+	/**
+	 * Returns the lock state.
+	 * @return
+	 */
+	public boolean notified() {
+		
+		return notified;
 	}
 	
 	/**

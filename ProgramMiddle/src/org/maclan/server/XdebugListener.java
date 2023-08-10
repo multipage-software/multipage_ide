@@ -8,6 +8,7 @@ package org.maclan.server;
 
 import java.awt.Component;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
@@ -34,7 +35,7 @@ public class XdebugListener extends DebugListener {
 	/**
 	 * Listener idle timeout. 
 	 */
-	private static final long XDEBUG_RESULT_IDLE_MS = 200;
+	private static final long XDEBUG_RESULT_IDLE_MS = 5000;
 	
 	/**
 	 * Singleton object.
@@ -50,11 +51,6 @@ public class XdebugListener extends DebugListener {
 	 * Reference to debug viewer component.
 	 */
 	public Component debugViewerComponent = null;
-	
-	/**
-	 * Socket reader lock.
-	 */
-	protected Lock socketReaderLock = new Lock();
 	
     /**
      * Get singleton object.
@@ -115,6 +111,7 @@ public class XdebugListener extends DebugListener {
 	 * Opens listener port.
 	 * @param port
 	 */
+	private static int readOpCounter = 1;
 	private void openListenerPort(int port)
 			throws Exception {
 		
@@ -129,15 +126,14 @@ public class XdebugListener extends DebugListener {
 			public void completed(AsynchronousSocketChannel client, AsynchronousServerSocketChannel server) {
         		
         		// TODO: <---REMOVE IT
-        		j.log("");
-        		j.log("----------------------------------------------------------------");
+        		j.log(1, "----------------------------------------------------------------");
 				try {
 					// Create and remember new session object.
 					XdebugListenerSession session = new XdebugListenerSession(server, client);
 					XdebugListener.this.sessions.add(session);
 					
 					// TODO: <---DEBUG Create session object.
-					j.log("CREATE SESSION %x", session.hashCode());
+					j.log(2, "CREATE SESSION %x", session.hashCode());
 					
 					// Call the "accept session" lambda.
 					onAcceptSession(session);
@@ -146,50 +142,58 @@ public class XdebugListener extends DebugListener {
 					
 					Obj<Integer> readingIndex = new Obj<Integer>(0);
 					
+					// Create read lock.
+					Lock readLock = new Lock();
+					
 					// Enter non blocking loop.
-					RepeatedTask.loopNonBlocking(taskName, -1, XDEBUG_RESULT_IDLE_MS, (exit, exception) -> {
+					RepeatedTask.loopBlocking(taskName, -1, 0, (exit, exception) -> {
 						
-						// Clear the socket reader lock.
-						Lock.clear(socketReaderLock);
+						// Reset the socket read lock.
+						Lock.reset(readLock);
 
 						// TODO: <---DEBUG Count number of reads.
-						j.log("- %d.%d thread %d - INPUT BUFFER: %d bytes of free space remains", serverConnectionIndex, ++readingIndex.ref, Thread.currentThread().getId(), session.inputBuffer.remaining());
+						j.log(1, "- %d.%d thread %d - INPUT BUFFER: %d bytes of free space remains", serverConnectionIndex, ++readingIndex.ref, Thread.currentThread().getId(), session.inputBuffer.remaining());
+						
+						// TODO: <---FIX Missing synchronization of input packets.
 						
 						// Read Xdebug data packet bytes.
 	                    client.read(session.inputBuffer, session, new CompletionHandler<Integer, XdebugListenerSession>() {
 	                        public void completed(Integer result, XdebugListenerSession session) {
-	                        	
+	    						
 	                        	// If nothing read, exit the method.
 	                        	if (result <= -1) {
 	                        		return;
 	                        	}
 	                        	
+	                        	// TODO: <---DEBUG
+	                        	j.log(1, "<<<READ COUNTER %d>>>", readOpCounter);
+	                        	
 								try {
 	                        		// Pull received bytes from the input buffer and put them into the packet buffer.
-	                        		while (session.readInputBuffer()) {
-	                        			
-			                            // Pull incomming Xdebug response packet from the session input buffer.
-			                            XdebugResponse inputPacket = session.readPacket();
-			                            
-			                    		// Herein prepare input buffer for next write operation.
-			                            Utility.reuseInputBuffer(session.inputBuffer);
-			                            
-			                            // Process OTHER incomming packet.
-			                            session.processXdebugPacket(inputPacket);
-			                            
-			                            // Call input packet lambda.
-			                            onInputPacket(session, inputPacket);
-		                        	}
+	                        		session.readXdebugResponses(xdebugResponse -> {
+	                        			try {
+				                            // Process incomming Xdebug responses.
+				                            session.processXdebugResponse(xdebugResponse);
+				                            
+				                            // Input packet callback.
+				                            onInputPacket(session, xdebugResponse);
+	                        			}
+	                        			catch (Exception e) {
+	                        				e.printStackTrace();
+	                        			}
+		                        	});
 	                        		
-	                        		// Again prepare input buffer for next write operation.
+	                        		// Prepare input buffer for the next write operation.
 	                        		Utility.reuseInputBuffer(session.inputBuffer);
 	                        	}
 	                        	catch (Exception e) {
 	                        		exception.ref = e;
 	                        	}
 								
+								j.log(1, "<<<LOCK %d NOTIFIED>>>", readOpCounter);
+								
 	                        	// Notify the listener lock.
-	                        	Lock.notify(socketReaderLock);
+	                        	Lock.notify(readLock);
 	                        }
 							public void failed(Throwable e, XdebugListenerSession session) {
 	                            // Handle the failure.
@@ -198,12 +202,19 @@ public class XdebugListener extends DebugListener {
 	                    });
 	                    
 	                    // Wait for the input bytes to be read from the socket channel.
-	                    boolean timeoutEllapsed = Lock.waitFor(socketReaderLock, XDEBUG_RESULT_IDLE_MS);
+	                    boolean timeoutEllapsed = Lock.waitFor(readLock, XDEBUG_RESULT_IDLE_MS);
 	                    
 	                    // TODO: <---DEBUG Timeout ellapsed.
 	                    if (timeoutEllapsed) {
-	                    	j.log("TIMEOUT %dms ELLAPSED", XDEBUG_RESULT_IDLE_MS);
+	                    	j.log(1, "TIMEOUT %dms ELLAPSED", XDEBUG_RESULT_IDLE_MS);
 	                    }
+	                    else {
+	                    	j.log(1, "<<<LOCK %d RELEASED>>>", readOpCounter);
+	                    	readOpCounter++;
+	                    }
+	                    
+	                    // TODO: <---DEBUG
+	                    session.inputBuffer = ByteBuffer.allocate(1024);
 	                    return exit;
 					});
 				}

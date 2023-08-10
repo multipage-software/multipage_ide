@@ -55,7 +55,7 @@ public class RepeatedTask {
 	 * @param taskName
 	 * @param startDelayMs
 	 * @param idleTimeMs
-	 * @param taskLambda
+	 * @param taskLambda (exit, exception) -> running
 	 * @throws InterruptedException 
 	 */
 	public static void loopBlocking(String taskName, long startDelayMs, long idleTimeMs, BiFunction<Boolean, Obj<Exception>, Boolean> taskLambda)
@@ -164,7 +164,7 @@ public class RepeatedTask {
 			// Task loop.
 			try {
 				
-				// Delay start.
+				// Start delay.
 				if (startDelayMs > 0) {
 					Thread.sleep(startDelayMs);
 				}
@@ -175,7 +175,7 @@ public class RepeatedTask {
 					// Invoke lambda function.
 					exception.ref = null;
 		        	task.running = taskLambda.apply(task.running, exception);
-		        	
+
 		        	// Idle timeout.
 		        	Thread.sleep(idleTime);
 		        	

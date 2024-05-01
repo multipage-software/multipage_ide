@@ -1,20 +1,18 @@
-/*
- * Copyright 2010-2023 (C) vakol
+/**
+ * Copyright 2010-2024 (C) vakol
  * 
- * Created on : 10-08-2023
+ * Created on : 04-04-2024
  *
  */
 package org.multipage.gui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousSocketChannel;
 import java.time.LocalTime;
-import java.util.LinkedList;
-import java.util.function.Consumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.swing.BorderFactory;
 import javax.swing.JScrollPane;
@@ -23,28 +21,18 @@ import javax.swing.JTextPane;
 import javax.swing.JViewport;
 import javax.swing.border.Border;
 
-import org.multipage.gui.Consoles.MessageRecord;
 import org.multipage.util.Obj;
-import org.multipage.util.j;
 
 /**
- * Console class.
+ * Log console object.
  * @author vakol
  */
-class LogConsole {
-	
+public class LogConsole {
+
 	/**
-	 * Incomming buffers' sizes.
+	 * Maximum number of records.
 	 */
-	private static final int INPUT_BUFFER_SIZE = 1024;
-	private static final int TIMESTAMP_BUFFER_SIZE = 16;
-	private static final int LOG_MESSAGE_BUFFER_SIZE = INPUT_BUFFER_SIZE;
-	
-	/**
-	 * Input reader states.
-	 */
-	private static final int READ_HEADER = 0;
-	private static final int READ_LOG_MESSAGE = 1;
+	private static final int MAXIMUM_RECORDS = 300;
 	
 	/**
 	 * Panel borders.
@@ -52,19 +40,13 @@ class LogConsole {
 	private static Border selectionBorder = null;
 	private static Border simpleBorder = null;
 	
-	// Parse timestamp and color.
-	private static Pattern regexTimsestampAndColor = null;
-	
 	/**
-	 * Constructor.
+	 * Static constructor.
 	 */
 	static {
 		
 		// Create panel borders.
 		selectionBorder = BorderFactory.createLineBorder(Color.RED);
-		
-		// Compile regular expression matcher.
-		regexTimsestampAndColor = Pattern.compile("(?<stamp>^[^#]*)#rgb\\((?<red>\\w+),(?<green>\\w+),(?<blue>\\w+)\\)");
 	}
 	
 	/**
@@ -73,9 +55,14 @@ class LogConsole {
 	protected String name = "unknown";
 	
 	/**
-	 * Receiving socket address.
+	 * Socket chnnel port number.
 	 */
-	public InetSocketAddress socketAddress = null;
+	private int port = -1;
+	
+	/**
+	 * Input packet channel.
+	 */
+	private PacketChannel packetChannel = null;
 	
 	/**
 	 * Minimum and maximum timestamps.
@@ -84,31 +71,9 @@ class LogConsole {
 	protected LocalTime maximumTimestamp = null;
 	
 	/**
-	 * Console port number.
-	 */
-	protected int port = -1;
-	
-	/**
-	 * Console input buffers.
-	 */
-	protected ByteBuffer inputBuffer = ByteBuffer.allocate(INPUT_BUFFER_SIZE);
-	public Obj<ByteBuffer> headerBuffer = new Obj<ByteBuffer>(ByteBuffer.allocate(TIMESTAMP_BUFFER_SIZE));
-	public Obj<ByteBuffer> logMessageBuffer = new Obj<ByteBuffer>(ByteBuffer.allocate(LOG_MESSAGE_BUFFER_SIZE));
-
-	
-	private int inputReaderState = READ_HEADER;
-	
-	/**
-	 * Last read timestamp and color.
-	 */
-	private Obj<LocalTime> readTimestamp = new Obj<LocalTime>(null);
-	private Obj<Color> readColor = new Obj<Color>(null);
-	private Obj<String> readStatement = new Obj<String>(null);
-	
-	/**
 	 * Message record list that maps time axis to the records.
 	 */
-	protected LinkedList<MessageRecord> consoleRecords = new LinkedList<>();
+	protected ConcurrentLinkedQueue<LogMessageRecord> consoleRecords = new ConcurrentLinkedQueue<>();
 	
 	/**
 	 * Split panel.
@@ -126,7 +91,7 @@ class LogConsole {
 	protected JTextPane textPane = null;
 	
 	/**
-	 * 
+	 * Constructor.
 	 * @param consoleName
 	 * @param splitPane
 	 * @param port
@@ -137,7 +102,9 @@ class LogConsole {
 		
 		this.name = consoleName;
 		this.splitPane = splitPane;
+		this.port = port;
 		
+		// Create panel components.
 		Component leftComponent = splitPane.getLeftComponent();
 		if (!(leftComponent instanceof JScrollPane)) {
 			throw new IllegalArgumentException();
@@ -153,219 +120,38 @@ class LogConsole {
 		
 		JTextPane textPane = (JTextPane) scrollComponent;
 		this.textPane = textPane;
-		this.port = port;
-		
+
 		// Reset selection.
 		setSelected(false); //$hide$
 	}
 	
 	/**
-	 * Try to run console statment.
-	 * @param logMessage
-	 * @return
+	 * Open input socket channel.
+	 * @throws IOException 
 	 */
-	public boolean runStatement(MessageRecord logMessage) {
-		
-		// On clear console.
-		if ("CLEAR".equalsIgnoreCase(logMessage.statment)) {
-			
-			// Clear console contents.
-			clear();
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Add new message record.
-	 * 
-	 * @param messageRecord
-	 */
-	public void addMessageRecord(MessageRecord messageRecord) {
-
-		// Get current time.
-		LocalTime timeNow = LocalTime.now();
-		
-		messageRecord.consoleWriteTime = timeNow;
-
-		// Set maximum and minimum timestamp.
-		if (minimumTimestamp == null) {
-			minimumTimestamp = timeNow;
-		}
-		if (maximumTimestamp == null || maximumTimestamp.compareTo(timeNow) < 0) {
-			maximumTimestamp = timeNow;
-		}
-
-		// Create new message record and put it into the message map.
-		synchronized (consoleRecords) {
-			consoleRecords.add(messageRecord);
-		}
-	}
-
-	/**
-	 * Clear console content.
-	 */
-	public void clear() {
-
-		consoleRecords.clear();
-		maximumTimestamp = null;
-		minimumTimestamp = null;
-		textPane.setText("");
-	}
-	
-	/**
-	 * Read log messages from the input buffer.
-	 * @param logMessageLambda
-	 * @throws Exception 
-	 */
-	public boolean readLogMessages(Consumer<MessageRecord> logMessageLambda)
+	public void openInputSocket()
 			throws Exception {
 		
-		// Prepare input buffer for reading.
-		inputBuffer.flip();
-		
-		// If there are no remaining bytes in the input buffer, return false value.
-		if (!inputBuffer.hasRemaining()) {
-			return false;
-		}
-		
-		boolean messageAccepted = false;
-		
-		// Read until end of input buffer.
-		boolean endOfReading = false;
-		while (!endOfReading) {
+		packetChannel = new PacketChannel() {
 			
-			Obj<Boolean> terminated = new Obj<Boolean>(false);
-			
-			// Determine protocol state from input byte value and invoke related action.
-			switch (inputReaderState) {
-			
-			case READ_HEADER:
-				endOfReading = Utility.readUntil(inputBuffer, headerBuffer, TIMESTAMP_BUFFER_SIZE, Consoles.DIVIDER_SYMBOL, terminated);
-				if (terminated.ref) {
-					inputReaderState = READ_LOG_MESSAGE;
-					parseHeaderBytes(headerBuffer.ref, readTimestamp, readColor, readStatement);
-				}
-				break;
-				
-			case READ_LOG_MESSAGE:
-				endOfReading = Utility.readUntil(inputBuffer, logMessageBuffer, LOG_MESSAGE_BUFFER_SIZE, Consoles.TERMINAL_SYMBOL, terminated);
-				if (terminated.ref) {
-					
-					inputReaderState = READ_HEADER;
-					String logMessageText = getLogMessage(logMessageBuffer.ref);
-					
-					MessageRecord messageRecord = new MessageRecord(readTimestamp.ref, readColor.ref, logMessageText, readStatement.ref);
-					logMessageLambda.accept(messageRecord);
-					
-					messageAccepted = true;
-				}
-				break;
+			// Create log packet reader when accepting socket connection.
+			@Override
+			protected PacketSession onAccepted(AsynchronousSocketChannel client) {
+				LogReader logReader = new LogReader(LogConsole.this);
+				return logReader;
 			}
-		}
-		
-		return messageAccepted;
-	}
-
-	/**
-	 * Parse bytes from the header buffer.
-	 * @param headerBuffer
-	 * @param outputTimestamp
-	 * @param outputColor
-	 * @param outputStatement
-	 * @return
-	 * @throws Exception 
-	 */
-	private boolean parseHeaderBytes(ByteBuffer headerBuffer, Obj<LocalTime> outputTimestamp, Obj<Color> outputColor, Obj<String> outputStatement)
-			throws Exception {
-		
-		// Prepare the header buffer for reading the XML length.
-		headerBuffer.flip();
-		
-		// Get length of the nuffer.
-		int arrayLength = headerBuffer.limit();
-		byte [] bytes = new byte [arrayLength];
-		
-		// Read buffer contents.
-		headerBuffer.get(bytes);
-		
-		// Convert bytes into UTF-8 encoded string.
-		String headerString = new String(bytes, "UTF-8");
-		
-		// Inicialization.
-		outputTimestamp.ref = LocalTime.now();
-		outputColor.ref = Color.BLACK;
-		outputStatement.ref = "";
-		boolean success;
-		
-		// Parse the received string.
-		Matcher matcher = regexTimsestampAndColor.matcher(headerString);
-		boolean found = matcher.find();
-		int groupCount = matcher.groupCount();
-		
-		if (found && groupCount == 4) {
-			
-			// Get the message timestamp and color.
-			String timestampString = matcher.group(1);
-			
-			// Convert text to timstamp object.
-			outputTimestamp.ref = LocalTime.parse(timestampString, Consoles.TIMESTAMP_FORMAT);
-			
-			// Get color components.
-			String redString = matcher.group(2);
-			String greenString = matcher.group(3);
-			String blueString = matcher.group(4);
-			int red = Integer.parseInt(redString, 16);
-			int green = Integer.parseInt(greenString, 16);
-			int blue = Integer.parseInt(blueString, 16);
-			
-			// Compile color value.
-			outputColor.ref = new Color(red, green, blue);
-			
-			// Set output flag to success.
-			success = true;
-		}
-		else {
-			// Set output statement.
-			outputStatement.ref = headerString;
-			// Reset output flag.
-			success = false;
-		}
-		
-		// Reset the header buffer.
-		headerBuffer.clear();
-		
-		// Return result.
-		return success;
+		};
+		packetChannel.openReceivingSocket("localhost", port);
 	}
 	
 	/**
-	 * Get log message from the input buffer.
-	 * @param logMessageBuffer
+	 * Get socket address.
 	 * @return
-	 * @throws Exception 
 	 */
-	private String getLogMessage(ByteBuffer logMessageBuffer)
-			throws Exception {
+	public InetSocketAddress getSocketAddress() {
 		
-		// Prepare the log message buffer for reading.
-		logMessageBuffer.flip();
-		
-		// Get length of the nuffer.
-		int arrayLength = logMessageBuffer.limit();
-		byte [] bytes = new byte [arrayLength];
-		
-		// Read buffer contents.
-		logMessageBuffer.get(bytes);
-		
-		// Convert bytes into UTF-8 encoded string.
-		String logMessageText = new String(bytes, "UTF-8");
-		
-		// Reset the log message buffer.
-		logMessageBuffer.clear();
-		
-		// Return result.
-		return logMessageText;
+		InetSocketAddress socketAddress = packetChannel.getSocketAddress();
+		return socketAddress;
 	}
 	
 	/**
@@ -383,9 +169,129 @@ class LogConsole {
 	 * Returns number of logged records.
 	 * @return
 	 */
-	public int getRecordsCount() {
+	public synchronized int getRecordsCount() {
 		
 		int recordsCount = consoleRecords.size();
 		return recordsCount;
+	}
+	
+	/**
+	 * Try to run console statment.
+	 * @param messageRecord
+	 * @return
+	 */
+	public boolean runStatement(LogMessageRecord messageRecord) {
+		
+		boolean isStatement = false;
+		
+		// On clear console.
+		if ("CLEAR".equalsIgnoreCase(messageRecord.statment)) {
+			
+			// Clear console contents.
+			clear();
+			
+			// Set output flag.
+			isStatement = true;
+		}
+		
+		// Display statement in the log view.
+		if (isStatement) {
+			
+			// Append new record to the end of the list.
+			consoleRecords.add(messageRecord);
+		}
+		return isStatement;
+	}
+	
+	/**
+	 * Take new message record.
+	 * @param messageRecord
+	 */
+	public synchronized void cacheMessageRecord(LogMessageRecord messageRecord) {
+		
+		// Try to run console statement..
+		boolean success = runStatement(messageRecord);
+		if (success) {
+			return;
+		}
+
+		// Get current time.
+		LocalTime timeNow = LocalTime.now();
+		
+		messageRecord.consoleWriteTime = timeNow;
+
+		// Set maximum and minimum timestamp.
+		if (minimumTimestamp == null) {
+			minimumTimestamp = timeNow;
+		}
+		if (maximumTimestamp == null || maximumTimestamp.compareTo(timeNow) < 0) {
+			maximumTimestamp = timeNow;
+		}
+
+		// If number of records exceeds the maximum, remove 10 records from the beginning of the list.
+		int recordCount = consoleRecords.size();
+		if (recordCount > MAXIMUM_RECORDS) {
+			
+			for (int index = 0; index < 10; index++) {
+				consoleRecords.poll();
+			}
+		}
+		
+		// Append new record to the end of the list.
+		consoleRecords.add(messageRecord);
+		
+		update();
+	}
+	
+	/**
+	 * Update the text panel contents.
+	 */
+	protected synchronized void update() {
+		
+		// Check timestamps for null values.
+		if (maximumTimestamp == null || minimumTimestamp == null) {
+			return;
+		}
+
+		// Compile text contents.
+		Obj<String> contents = new Obj<String>("<html>");
+		
+		// TODO: <---FIX Concurrent modification error.
+		consoleRecords.forEach(messageRecord -> {
+			
+			String messageText = Utility.htmlSpecialChars(messageRecord.messageText);
+			String colorString = Utility.getCssColor(messageRecord.color);
+			String messageHtml = String.format("<div style='color: %s; font-family: Consolas; font-size: 14pt; white-space:nowrap;'>%s</div>", colorString, messageText);
+			contents.ref += messageHtml;
+		});
+		
+		// Set text of the text view.
+		textPane.setText(contents.ref);
+		
+		// Move caret to the end of the view.
+		int endPosition = textPane.getDocument().getLength();
+		textPane.setCaretPosition(endPosition);
+	}
+	
+	/**
+	 * Clear console content.
+	 */
+	public synchronized void clear() {
+		
+		consoleRecords.clear();
+		maximumTimestamp = null;
+		minimumTimestamp = null;
+		textPane.setText("");
+	}
+	
+	/**
+	 * Get string representation of console.
+	 */
+	@Override
+	public String toString() {
+		if (name == null) {
+			return "null " + super.toString();
+		}
+		return name + ' ' + super.toString();
 	}
 }

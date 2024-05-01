@@ -12,7 +12,6 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
-import org.multipage.util.j;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -103,9 +102,6 @@ public class XdebugPacketOld {
 		// Parse packet text
 		InputSource source = new InputSource(new StringReader(packetText));
 		xml = builder.parse(source);
-		
-		// TODO: <---DEBUGGER PARSED XML PACKET
-		j.log("PARSED XML PACKET: %s", packetText);
 	}
 	
 	/**

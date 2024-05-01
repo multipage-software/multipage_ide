@@ -169,7 +169,6 @@ import org.apache.commons.io.IOUtils;
 import org.multipage.gui.SearchTextDialog.Parameters;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
-import org.multipage.util.j;
 import org.w3c.dom.Node;
 
 import com.ibm.icu.text.CharsetDetector;
@@ -180,11 +179,6 @@ import com.ibm.icu.text.CharsetMatch;
  *
  */
 public class Utility {
-	
-	/**
-	 * Buffer size.
-	 */
-	private static final int BUFFER_SIZE = 1024;
 	
 	/**
 	 * Standard headers.
@@ -5223,8 +5217,8 @@ public class Utility {
 	 * @return
 	 */
     public static int min(int... numbers) {
-        return Arrays.stream(numbers)
-          .min().orElse(Integer.MAX_VALUE);
+    	
+        return Arrays.stream(numbers).min().orElse(Integer.MAX_VALUE);
     }
     
     /**
@@ -6148,86 +6142,6 @@ public class Utility {
     	Component component = editor.getComponent();
     	component.setFont(font);
     }
-    
-    /**
-     * Read bytes from input buffer until the terminal symbol is found. If the terminal is not found set
-     * the "terimnated" flag to false. 
-     * @param inputBuffer
-     * @param outputBuffer 
-     * @param terminalSymbol
-     * @param successfullyTerminated
-     * @return true value if the end of obuffer has been reached
-     */
-	public static boolean readUntil(ByteBuffer inputBuffer, Obj<ByteBuffer> outputBuffer, int bufferIncrease, byte [] terminalSymbol, Obj<Boolean> successfullyTerminated) {
-		
-		// Initialization.
-		int terminalLength = terminalSymbol.length;
-		int terminalIndex = 0;
-		
-		// TODO: <---DEBUG
-		j.logClear(3);
-		
-		// Do loop.
-		while (inputBuffer.hasRemaining()) {
-			
-			// Read current byte from the buffer.
-			byte theByte = inputBuffer.get();
-			
-			// TODO: <---DEBUG
-			j.log(3, Color.WHITE, "BUFFER BYTE [%02X]", theByte);
-			
-			// Disply input byte.
-			/*String className = Thread.currentThread().getStackTrace()[2].getClassName();
-			if ("org.maclan.server.XdebugListenerSession".equals(className)) {
-				if (theByte != 0) {
-					System.out.format("|%c", (char) theByte);
-				}
-				else {
-					System.out.format("|%c\n", (char) 0x2588);
-				}
-			}*/
-			
-			// Try to match bytes with the terminal symbol.
-			if (theByte == terminalSymbol[terminalIndex]) {
-				terminalIndex++;
-				if (terminalIndex >= terminalLength) {
-					break;
-				}
-				continue;
-			}
-			
-			// Check buffer capacity.
-			int limit = outputBuffer.ref.limit();
-			int capacity = outputBuffer.ref.capacity();
-			if (!outputBuffer.ref.hasRemaining() && limit >= capacity) {
-				
-				// Increase buffer capacity.
-				int increasedCapacity = outputBuffer.ref.capacity() + bufferIncrease;
-				ByteBuffer increasedOutputBuffer = ByteBuffer.allocate(increasedCapacity);
-				
-				outputBuffer.ref.flip();
-				
-				increasedOutputBuffer.put(outputBuffer.ref);
-				outputBuffer.ref = increasedOutputBuffer;
-			}
-			
-			// Output current byte.
-			try {
-				outputBuffer.ref.put(theByte);
-			}
-			catch (Exception e) {
-				j.log("LIMIT = %d\tCAPACITY = %d", limit, capacity);
-				e.printStackTrace();
-			}
-		}
-		
-		// If the termnal symbol was not found, set the output flag to false value.
-		successfullyTerminated.ref = terminalIndex >= terminalLength;
-		
-		// Return a value indicating wheter the input buffer has remaining bytes.
-		boolean endOfBuffer = !inputBuffer.hasRemaining();
-		return endOfBuffer;
-	}
 	
 	/**
 	 * Read bytes from input array until the terminal symbol is found. If the terminal is not found set
@@ -6307,16 +6221,17 @@ public class Utility {
 	}
 	
 	/**
-	 * Prepare input buffer for reuse.
+	 * Write MSB integer value to stream.
+	 * @param stream
 	 */
-	public static void reuseInputBuffer(ByteBuffer inputBuffer) {
+	public static void writeMsbInteger(OutputStream stream, int intValue) 
+			throws Exception {
 		
-		// Herein prepare input buffer for next write operation.
-		if (inputBuffer.hasRemaining()) {
-			inputBuffer.compact();
-		}
-		else {
-			inputBuffer.clear();
+		for (int index = 3; index >= 0; index--) {
+			
+			// Shift bytes to get the resulting byte.
+			byte theByte = (byte) (intValue >>> (index * 8));
+			stream.write(theByte);
 		}
 	}
 	
@@ -6384,5 +6299,22 @@ public class Utility {
 		}
 				
 		return stringList;
+	}
+	
+	/**
+	 * Pretty print of byte array.
+	 * @param bytes
+	 * @return
+	 */
+	public static String prettyPrint(byte [] bytes) {
+		
+		String bytesString = "[";
+		String divider = "";
+		for (int index = 0; index < bytes.length; index++) {
+			bytesString += String.format("%s%02X", divider, bytes[index]);
+			divider = ",";
+		}
+		bytesString += ']';
+		return bytesString;
 	}
 }

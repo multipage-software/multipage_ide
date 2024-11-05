@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <settings>
-  <string>C:\from_backup\multipage_ide\ProgramMiddle\src\org\maclan\properties</string>
+  <string>C:\from_backup\multipage_ide\ProgramGenerator\src\org\multipage\generator\properties</string>
   <java.awt.Rectangle>
     <x>0</x>
     <y>0</y>
@@ -227,19 +227,20 @@
     <width>500</width>
     <height>330</height>
   </java.awt.Rectangle>
+  <null/>
   <java.awt.Rectangle>
-    <x>345</x>
-    <y>154</y>
-    <width>1200</width>
-    <height>806</height>
+    <x>552</x>
+    <y>210</y>
+    <width>955</width>
+    <height>704</height>
   </java.awt.Rectangle>
   <linked-list>
     <program.localizer.LocalizerItem>
-      <filePath>C:\from_backup\multipage_ide\GeneralGui\src\org\multipage\gui\properties\messages_cz_CZ.properties</filePath>
-      <tabName>GUI</tabName>
+      <filePath>C:\from_backup\multipage_ide\ProgramMiddle\src\org\maclan\properties\messages_cz_CZ.properties</filePath>
+      <tabName>Middle</tabName>
       <columns>
         <column0>30</column0>
-        <column1>100</column1>
+        <column1>323</column1>
         <otherColumns>200</otherColumns>
       </columns>
     </program.localizer.LocalizerItem>
@@ -248,26 +249,17 @@
       <tabName>Generator</tabName>
       <columns>
         <column0>30</column0>
-        <column1>361</column1>
-        <otherColumns>387</otherColumns>
-      </columns>
-    </program.localizer.LocalizerItem>
-    <program.localizer.LocalizerItem>
-      <filePath>C:\from_backup\multipage_ide\ProgramMiddle\src\org\maclan\properties\messages_cz_CZ.properties</filePath>
-      <tabName>Middle</tabName>
-      <columns>
-        <column0>30</column0>
-        <column1>197</column1>
-        <otherColumns>455</otherColumns>
+        <column1>100</column1>
+        <otherColumns>200</otherColumns>
       </columns>
     </program.localizer.LocalizerItem>
   </linked-list>
-  <int>2</int>
+  <int>0</int>
   <java.awt.Rectangle>
-    <x>495</x>
-    <y>229</y>
+    <x>606</x>
+    <y>289</y>
     <width>707</width>
     <height>502</height>
   </java.awt.Rectangle>
-  <int>152</int>
+  <int>151</int>
 </settings>

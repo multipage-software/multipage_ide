@@ -3,7 +3,7 @@
  * 
  * Created on : 10-06-2023
  */
-package org.multipage.generator;
+package org.maclan.server;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -31,11 +31,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 
-import org.maclan.server.CurrentXdebugClientData;
-import org.maclan.server.XdebugCommand;
-import org.maclan.server.XdebugFeature;
-import org.maclan.server.XdebugListenerSession;
-import org.maclan.server.XdebugTransaction;
 import org.multipage.gui.Images;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;

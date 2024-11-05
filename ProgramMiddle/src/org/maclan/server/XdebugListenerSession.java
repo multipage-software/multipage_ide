@@ -6,6 +6,7 @@
  */
 package org.maclan.server;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -13,6 +14,7 @@ import java.nio.CharBuffer;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
+import java.nio.channels.ReadPendingException;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
@@ -20,6 +22,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -33,6 +37,7 @@ import org.multipage.gui.PacketSymbol;
 import org.multipage.util.Lock;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
+import org.multipage.util.j;
 
 /**
  * Xdebug listener session that stores session states and transactions.
@@ -178,6 +183,8 @@ public class XdebugListenerSession {
 	 * Callback invoked when the session is receives notifications.
 	 */
 	private Consumer<XdebugClientResponse> onNotificationLambda = null;
+
+	private ByteBuffer byteBuffer;
 	
 	/**
 	 * Cosntructor.
@@ -327,12 +334,74 @@ public class XdebugListenerSession {
 	 */
 	public boolean isOpen() {
 		
+		if (isFinished) {
+			return false;
+		}
+		
 		if (client == null) {
 			return false;
 		}
 		
 		boolean isOpen = client.isOpen();
-		return isOpen;
+		if (!isOpen) {
+			return false;
+		}
+		
+		final long IDLE_TIME_MS = 200L;
+		ByteBuffer byteBuffer = ByteBuffer.allocate(4);
+		
+		try {
+			Future<Integer> futureReadCount = client.read(byteBuffer);
+			Integer readCount = futureReadCount.get(IDLE_TIME_MS, TimeUnit.MILLISECONDS);
+			
+			if (readCount == null || readCount < 0) {
+				return false;
+			}
+			return true;
+		}
+		catch (ReadPendingException e) {
+			return true;
+		}
+		catch (Exception e) {
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Wait for this session to be closed.
+	 * @param timeoutMs
+	 */
+	public void waitForClosed(int timeoutMs) {
+		
+		final long IDLE_TIME_MS = 200L;
+		
+		ByteBuffer byteBuffer = ByteBuffer.allocate(4);
+		
+		// Wait until the client socket is closed or the timeout is reached.
+		long startTime = System.currentTimeMillis();
+		while (true) {
+			
+			long currentTime = System.currentTimeMillis();
+			long elapsed = currentTime - startTime;
+			
+			// If ellapsed time is greater than the timeout, exit method.
+			if (elapsed >= timeoutMs) {
+				break;
+			}
+			
+			// Check if the client socket is closed.
+			try {
+				Future<Integer> futureReadCount = client.read(byteBuffer);
+				Integer readCount = futureReadCount.get(IDLE_TIME_MS, TimeUnit.MILLISECONDS);
+				if (readCount == null || readCount < 0) {
+					break;
+				}
+			}
+			catch (Exception e) {
+				break;
+			}
+		}
 	}
 	
 	/**
@@ -755,6 +824,7 @@ public class XdebugListenerSession {
 						}
 					}
 					catch (Exception e) {
+						
 						onThrownException(e);
 					}
 				}
@@ -960,6 +1030,14 @@ public class XdebugListenerSession {
 			return;
 		}		
 		transaction = transactions.get(transactionId);
+		
+		// If transaction does not respond, remove it from transaction list and set transaction ID to -1.
+		boolean noResponse = !transaction.isResponseLambda();
+		if (noResponse) {
+			
+			transactions.remove(transactionId);
+			transaction.setTransactionId(-1);
+		}
 		
 		beginTransaction(transaction);
 	}
@@ -1417,7 +1495,7 @@ public class XdebugListenerSession {
 	}
 	
 	/**
-	 * Load Area Server context properties that can be placed in the debugger watch list.
+	 * Load Area Server context items that can be placed in the debugger watch list.
 	 * @param contextId
 	 * @param stackLevel
 	 * @param watchItemsLambda
@@ -1493,7 +1571,8 @@ public class XdebugListenerSession {
 		}
 		
 		XdebugListenerSession session = (XdebugListenerSession) obj;
-		return currentClientData.equals(session.currentClientData);
+		boolean success = session.sessionId == sessionId;
+		return success;
 	}
 	
 	/**

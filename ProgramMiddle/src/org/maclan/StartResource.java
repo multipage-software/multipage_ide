@@ -55,4 +55,14 @@ public class StartResource {
 		this.notLocalized = notLocalized;
 		this.foundArea = foundArea;
 	}
+
+	/**
+	 * Get string representation.
+	 */
+	@Override
+	public String toString() {
+		
+		String areaDescription = foundArea.getDescriptionForced(true); 
+		return String.format("Resource (%d), area: %s, mime: %s", resourceId, areaDescription, mimeType);
+	}
 }

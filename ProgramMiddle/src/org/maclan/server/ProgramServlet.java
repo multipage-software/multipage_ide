@@ -434,7 +434,7 @@ public class ProgramServlet extends FastCGIServlet {
 							
 							// Initialize debugging.
 							boolean isDebugged = isDebuggingEnabled();
-							areaServer.setDebugged(isDebugged);
+							areaServer.setDebuggerEnabled(isDebugged);
 							
 							// Set listener.
 							areaServer.setListener(new AreaServerListener() {
@@ -462,7 +462,7 @@ public class ProgramServlet extends FastCGIServlet {
 							// Show possible text IDs.
 							areaServer.setShowLocalizedTextIds(request.getParameter("l") != null);
 							
-							// Load page.
+							// Load area page. 
 							processResponse = areaServer.loadAreaPage(middle, blocks, analysis, request, response);
 						}
 						

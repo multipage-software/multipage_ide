@@ -4,6 +4,7 @@ import java.util.LinkedList;
 
 import javax.swing.JTextPane;
 
+import org.multipage.generator.LoggingDialog.LoggedMessage;
 import org.multipage.gui.Utility;
 
 /**

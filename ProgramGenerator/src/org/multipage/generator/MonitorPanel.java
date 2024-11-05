@@ -101,7 +101,6 @@ public class MonitorPanel extends Panel implements TabItemInterface, NonCyclingR
 		// Ensure the panel is visible and open the browser.
 		setVisible(true);
 		openBrowser(url);
-		
 		setListeners();
 	}
 
@@ -110,16 +109,15 @@ public class MonitorPanel extends Panel implements TabItemInterface, NonCyclingR
 	 */
 	private void openBrowser(String url) {
 		
-		// TODO: <---FIX When this panel is removed the application exits.
 		// Try to open SWT browser (with native code).
 		SwingUtilities.invokeLater(() -> {
 			
-			swtBrowser = SwtBrowserCanvas.createLater(browserCanvas -> {
+			swtBrowser = SwtBrowserCanvas.createBrowserCanvas(browserCanvas -> {
 				
 				// Add SWT browser into center of the panel.
 				MonitorPanel.this.add(browserCanvas, BorderLayout.CENTER);
 				
-				// Load the URL provided.
+				// Retur URL to load.
 				return url;
 			}
 			,
@@ -163,6 +161,11 @@ public class MonitorPanel extends Panel implements TabItemInterface, NonCyclingR
 	 * @param urlChanged
 	 */
 	private void onUrlChanged(String urlChanged) {
+		
+		// Update main panel.
+		SwingUtilities.invokeLater(() -> {
+			MonitorPanel.this.revalidate();
+		});
 		
 		// If there exists requested area ID, display the area properties.
 		if (urlChanged == null || urlChanged.isEmpty()) {
@@ -307,7 +310,7 @@ public class MonitorPanel extends Panel implements TabItemInterface, NonCyclingR
 		
 		MonitorPanel.this.remove(swtBrowser);
 		
-		swtBrowser = SwtBrowserCanvas.createLater(
+		swtBrowser = SwtBrowserCanvas.createBrowserCanvas(
 			browser -> {
 			
 				// Add SWT browser to the center of the panel.

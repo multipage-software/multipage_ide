@@ -219,7 +219,7 @@ public class DebugInfo {
 		
 		// Set initial operation and "can isit" flag.
 		debugInfo.debugOperation = XdebugOperation.step_into;
-		debugInfo.setCanVisit(true);
+		debugInfo.setCanDebug(true);
 	}
 	
 	/**
@@ -341,7 +341,7 @@ public class DebugInfo {
 			return;
 		}
 		
-		boolean canVisit = debugInfo.canVisit();
+		boolean canVisit = debugInfo.canDebug();
 		if (!canVisit) {
 			return;
 		}
@@ -473,12 +473,12 @@ public class DebugInfo {
 		// Set timeouts.
 		long startDelayMs = 0L;
 		long idleTimeMs = 200L;
-		long timeoutMs = 3000L;
+		long timeoutMs = 30000L;
 		
 		// Wait for server final operations.
-		debugClient.notifyFinalDebugInfo();
-		
-		RepeatedTask.loopBlocking("WaitDebuggerFinish" + threadIdText, startDelayMs, idleTimeMs, timeoutMs, (isRunning, exception) -> {
+		debugClient.notifyFinalDebugInfo(server);
+
+		RepeatedTask.loopBlocking("WaitDebuggerFinished" + threadIdText, startDelayMs, idleTimeMs, timeoutMs, (isRunning, exception) -> {
 			
 			boolean serverFinished = debugClient.isServerFinished();
 			if (serverFinished) {
@@ -532,7 +532,7 @@ public class DebugInfo {
 		
 		// Set if debgger can visit sub level.
 		boolean canVisitSubLevel = debugOperation.canStepSubLevel();
-		clonedDebugInfo.setCanVisit(canVisitSubLevel);
+		clonedDebugInfo.setCanDebug(canVisitSubLevel);
 				 
 		return clonedDebugInfo;
 	}
@@ -551,19 +551,19 @@ public class DebugInfo {
 		boolean wasDebugged = wasDebugged();
 		if (XdebugOperation.step_over.equals(debugOperation)) {
 			
-			setCanVisit(wasDebugged);
+			setCanDebug(wasDebugged);
 			return;
 		}
 		
 		wasDebugged = wasDebugged();
 		if (XdebugOperation.step_out.equals(debugOperation)) {
 			
-			debugSubInfo.setCanVisit(wasDebugged);
+			debugSubInfo.setCanDebug(wasDebugged);
 			return;
 		}
 		
 		boolean canVisitSuperLevel = debugSubInfo.debugOperation.canStepSuperLevel();
-		setCanVisit(canVisitSuperLevel);
+		setCanDebug(canVisitSuperLevel);
 	}
 	
 	/**
@@ -770,7 +770,7 @@ public class DebugInfo {
 	 * Get flag that indicates whether debugger can debug current Area Server state
 	 * @return
 	 */
-	public boolean canVisit() {
+	public boolean canDebug() {
 		
 		return canDebug;
 	}
@@ -779,7 +779,7 @@ public class DebugInfo {
 	 * Set flag that indicates whether debugger can debug current Area Server state.
 	 * @param canDebug
 	 */
-	public void setCanVisit(boolean canDebug) {
+	public void setCanDebug(boolean canDebug) {
 		
 		this.canDebug = canDebug;
 	}

@@ -6,7 +6,6 @@
  */
 package org.multipage.gui;
 
-import java.awt.Color;
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
@@ -14,7 +13,6 @@ import java.nio.channels.CompletionHandler;
 
 import org.multipage.util.Obj;
 import org.multipage.util.RepeatedTask;
-import org.multipage.util.j;
 
 /**
  * Packet channel that uses sockets, server side.

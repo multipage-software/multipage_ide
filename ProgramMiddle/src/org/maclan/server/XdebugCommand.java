@@ -195,10 +195,7 @@ public class XdebugCommand {
            			}
            		}
            	}
-           	// Check if the transaction ID has been set.
-           	if (command.transactionId == -1) {
-               Utility.throwException("org.maclan.server.messageCannotParseXdebugCommandTransactionId", statementText);
-           	}
+           	
            	command.arguments = argumentList.toArray(new String[argumentList.size()][]);
            	
            	// Get command data.
@@ -287,5 +284,15 @@ public class XdebugCommand {
 	public int getTransactionId() {
 		
 		return transactionId;
+	}
+	
+	/**
+	 * Check if transaction sends response.
+	 * @return
+	 */
+	public boolean awaitingResponse() {
+
+		boolean awaitingResponse = (transactionId >= 0);
+		return awaitingResponse;
 	}
 }

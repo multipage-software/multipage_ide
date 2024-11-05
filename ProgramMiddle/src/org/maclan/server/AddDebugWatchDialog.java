@@ -3,7 +3,7 @@
  * 
  * Created on : 01-06-2024
  */
-package org.multipage.generator;
+package org.maclan.server;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -22,8 +22,6 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.SpringLayout;
 
-import org.maclan.server.DebugWatchItem;
-import org.maclan.server.DebugWatchItemType;
 import org.multipage.gui.Images;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
@@ -62,7 +60,7 @@ public class AddDebugWatchDialog extends JDialog {
 	private JButton buttonOk;
 	private JButton buttonCancel;
 	private JComboBox<String> comboName;
-	private JComboBox<DebugWatchItemType> comboType;
+	private JComboBox<DebugWatchGroup> comboType;
 	private JLabel labelType;
 	private JLabel labelName;
 
@@ -118,7 +116,7 @@ public class AddDebugWatchDialog extends JDialog {
 		AddDebugWatchDialog dialog = new AddDebugWatchDialog(parent);
 		
 		// Load combo box items.
-		DebugWatchItemType selectedType = dialog.getSelectedType();
+		DebugWatchGroup selectedType = dialog.getSelectedType();
 		dialog.loadComboWatchedItems(watchItems, selectedType);
 		
 		dialog.setVisible(true);
@@ -254,7 +252,7 @@ public class AddDebugWatchDialog extends JDialog {
 	 */
 	protected void onSelectType() {
 		
-		DebugWatchItemType type = getSelectedType();
+		DebugWatchGroup type = getSelectedType();
 		loadComboWatchedItems(watchItems, type);
 	}
 	
@@ -263,7 +261,7 @@ public class AddDebugWatchDialog extends JDialog {
 	 * @param watchItems
 	 * @param type
 	 */
-	private void loadComboWatchedItems(LinkedList<DebugWatchItem> watchItems, DebugWatchItemType type) {
+	private void loadComboWatchedItems(LinkedList<DebugWatchItem> watchItems, DebugWatchGroup type) {
 		
 		// Load watched items.
 		comboName.removeAllItems();
@@ -274,7 +272,7 @@ public class AddDebugWatchDialog extends JDialog {
 		
 		for(DebugWatchItem item : watchItems) {
 			
-			DebugWatchItemType itemType = item.getType();
+			DebugWatchGroup itemType = item.getType();
 			if (itemType == type) {
 				
 				String watchedItemName = item.getName();
@@ -290,9 +288,9 @@ public class AddDebugWatchDialog extends JDialog {
 	 * Get selected watch item type.
 	 * @return
 	 */
-	private DebugWatchItemType getSelectedType() {
+	private DebugWatchGroup getSelectedType() {
 		
-		DebugWatchItemType type = (DebugWatchItemType) comboType.getSelectedItem();
+		DebugWatchGroup type = (DebugWatchGroup) comboType.getSelectedItem();
 		return type;
 	}
 	
@@ -324,8 +322,8 @@ public class AddDebugWatchDialog extends JDialog {
 	 */
 	private void loadWatchTypes() {
 		
-		DebugWatchItemType [] types = DebugWatchItemType.values();
-		for (DebugWatchItemType type : types) {
+		DebugWatchGroup [] types = DebugWatchGroup.values();
+		for (DebugWatchGroup type : types) {
 			
 			comboType.addItem(type);
 		}
@@ -339,10 +337,10 @@ public class AddDebugWatchDialog extends JDialog {
 		
 		// Get watch item type.
 		Object selectedObject = comboType.getSelectedItem();
-		if (!(selectedObject instanceof DebugWatchItemType)) {
+		if (!(selectedObject instanceof DebugWatchGroup)) {
 			return null;
 		}
-		DebugWatchItemType itemType = (DebugWatchItemType) selectedObject;
+		DebugWatchGroup itemType = (DebugWatchGroup) selectedObject;
 		
 		// Get watch item name.
 		String itemName = comboName.getEditor().getItem().toString();

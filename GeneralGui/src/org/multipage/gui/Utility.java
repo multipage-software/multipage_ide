@@ -4950,8 +4950,8 @@ public class Utility {
 	
 	/**
 	 * Traverse tree elements
-	 * @param tree
-	 * @param object
+	 * @param tree - input tree
+	 * @param callbackFunction - callback lambda function
 	 */
 	public static void traverseElements(JTree tree, Function<Object, Function<DefaultMutableTreeNode, Function<DefaultMutableTreeNode, Boolean>>> callbackFunctions) {
 		

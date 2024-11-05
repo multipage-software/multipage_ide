@@ -44,7 +44,7 @@ public final class SwtBrowserCanvas extends Canvas {
 	/**
 	 * Indicates that SWT is available for the OS.
 	 */
-	private static Boolean swtAvailable = false;
+	private static boolean swtAvailable = false;
 	
 	/**
 	 * Set of created shells.
@@ -190,13 +190,13 @@ public final class SwtBrowserCanvas extends Canvas {
     }
     
     /**
-     * Create browser canvas later on SWT thread.
+     * Create browser canvas.
      * @return
      */
-	public static SwtBrowserCanvas createLater(Function<SwtBrowserCanvas, String> initialUrlLambda, Consumer<String> locationChangedLambda) {
+	public static SwtBrowserCanvas createBrowserCanvas(Function<SwtBrowserCanvas, String> initialUrlLambda, Consumer<String> locationChangedLambda) {
 		
 		// Check if the SWT thread is available (started).
-		if (swtAvailable != null && swtAvailable == false) {
+		if (swtAvailable == false) {
 			return null;
 		}
 		
@@ -269,8 +269,10 @@ public final class SwtBrowserCanvas extends Canvas {
 		            
 		            setWebEngineListeners(browser, locationChangedLambda);
 		
-		            // This action must be executed on the SWT thread
-		            browser.getDisplay().asyncExec(() -> {
+		            // Set URL must be executed on the SWT thread.
+		            Display display = browser.getDisplay();
+		            
+		            display.asyncExec(() -> {
 		            	browser.setUrl(initialUrl);
 		            });
 		            

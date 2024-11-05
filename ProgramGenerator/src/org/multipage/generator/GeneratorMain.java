@@ -23,6 +23,7 @@ import org.maclan.MiddleUtility;
 import org.maclan.help.Intellisense;
 import org.maclan.help.ProgramHelp;
 import org.maclan.server.AreaServer;
+import org.maclan.server.DebugViewer;
 import org.maclan.server.ProgramHttpServer;
 import org.multipage.basic.ProgramBasic;
 import org.multipage.gui.GeneralGui;
@@ -262,7 +263,10 @@ public class GeneratorMain {
 			ProgramHttpServer httpServer = ProgramBasic.startHttpServer(Settings.getHttpPortNumber(), !ProgramBasic.isUsedLogin());
 			
 			// Attach Area Server debugger to the debug viewer.
-			DebugViewer.getInstance().attachDebuggerListener(httpServer.getDebugger());
+			DebugViewer debugViewer = DebugViewer.getInstance();
+			if (debugViewer != null) {
+				debugViewer.attachDebuggerListener(httpServer.getDebuggerListener());
+			}
 
 			// Initialize main frame class. Create and show main frame.
 			GeneratorMainFrame mainFrame = new GeneratorMainFrame();

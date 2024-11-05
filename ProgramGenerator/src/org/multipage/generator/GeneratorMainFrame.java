@@ -63,6 +63,7 @@ import org.maclan.VersionObj;
 import org.maclan.help.HelpUtility;
 import org.maclan.server.AreaServer;
 import org.maclan.server.BrowserParameters;
+import org.maclan.server.DebugViewer;
 import org.maclan.server.ProgramServlet;
 import org.maclan.server.TextRenderer;
 import org.multipage.basic.ProgramBasic;

@@ -139,6 +139,25 @@ public class XdebugTransaction {
 	}
 	
 	/**
+	 * Returns true value if response lambda is not null.
+	 * @return
+	 */
+	public boolean isResponseLambda() {
+		
+		boolean isResponse = (responseLambda != null);
+		return isResponse;
+	}
+	
+	/**
+	 * Set transaction ID.
+	 * @param transactionId
+	 */
+	public void setTransactionId(int transactionId) {
+		
+		id = transactionId;
+	}
+	
+	/**
 	 * Check completed bytes.
 	 * @param bytesWritten
 	 */

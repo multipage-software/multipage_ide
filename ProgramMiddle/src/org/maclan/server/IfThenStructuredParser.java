@@ -138,9 +138,6 @@ public class IfThenStructuredParser extends ParserBase {
 	
 	/**
 	 * Parse IF command texts.
-	 * @param server
-	 * @param text
-	 * @param position
 	 * @param resolvedText
 	 * @return
 	 */

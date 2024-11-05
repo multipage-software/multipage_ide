@@ -22,6 +22,9 @@ import java.util.concurrent.Future;
 import java.util.function.Function;
 
 import org.maclan.Area;
+import org.maclan.Language;
+import org.maclan.StartResource;
+import org.maclan.VersionObj;
 import org.multipage.gui.Packet;
 import org.multipage.gui.PacketBlock;
 import org.multipage.gui.PacketChannel;
@@ -31,7 +34,6 @@ import org.multipage.gui.PacketSymbol;
 import org.multipage.gui.Utility;
 import org.multipage.util.Lock;
 import org.multipage.util.Resources;
-import org.multipage.util.j;
 
 /**
  * Xdebug client for Area Server (a client connected to the XdebugServer).
@@ -84,7 +86,7 @@ public class XdebugClient {
 	public static final String SERVER_CONTEXT = "Server";
 	
 	/**
-	 * Packet session.
+	 * Client packet session.
 	 */
 	private PacketSession packetSession = null;
 
@@ -146,7 +148,7 @@ public class XdebugClient {
 	/**
 	 * Enables Xdebug with multiple sessions.
 	 */
-	private boolean multipleSessions = true;
+	private boolean multipleSessions = false;
 	
 	/**
 	 * Static constructor.
@@ -261,9 +263,8 @@ public class XdebugClient {
 						}
 					};
 					// Send INIT packet to Xdebug server on IDE side.
-			        XdebugClientResponse initPacket;
 					try {
-						initPacket = XdebugClientResponse.createInitPacket(breakPointUri);
+						XdebugClientResponse initPacket = XdebugClientResponse.createInitPacket(breakPointUri);
 						AsynchronousSocketChannel clientChannel = packetChannel.getClientSocketChannel();
 						sendResponsePacket(clientChannel, initPacket);
 					}
@@ -303,7 +304,7 @@ public class XdebugClient {
 		if (clientSocketChannel == null) {
             return false;
         }
-        
+		
         // Check if the client socket channel is connected.
 		try {
 			SocketAddress clientSocketAddress = clientSocketChannel.getRemoteAddress();
@@ -312,6 +313,7 @@ public class XdebugClient {
 	        }
 		}
 		catch (Exception e) {
+			onException(e);
 		}
 		return false;
 	}
@@ -404,16 +406,20 @@ public class XdebugClient {
 	    	
 	    	// Process the command and get response packet.
 	    	if (processCommandLambda != null) {
+	    		
+	    		boolean awaitingResponse = command.awaitingResponse();
 		        XdebugClientResponse responsePacket = processCommandLambda.apply(command);
 		        
-		        // Send response packet back to the debugger server (on the IDE side).
-		        AsynchronousSocketChannel clientSocketChannel = packetChannel.getClientSocketChannel();
-		        if (responsePacket != null) {
-		        	sendResponsePacket(clientSocketChannel, responsePacket);
-		        }
-		        else {
-		        	// Command error response.
-		        	sendErrorPacket(clientSocketChannel, command, XdebugError.UNKNOWN_ERROR);
+		        if (awaitingResponse) {
+			        // Send response packet back to the debugger server (on the IDE side).
+			        AsynchronousSocketChannel clientSocketChannel = packetChannel.getClientSocketChannel();
+			        if (responsePacket != null) {
+			        	sendResponsePacket(clientSocketChannel, responsePacket);
+			        }
+			        else {
+			        	// Command error response.
+			        	sendErrorPacket(clientSocketChannel, command, XdebugError.UNKNOWN_ERROR);
+			        }
 		        }
 			}
 		}
@@ -500,7 +506,7 @@ public class XdebugClient {
 				
 				// Write the buffer with response bytes into socket channel.
 				Future<Integer> sent = clientSocketChannel.write(buffer);
-				int sentBytes = sent.get();
+				sent.get();
 			}
 			catch (Exception e) {
 				onThrownException(e);
@@ -584,6 +590,8 @@ public class XdebugClient {
 			}
 			else if ("server_finished".equals(propertyName)) {
 				setServerFinished();
+				// The "server finished" doesn't send a response (the connection will be closed).
+				return null;
 			}
 			
 			XdebugClientResponse resultPacket = setPropertyResponse(command, server);
@@ -619,7 +627,7 @@ public class XdebugClient {
 			XdebugClientResponse resultPacket = continuationCommandResponse(command, server);
 			
 			debugInfo.setDebugged(true);
-			debugInfo.setCanVisit(false);
+			debugInfo.setCanDebug(false);
 			
             return resultPacket;				
 		}
@@ -633,7 +641,7 @@ public class XdebugClient {
 			XdebugClientResponse resultPacket = continuationCommandResponse(command, server);
 			
 			debugInfo.setDebugged(true);
-			debugInfo.setCanVisit(true);
+			debugInfo.setCanDebug(true);
 			
             return resultPacket;
 		}
@@ -647,7 +655,7 @@ public class XdebugClient {
 			XdebugClientResponse resultPacket = continuationCommandResponse(command, server);
 			
 			debugInfo.setDebugged(true);
-			debugInfo.setCanVisit(true);
+			debugInfo.setCanDebug(true);
 			
             return resultPacket;
 		}
@@ -661,7 +669,7 @@ public class XdebugClient {
 			XdebugClientResponse resultPacket = continuationCommandResponse(command, server);
 			
 			debugInfo.setDebugged(true);
-			debugInfo.setCanVisit(false);
+			debugInfo.setCanDebug(false);
 			
             return resultPacket;
 		}
@@ -675,7 +683,7 @@ public class XdebugClient {
 			XdebugClientResponse resultPacket = continuationCommandResponse(command, server);
 			
 			debugInfo.setDebugged(true);
-			debugInfo.setCanVisit(false);
+			debugInfo.setCanDebug(false);
 			
             return resultPacket;
 		}
@@ -841,13 +849,14 @@ public class XdebugClient {
 	
 	/**
 	 * Notify server that final debugger information is set.
+	 * @param server 
 	 * @throws Exception 
 	 */
-	public void notifyFinalDebugInfo()
+	public void notifyFinalDebugInfo(AreaServer server)
 			throws Exception {
 		
 		// Create notification packet.
-		XdebugClientResponse notification = XdebugClientResponse.createFinalNotification();
+		XdebugClientResponse notification = XdebugClientResponse.createFinalNotification(server);
 		
 		// Send notification to the server.
     	AsynchronousSocketChannel clientSocketChannel = packetChannel.getClientSocketChannel();
@@ -923,7 +932,7 @@ public class XdebugClient {
 		if (contextId == localContextId) {
 
 			// Create response for block variable.
-			if (DebugWatchItemType.blockVariable.checkTypeName(propertyType)) {
+			if (DebugWatchGroup.BLOCK_VARIABLE.checkTypeName(propertyType)) {
 				response = XdebugClientResponse.createBlockVariableResponse(command, state, propertyName);
 			}
 		}
@@ -931,7 +940,7 @@ public class XdebugClient {
 		else if (contextId == tagContextId) {
 			
 			// Create response for tag property.
-			if (DebugWatchItemType.tagProperty.checkTypeName(propertyType)) {
+			if (DebugWatchGroup.TAG_PROPERTY.checkTypeName(propertyType)) {
 				response = XdebugClientResponse.createTagPropertyResponse(command, state, propertyName);
 			}
 		}
@@ -939,9 +948,17 @@ public class XdebugClient {
 		else if (contextId == areaContextId) {
 			
 			// Create response for area property.
-			if (DebugWatchItemType.areaProperty.checkTypeName(propertyType)) {
-				response = XdebugClientResponse.createAreaPropertyResponse(command, state, propertyName);
+			if (DebugWatchGroup.AREA.checkTypeName(propertyType)) {
+				response = XdebugClientResponse.createAreaPropertyResponse(command, areaServer, propertyName);
 			}
+		}
+		// For server context.
+		else if (contextId == serverContextId) {
+			
+			// Create response for server property.
+			if (DebugWatchGroup.SERVER.checkTypeName(propertyType)) {
+				response = XdebugClientResponse.createServerPropertyResponse(command, areaServer, propertyName);
+			}			
 		}
 		
 		// Return response. If it is null, the error packet is sent to the server.
@@ -1148,7 +1165,11 @@ public class XdebugClient {
 		}
 		// Load area properties.
 		else if (CONTEXTS.get(AREA_CONTEXT).equals(contextId)) {
-			loadAreaProperties(watchItems, contextId, state);
+			loadAreaProperties(watchItems, contextId, areaServer);
+		}
+		// Load server properties.
+		else if (CONTEXTS.get(SERVER_CONTEXT).equals(contextId)) {
+			loadServerProperties(watchItems, contextId, areaServer);
 		}
 		
 		// Create response packet.
@@ -1206,7 +1227,7 @@ public class XdebugClient {
 		String tagName = tagInfo.getTagName();
 		Properties tagProperties = tagInfo.getProperties();
 		
-		DebugWatchItemType type = DebugWatchItemType.tagProperty;
+		DebugWatchGroup type = DebugWatchGroup.TAG_PROPERTY;
 		
 		// Load tag properties to the watch list.
 		for (Entry<Object, Object> entry : tagProperties.entrySet()) {
@@ -1232,32 +1253,134 @@ public class XdebugClient {
 	 * Load area properties.
 	 * @param watchItems
 	 * @param contextId
-	 * @param state
+	 * @param server
 	 */
-	private void loadAreaProperties(LinkedList<DebugWatchItem> watchItems, int contextId, AreaServerState state) {
+	private void loadAreaProperties(LinkedList<DebugWatchItem> watchItems, int contextId, AreaServer server) {
 		
-		DebugWatchItemType type = DebugWatchItemType.areaProperty;
+		DebugWatchGroup type = DebugWatchGroup.AREA;
+		AreaServerState state = server.state;
 		
 		// Create this area watch item and add it to the list.
+		String valueTypeText = DebugWatchItemType.AREA.getName();
+		
 		Area thisArea = state.area;
 		String thisAreaText = (thisArea != null ? thisArea.getDescriptionForced(true) : "*unknown*");
 		
-		DebugWatchItem watchItem = new DebugWatchItem(type, "thisArea", "thisArea", thisAreaText, "Area");
+		DebugWatchItem watchItem = new DebugWatchItem(type, "thisArea", "thisArea", thisAreaText, valueTypeText);
 		watchItems.add(watchItem);
 		
 		// Create requested area watch item and add it to the list.
 		Area requestedArea = state.requestedArea;
 		String requestedAreaText = (requestedArea != null ? requestedArea.getDescriptionForced(true) : "*unknown*");
 		
-		watchItem = new DebugWatchItem(type, "requestedArea", "requestedArea", requestedAreaText, "Area");
+		watchItem = new DebugWatchItem(type, "requestedArea", "requestedArea", requestedAreaText, valueTypeText);
 		watchItems.add(watchItem);
 		
 		// Create start area watch item and add it to the list.
 		Area startArea = state.startArea;
 		String startAreaText = (startArea != null ? startArea.getDescriptionForced(true) : "*unknown*");
 		
-		watchItem = new DebugWatchItem(type, "startArea", "startArea", startAreaText, "Area");
+		watchItem = new DebugWatchItem(type, "startArea", "startArea", startAreaText, valueTypeText);
 		watchItems.add(watchItem);
+		
+		// Create home area watch item and add it to the list.
+		String homeAreaText = "*unknown*";
+		try {
+			Area homeArea = server.getHomeArea();
+			if (homeArea != null) {
+				homeAreaText = homeArea.getDescriptionForced(true);
+			}
+		}
+		catch (Exception e) {
+            onException(e);
+        }
+		
+		watchItem = new DebugWatchItem(type, "homeArea", "homeArea", homeAreaText, valueTypeText);
+		watchItems.add(watchItem);
+		
+		// Create current area version watch item and add it to the list.
+		valueTypeText = DebugWatchItemType.VERSION.getName();
+		
+		String currentVersionText = "*unknown*";
+		try {
+			VersionObj currentVersion = server.geCurrentVersion();
+			if (currentVersion != null) {
+                currentVersionText = currentVersion.getDescriptionWithId();
+            }	
+		}
+		catch (Exception e) {
+            onException(e);
+        }
+
+		watchItem = new DebugWatchItem(type, "currentVersion", "currentVersion", currentVersionText, valueTypeText);
+		watchItems.add(watchItem);
+		
+		// Create current language watch item and add it to the list.
+		valueTypeText = DebugWatchItemType.LANGUAGE.getName();
+		
+		String currentLanguageText = "*unknown*";
+		try {
+			Language currentLanguage = server.getCurrentLanguage();
+			if (currentLanguage != null) {
+				currentLanguageText = currentLanguage.toString();
+            }	
+		}
+		catch (Exception e) {
+            onException(e);
+        }
+
+		watchItem = new DebugWatchItem(type, "currentLanguage", "currentLanguage", currentLanguageText, valueTypeText);
+		watchItems.add(watchItem);
+		
+		// Create current start resource watch item and add it to the list.
+		valueTypeText = DebugWatchItemType.START_RESOURCE.getName();
+		
+		String currentResourceText = "*unknown*";
+		try {
+			StartResource startResource = server.getCurrentStartResource();
+			if (startResource != null) {
+				currentResourceText = startResource.toString();
+            }	
+		}
+		catch (Exception e) {
+            onException(e);
+        }
+
+		watchItem = new DebugWatchItem(type, "startResource", "startResource", currentResourceText, valueTypeText);
+		watchItems.add(watchItem);
+	}
+	
+	/**
+	 * Load server properties.
+	 * @param watchItems
+	 * @param contextId
+	 * @param state
+	 */
+	private void loadServerProperties(LinkedList<DebugWatchItem> watchItems, int contextId, AreaServer server) {
+		
+		DebugWatchGroup type = DebugWatchGroup.SERVER;
+		
+		try {
+			// Get server URL and add it to the list.
+			String serverUrl = server.getServerUrl();
+			DebugWatchItem watchItem = new DebugWatchItem(type, "serverUrl", "serverUrl", serverUrl, "String");
+			watchItems.add(watchItem);
+		}
+		catch (Exception e) {
+            onException(e);
+        }
+		
+		try {
+			// Get current server level and add it to the list.
+			long serverLevel = server.getServerLevel();
+			String serverLevelText = String.valueOf(serverLevel);
+			
+			DebugWatchItem watchItem = new DebugWatchItem(type, "serverLevel", "serverLevel", serverLevelText, "Long");
+			watchItems.add(watchItem);
+		}
+		catch (Exception e) {
+            onException(e);
+        }
 	}
 	
 	/**

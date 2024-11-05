@@ -58,34 +58,6 @@ import org.multipage.util.Obj;
 import org.multipage.util.Resources;
 
 /**
- * Area Server helper class.
- * @author
- */
-class AreasListGetter {
-
-	/**
-	 * Get area list.
-	 * @param area 
-	 * @return
-	 */
-	LinkedList<Area> getAreaList(Area area) throws Exception {
-
-		return null;
-	}
-
-	/**
-	 * Get relation.
-	 * @param area
-	 * @param relatedAreaId
-	 * @return
-	 */
-	AreaRelation getRelation(Area area, long relatedAreaId) {
-		
-		return null;
-	}
-}
-
-/**
  * Area Server class.
  * @author vakol
  */
@@ -94,10 +66,10 @@ public class AreaServer {
 	/**
 	 * Left and right bracket tags.
 	 */
-	public static final String leftBracketTag =  "@lb;";
-	public static final String rightBracketTag =  "@rb;";
-	public static final String leftHtmlBracketTag =  "@l;";
-	public static final String rightHtmlBracketTag =  "@r;";
+	public static final String leftBracketTag = "@lb;";
+	public static final String rightBracketTag = "@rb;";
+	public static final String leftHtmlBracketTag = "@l;";
+	public static final String rightHtmlBracketTag = "@r;";
 	public static final String atTag = "@at;";
 	public static final String newLineTag = "@nl;";
 	
@@ -398,7 +370,7 @@ public class AreaServer {
 	 * Set flag indicating that the Area Server is debugged.
 	 * @param isDebuggerEnabled
 	 */
-	public void setDebugged(boolean isDebuggerEnabled) {
+	public void setDebuggerEnabled(boolean isDebuggerEnabled) {
 		
 		this.enabledDebugger = isDebuggerEnabled;
 	}
@@ -423,7 +395,7 @@ public class AreaServer {
 			return;
 		}
 		
-		debugInfo.setCanVisit(canVisit);
+		debugInfo.setCanDebug(canVisit);
 	}
 	
 	/**
@@ -2006,6 +1978,28 @@ public class AreaServer {
 	}
 	
 	/**
+	 * Get current version object.
+	 * @return
+	 * @throws Exception
+	 */
+	public VersionObj geCurrentVersion() throws Exception {
+		
+		long currentVersionId = getCurrentVersionId();
+		
+        VersionObj currentVersion = getVersion(currentVersionId);
+        return currentVersion;
+	}
+	
+	/**
+	 * Get current server level.
+	 * @return
+	 */
+	public long getServerLevel() {
+		
+		return state.level;
+	}
+	
+	/**
 	 * Get language.
 	 * @param languageId
 	 * @return
@@ -2445,6 +2439,25 @@ public class AreaServer {
 		}
 		
 		return startResource.ref;
+	}
+	
+	/**
+	 * Get current start resource.
+	 * @return
+	 */
+	public StartResource getCurrentStartResource() {
+		
+		try {
+			long areaId = state.area.getId();
+			long versionId = state.currentVersionId;
+			
+			StartResource startResource = getStartResource(areaId, versionId);
+			return startResource;
+		}
+		catch (Exception e) {
+            e.printStackTrace();
+        }
+		return null;
 	}
 
 	/**
@@ -4889,7 +4902,7 @@ public class AreaServer {
 							if (executeApiOperation(processResponse, ApiCallType.apiCallForAreaServerResult, textString)) {
 								
 								// On error
-								// Finalize page loading
+								// Finalize page loading.
 								finalizeAreaPageLoading(result, response2);
 								
 								return processResponse.ref;
@@ -4920,18 +4933,27 @@ public class AreaServer {
 	 */
 	private void closeDebugger() {
 		
-		DebugInfo debugInfo = state.debugInfo;
-		if (debugInfo == null) {
-			return;
+		try {
+			DebugInfo debugInfo = state.debugInfo;
+			if (debugInfo == null) {
+				return;
+			}
+			
+			XdebugClient client = debugInfo.getDebugClient();
+			if (client == null) {
+				return;
+			}
+			
+			boolean isConnected = client.isConnected();
+			if (isConnected) {
+				client.close();
+			}
+			
+			debugInfo.setDebugClient(null);
 		}
-		
-		XdebugClient client = debugInfo.getDebugClient();
-		if (client == null) {
-			return;
-		}
-		
-		client.close();
-		debugInfo.setDebugClient(null);
+		catch (Exception e) {
+            e.printStackTrace();
+        }
 	}
 
 	/**
@@ -7782,6 +7804,17 @@ public class AreaServer {
 	public Area getRequestedArea() {
 		
 		return state.requestedArea;
+	}
+	
+	/**
+	 * Get server URL.
+	 * @return
+	 */
+	public String getServerUrl() 
+			throws Exception {
+		
+		String servertUrl = state.request.getServerUrl();
+		return servertUrl;
 	}
 
 	/**

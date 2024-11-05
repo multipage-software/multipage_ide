@@ -101,12 +101,12 @@ public class JettyHttpServer extends ProgramHttpServer {
 		
 		JavaScriptDebugger.setEnabled(true); // Enable debugger.
 		
-		// Start debug client
-		MiddleResult result = startDebugClient();
+		// Start debug listener.
+		MiddleResult result = startDebuggerListener();
 		result.throwPossibleException();
 		
-		// Save a reference to debugger in context
-		context.setAttribute("debugger", debugger);
+		// Save a reference to debugger listener in context attribute.
+		context.setAttribute("debugger", debuggerListener);
 	}
 	
 	/**
@@ -118,7 +118,7 @@ public class JettyHttpServer extends ProgramHttpServer {
 		// Try to stop server.
 		try {
 			// Stops debugger
-			MiddleResult result = stopDebugger();
+			MiddleResult result = stopDebuggerListener();
 			result.throwPossibleException();
 			
 			// Stops HTTP server

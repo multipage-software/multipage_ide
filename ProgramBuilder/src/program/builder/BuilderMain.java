@@ -15,7 +15,6 @@ import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
 import org.multipage.basic.ProgramBasic;
-import org.multipage.generator.DebugViewer;
 import org.multipage.generator.GeneratorMainFrame;
 import org.multipage.generator.ProgramGenerator;
 import org.multipage.generator.Settings;
@@ -34,6 +33,7 @@ import org.maclan.MiddleResult;
 import org.maclan.MiddleUtility;
 import org.maclan.help.ProgramHelp;
 import org.maclan.server.AreaServer;
+import org.maclan.server.DebugViewer;
 import org.maclan.server.ProgramHttpServer;
 
 /**
@@ -271,7 +271,10 @@ public class BuilderMain {
 			ProgramHttpServer httpServer = ProgramBasic.startHttpServer(Settings.getHttpPortNumber(), !ProgramBasic.isUsedLogin());
 			
 			// Attach Area Server debugger to the debug viewer.
-			DebugViewer.getInstance().attachDebuggerListener(httpServer.getDebugger());
+			DebugViewer debugViewer = DebugViewer.getInstance();
+			if (debugViewer != null) {
+				debugViewer.attachDebuggerListener(httpServer.getDebuggerListener());
+			}
 			
 			// Initialize main frame class. Create and show main frame.
 			GeneratorMainFrame mainFrame;

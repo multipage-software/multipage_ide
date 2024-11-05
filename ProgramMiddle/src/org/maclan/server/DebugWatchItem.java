@@ -20,7 +20,7 @@ public class DebugWatchItem {
 	/**
 	 * Item type.
 	 */
-	private DebugWatchItemType type = null;
+	private DebugWatchGroup type = null;
 	
 	/**
 	 * Item full name.
@@ -42,7 +42,7 @@ public class DebugWatchItem {
 	 * @param name
 	 * @param type
 	 */
-	public DebugWatchItem(String name, DebugWatchItemType type) {
+	public DebugWatchItem(String name, DebugWatchGroup type) {
 		
 		this.name = name;
 		this.type = type;
@@ -56,7 +56,7 @@ public class DebugWatchItem {
 	 * @param value
 	 * @param valueType
 	 */
-	public DebugWatchItem(DebugWatchItemType type, String name, String fullName, String value, String valueType) {
+	public DebugWatchItem(DebugWatchGroup type, String name, String fullName, String value, String valueType) {
 		
 		this.name = name;
 		this.type = type;
@@ -87,7 +87,7 @@ public class DebugWatchItem {
 	 * Get watch item type.
 	 * @return
 	 */
-	public DebugWatchItemType getType() {
+	public DebugWatchGroup getType() {
 		
 		return type;
 	}
@@ -106,12 +106,25 @@ public class DebugWatchItem {
 	}
 	
 	/**
-	 * Get watch item value.
+	 * Get item value.
 	 * @return
 	 */
 	public String getValue() {
 		
 		return value;
+	}
+	
+	/**
+	 * Get watched value.
+	 * @return
+	 */
+	public String getWatchedValue() {
+		
+		// Remove whitespaces.
+		String watchedValue = value.trim();
+		watchedValue = watchedValue.replaceAll("\\s+", " ");
+		
+		return watchedValue;
 	}
 	
 	/**
@@ -129,7 +142,7 @@ public class DebugWatchItem {
 	 * @param type
 	 * @return
 	 */
-	public boolean matches(String name, DebugWatchItemType type) {
+	public boolean matches(String name, DebugWatchGroup type) {
 		
 		if (name == null || type == null) {
 			return false;
@@ -152,9 +165,6 @@ public class DebugWatchItem {
 		else {
 			watchItemName = name;
 		}
-		
-		String valueText = (value != null ? value.toString() : "null");
-		String watchItemText = String.format("%s=%s", watchItemName, valueText);
-		return watchItemText;
+		return watchItemName;
 	}
 }

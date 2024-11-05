@@ -1,4 +1,4 @@
-package org.multipage.generator;
+package org.maclan.server;
 
 /**
  * Display code callbacks

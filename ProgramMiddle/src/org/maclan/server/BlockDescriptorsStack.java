@@ -237,7 +237,7 @@ public class BlockDescriptorsStack {
 				String variableName = entry.getKey();
 				String variableFullName = String.format("%s:%s", blockName, variableName);
 				
-				DebugWatchItem variableWatch = new DebugWatchItem(DebugWatchItemType.blockVariable, variableName, variableFullName, null, null);
+				DebugWatchItem variableWatch = new DebugWatchItem(DebugWatchGroup.BLOCK_VARIABLE, variableName, variableFullName, null, null);
 				
 				variableWatchList.add(variableWatch);
 			}
@@ -638,7 +638,7 @@ public class BlockDescriptorsStack {
 				String procedureName = entry.getKey();
 				String procedureFullName = String.format("%s:%s", blockName, procedureName);
 				
-				DebugWatchItem variableWatch = new DebugWatchItem(DebugWatchItemType.blockProcedure, procedureName, procedureFullName, null, null);
+				DebugWatchItem variableWatch = new DebugWatchItem(DebugWatchGroup.BLOCK_PROCEDURE, procedureName, procedureFullName, null, null);
 				
 				procedureWatchList.add(variableWatch);
 			}

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -16,10 +16,12 @@ import javax.swing.JLabel;
 import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
 
+import org.multipage.util.Safe;
+
 
 /**
- * 
- * @author
+ * Renderer that dislpays area resource.
+ * @author vakol
  *
  */
 public class AreaResourceRenderer extends AreaResourceRendererBase {
@@ -49,27 +51,32 @@ public class AreaResourceRenderer extends AreaResourceRendererBase {
 	 * Create the panel.
 	 */
 	public AreaResourceRenderer() {
-
-		// Initialize components.
-		initComponents();
-		// Localize.
-		// $hide>>$
-		setComponentsReferences(
-				labelDescription,
-				labelNamespacePath,
-				labelTextNamespace,
-				labelTextMime,
-				labelMimeType,
-				labelTextId,
-				labelId,
-				checkBoxVisible,
-				checkBoxSavedAsText,
-				labelVisible,
-				labelSaveAsText,
-				labelImage
-				);
-		localize();
-		// $hide<<$
+		
+		try {
+			// Initialize components.
+			initComponents();
+			// Localize.
+			// $hide>>$
+			setComponentsReferences(
+					labelDescription,
+					labelNamespacePath,
+					labelTextNamespace,
+					labelTextMime,
+					labelMimeType,
+					labelTextId,
+					labelId,
+					checkBoxVisible,
+					checkBoxSavedAsText,
+					labelVisible,
+					labelSaveAsText,
+					labelImage
+					);
+			localize();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**

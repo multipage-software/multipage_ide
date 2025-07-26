@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
  * Created on : 26-04-2017
  *
@@ -20,7 +20,6 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.SpringLayout;
-import javax.swing.SwingUtilities;
 
 import org.maclan.Area;
 import org.maclan.ExternalLinkParser;
@@ -34,12 +33,13 @@ import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.TextPopupMenu;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 import com.ibm.icu.text.CharsetMatch;
 
 /**
- * 
- * @author
+ * Panel that displays file properties.
+ * @author vakol
  *
  */
 public class FilePanel extends InsertPanel implements StringValueEditor, ExternalProviderInterface {
@@ -115,13 +115,17 @@ public class FilePanel extends InsertPanel implements StringValueEditor, Externa
 	 * @param parentWindow 
 	 */
 	public FilePanel(String initialString) {
-
-		initComponents();
 		
-		// $hide>>$
-		this.initialString = initialString;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			this.initialString = initialString;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -183,50 +187,76 @@ public class FilePanel extends InsertPanel implements StringValueEditor, Externa
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		localize();
-		setIcons();
-		setToolTips();
-		initializePanel();
-		setEditBoxMenu();
+		try {
+			
+			localize();
+			setIcons();
+			setToolTips();
+			initializePanel();
+			setEditBoxMenu();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Initialize panel
 	 */
 	private void initializePanel() {
-		
-		disableEncodings();
-		
-		// If text changes, reset combo with encodings
-		Utility.setTextChangeListener(textFilePath, () -> {
+		try {
+			
 			disableEncodings();
-		});
+			
+			// If text changes, reset combo with encodings
+			Utility.setTextChangeListener(textFilePath, () -> {
+				try {
+					
+					disableEncodings();
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Disable encoding
 	 */
 	private void disableEncodings() {
-		
-		comboEncoding.removeAllItems();
-		comboEncoding.setEnabled(false);
-		labelEncoding.setEnabled(false);
+		try {
+			
+			comboEncoding.removeAllItems();
+			comboEncoding.setEnabled(false);
+			labelEncoding.setEnabled(false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On select file path.
 	 */
 	protected void onSelectFilePath() {
-		
-		// Display dialog for file selection
-		File textFile = Utility.chooseFileToOpen(this, null);
-		if (textFile == null) {
-			return;
+		try {
+			
+			// Display dialog for file selection
+			File textFile = Utility.chooseFileToOpen(this, null);
+			if (textFile == null) {
+				return;
+			}
+			
+			// Set file.
+			setFile(textFile.toString(), "UTF-8");
 		}
-		
-		// Set file.
-		setFile(textFile.toString(), "UTF-8");
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -234,62 +264,67 @@ public class FilePanel extends InsertPanel implements StringValueEditor, Externa
 	 * @param preferredEncoding 
 	 */
 	private void setFile(String filePath, String preferredEncoding) {
-		
-		// Set text field and combo box with text encoding.
-		textFilePath.setText(filePath);
-		
-		// Create file.
-		File file = new File(filePath);
-		
-		// Invoke later.
-		SwingUtilities.invokeLater(() -> {
+		try {
 			
-			// Reset controls.
-			comboEncoding.removeAllItems();
-			comboEncoding.setEnabled(true);
-			labelEncoding.setEnabled(true);
+			// Set text field and combo box with text encoding.
+			textFilePath.setText(filePath);
 			
-			// Variables.
-			String encoding = null;
-			boolean foundPreferredEncoding = false;
+			// Create file.
+			File file = new File(filePath);
 			
-			// Gets available text encodings
-			CharsetMatch [] charsets = Utility.getAvailableEncodingsFor(file);
-			if (charsets == null || charsets.length == 0) {
+			// Invoke later.
+			Safe.invokeLater(() -> {
 				
-				// Add preferred encoding to combo box.
-				comboEncoding.addItem(preferredEncoding);
-				comboEncoding.setSelectedItem(preferredEncoding);
-				return;
-			}
-			
-			for (CharsetMatch charset : charsets) {
+				// Reset controls.
+				comboEncoding.removeAllItems();
+				comboEncoding.setEnabled(true);
+				labelEncoding.setEnabled(true);
 				
-				// Get encoding and its confidence
-				encoding = charset.getName();
-				int confidence = charset.getConfidence();
+				// Variables.
+				String encoding = null;
+				boolean foundPreferredEncoding = false;
 				
-				// Prefer UTF-8 encoding if it is with maximum confidence
-				if (!foundPreferredEncoding
-						//&& (confidence >= maximumConfidence)
-						&& encoding.contentEquals(preferredEncoding)) {
+				// Gets available text encodings
+				CharsetMatch [] charsets = Utility.getAvailableEncodingsFor(file);
+				if (charsets == null || charsets.length == 0) {
 					
-					foundPreferredEncoding = true;
+					// Add preferred encoding to combo box.
+					comboEncoding.addItem(preferredEncoding);
+					comboEncoding.setSelectedItem(preferredEncoding);
+					return;
 				}
 				
-				// Add encoding to combo box.
-				comboEncoding.addItem(encoding);
-			}
-			
-			// Selects determined encoding
-			if (foundPreferredEncoding) {
-				encoding = preferredEncoding;
-			}
-			else {
-				encoding = Utility.getTextEncoding(file);
-			}
-			comboEncoding.setSelectedItem(encoding);
-		});
+				for (CharsetMatch charset : charsets) {
+					
+					// Get encoding and its confidence
+					encoding = charset.getName();
+					int confidence = charset.getConfidence();
+					
+					// Prefer UTF-8 encoding if it is with maximum confidence
+					if (!foundPreferredEncoding
+							//&& (confidence >= maximumConfidence)
+							&& encoding.contentEquals(preferredEncoding)) {
+						
+						foundPreferredEncoding = true;
+					}
+					
+					// Add encoding to combo box.
+					comboEncoding.addItem(encoding);
+				}
+				
+				// Selects determined encoding
+				if (foundPreferredEncoding) {
+					encoding = preferredEncoding;
+				}
+				else {
+					encoding = Utility.getTextEncoding(file);
+				}
+				comboEncoding.setSelectedItem(encoding);
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -299,72 +334,102 @@ public class FilePanel extends InsertPanel implements StringValueEditor, Externa
 	@Override
 	public String getSpecification() {
 		
-		Object selected = null;
-		
-		// Get file path.
-		String filePath = textFilePath.getText();
-		
-		// Get file encoding.
-		selected = comboEncoding.getSelectedItem();
-		String encoding = null;
-		if (selected != null) {
-			encoding = selected.toString();
+		try {
+			Object selected = null;
+			
+			// Get file path.
+			String filePath = textFilePath.getText();
+			
+			// Get file encoding.
+			selected = comboEncoding.getSelectedItem();
+			String encoding = null;
+			if (selected != null) {
+				encoding = selected.toString();
+			}
+			else {
+				encoding = "UTF-8";
+			}
+			
+			String specification = encoding + ';' + filePath;
+			return specification;
 		}
-		else {
-			encoding = "UTF-8";
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		String specification = encoding + ';' + filePath;
-		return specification;
+		return "";
 	}
 
 	/**
 	 * Set from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		if (initialString != null) {
+		try {
 			
-			textFilePath.setText(initialString);
+			if (initialString != null) {
+				textFilePath.setText(initialString);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(labelFilePath);
-		Utility.localize(labelEncoding);
+		try {
+			
+			Utility.localize(labelFilePath);
+			Utility.localize(labelEncoding);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonSelectFilePath.setIcon(Images.getIcon("org/multipage/gui/images/folder.png"));
+		try {
+			
+			buttonSelectFilePath.setIcon(Images.getIcon("org/multipage/gui/images/folder.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set tool tips.
 	 */
 	private void setToolTips() {
-		
-		buttonSelectFilePath.setToolTipText(Resources.getString("org.multipage.generator.tooltipSelectDiskFile"));
+		try {
+			
+			buttonSelectFilePath.setToolTipText(Resources.getString("org.multipage.generator.tooltipSelectDiskFile"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set edit box trayMenu.
 	 */
 	private void setEditBoxMenu() {
-		
-		// Insert trayMenu item
-		TextPopupMenu menu = textFilePath.getMenu();
-		menu.insertItem(0, "org.multipage.generator.menuInsertPath", null, () -> {
-			onInsertPath();
-		});
-		menu.insertSeparator(1);
+		try {
+			
+			// Insert trayMenu item
+			TextPopupMenu menu = textFilePath.getMenu();
+			menu.insertItem(0, "org.multipage.generator.menuInsertPath", null, () -> {
+				onInsertPath();
+			});
+			menu.insertSeparator(1);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -380,20 +445,32 @@ public class FilePanel extends InsertPanel implements StringValueEditor, Externa
 	 * On insert path.
 	 */
 	private void onInsertPath() {
-		
-		// Insert selected path.
-		ProgramPaths.PathSupplier path = PathSelectionDialog.showDialog(this, this.area);
-		if (path != null) {
-			textFilePath.replaceSelection(path.tag);
+		try {
+			
+			// Insert selected path.
+			ProgramPaths.PathSupplier path = PathSelectionDialog.showDialog(this, this.area);
+			if (path != null) {
+				textFilePath.replaceSelection(path.tag);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
+	
 	/* (non-Javadoc)
 	 * @see org.multipage.gui.InsertPanel#getWindowTitle()
 	 */
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.generator.textFilePanel");
+		try {
+			return Resources.getString("org.multipage.generator.textFilePanel");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -402,7 +479,13 @@ public class FilePanel extends InsertPanel implements StringValueEditor, Externa
 	@Override
 	public String getResultText() {
 		
-		return textFilePath.getText();
+		try {
+			return textFilePath.getText();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -456,8 +539,14 @@ public class FilePanel extends InsertPanel implements StringValueEditor, Externa
 	@Override
 	public String getStringValue() {
 		
-		String filePath = textFilePath.getText();
-		return filePath;
+		try {
+			String filePath = textFilePath.getText();
+			return filePath;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -465,9 +554,14 @@ public class FilePanel extends InsertPanel implements StringValueEditor, Externa
 	 */
 	@Override
 	public void setStringValue(String string) {
-		
-		initialString = string;
-		setFromInitialString();
+		try {
+			
+			initialString = string;
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -493,22 +587,31 @@ public class FilePanel extends InsertPanel implements StringValueEditor, Externa
 	 */
 	@Override
 	public void setEditor(String link, Area area) {
-		
-		// Parse link string.
-		new ExternalLinkParser() {
-
-			@Override
-			public MiddleResult onFile(String filePath, String encoding) {
-				
-				// Set file path.
-				setFile(filePath, encoding);
-				
-				return MiddleResult.OK;
-			}
+		try {
 			
-		}.parse(link);
-		
-		// Set area.
-		this.area = area;
+			// Parse link string.
+			new ExternalLinkParser() {
+	
+				@Override
+				public MiddleResult onFile(String filePath, String encoding) {
+					try {
+						// Set file path.
+						setFile(filePath, encoding);
+						return MiddleResult.OK;
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return MiddleResult.UNKNOWN_ERROR;
+				}
+				
+			}.parse(link);
+			
+			// Set area.
+			this.area = area;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

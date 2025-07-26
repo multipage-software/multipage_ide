@@ -1,23 +1,35 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import java.awt.*;
-
-import javax.swing.*;
-import java.awt.event.ActionListener;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JPanel;
+import javax.swing.SpringLayout;
+import javax.swing.WindowConstants;
+
+import org.multipage.util.Safe;
+
 /**
- * 
- * @author
+ * Dialog that displays text editor.
+ * @author vakol
  *
  */
 public class TextEditorDialog extends JDialog {
@@ -54,14 +66,19 @@ public class TextEditorDialog extends JDialog {
 	 */
 	public static String showDialog(Component parent, String text) {
 		
-		TextEditorDialog dialog = new TextEditorDialog(Utility.findWindow(parent));
-		
-		dialog.editor.setText(text);
-		dialog.setLocation(parent);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
-			return dialog.editor.getText();
+		try {
+			TextEditorDialog dialog = new TextEditorDialog(Utility.findWindow(parent));
+			
+			dialog.editor.setText(text);
+			dialog.setLocation(parent);
+			dialog.setVisible(true);
+			
+			if (dialog.confirm) {
+				return dialog.editor.getText();
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -71,24 +88,29 @@ public class TextEditorDialog extends JDialog {
 	 * @param parent
 	 */
 	private void setLocation(Component parent) {
-		
-		Point location = parent.getLocationOnScreen();
-		Dimension size = getBounds().getSize();
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		// Height of the task bar.
-		Insets scnMax = Toolkit.getDefaultToolkit().getScreenInsets(getGraphicsConfiguration());
-		int taskBarSize = scnMax.bottom;
-		screenSize.height -= taskBarSize;
-		
-		// Trim location.
-		if (location.x + size.width > screenSize.width) {
-			location.x = screenSize.width - size.width;
+		try {
+			
+			Point location = parent.getLocationOnScreen();
+			Dimension size = getBounds().getSize();
+			Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+			// Height of the task bar.
+			Insets scnMax = Toolkit.getDefaultToolkit().getScreenInsets(getGraphicsConfiguration());
+			int taskBarSize = scnMax.bottom;
+			screenSize.height -= taskBarSize;
+			
+			// Trim location.
+			if (location.x + size.width > screenSize.width) {
+				location.x = screenSize.width - size.width;
+			}
+			if (location.y + size.height > screenSize.height) {
+				location.y = screenSize.height - size.height;
+			}
+			
+			setLocation(location);
 		}
-		if (location.y + size.height > screenSize.height) {
-			location.y = screenSize.height - size.height;
-		}
-		
-		setLocation(location);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -97,12 +119,16 @@ public class TextEditorDialog extends JDialog {
 	 */
 	public TextEditorDialog(Window parentWindow) {
 		super(parentWindow, ModalityType.DOCUMENT_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -154,34 +180,49 @@ public class TextEditorDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-		
-		// Add editor.
-		editor = new TextEditorPane(this, true);
-		getContentPane().add(editor, BorderLayout.CENTER);
-		
-		localize();
-		setIcons();
+		try {
+			
+			setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+			
+			// Add editor.
+			editor = new TextEditorPane(this, true);
+			getContentPane().add(editor, BorderLayout.CENTER);
+			
+			localize();
+			setIcons();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonCancel);
-		Utility.localize(buttonOk);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonCancel);
+			Utility.localize(buttonOk);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+		try {
+			
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -190,7 +231,6 @@ public class TextEditorDialog extends JDialog {
 	protected void onOk() {
 		
 		confirm = true;
-		
 		dispose();
 	}
 
@@ -199,8 +239,7 @@ public class TextEditorDialog extends JDialog {
 	 */
 	protected void onCancel() {
 		
-		confirm = false;
-		
+		confirm = false;		
 		dispose();
 	}
 }

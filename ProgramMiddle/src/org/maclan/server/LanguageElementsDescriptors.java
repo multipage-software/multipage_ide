@@ -1,22 +1,35 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.maclan.server;
 
-import java.awt.*;
-import java.util.*;
-import java.util.Map.*;
+import java.awt.Dimension;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Map.Entry;
 
-import org.maclan.*;
+import org.maclan.Area;
+import org.maclan.AreaRelation;
+import org.maclan.EnumerationObj;
+import org.maclan.EnumerationValue;
+import org.maclan.MiddleResult;
+import org.maclan.MimeType;
+import org.maclan.Resource;
+import org.maclan.Slot;
 import org.multipage.util.Obj;
 
 /**
- * 
- * @author
+ * Class for descriptor.
+ * @author vakol
  *
  */
 class Descriptor {
@@ -44,8 +57,8 @@ class Descriptor {
 }
 
 /**
- * 
- * @author
+ * Class for delegates.
+ * @author vakol
  *
  */
 class Delegate {
@@ -77,8 +90,8 @@ class Delegate {
 }
 
 /**
- * 
- * @author
+ * Class for language elements.
+ * @author vakol
  *
  */
 class LanguageElement {
@@ -104,8 +117,8 @@ class LanguageElement {
 }
 
 /**
- * 
- * @author
+ * Class fo methods.
+ * @author vakol
  *
  */
 class Method extends LanguageElement {
@@ -129,8 +142,8 @@ class Method extends LanguageElement {
 }
 
 /**
- * 
- * @author
+ * Class for properties.
+ * @author vakol
  *
  */
 class Property extends LanguageElement {
@@ -148,7 +161,8 @@ class Property extends LanguageElement {
 }
 
 /**
- * @author
+ * Class for language element descriptors.
+ * @author vakol
  *
  */
 public class LanguageElementsDescriptors {

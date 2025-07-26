@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -39,10 +39,11 @@ import org.multipage.basic.ProgramBasic;
 import org.multipage.gui.GraphUtility;
 import org.multipage.gui.Images;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays list of available slots.
+ * @author vakol
  *
  */
 public class AvailableSlots extends JDialog {
@@ -93,9 +94,14 @@ public class AvailableSlots extends JDialog {
 	 * @return
 	 */
 	public static void showDialog(JTextComponent textPane, boolean onlyDirectUserSlots, Slot slot) {
-
-		AvailableSlots dialog = new AvailableSlots(textPane, onlyDirectUserSlots, slot);
-		dialog.setVisible(true);
+		try {
+			
+			AvailableSlots dialog = new AvailableSlots(textPane, onlyDirectUserSlots, slot);
+			dialog.setVisible(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -106,15 +112,21 @@ public class AvailableSlots extends JDialog {
 	 */
 	public AvailableSlots(JTextComponent textPane, boolean onlyDirectUserSlots, Slot slot) {
 		super(Utility.findWindow(textPane), ModalityType.DOCUMENT_MODAL);
-		this.textPane = textPane;
-		this.slot = slot;
-		// Initialize components.
-		initComponents();
-		// $hide>>$
-		// Post creation.
-		this.onlyDirectUserSlots = onlyDirectUserSlots;
-		postCreate();
-		// $hide<<$
+		
+		try {
+			this.textPane = textPane;
+			this.slot = slot;
+			// Initialize components.
+			initComponents();
+			// $hide>>$
+			// Post creation.
+			this.onlyDirectUserSlots = onlyDirectUserSlots;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -153,64 +165,83 @@ public class AvailableSlots extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		localize();
-		setIcons();
-		setPosition();
-		setList();
-		loadSlots();
+		try {
+			localize();
+			setIcons();
+			setPosition();
+			setList();
+			loadSlots();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
+		try {
+			
+			Utility.localize(this);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		 setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
+		try {
+			
+			setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set position.
 	 */
 	private void setPosition() {
-		
-		Point mouse = MouseInfo.getPointerInfo().getLocation();
-
-		// Get window width and height.
-		int width = getWidth();
-		int height = getHeight();
-		
-		mouse.x -= width / 2;
-		mouse.y -= height / 2;
-		
-		// Get screen dimensions and set window location.
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		
-		if (mouse.x + width > screenSize.width) {
-			mouse.x = screenSize.width - width;
+		try {
+			
+			Point mouse = MouseInfo.getPointerInfo().getLocation();
+	
+			// Get window width and height.
+			int width = getWidth();
+			int height = getHeight();
+			
+			mouse.x -= width / 2;
+			mouse.y -= height / 2;
+			
+			// Get screen dimensions and set window location.
+			Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+			
+			if (mouse.x + width > screenSize.width) {
+				mouse.x = screenSize.width - width;
+			}
+			
+			if (mouse.y + height > screenSize.height) {
+				mouse.y = screenSize.height - height;
+			}
+			
+			if (mouse.x < 0) {
+				mouse.x = 0;
+			}
+			
+			if (mouse.y < 0) {
+				mouse.y = 0;
+			}
+			
+			setLocation(mouse);
 		}
-		
-		if (mouse.y + height > screenSize.height) {
-			mouse.y = screenSize.height - height;
-		}
-		
-		if (mouse.x < 0) {
-			mouse.x = 0;
-		}
-		
-		if (mouse.y < 0) {
-			mouse.y = 0;
-		}
-		
-		setLocation(mouse);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -219,140 +250,183 @@ public class AvailableSlots extends JDialog {
 	@Override
 	public void paint(Graphics g) {
 		
-		super.paint(g);
-		Color oldColor = g.getColor();
-		g.setColor(Color.BLACK);
-		g.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
-		g.setColor(oldColor);
+		try {
+			super.paint(g);
+			Color oldColor = g.getColor();
+			g.setColor(Color.BLACK);
+			g.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
+			g.setColor(oldColor);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
 	 * Set list.
 	 */
+	@SuppressWarnings("unchecked")
 	private void setList() {
-		
-		// Set model.
-		model = new DefaultListModel();
-		list.setModel(model);
-		
-		// Set renderer.
-		list.setCellRenderer(new ListCellRenderer() {
-			// Renderer.
-			@SuppressWarnings("serial")
-			class Renderer extends JLabel {
-				// Parameters.
-				private boolean isSelected;
-				private boolean hasFocus;
-				// Constructor.
-				Renderer() {
-					setIcon(Images.getIcon("org/multipage/generator/images/slot.png"));
-					setOpaque(true);
+		try {
+			
+			// Set model.
+			model = new DefaultListModel();
+			list.setModel(model);
+			
+			// Set renderer.
+			list.setCellRenderer(new ListCellRenderer() {
+				// Renderer.
+				@SuppressWarnings("serial")
+				class Renderer extends JLabel {
+					// Parameters.
+					private boolean isSelected;
+					private boolean hasFocus;
+					// Constructor.
+					Renderer() {
+						try {
+							
+							setIcon(Images.getIcon("org/multipage/generator/images/slot.png"));
+							setOpaque(true);
+						}
+						catch(Throwable expt) {
+							Safe.exception(expt);
+						};
+					}
+					// Set properties.
+					void setProperties(String text, int index, boolean isSelected,
+							boolean hasFocus) {
+						try {
+							
+							setText(text);
+							setBackground((index % 2 == 0) ? Color.WHITE : darkColor);
+							this.isSelected = isSelected;
+							this.hasFocus = hasFocus;
+						}
+						catch(Throwable expt) {
+							Safe.exception(expt);
+						};
+					}
+					// Paint label.
+					@Override
+					public void paint(Graphics g) {
+						
+						try {
+							super.paint(g);
+							GraphUtility.drawSelection(g, this, isSelected, hasFocus);
+						}
+						catch (Throwable e) {
+							Safe.exception(e);
+						}
+					}
 				}
-				// Set properties.
-				void setProperties(String text, int index, boolean isSelected,
-						boolean hasFocus) {
-					
-					setText(text);
-					setBackground((index % 2 == 0) ? Color.WHITE : darkColor);
-					this.isSelected = isSelected;
-					this.hasFocus = hasFocus;
-				}
-				// Paint label.
+				Renderer renderer = new Renderer();
 				@Override
-				public void paint(Graphics g) {
-					super.paint(g);
-					GraphUtility.drawSelection(g, this, isSelected, hasFocus);
+				public Component getListCellRendererComponent(JList list, Object value,
+						int index, boolean isSelected, boolean cellHasFocus) {
+					
+					try {
+						renderer.setProperties(value.toString(), index, isSelected, cellHasFocus);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return renderer;
 				}
-			}
-			Renderer renderer = new Renderer();
-			@Override
-			public Component getListCellRendererComponent(JList list, Object value,
-					int index, boolean isSelected, boolean cellHasFocus) {
-				
-				renderer.setProperties(value.toString(), index, isSelected, cellHasFocus);
-				return renderer;
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load available slots.
 	 */
 	private void loadSlots() {
-		
-		// Clear list.
-		model.clear();
-
-		Area area = null;
-		
-		if (slot != null) {
-			// Get slot area.
-			SlotHolder holder = slot.getHolder();
-			if (holder instanceof Area) {
-				area = (Area) holder;
-			}
-		}
-		else {
-			// Get selected areas.
-			LinkedList<Area> areas = GeneratorMainFrame.getFrame().getSelectedAreas();
-			if (!areas.isEmpty()) {
-				area = areas.getFirst();
-			}
-		}
-							
-		if (area != null) {
-			Middle middle = ProgramBasic.getMiddle();
+		try {
 			
-			// Database login.
-			MiddleResult result = middle.login(ProgramBasic.getLoginProperties());
-			if (result.isOK()) {
-				
-				// Get area slots aliases.
-				LinkedList<String> slotsAliases = new LinkedList<String>();
-				
-				if (!onlyDirectUserSlots) {
-					result = middle.loadSlotsInheritedAliases(area.getId(), slotsAliases, false);
+			// Clear list.
+			model.clear();
+	
+			Area area = null;
+			
+			if (slot != null) {
+				// Get slot area.
+				SlotHolder holder = slot.getHolder();
+				if (holder instanceof Area) {
+					area = (Area) holder;
 				}
-				else {
-					result = middle.loadSlotsAliasesUser(area.getId(), slotsAliases);
+			}
+			else {
+				// Get selected areas.
+				LinkedList<Area> areas = GeneratorMainFrame.getFrame().getSelectedAreas();
+				if (!areas.isEmpty()) {
+					area = areas.getFirst();
 				}
+			}
+								
+			if (area != null) {
+				Middle middle = ProgramBasic.getMiddle();
 				
+				// Database login.
+				MiddleResult result = middle.login(ProgramBasic.getLoginProperties());
 				if (result.isOK()) {
 					
-					// Sort the list.
-					Collections.sort(slotsAliases);
-
-					// Do loop for all slots aliases.
-					for (String slotAlias : slotsAliases) {
+					// Get area slots aliases.
+					LinkedList<String> slotsAliases = new LinkedList<String>();
+					
+					if (!onlyDirectUserSlots) {
+						result = middle.loadSlotsInheritedAliases(area.getId(), slotsAliases, false);
+					}
+					else {
+						result = middle.loadSlotsAliasesUser(area.getId(), slotsAliases);
+					}
+					
+					if (result.isOK()) {
 						
-						model.addElement(slotAlias);
+						// Sort the list.
+						Collections.sort(slotsAliases);
+	
+						// Do loop for all slots aliases.
+						for (String slotAlias : slotsAliases) {
+							
+							model.addElement(slotAlias);
+						}
+					}
+					
+					// Logout from database.
+					MiddleResult logoutResult = middle.logout(result);
+					if (result.isOK()) {
+						result = logoutResult;
 					}
 				}
-				
-				// Logout from database.
-				MiddleResult logoutResult = middle.logout(result);
-				if (result.isOK()) {
-					result = logoutResult;
+	
+				// On error inform user.
+				if (result.isNotOK()) {
+					result.show(GeneratorMainFrame.getFrame());
 				}
 			}
-
-			// On error inform user.
-			if (result.isNotOK()) {
-				result.show(GeneratorMainFrame.getFrame());
-			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On slot selected.
 	 */
 	protected void slotSelected() {
-		
-		String slotAlias = list.getSelectedValue().toString();
-		if (slotAlias != null) {
-
-			textPane.replaceSelection(String.format("[@TAG %s]", slotAlias));
+		try {
+			
+			String slotAlias = list.getSelectedValue().toString();
+			if (slotAlias != null) {
+	
+				textPane.replaceSelection(String.format("[@TAG %s]", slotAlias));
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
 		dispose();
 	}

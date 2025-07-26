@@ -1,14 +1,17 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
+import org.multipage.util.Safe;
+
 /**
- * @author
+ * Class for skew transformation object.
+ * @author vakol
  *
  */
 public class CssTransformSkew extends CssTransform {
@@ -35,13 +38,19 @@ public class CssTransformSkew extends CssTransform {
 	 */
 	@Override
 	public String toString() {
-				
-		return String.format("skew(%s%s, %s%s)",
-				Utility.removeFloatNulls(String.valueOf(ax)),
-				axUnits,
-				Utility.removeFloatNulls(String.valueOf(ay)),
-				ayUnits
-				);
+		
+		try {
+			return String.format("skew(%s%s, %s%s)",
+					Utility.removeFloatNulls(String.valueOf(ax)),
+					axUnits,
+					Utility.removeFloatNulls(String.valueOf(ay)),
+					ayUnits
+					);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -49,10 +58,15 @@ public class CssTransformSkew extends CssTransform {
 	 * @param skew
 	 */
 	public void setFrom(CssTransformSkew skew) {
-
-		this.ax = skew.ax;
-		this.axUnits = skew.axUnits;
-		this.ay = skew.ay;
-		this.ayUnits = skew.ayUnits;
+		try {
+			
+			this.ax = skew.ax;
+			this.axUnits = skew.axUnits;
+			this.ay = skew.ay;
+			this.ayUnits = skew.ayUnits;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

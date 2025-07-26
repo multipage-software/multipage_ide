@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -11,11 +11,12 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 import org.maclan.Area;
+import org.multipage.util.Safe;
 
 
 /**
  * Area coordinates class.
- * @author
+ * @author vakol
  *
  */
 public class AreaCoordinates {
@@ -37,8 +38,14 @@ public class AreaCoordinates {
 	 * @return
 	 */
 	public Rectangle2D getCaptionRect() {
-
-		return new Rectangle2D.Double(x, y, width, getLabelHeight());
+		
+		try {
+			return new Rectangle2D.Double(x, y, width, getLabelHeight());
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -147,16 +154,30 @@ public class AreaCoordinates {
 	 * Get font size.
 	 */
 	public double getLabelFontSize() {
-		// Compute font size.
-		return getHeight(width) * areaFreeZonePercent / 100 * 0.4;
+		
+		try {
+			// Compute font size.
+			return getHeight(width) * areaFreeZonePercent / 100 * 0.4;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return 0.0;
 	}
 
 	/**
 	 * Get font size.
 	 */
 	public double getInfoFontSize() {
-		// Compute font size.
-		return getHeight(width) * 0.08;
+		
+		try {
+			// Compute font size.
+			return getHeight(width) * 0.08;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return 0.0;
 	}
 	
 	/**
@@ -164,8 +185,15 @@ public class AreaCoordinates {
 	 * @return
 	 */
 	public double getDescriptionFontSize() {
-		// Compute description font size.
-		return getLabelFontSize() * 0.2;
+		
+		try {
+			// Compute description font size.
+			return getLabelFontSize() * 0.2;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return 0.0;
 	}
 
 	/**
@@ -173,8 +201,14 @@ public class AreaCoordinates {
 	 * @return
 	 */
 	public double getLabelHeight() {
-
-		return getHeight() * areaFreeZonePercent / 100;
+		
+		try {
+			return getHeight() * areaFreeZonePercent / 100;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return 0.0;
 	}
 	
 	/**
@@ -183,7 +217,13 @@ public class AreaCoordinates {
 	 */
 	public Rectangle2D getLabel() {
 		
-		return new Rectangle2D.Double(x, y, width, getLabelHeight());
+		try {
+			return new Rectangle2D.Double(x, y, width, getLabelHeight());
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -191,8 +231,14 @@ public class AreaCoordinates {
 	 * @return
 	 */
 	public double getHeight() {
-
-		return getHeight(width);
+		
+		try {
+			return getHeight(width);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return 0.0;
 	}
 
 	/**
@@ -237,16 +283,28 @@ public class AreaCoordinates {
 	 */
 	public Rectangle2D getFree() {
 		
-		return new Rectangle2D.Double(getFreeX(), getFreeY(),
-				getFreeWidth(), getFreeHeight());
+		try {
+			return new Rectangle2D.Double(getFreeX(), getFreeY(),
+					getFreeWidth(), getFreeHeight());
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	/**
 	 * Gets area rectangle.
 	 * @return
 	 */
 	public Rectangle2D getRectangle() {
-
-		return new Rectangle2D.Double(x, y, width, getHeight());
+		
+		try {
+			return new Rectangle2D.Double(x, y, width, getHeight());
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -255,9 +313,15 @@ public class AreaCoordinates {
 	 */
 	public Rectangle2D getChildAreaRectangle() {
 		
-		double labelHeight = getLabelHeight();
-		double freeWidth = getFreeWidth();
-		return new Rectangle2D.Double(x, y + labelHeight, width - freeWidth, getHeight() - labelHeight);
+		try {
+			double labelHeight = getLabelHeight();
+			double freeWidth = getFreeWidth();
+			return new Rectangle2D.Double(x, y + labelHeight, width - freeWidth, getHeight() - labelHeight);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -272,8 +336,14 @@ public class AreaCoordinates {
 	 * @return
 	 */
 	public Point2D getLabelCenter() {
-
-		return new Point2D.Double(x + width / 2.0, y + getLabelHeight() / 2.0);
+		
+		try {
+			return new Point2D.Double(x + width / 2.0, y + getLabelHeight() / 2.0);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
@@ -281,24 +351,36 @@ public class AreaCoordinates {
 	@Override
 	public String toString() {
 		
-		AreasDiagram diagram = GeneratorMainFrame.getFrame().getAreaDiagram();
-		
-		if (diagram != null) {
-			return diagram.undoTransformationX(x) + ", "
-					+ diagram.undoTransformationY(y) + ", "
-					+ diagram.undoTransformationZoom(width) + ", "
-					+ diagram.undoTransformationZoom(getHeight());
+		try {
+			AreaDiagramPanel diagram = GeneratorMainFrame.getFrame().getAreaDiagram();
+			
+			if (diagram != null) {
+				return diagram.undoTransformationX(x) + ", "
+						+ diagram.undoTransformationY(y) + ", "
+						+ diagram.undoTransformationZoom(width) + ", "
+						+ diagram.undoTransformationZoom(getHeight());
+			}
+			else {
+				return x + ", " + y + ", " + width + ", " + getHeight();
+			}
 		}
-		else {
-			return x + ", " + y + ", " + width + ", " + getHeight();
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
+		return "error";
 	}
 	/**
 	 * @return the inherits
 	 */
 	public boolean getInherits() {
 		
-		return area.inheritsFrom(parentArea);
+		try {
+			return area.inheritsFrom(parentArea);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
@@ -307,7 +389,13 @@ public class AreaCoordinates {
 	 */
 	public double getHelpIconSize() {
 		
-		return getLabelHeight() * 0.5;
+		try {
+			return getLabelHeight() * 0.5;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return 0.0;
 	}
 	
 	/**
@@ -316,9 +404,15 @@ public class AreaCoordinates {
 	 */
 	public double getHelpIconX() {
 		
-		double helpSize = getHelpIconSize();
-		double margins = helpSize * 0.2;
-		return getX() + getWidth() - helpSize - margins;
+		try {
+			double helpSize = getHelpIconSize();
+			double margins = helpSize * 0.2;
+			return getX() + getWidth() - helpSize - margins;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return 0.0;
 	}
 	
 	/**
@@ -327,9 +421,15 @@ public class AreaCoordinates {
 	 */
 	public double getHelpIconY() {
 		
-		double helpSize = getHelpIconSize();
-		double margins = helpSize * 0.2;
-		return getY() + margins;
+		try {
+			double helpSize = getHelpIconSize();
+			double margins = helpSize * 0.2;
+			return getY() + margins;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return 0.0;
 	}
 	
 	/**
@@ -339,10 +439,16 @@ public class AreaCoordinates {
 	 */
 	public boolean isOverHelpIcon(Point2D point) {
 		
-		double size = getHelpIconSize();
-		Rectangle2D rectangle = new Rectangle2D.Double(getHelpIconX(), getHelpIconY(),
-				size, size);
-		return rectangle.contains(point);
+		try {
+			double size = getHelpIconSize();
+			Rectangle2D rectangle = new Rectangle2D.Double(getHelpIconX(), getHelpIconY(),
+					size, size);
+			return rectangle.contains(point);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
@@ -364,6 +470,12 @@ public class AreaCoordinates {
 	 */
 	public Point2D getCenter() {
 		
-		return new Point2D.Double(x + width / 2.0, y + getHeight() / 2.0);
+		try {
+			return new Point2D.Double(x + width / 2.0, y + getHeight() / 2.0);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 }

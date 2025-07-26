@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 27-04-2020
+ * Created on : 2020-04-27
  *
  */
 package org.maclan.server;
@@ -9,8 +9,8 @@ package org.maclan.server;
 import java.util.LinkedList;
 
 /**
- * 
- * @author user
+ * Result of tray menu action.
+ * @author vakol
  *
  */
 public class TrayMenuResult {

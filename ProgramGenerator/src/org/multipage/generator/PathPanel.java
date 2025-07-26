@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -33,10 +33,11 @@ import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.TextPopupMenu;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays path editor.
+ * @author vakol
  *
  */
 public class PathPanel extends InsertPanel implements StringValueEditor, SlotValueEditorPanelInterface {
@@ -112,13 +113,17 @@ public class PathPanel extends InsertPanel implements StringValueEditor, SlotVal
 	 * @param parentWindow 
 	 */
 	public PathPanel(String initialString) {
-
-		initComponents();
 		
-		// $hide>>$
-		this.initialString = initialString;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			this.initialString = initialString;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -193,12 +198,17 @@ public class PathPanel extends InsertPanel implements StringValueEditor, SlotVal
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		localize();
-		setIcons();
-		setToolTips();
-		setEditBoxMenu();
-		loadHint();
+		try {
+			
+			localize();
+			setIcons();
+			setToolTips();
+			setEditBoxMenu();
+			loadHint();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -214,38 +224,53 @@ public class PathPanel extends InsertPanel implements StringValueEditor, SlotVal
 	 * Set edit box trayMenu.
 	 */
 	private void setEditBoxMenu() {
-		
-		// Insert trayMenu item
-		TextPopupMenu menu = textFolderPath.getMenu();
-		menu.insertItem(0, "org.multipage.generator.menuInsertPath", null, () -> {
-			onInsertPath();
-		});
-		menu.insertSeparator(1);
+		try {
+			
+			// Insert trayMenu item
+			TextPopupMenu menu = textFolderPath.getMenu();
+			menu.insertItem(0, "org.multipage.generator.menuInsertPath", null, () -> {
+				onInsertPath();
+			});
+			menu.insertSeparator(1);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On select folder path.
 	 */
 	protected void onSelectFilePath() {
-		
-		String folder = Utility.chooseDirectory(this, null);
-		if (folder == null) {
-			return;
+		try {
+			
+			String folder = Utility.chooseDirectory(this, null);
+			if (folder == null) {
+				return;
+			}
+			
+			textFolderPath.setText(folder + File.separator);
 		}
-		
-		textFolderPath.setText(folder + File.separator);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On insert path.
 	 */
 	private void onInsertPath() {
-		
-		// Insert selected path.
-		ProgramPaths.PathSupplier path = PathSelectionDialog.showDialog(this, this.area);
-		if (path != null) {
-			textFolderPath.replaceSelection(path.tag);
+		try {
+			
+			// Insert selected path.
+			ProgramPaths.PathSupplier path = PathSelectionDialog.showDialog(this, this.area);
+			if (path != null) {
+				textFolderPath.replaceSelection(path.tag);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -255,51 +280,81 @@ public class PathPanel extends InsertPanel implements StringValueEditor, SlotVal
 	@Override
 	public String getSpecification() {
 		
-		return textFolderPath.getText();
+		try {
+			return textFolderPath.getText();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
 	 * Set from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		if (initialString != null) {
+		try {
 			
-			textFolderPath.setText(initialString);
+			if (initialString != null) {
+				textFolderPath.setText(initialString);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(labelFolderPath);
+		try {
+			
+			Utility.localize(labelFolderPath);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Load hint.
 	 */
 	private void loadHint() {
-		
-		String hint = Resources.getString("org.multipage.generator.textPathHint");
-		textPathHint.setText(hint);
+		try {
+			
+			String hint = Resources.getString("org.multipage.generator.textPathHint");
+			textPathHint.setText(hint);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonSelectFolderPath.setIcon(Images.getIcon("org/multipage/gui/images/folder.png"));
+		try {
+			
+			buttonSelectFolderPath.setIcon(Images.getIcon("org/multipage/gui/images/folder.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set tool tips.
 	 */
 	private void setToolTips() {
-		
-		buttonSelectFolderPath.setToolTipText(Resources.getString("org.multipage.generator.tooltipSelectMimeType"));
+		try {
+			
+			buttonSelectFolderPath.setToolTipText(Resources.getString("org.multipage.generator.tooltipSelectMimeType"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -308,7 +363,13 @@ public class PathPanel extends InsertPanel implements StringValueEditor, SlotVal
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.generator.textCssMimeBuilder");
+		try {
+			return Resources.getString("org.multipage.generator.textCssMimeBuilder");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -317,7 +378,13 @@ public class PathPanel extends InsertPanel implements StringValueEditor, SlotVal
 	@Override
 	public String getResultText() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -371,7 +438,13 @@ public class PathPanel extends InsertPanel implements StringValueEditor, SlotVal
 	@Override
 	public String getStringValue() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -379,9 +452,14 @@ public class PathPanel extends InsertPanel implements StringValueEditor, SlotVal
 	 */
 	@Override
 	public void setStringValue(String string) {
-		
-		initialString = string;
-		setFromInitialString();
+		try {
+			
+			initialString = string;
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -408,10 +486,15 @@ public class PathPanel extends InsertPanel implements StringValueEditor, SlotVal
 	@Override
 	public Object getValue() {
 		
-		// Get path text.
-		String pathText = textFolderPath.getText();
-		if (!pathText.isEmpty()) {
-			return pathText;
+		try {
+			// Get path text.
+			String pathText = textFolderPath.getText();
+			if (!pathText.isEmpty()) {
+				return pathText;
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -421,14 +504,19 @@ public class PathPanel extends InsertPanel implements StringValueEditor, SlotVal
 	 */
 	@Override
 	public void setValue(Object value) {
-		
-		// Set path text.
-		String pathText = "";
-		if (value instanceof String) {
-			pathText = (String) value;
+		try {
+			
+			// Set path text.
+			String pathText = "";
+			if (value instanceof String) {
+				pathText = (String) value;
+			}
+			
+			textFolderPath.setText(pathText);
 		}
-		
-		textFolderPath.setText(pathText);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**

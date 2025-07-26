@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2023 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 10-08-2023
+ * Created on : 2023-08-10
  *
  */
 package org.multipage.gui;

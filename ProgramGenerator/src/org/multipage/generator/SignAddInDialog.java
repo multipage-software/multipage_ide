@@ -1,14 +1,13 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 25-07-2022
+ * Created on : 2022-07-25
  *
  */
 package org.multipage.generator;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -17,13 +16,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Files;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -41,12 +35,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JToolBar;
 import javax.swing.SpringLayout;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
-import org.apache.commons.io.IOUtils;
 import org.multipage.gui.Images;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
@@ -55,10 +49,10 @@ import org.multipage.gui.ToolBarKit;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
-import javax.swing.JToolBar;
+import org.multipage.util.Safe;
 
 /**
- * 
+ * Dialog that displays signing information for application add-ins.
  * @author vakol
  *
  */
@@ -93,13 +87,18 @@ public class SignAddInDialog extends JDialog {
 		 * Constructor.
 		 */
 		CertificateWrapper(Certificate certificate) {
-			
-			if (!(certificate instanceof X509Certificate)) {
-				return;
+			try {
+				
+				if (!(certificate instanceof X509Certificate)) {
+					return;
+				}
+				
+				ref = (X509Certificate) certificate;
+				commonName = Utility.getCommonName(ref);
 			}
-			
-			ref = (X509Certificate) certificate;
-			commonName = Utility.getCommonName(ref);
+			catch(Throwable expt) {
+				Safe.exception(expt);
+			};
 		}
 		
 		/**
@@ -134,30 +133,35 @@ public class SignAddInDialog extends JDialog {
 		 * @param certificateChain
 		 */
 		public CertificateChainWrapper(Certificate[] certificateChain) {
-			
-			if (certificateChain == null) {
-				return;
-			}
-			
-			int length = certificateChain.length;
-			if (length <= 0) {
-				return;
-			}
-			
-			ref = new X509Certificate[length];
-			
-			String divider = "";
-			int index = 0;
-			
-			for (Certificate certificate : certificateChain) {
-				if (!(certificate instanceof X509Certificate)) {
+			try {
+				
+				if (certificateChain == null) {
 					return;
 				}
 				
-				ref[index] = (X509Certificate) certificate;
-				commonNames += divider + Utility.getCommonName(ref[index]);
-				divider = "->";
+				int length = certificateChain.length;
+				if (length <= 0) {
+					return;
+				}
+				
+				ref = new X509Certificate[length];
+				
+				String divider = "";
+				int index = 0;
+				
+				for (Certificate certificate : certificateChain) {
+					if (!(certificate instanceof X509Certificate)) {
+						return;
+					}
+					
+					ref[index] = (X509Certificate) certificate;
+					commonNames += divider + Utility.getCommonName(ref[index]);
+					divider = "->";
+				}
 			}
+			catch(Throwable expt) {
+				Safe.exception(expt);
+			};
 		}
 		
 		/**
@@ -238,18 +242,16 @@ public class SignAddInDialog extends JDialog {
 	 */
 	public static void showDialog(Component parent, String addInPath) {
 		
-		EventQueue.invokeLater(new Runnable() {
+		Safe.invokeLater(() -> {
 			
-			public void run() {
-				try {
-					SignAddInDialog dialog = new SignAddInDialog(parent);
-					dialog.postCreate();
-					dialog.setAddInPath(addInPath);
-					dialog.setVisible(true);
-				} 
-				catch (Exception e) {
-					Utility.show(parent, "org.multipage.generator.messageCannotDiplayAddInSignerDialog", e.getLocalizedMessage());
-				}
+			try {
+				SignAddInDialog dialog = new SignAddInDialog(parent);
+				dialog.postCreate();
+				dialog.setAddInPath(addInPath);
+				dialog.setVisible(true);
+			} 
+			catch (Exception e) {
+				Utility.show(parent, "org.multipage.generator.messageCannotDiplayAddInSignerDialog", e.getLocalizedMessage());
 			}
 		});
 	}
@@ -260,7 +262,13 @@ public class SignAddInDialog extends JDialog {
 	 */
 	public SignAddInDialog(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.DOCUMENT_MODAL);
-		initComponents();
+		
+		try {
+			initComponents();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -461,29 +469,39 @@ public class SignAddInDialog extends JDialog {
 	 * Post creation of the dialog.
 	 */
 	protected void postCreate() {
-		
-		// Set close operation that is run automatically.
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		// Create tool bars.
-		createToolBar();
-		// Localize texts of the GUI components.
-		localize();
-		// Set icons used by the GUI components.
-		setIcons();
-		// Export keystore to temporary file.
-		keystoreFile = Utility.exposeApplicationKeystore(this, "org/multipage/addinloader/properties/multipage_client.p12");
-		// Load and display keystore entries.
-		loadKeystoreTable(keystoreFile);
-		// Load stored dialog states.
-		loadDialog();
+		try {
+			
+			// Set close operation that is run automatically.
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			// Create tool bars.
+			createToolBar();
+			// Localize texts of the GUI components.
+			localize();
+			// Set icons used by the GUI components.
+			setIcons();
+			// Export keystore to temporary file.
+			keystoreFile = Utility.exposeApplicationKeystore(this, "org/multipage/addinloader/properties/multipage_client.p12");
+			// Load and display keystore entries.
+			loadKeystoreTable(keystoreFile);
+			// Load stored dialog states.
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Create tool bar.
 	 */
 	private void createToolBar() {
-		
-		ToolBarKit.addToolBarButton(toolBarKeystoreActions, "org/multipage/generator/images/keypair.png", "org.multipage.generator.tooltipGenerateNewKeyPair", () -> onKeystoreGenKey());
+		try {
+			
+			ToolBarKit.addToolBarButton(toolBarKeystoreActions, "org/multipage/generator/images/keypair.png", "org.multipage.generator.tooltipGenerateNewKeyPair", () -> onKeystoreGenKey());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -491,27 +509,37 @@ public class SignAddInDialog extends JDialog {
 	 * @param e
 	 */
 	protected void onEnterPassword(KeyEvent e) {
-		
-		// Check if user has pressed [ENTER] key.
-		if (!(e.getKeyCode() == KeyEvent.VK_ENTER)) {
-			return;
+		try {
+			
+			// Check if user has pressed [ENTER] key.
+			if (!(e.getKeyCode() == KeyEvent.VK_ENTER)) {
+				return;
+			}
+			
+			// Create empty table that can display keystore entries.
+			loadKeystoreTable(keystoreFile);
 		}
-		
-		// Create empty table that can display keystore entries.
-		loadKeystoreTable(keystoreFile);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Generate new key pair in keystore.
 	 */
 	private void onKeystoreGenKey() {
-		
-		// Get current directory.
-		String pathName = Utility.getCurrentPathName();
-		File currentDirectory = new File(pathName);
-				
-		// Input key pair properties.
-		GenKeyDialog.showDialog(this, currentDirectory, () -> textPassword.getPassword());
+		try {
+			
+			// Get current directory.
+			String pathName = Utility.getCurrentPathName();
+			File currentDirectory = new File(pathName);
+					
+			// Input key pair properties.
+			GenKeyDialog.showDialog(this, currentDirectory, () -> textPassword.getPassword());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 
@@ -519,27 +547,37 @@ public class SignAddInDialog extends JDialog {
 	 * Localize texts of the GUI components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(tabbedPane);
-		Utility.localize(labelAddInPath);
-		Utility.localize(labelAddInName);
-		Utility.localize(labelAddInTag);
-		Utility.localize(labelAddInVersion);
-		Utility.localize(labelAddInDescription);
-		Utility.localize(labelKeystorePassword);
-		Utility.localize(labelKeyStore);
-		Utility.localize(labelCertificateAlias);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(tabbedPane);
+			Utility.localize(labelAddInPath);
+			Utility.localize(labelAddInName);
+			Utility.localize(labelAddInTag);
+			Utility.localize(labelAddInVersion);
+			Utility.localize(labelAddInDescription);
+			Utility.localize(labelKeystorePassword);
+			Utility.localize(labelKeyStore);
+			Utility.localize(labelCertificateAlias);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons used by the GUI components.
 	 */
 	private void setIcons() {
-		
-		buttonChooseAddIn.setIcon(Images.getIcon("org/multipage/generator/images/filenames_icon.png"));
+		try {
+			
+			buttonChooseAddIn.setIcon(Images.getIcon("org/multipage/generator/images/filenames_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -547,97 +585,107 @@ public class SignAddInDialog extends JDialog {
 	 * @param addInPath
 	 */
 	protected void setAddInPath(String addInPath) {
-		
-		textAddInPath.setText(addInPath);
+		try {
+			
+			textAddInPath.setText(addInPath);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Load keystore table.
 	 */
 	private void loadKeystoreTable(File keystoreFile) {
-		
-		// Create table model.
-		DefaultTableModel tableModel = new DefaultTableModel();
-		
-		// Disable editing of table cells.
-		tableKeystoreContent.setDefaultEditor(Object.class, null);
-		
-		// Create column model.
-		DefaultTableColumnModel columnModel = new DefaultTableColumnModel();
-		
-		TableColumn column = new TableColumn();
-		
-		column.setModelIndex(0);
-		String columnName = Resources.getString("org.multipage.generator.titleKeystoreEntryAliasName");
-		column.setHeaderValue(columnName);
-		columnModel.addColumn(column);
-		tableKeystoreContent.setColumnModel(columnModel);
-		tableModel.addColumn(columnName);
-		
-		column.setModelIndex(1);
-		columnName = Resources.getString("org.multipage.generator.titleKeystoreEntryCertificate");
-		column.setHeaderValue(columnName);
-		columnModel.addColumn(column);
-		tableKeystoreContent.setColumnModel(columnModel);
-		tableModel.addColumn(columnName);
-		
-		column.setModelIndex(2);
-		columnName = Resources.getString("org.multipage.generator.titleKeystoreEntryCertificateChain");
-		column.setHeaderValue(columnName);
-		columnModel.addColumn(column);
-		tableKeystoreContent.setColumnModel(columnModel);
-		tableModel.addColumn(columnName);
-		
-		column.setModelIndex(3);
-		columnName = Resources.getString("org.multipage.generator.titleKeystoreEntryCreationDate");
-		column.setHeaderValue(columnName);
-		columnModel.addColumn(column);
-		tableKeystoreContent.setColumnModel(columnModel);
-		tableModel.addColumn(columnName);
-		
-		tableKeystoreContent.getTableHeader().setOpaque(false);
-		tableKeystoreContent.setModel(tableModel);
-		
-		// Open keystore.
-		KeyStore keystore = openKeystore(keystoreFile);
-		if (keystore == null) {
-			return;
-		}
-		
 		try {
-			Enumeration<String> aliases = keystore.aliases();
-			final Iterator<String> aliasIterator = aliases.asIterator();
 			
-			Obj<Boolean> isEmpty = new Obj<Boolean>(true);
+			// Create table model.
+			DefaultTableModel tableModel = new DefaultTableModel();
 			
-			aliasIterator.forEachRemaining(alias -> {
+			// Disable editing of table cells.
+			tableKeystoreContent.setDefaultEditor(Object.class, null);
+			
+			// Create column model.
+			DefaultTableColumnModel columnModel = new DefaultTableColumnModel();
+			
+			TableColumn column = new TableColumn();
+			
+			column.setModelIndex(0);
+			String columnName = Resources.getString("org.multipage.generator.titleKeystoreEntryAliasName");
+			column.setHeaderValue(columnName);
+			columnModel.addColumn(column);
+			tableKeystoreContent.setColumnModel(columnModel);
+			tableModel.addColumn(columnName);
+			
+			column.setModelIndex(1);
+			columnName = Resources.getString("org.multipage.generator.titleKeystoreEntryCertificate");
+			column.setHeaderValue(columnName);
+			columnModel.addColumn(column);
+			tableKeystoreContent.setColumnModel(columnModel);
+			tableModel.addColumn(columnName);
+			
+			column.setModelIndex(2);
+			columnName = Resources.getString("org.multipage.generator.titleKeystoreEntryCertificateChain");
+			column.setHeaderValue(columnName);
+			columnModel.addColumn(column);
+			tableKeystoreContent.setColumnModel(columnModel);
+			tableModel.addColumn(columnName);
+			
+			column.setModelIndex(3);
+			columnName = Resources.getString("org.multipage.generator.titleKeystoreEntryCreationDate");
+			column.setHeaderValue(columnName);
+			columnModel.addColumn(column);
+			tableKeystoreContent.setColumnModel(columnModel);
+			tableModel.addColumn(columnName);
+			
+			tableKeystoreContent.getTableHeader().setOpaque(false);
+			tableKeystoreContent.setModel(tableModel);
+			
+			// Open keystore.
+			KeyStore keystore = openKeystore(keystoreFile);
+			if (keystore == null) {
+				return;
+			}
+			
+			try {
+				Enumeration<String> aliases = keystore.aliases();
+				final Iterator<String> aliasIterator = aliases.asIterator();
 				
-				try {
-					Date date = keystore.getCreationDate(alias);
-					Certificate certificate = keystore.getCertificate(alias);
-					Certificate [] certificateChain = keystore.getCertificateChain(alias);
+				Obj<Boolean> isEmpty = new Obj<Boolean>(true);
+				
+				aliasIterator.forEachRemaining(alias -> {
 					
-					tableModel.addRow(new Object [] {
-							alias,
-							new CertificateWrapper(certificate),
-							new CertificateChainWrapper(certificateChain),
-							date
-							});
-					comboCertificate.addItem(alias);
-					
-					isEmpty.ref = false;
+					try {
+						Date date = keystore.getCreationDate(alias);
+						Certificate certificate = keystore.getCertificate(alias);
+						Certificate [] certificateChain = keystore.getCertificateChain(alias);
+						
+						tableModel.addRow(new Object [] {
+								alias,
+								new CertificateWrapper(certificate),
+								new CertificateChainWrapper(certificateChain),
+								date
+								});
+						comboCertificate.addItem(alias);
+						
+						isEmpty.ref = false;
+					}
+					catch (Exception e) {
+						Safe.exception(e);
+					}
+				});	
+				// Select first item in above combo box with keystore aliases.
+				if (!isEmpty.ref) {
+					comboCertificate.setSelectedIndex(0);
 				}
-				catch (Exception e) {
-					e.printStackTrace();
-				}
-			});	
-			// Select first item in above combo box with keystore aliases.
-			if (!isEmpty.ref) {
-				comboCertificate.setSelectedIndex(0);
+			}
+			catch (Exception e) {
 			}
 		}
-		catch (Exception e) {
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -647,62 +695,89 @@ public class SignAddInDialog extends JDialog {
 	 */
 	private KeyStore openKeystore(File keystoreFile) {
 		
-		KeyStore keystore = null;
-		
 		try {
-			// Try to open keystore.
-			char [] credentialsChar = textPassword.getPassword();
-			keystore = KeyStore.getInstance(keystoreFile, credentialsChar);
+			KeyStore keystore = null;
+			
+			try {
+				// Try to open keystore.
+				char [] credentialsChar = textPassword.getPassword();
+				keystore = KeyStore.getInstance(keystoreFile, credentialsChar);
+			}
+			catch (Exception e) {
+				Utility.show(this, "org.multipage.generator.messageKeystoreCredentialsError", e.getLocalizedMessage());
+			}
+			
+			return keystore;
 		}
-		catch (Exception e) {
-			Utility.show(this, "org.multipage.generator.messageKeystoreCredentialsError", e.getLocalizedMessage());
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		return keystore;
+		return null;
 	}
 
 	/**
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
-			bounds = getBounds();
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+				bounds = getBounds();
+			}
+			else {
+				setBounds(bounds);
+			}
 		}
-		else {
-			setBounds(bounds);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On choose Add-in file.
 	 */
 	protected void onChooseAddIn() {
-		
-		File addInJarFile = Utility.chooseFileToOpen(this, new String [][] {{"org.multipage.generator.textAddInJarFilesFilter", "jar"}});
-		if (addInJarFile == null) {
-			return;
+		try {
+			
+			File addInJarFile = Utility.chooseFileToOpen(this, new String [][] {{"org.multipage.generator.textAddInJarFilesFilter", "jar"}});
+			if (addInJarFile == null) {
+				return;
+			}
+			
+			// Display file path.
+			textAddInPath.setText(addInJarFile.toString());
 		}
-		
-		// Display file path.
-		textAddInPath.setText(addInJarFile.toString());
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On cancel dialog.
 	 */
 	protected void onCancel() {
+		try {
+			
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
-		saveDialog();
 		dispose();
 	}
 	
@@ -710,8 +785,14 @@ public class SignAddInDialog extends JDialog {
 	 * On OK button.
 	 */
 	protected void onOK() {
+		try {
+			
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
-		saveDialog();
 		dispose();
 	}
 }

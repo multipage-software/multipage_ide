@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -38,10 +38,11 @@ import org.maclan.ResourceConstructor;
 import org.multipage.gui.Images;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays resource information.
+ * @author vakol
  *
  */
 public class ResourceLoadInfoPanel extends JPanel {
@@ -83,14 +84,19 @@ public class ResourceLoadInfoPanel extends JPanel {
 	 * @param backgroundColor 
 	 */
 	public ResourceLoadInfoPanel(ResourceConstructor resource, Color backgroundColor) {
-
-		initComponents();
 		
-		// $hide>>$
-		this.resource = resource;
-		this.backgroundColor = backgroundColor;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			this.resource = resource;
+			this.backgroundColor = backgroundColor;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -161,131 +167,171 @@ public class ResourceLoadInfoPanel extends JPanel {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setIcons();
-		setToolTips();
-		
-		updatePanel();
-		
-		setDragAndDrop();
+		try {
+			
+			setIcons();
+			setToolTips();
+			
+			updatePanel();
+			setDragAndDrop();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonFile.setIcon(Images.getIcon("org/multipage/generator/images/open.png"));
-		buttonLink.setIcon(Images.getIcon("org/multipage/generator/images/load_icon.png"));
-		buttonLinkArea.setIcon(Images.getIcon("org/multipage/generator/images/load_area_icon.png"));
-		buttonClear.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		try {
+			
+			buttonFile.setIcon(Images.getIcon("org/multipage/generator/images/open.png"));
+			buttonLink.setIcon(Images.getIcon("org/multipage/generator/images/load_icon.png"));
+			buttonLinkArea.setIcon(Images.getIcon("org/multipage/generator/images/load_area_icon.png"));
+			buttonClear.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set tool tips.
 	 */
 	private void setToolTips() {
-		
-		buttonFile.setToolTipText(Resources.getString("org.multipage.generator.tooltipLoadResourceFromFile"));
-		buttonLink.setToolTipText(Resources.getString("org.multipage.generator.tooltipLinkVisibleResource"));
-		buttonLinkArea.setToolTipText(Resources.getString("org.multipage.generator.tooltipLinkAreaResource"));
-		buttonClear.setToolTipText(Resources.getString("org.multipage.generator.tooltipClearResourceLoadInfo"));
+		try {
+			
+			buttonFile.setToolTipText(Resources.getString("org.multipage.generator.tooltipLoadResourceFromFile"));
+			buttonLink.setToolTipText(Resources.getString("org.multipage.generator.tooltipLinkVisibleResource"));
+			buttonLinkArea.setToolTipText(Resources.getString("org.multipage.generator.tooltipLinkAreaResource"));
+			buttonClear.setToolTipText(Resources.getString("org.multipage.generator.tooltipClearResourceLoadInfo"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load panel.
 	 */
 	private void updatePanel() {
-		
-		ResourceConstructor.LoadInfo loadInfo = resource.getLoadInfo();
-		String resourceDescription = resource.getDescription();
-
-		String text;
-		
-		if (loadInfo != null) {
-			String loadInfoDescription = loadInfo.getLoadDescription();
-			text = String.format("<html><b>%s</b>&nbsp<i>(%s)</i></html>", resourceDescription, loadInfoDescription);
+		try {
+			
+			ResourceConstructor.LoadInfo loadInfo = resource.getLoadInfo();
+			String resourceDescription = resource.getDescription();
+	
+			String text;
+			
+			if (loadInfo != null) {
+				String loadInfoDescription = loadInfo.getLoadDescription();
+				text = String.format("<html><b>%s</b>&nbsp<i>(%s)</i></html>", resourceDescription, loadInfoDescription);
+			}
+			else {
+				text = String.format("<html><b>%s</b></html>", resourceDescription);
+			}
+			
+			labelDescription.setText(text);
+			
+			// Set background color.
+			final Color lightRedColor = new Color(255, 180, 180);
+					
+			Color currentBackgroundColor = resource != null && !resource.isLoadInfoEmpty() ? lightRedColor : backgroundColor;
+			setBackground(currentBackgroundColor);
 		}
-		else {
-			text = String.format("<html><b>%s</b></html>", resourceDescription);
-		}
-		
-		labelDescription.setText(text);
-		
-		// Set background color.
-		final Color lightRedColor = new Color(255, 180, 180);
-				
-		Color currentBackgroundColor = resource != null && !resource.isLoadInfoEmpty() ? lightRedColor : backgroundColor;
-		setBackground(currentBackgroundColor);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On clear.
 	 */
 	protected void onClear() {
-
-		clear();
+		try {
+			
+			clear();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Clear load info.
 	 */
 	public void clear() {
-		
-		resource.clearLoadInfo();
-		
-		updatePanel();
+		try {
+			
+			resource.clearLoadInfo();
+			updatePanel();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On file.
 	 */
 	protected void onFile() {
-		
-	    // Get selected file.
-	    File file = GeneratorUtility.chooseFile(this, null, false);
-	    if (file == null) {
-	    	return;
-	    }
-	    
-	    // Set load info.
-	    resource.setLoadInfo(file);
-	    
-	    updatePanel();
+		try {
+			
+			// Get selected file.
+		    File file = GeneratorUtility.chooseFile(this, null, false);
+		    if (file == null) {
+		    	return;
+		    }
+		    
+		    // Set load info.
+		    resource.setLoadInfo(file);
+		    updatePanel();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On link.
 	 */
 	protected void onLink() {
-		
-		// Get resource from the database.
-		LinkedList<Resource> selectedResources = new LinkedList<Resource>();
-		if (!ResourcesEditorDialog.showDialog(this, selectedResources)) {
-			return;
+		try {
+			
+			// Get resource from the database.
+			LinkedList<Resource> selectedResources = new LinkedList<Resource>();
+			if (!ResourcesEditorDialog.showDialog(this, selectedResources)) {
+				return;
+			}
+			
+			// Set load info.
+			resource.setLoadInfo(selectedResources.getFirst());
+			updatePanel();
 		}
-		
-		// Set load info.
-		resource.setLoadInfo(selectedResources.getFirst());
-		
-		updatePanel();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On link from area.
 	 */
 	protected void onLinkFromArea() {
-		
-		// Get resource from the database.
-		LinkedList<Resource> selectedResources = new LinkedList<Resource>();
-		if (!AreaResourcesDialog.showDialog(this, selectedResources)) {
-			return;
+		try {
+			
+			// Get resource from the database.
+			LinkedList<Resource> selectedResources = new LinkedList<Resource>();
+			if (!AreaResourcesDialog.showDialog(this, selectedResources)) {
+				return;
+			}
+			
+			// Set load info.
+			resource.setLoadInfo(selectedResources.getFirst());
+			updatePanel();
 		}
-		
-		// Set load info.
-		resource.setLoadInfo(selectedResources.getFirst());
-		
-		updatePanel();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -294,144 +340,168 @@ public class ResourceLoadInfoPanel extends JPanel {
 	@Override
 	public void paint(Graphics g) {
 		
-		// Draw super object.
-		super.paint(g);
-		
-		Graphics2D g2 = (Graphics2D) g;
-		
-		// Get properties.
-		Color oldColor = g2.getColor();
-		
-		// Draw rectangle.
-		Dimension dimension = getSize();
-		Rectangle rectangle = new Rectangle(dimension);
-		rectangle.setSize(dimension.width - 1, dimension.height - 1);
-		
-		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC, 1.0f));
-		
-		// If is not empty.
-		if (resource != null && !resource.isLoadInfoEmpty()) {
-
-			// Set color.
-			g2.setColor(Color.RED);
-
-			// Draw lines.
-			g2.draw(rectangle);
-		}
-		
-		// On drop hover.
-		if (dropTargetHover) {
+		try {
+			// Draw super object.
+			super.paint(g);
 			
-			g2.setColor(Color.BLUE);
-			g2.draw(rectangle);
+			Graphics2D g2 = (Graphics2D) g;
+			
+			// Get properties.
+			Color oldColor = g2.getColor();
+			
+			// Draw rectangle.
+			Dimension dimension = getSize();
+			Rectangle rectangle = new Rectangle(dimension);
+			rectangle.setSize(dimension.width - 1, dimension.height - 1);
+			
+			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC, 1.0f));
+			
+			// If is not empty.
+			if (resource != null && !resource.isLoadInfoEmpty()) {
+	
+				// Set color.
+				g2.setColor(Color.RED);
+	
+				// Draw lines.
+				g2.draw(rectangle);
+			}
+			
+			// On drop hover.
+			if (dropTargetHover) {
+				
+				g2.setColor(Color.BLUE);
+				g2.draw(rectangle);
+			}
+			
+			// Set old properties.
+			g2.setColor(oldColor);
 		}
-		
-		// Set old properties.
-		g2.setColor(oldColor);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
 	 * Set drag and drop.
 	 */
 	private void setDragAndDrop() {
+		try {
+			
+			// This object reference.
+			final JPanel thisPanel = this;
+			
+			// Set drop target.
+			new DropTarget(this, new DropTargetAdapter() {
+				@Override
+				public void drop(DropTargetDropEvent dtde) {
+					try {
+						
+						// Reset flag.
+						dropTargetHover = false;
 		
-		// This object reference.
-		final JPanel thisPanel = this;
+						Transferable transferable = dtde.getTransferable();
+						
+						// Accept drop.
+						dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
+						
+						// I a data flavor is not supported.
+						if (!dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
 		
-		// Set drop target.
-		new DropTarget(this, new DropTargetAdapter() {
-			@Override
-			public void drop(DropTargetDropEvent dtde) {
-				
-				// Reset flag.
-				dropTargetHover = false;
-
-				Transferable transferable = dtde.getTransferable();
-				
-				// Accept drop.
-				dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
-				
-				// I a data flavor is not supported.
-				if (!dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
-
-		        	thisPanel.repaint();
-		        	Utility.show(thisPanel, "org.multipage.generator.tooltipClearResourceReferences");
-		        	
-					dtde.dropComplete(false);
-					return;
+				        	thisPanel.repaint();
+				        	Utility.show(thisPanel, "org.multipage.generator.tooltipClearResourceReferences");
+				        	
+							dtde.dropComplete(false);
+							return;
+						}
+						
+						// Get file list.
+						java.util.List<File> fileList = null;
+				        try {
+				            fileList = (java.util.List<File>) transferable.getTransferData(DataFlavor.javaFileListFlavor);
+				        } 
+				        catch (Exception e) {
+				        	
+				        	dtde.dropComplete(false);
+				        	return;
+				        }
+				        
+				        // Check file list.
+				        if (fileList.isEmpty()) {
+				        	dtde.dropComplete(false);
+				        	return;
+				        }
+				        
+				        // Check file.
+				        if (fileList.size() != 1) {
+				        	
+				        	thisPanel.repaint();
+				        	Utility.show(thisPanel, "org.multipage.generator.messageDropSingleFile");
+				        	
+				        	dtde.dropComplete(false);
+				        	return;
+				        }
+				        
+				        File file = fileList.get(0);
+				        if (file.isDirectory()) {
+				        	
+				        	thisPanel.repaint();
+				        	Utility.show(thisPanel, "org.multipage.generator.messageCannotDropDirectory");
+				        	
+				        	dtde.dropComplete(false);
+				        	return;
+				        }
+				        
+				        if (!file.canRead()) {
+				        	
+				        	thisPanel.repaint();
+				        	Utility.show(thisPanel, "org.multipage.generator.messageFileCannotBeRead");
+				        	
+				        	dtde.dropComplete(false);
+				        	return;
+				        }
+				        
+					    // Set load info.
+					    resource.setLoadInfo(file);
+					    
+					    updatePanel();
+				        
+					    // Complete drop.
+				        dtde.dropComplete(true);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-				
-				// Get file list.
-				java.util.List<File> fileList = null;
-		        try {
-		            fileList = (java.util.List<File>) transferable.getTransferData(DataFlavor.javaFileListFlavor);
-		        } 
-		        catch (Exception e) {
-		        	
-		        	dtde.dropComplete(false);
-		        	return;
-		        }
-		        
-		        // Check file list.
-		        if (fileList.isEmpty()) {
-		        	dtde.dropComplete(false);
-		        	return;
-		        }
-		        
-		        // Check file.
-		        if (fileList.size() != 1) {
-		        	
-		        	thisPanel.repaint();
-		        	Utility.show(thisPanel, "org.multipage.generator.messageDropSingleFile");
-		        	
-		        	dtde.dropComplete(false);
-		        	return;
-		        }
-		        
-		        File file = fileList.get(0);
-		        if (file.isDirectory()) {
-		        	
-		        	thisPanel.repaint();
-		        	Utility.show(thisPanel, "org.multipage.generator.messageCannotDropDirectory");
-		        	
-		        	dtde.dropComplete(false);
-		        	return;
-		        }
-		        
-		        if (!file.canRead()) {
-		        	
-		        	thisPanel.repaint();
-		        	Utility.show(thisPanel, "org.multipage.generator.messageFileCannotBeRead");
-		        	
-		        	dtde.dropComplete(false);
-		        	return;
-		        }
-		        
-			    // Set load info.
-			    resource.setLoadInfo(file);
-			    
-			    updatePanel();
-		        
-			    // Complete drop.
-		        dtde.dropComplete(true);
-		        return;
-			}
-
-			// On drag enter
-			@Override
-			public void dragEnter(DropTargetDragEvent dtde) {
-
-				dropTargetHover = true;
-				thisPanel.repaint();
-			}
-
-			// On drag exit.
-			@Override
-			public void dragExit(DropTargetEvent dte) {
-				
-				dropTargetHover = false;
-				thisPanel.repaint();
-			}
-		});
+	
+				// On drag enter
+				@Override
+				public void dragEnter(DropTargetDragEvent dtde) {
+					try {
+						
+						dropTargetHover = true;
+						thisPanel.repaint();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+	
+				// On drag exit.
+				@Override
+				public void dragExit(DropTargetEvent dte) {
+					try {
+						
+						dropTargetHover = false;
+						thisPanel.repaint();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

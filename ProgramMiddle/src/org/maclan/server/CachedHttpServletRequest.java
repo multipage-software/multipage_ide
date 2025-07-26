@@ -1,16 +1,19 @@
-/**
+/*
+ * Copyright 2010-2025 (C) vakol
  * 
+ * Created on : 2017-04-26
+ *
  */
 package org.maclan.server;
 
 import java.io.IOException;
-import java.util.Enumeration;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequestWrapper;
 
 /**
- * @author user
+ * Cached HTTP request wrapper.
+ * @author vakol
  *
  */
 public class CachedHttpServletRequest extends HttpServletRequestWrapper {
@@ -29,13 +32,9 @@ public class CachedHttpServletRequest extends HttpServletRequestWrapper {
 	 * Constructor.
 	 * @param request
 	 */
-	public CachedHttpServletRequest(org.eclipse.jetty.server.Request request) {
+	public CachedHttpServletRequest(javax.servlet.http.HttpServletRequest request) {
 		
 		super(request);
-		
-		Enumeration<String> headers = request.getHeaderNames();
-		String header = request.getHeader("Content-Length");
-		header = request.getHeader("Content-Type");
 		
 		// Cache input stream.
 		try {

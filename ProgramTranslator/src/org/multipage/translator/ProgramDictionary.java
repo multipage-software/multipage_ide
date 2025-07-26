@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -14,9 +14,11 @@ import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.StateSerializer;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * @author
+ * Helper class for the Translator module.
+ * @author vakol
  *
  */
 public class ProgramDictionary {
@@ -91,13 +93,18 @@ public class ProgramDictionary {
 	 * Set default data.
 	 */
 	protected static void setDefaultData() {
-
-		// Default dictionary data.
-		TranslatorDialog.setDefaultData();
-		// Default text dialog data.
-		LocalizeTextDialog.setDefaultData();
-		// Set default data.
-		OrderLanguagesDialog.setDefaultData();
+		try {
+			
+			// Default dictionary data.
+			TranslatorDialog.setDefaultData();
+			// Default text dialog data.
+			LocalizeTextDialog.setDefaultData();
+			// Set default data.
+			OrderLanguagesDialog.setDefaultData();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**

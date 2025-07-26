@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -33,10 +33,11 @@ import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays selection of the super area.
+ * @author vakol
  *
  */
 public class SelectSuperAreaDialog extends JDialog {
@@ -121,12 +122,17 @@ public class SelectSuperAreaDialog extends JDialog {
 	 */
 	public static Area showDialog(Component parent, Area area) {
 		
-		SelectSuperAreaDialog dialog = new SelectSuperAreaDialog(parent, area);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			SelectSuperAreaDialog dialog = new SelectSuperAreaDialog(parent, area);
+			dialog.setVisible(true);
 			
-			return dialog.superArea;
+			if (dialog.confirm) {
+				
+				return dialog.superArea;
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -139,12 +145,16 @@ public class SelectSuperAreaDialog extends JDialog {
 	public SelectSuperAreaDialog(Component parent, Area area) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
 
-		initComponents();
-		
-		// $hide>>$
-		this.area = area;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			this.area = area;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -207,15 +217,19 @@ public class SelectSuperAreaDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		localize();
-		setIcons();
-		
-		initTable();
-		
-		loadDialog();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			localize();
+			setIcons();
+			initTable();
+			
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};	
 	}
 
 	/**
@@ -223,83 +237,109 @@ public class SelectSuperAreaDialog extends JDialog {
 	 */
 	@SuppressWarnings("serial")
 	private void initTable() {
-		
-		// Create model.
-		tableModel = new DefaultTableModel() {
+		try {
+			
+			// Create model.
+			tableModel = new DefaultTableModel() {
+	
+				@Override
+				public boolean isCellEditable(int row, int column) {
 
-			@Override
-			public boolean isCellEditable(int row, int column) {
-				
-				return false;
-			}
-
-			@Override
-			public Class<?> getColumnClass(int columnIndex) {
-				
-				if (columnIndex == 2 || columnIndex == 3) {
-					return Boolean.class;
+					return false;
+				}
+	
+				@Override
+				public Class<?> getColumnClass(int columnIndex) {
+					
+					try {
+						if (columnIndex == 2 || columnIndex == 3) {
+							return Boolean.class;
+						}
+						
+						return super.getColumnClass(columnIndex);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return null;
 				}
 				
-				return super.getColumnClass(columnIndex);
-			}
+			};
+			table.setModel(tableModel);
 			
-		};
-		table.setModel(tableModel);
-		
-		// Add columns.
-		tableModel.addColumn(Resources.getString("org.multipage.generator.textColumnID"));
-		tableModel.addColumn(Resources.getString("org.multipage.generator.textColumnName"));
-		tableModel.addColumn(Resources.getString("org.multipage.generator.textColumnInherits"));
-		tableModel.addColumn(Resources.getString("org.multipage.generator.textColumnHides"));
-		tableModel.addColumn(Resources.getString("org.multipage.generator.textColumnNameSub"));
-		tableModel.addColumn(Resources.getString("org.multipage.generator.textColumnNameSuper"));
+			// Add columns.
+			tableModel.addColumn(Resources.getString("org.multipage.generator.textColumnID"));
+			tableModel.addColumn(Resources.getString("org.multipage.generator.textColumnName"));
+			tableModel.addColumn(Resources.getString("org.multipage.generator.textColumnInherits"));
+			tableModel.addColumn(Resources.getString("org.multipage.generator.textColumnHides"));
+			tableModel.addColumn(Resources.getString("org.multipage.generator.textColumnNameSub"));
+			tableModel.addColumn(Resources.getString("org.multipage.generator.textColumnNameSuper"));
+					
+			long areaId = area.getId();
+			
+			// Add rows.
+			for (Area superArea : area.getSuperareas()) {
 				
-		long areaId = area.getId();
-		
-		// Add rows.
-		for (Area superArea : area.getSuperareas()) {
-			
-			AreaRelation relation = superArea.getSubRelation(areaId);
-			
-			tableModel.addRow(new Object [] {
-					superArea.getId(),
-					superArea.getDescriptionForced(false),
-					relation.isInheritance(),
-					relation.isHideSub(),
-					relation.getRelationNameSub(),
-					relation.getRelationNameSuper()
-					});
+				AreaRelation relation = superArea.getSubRelation(areaId);
+				
+				tableModel.addRow(new Object [] {
+						superArea.getId(),
+						superArea.getDescriptionForced(false),
+						relation.isInheritance(),
+						relation.isHideSub(),
+						relation.getRelationNameSub(),
+						relation.getRelationNameSuper()
+						});
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(labelSelect);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(labelSelect);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
-		
-		saveDialog();
-		
-		confirm = false;
+		try {
+			
+			saveDialog();
+			confirm = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -307,25 +347,30 @@ public class SelectSuperAreaDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		// Get selected row.
-		int selectedIndex = table.getSelectedRow();
-		if (selectedIndex == -1) {
+		try {
 			
-			Utility.show(this, "org.multipage.generator.messageSelectSuperArea");
-			return;
-		}
-		
-		// Set area.
-		Long superAreaId = (Long) tableModel.getValueAt(selectedIndex, 0);
-		if (superAreaId != null) {
+			// Get selected row.
+			int selectedIndex = table.getSelectedRow();
+			if (selectedIndex == -1) {
+				
+				Utility.show(this, "org.multipage.generator.messageSelectSuperArea");
+				return;
+			}
 			
-			superArea = area.getSuperarea(superAreaId);
+			// Set area.
+			Long superAreaId = (Long) tableModel.getValueAt(selectedIndex, 0);
+			if (superAreaId != null) {
+				
+				superArea = area.getSuperarea(superAreaId);
+			}
+			
+			saveDialog();
+			confirm = true;
 		}
-		
-		saveDialog();
-		
-		confirm = true;
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -333,20 +378,30 @@ public class SelectSuperAreaDialog extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setBounds(bounds);
+			}
 		}
-		else {
-			setBounds(bounds);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

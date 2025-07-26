@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2024 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 30-05-2017
+ * Created on : 2017-05-30
  *
  */
 package org.maclan.server;
@@ -9,7 +9,7 @@ package org.maclan.server;
 import java.util.Properties;
 
 /**
- * Area Server macro language tag properties.
+ * Class for tag properties.
  * @author vakol
  */
 public class TagProperties extends Properties {

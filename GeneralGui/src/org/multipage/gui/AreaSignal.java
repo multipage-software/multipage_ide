@@ -1,12 +1,10 @@
 /*
- * Copyright 2010-2023 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 07-12-2023
+ * Created on : 2023-12-07
  *
  */
 package org.multipage.gui;
-
-import java.awt.Component;
 
 /**
  * Area signals definitions.
@@ -18,14 +16,6 @@ public class AreaSignal extends Signal {
 	 * List of area signals.
 	 */
 	
-	// Set home area in the model. Area is determined by its ID.
-	public static Signal setHomeArea = new Signal(
-			params(
-					Long.class,	// Home area ID.
-					Component.class, // Parent GUI component used in dialogs.
-					Runnable.class // Runnable lambda that can be run when signal is received.
-				));
-	
 	/**
 	 * Static constructor.
 	 */
@@ -34,7 +24,7 @@ public class AreaSignal extends Signal {
 		//addUnnecessary();
 		
 		// Describe signals.
-		reflectSignals(GuiSignal.class);
+		reflectSignals(AreaSignal.class);
 	}
 	
 	/**
@@ -43,9 +33,9 @@ public class AreaSignal extends Signal {
 	@Override
 	public boolean equals(Object obj) {
 		
-		if (obj instanceof GuiSignal) {
+		if (obj instanceof AreaSignal) {
 			
-			Signal signal = (GuiSignal) obj;
+			Signal signal = (AreaSignal) obj;
 			boolean isSame = this.name.equals(signal.name);
 			
 			return isSame;

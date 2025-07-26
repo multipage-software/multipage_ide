@@ -1,7 +1,13 @@
+/*
+ * Copyright 2010-2025 (C) vakol
+ * 
+ * Created on : 2023-09-19
+ *
+ */
 package org.multipage.gui;
 
 /**
- * Symbol which is repsesented by sequence of bytes.
+ * Symbol repsesented by sequence of bytes.
  * @author vakol
  */
 public class PacketSymbol extends PacketElement {

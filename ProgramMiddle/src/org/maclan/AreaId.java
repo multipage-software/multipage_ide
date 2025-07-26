@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2021 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 14-09-2021
+ * Created on : 2021-09-14
  *
  */
 package org.maclan;
@@ -9,6 +9,7 @@ package org.maclan;
 import org.multipage.util.Resources;
 
 /**
+ * Area identifier.
  * @author vakol
  *
  */

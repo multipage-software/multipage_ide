@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2025-04-26
  *
  */
 
@@ -16,8 +16,8 @@ import java.io.*;
 import java.awt.event.*;
 
 /**
- * 
- * @author
+ * Panel that displays list style editor.
+ * @author vakol
  *
  */
 public class CssListStylePanel extends InsertPanel implements StringValueEditor {
@@ -102,13 +102,18 @@ public class CssListStylePanel extends InsertPanel implements StringValueEditor 
 	 * @param parentWindow 
 	 */
 	public CssListStylePanel(String initialString) {
-
-		initComponents();
 		
-		// $hide>>$
-		this.initialString = initialString;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			this.initialString = initialString;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -186,15 +191,19 @@ public class CssListStylePanel extends InsertPanel implements StringValueEditor 
 	 * On type selection.
 	 */
 	protected void onComboType() {
-		
-		if (settingControls) {
-			return;
+		try {
+			
+			if (settingControls) {
+				return;
+			}
+			
+			startSettingControls();
+			textText.setText("");
+			stopSettingControls();
 		}
-		startSettingControls();
-		
-		textText.setText("");
-		
-		stopSettingControls();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -219,7 +228,7 @@ public class CssListStylePanel extends InsertPanel implements StringValueEditor 
 	 */
 	public void stopSettingControls() {
 		
-		SwingUtilities.invokeLater(new Runnable() {
+		Safe.invokeLater(new Runnable() {
 			@Override
 			public void run() {
 				
@@ -232,31 +241,41 @@ public class CssListStylePanel extends InsertPanel implements StringValueEditor 
 	 * On find resource.
 	 */
 	protected void onFindResource() {
-		
-		if (getResourceName == null) {
+		try {
 			
-			Utility.show(this, "org.multipage.gui.messageNoResourcesAssociated");
-			return;
+			if (getResourceName == null) {
+				
+				Utility.show(this, "org.multipage.gui.messageNoResourcesAssociated");
+				return;
+			}
+			
+			// Use callback to obtain resource name.
+			Object outputValue = getResourceName.run(null);
+			if (!(outputValue instanceof String)) {
+				return;
+			}
+			
+			String imageName = (String) outputValue;
+			
+			// Set image name text control.
+			textImageName.setText(imageName);
 		}
-		
-		// Use callback to obtain resource name.
-		Object outputValue = getResourceName.run(null);
-		if (!(outputValue instanceof String)) {
-			return;
-		}
-		
-		String imageName = (String) outputValue;
-		
-		// Set image name text control.
-		textImageName.setText(imageName);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-
-		setFromInitialString();
+		try {
+			
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -271,71 +290,92 @@ public class CssListStylePanel extends InsertPanel implements StringValueEditor 
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		localize();
-		setIcons();
-		
-		loadComboBoxes();
-		
-		loadDialog();
-		setListeners();
+		try {
+			
+			localize();
+			setIcons();
+			
+			loadComboBoxes();
+			
+			loadDialog();
+			setListeners();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set listeners.
 	 */
 	private void setListeners() {
-		
-		Utility.setTextChangeListener(textText, new Runnable() {
-			@Override
-			public void run() {
-				
-				if (settingControls) {
-					return;
+		try {
+			
+			Utility.setTextChangeListener(textText, () -> {
+				try {
+			
+					if (settingControls) {
+						return;
+					}
+					
+					startSettingControls();
+					comboType.setSelectedIndex(0);
+					stopSettingControls();
 				}
-				startSettingControls();
-				
-				comboType.setSelectedIndex(0);
-				
-				stopSettingControls();
-			}
-		});
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonGetResources.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
+		try {
+			
+			buttonGetResources.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load combo boxes.
 	 */
 	private void loadComboBoxes() {
-		
-		Utility.loadEmptyItem(comboType);
-		Utility.loadNamedItems(comboType, new String [][] {
-				{"none", "org.multipage.gui.textCssStyleNone"},
-				{"disc", "org.multipage.gui.textCssStyleDisk"},
-				{"circle", "org.multipage.gui.textCssStyleCirkle"},
-				{"square", "org.multipage.gui.textCssStyleSquare"},
-				{"decimal", "org.multipage.gui.textCssStyleDecimal"},
-				{"lower-roman", "org.multipage.gui.textCssStyleLowerRoman"},
-				{"upper-roman", "org.multipage.gui.textCssStyleUpperRoman"},
-				{"lower-alpha", "org.multipage.gui.textCssStyleLowerAlpha"},
-				{"upper-alpha", "org.multipage.gui.textCssStyleUpperAlpha"},
-				{"lower-greek", "org.multipage.gui.textCssStyleLowerGreek"},
-				{"armenian", "org.multipage.gui.textCssStyleArmenian"},
-				{"georgian", "org.multipage.gui.textCssStyleGeorgian"},
-				{"decimal-leading-zero", "org.multipage.gui.textCssStyleDecimalLeadingZero"}
-				});
-		
-		Utility.loadNamedItems(comboPosition, new String [][] {
-				{"outside", "org.multipage.gui.textCssStyleOutside"},
-				{"inside", "org.multipage.gui.textCssStyleInside"}
-				});
+		try {
+			
+			Utility.loadEmptyItem(comboType);
+			Utility.loadNamedItems(comboType, new String [][] {
+					{"none", "org.multipage.gui.textCssStyleNone"},
+					{"disc", "org.multipage.gui.textCssStyleDisk"},
+					{"circle", "org.multipage.gui.textCssStyleCirkle"},
+					{"square", "org.multipage.gui.textCssStyleSquare"},
+					{"decimal", "org.multipage.gui.textCssStyleDecimal"},
+					{"lower-roman", "org.multipage.gui.textCssStyleLowerRoman"},
+					{"upper-roman", "org.multipage.gui.textCssStyleUpperRoman"},
+					{"lower-alpha", "org.multipage.gui.textCssStyleLowerAlpha"},
+					{"upper-alpha", "org.multipage.gui.textCssStyleUpperAlpha"},
+					{"lower-greek", "org.multipage.gui.textCssStyleLowerGreek"},
+					{"armenian", "org.multipage.gui.textCssStyleArmenian"},
+					{"georgian", "org.multipage.gui.textCssStyleGeorgian"},
+					{"decimal-leading-zero", "org.multipage.gui.textCssStyleDecimalLeadingZero"}
+					});
+			
+			Utility.loadNamedItems(comboPosition, new String [][] {
+					{"outside", "org.multipage.gui.textCssStyleOutside"},
+					{"inside", "org.multipage.gui.textCssStyleInside"}
+					});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -345,7 +385,13 @@ public class CssListStylePanel extends InsertPanel implements StringValueEditor 
 	@Override
 	public String getSpecification() {
 		
-		return getType() + " " + getPosition() + " " + getImage();
+		try {
+			return getType() + " " + getPosition() + " " + getImage();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -354,19 +400,25 @@ public class CssListStylePanel extends InsertPanel implements StringValueEditor 
 	 */
 	private String getType() {
 		
-		String type = textText.getText();
-		if (!type.isEmpty()) {
+		try {
+			String type = textText.getText();
+			if (!type.isEmpty()) {
+				
+				type = type.replace("\"", "\\\"");
+				return "\"" + type + "\"";
+			}
 			
-			type = type.replace("\"", "\\\"");
-			return "\"" + type + "\"";
+			type = Utility.getSelectedNamedItem(comboType);
+			if (type.isEmpty()) {
+				return "disc";
+			}
+			
+			return type;
 		}
-		
-		type = Utility.getSelectedNamedItem(comboType);
-		if (type.isEmpty()) {
-			return "disc";
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		return type;
+		return "";
 	}
 
 	/**
@@ -375,11 +427,17 @@ public class CssListStylePanel extends InsertPanel implements StringValueEditor 
 	 */
 	private String getPosition() {
 		
-		String position = Utility.getSelectedNamedItem(comboPosition);
-		if (position.isEmpty()) {
-			return "outside";
+		try {
+			String position = Utility.getSelectedNamedItem(comboPosition);
+			if (position.isEmpty()) {
+				return "outside";
+			}
+			return position;
 		}
-		return position;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -388,61 +446,72 @@ public class CssListStylePanel extends InsertPanel implements StringValueEditor 
 	 */
 	private String getImage() {
 		
-		String imageName = textImageName.getText();
-		if (imageName.isEmpty()) {
-			return "none";
+		try {
+			String imageName = textImageName.getText();
+			if (imageName.isEmpty()) {
+				return "none";
+			}
+			
+			return String.format("url(\"[@URL thisArea, res=\"#%s\"]\")", imageName);
 		}
-		
-		return String.format("url(\"[@URL thisArea, res=\"#%s\"]\")", imageName);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
 	 * Set from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		// Initialize controls.
-		setType("disc");
-		setPosition("outside");
-		setImage("none");
-
-		if (initialString != null) {
-						
-			try {
-				Obj<Integer> position = new Obj<Integer>(0);
-
-				// Get type.
-				String text = Utility.getNextMatch(initialString, position, "^\\s*\"(([^\\\\\"]|\\\\\"|\\\\(?!\"))*)\"");
-				if (text == null) {
+		try {
+			
+			// Initialize controls.
+			setType("disc");
+			setPosition("outside");
+			setImage("none");
+	
+			if (initialString != null) {
+							
+				try {
+					Obj<Integer> position = new Obj<Integer>(0);
+	
+					// Get type.
+					String text = Utility.getNextMatch(initialString, position, "^\\s*\"(([^\\\\\"]|\\\\\"|\\\\(?!\"))*)\"");
+					if (text == null) {
+						text = Utility.getNextMatch(initialString, position, "\\s*\\S+");
+						if (text == null) {
+							return;
+						}
+					}
+					else {
+						text = text.replace("\\\"", "\"");
+					}
+					setType(text.trim());
+					
+					// Get position.
 					text = Utility.getNextMatch(initialString, position, "\\s*\\S+");
 					if (text == null) {
 						return;
 					}
-				}
-				else {
-					text = text.replace("\\\"", "\"");
-				}
-				setType(text.trim());
-				
-				// Get position.
-				text = Utility.getNextMatch(initialString, position, "\\s*\\S+");
-				if (text == null) {
-					return;
-				}
-				setPosition(text.trim());
-				
-				// Get image.
-				try {
-					text = initialString.substring(position.ref);
-					setImage(text.trim());
+					setPosition(text.trim());
+					
+					// Get image.
+					try {
+						text = initialString.substring(position.ref);
+						setImage(text.trim());
+					}
+					catch (Exception e) {
+					}
 				}
 				catch (Exception e) {
+					Safe.exception(e);
 				}
 			}
-			catch (Exception e) {
-				e.printStackTrace();
-			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -450,15 +519,20 @@ public class CssListStylePanel extends InsertPanel implements StringValueEditor 
 	 * @param string
 	 */
 	private void setType(String string) {
-		
-		if (!Utility.selectComboNamedItem(comboType, string)) {
-			if (string.length() >= 2 && string.charAt(0) == '\"' && string.charAt(string.length() - 1) == '\"') {
-				
-				textText.setText(string.substring(1, string.length() - 1));
-				return;
+		try {
+			
+			if (!Utility.selectComboNamedItem(comboType, string)) {
+				if (string.length() >= 2 && string.charAt(0) == '\"' && string.charAt(string.length() - 1) == '\"') {
+					
+					textText.setText(string.substring(1, string.length() - 1));
+					return;
+				}
 			}
+			textText.setText("");
 		}
-		textText.setText("");
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -466,8 +540,13 @@ public class CssListStylePanel extends InsertPanel implements StringValueEditor 
 	 * @param string
 	 */
 	private void setPosition(String string) {
-		
-		Utility.selectComboNamedItem(comboPosition, string);
+		try {
+			
+			Utility.selectComboNamedItem(comboPosition, string);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -475,12 +554,17 @@ public class CssListStylePanel extends InsertPanel implements StringValueEditor 
 	 * @param string
 	 */
 	private void setImage(String string) {
-		
-		String imageName = getImageName(string);
-		if (imageName == null) {
-			imageName = "";
+		try {
+			
+			String imageName = getImageName(string);
+			if (imageName == null) {
+				imageName = "";
+			}
+			textImageName.setText(imageName);
 		}
-		textImageName.setText(imageName);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -490,48 +574,59 @@ public class CssListStylePanel extends InsertPanel implements StringValueEditor 
 	 */
 	private String getImageName(String string) {
 		
-		Obj<Integer> position = new Obj<Integer>(0);
-		
-		// Get next match.
-		String url = Utility.getNextMatch(string, position, "url");
-		if (url == null) {
-			return null;
-		}
-		
-		// Get opening parenthesis.
-		String leftParenthesis = Utility.getNextMatch(string, position, "\\(");
-		if (leftParenthesis == null) {
-			return null;
-		}
-		
-		String imageName = null;
-		
-		// Get name start.
-		String nameStart = Utility.getNextMatch(string, position, "res=\"#");
-		if (nameStart != null) {
+		try {
+			Obj<Integer> position = new Obj<Integer>(0);
 			
-			// Get image name.
-			imageName = Utility.getNextMatch(string, position, "[^\\\"]*");
+			// Get next match.
+			String url = Utility.getNextMatch(string, position, "url");
+			if (url == null) {
+				return null;
+			}
+			
+			// Get opening parenthesis.
+			String leftParenthesis = Utility.getNextMatch(string, position, "\\(");
+			if (leftParenthesis == null) {
+				return null;
+			}
+			
+			String imageName = null;
+			
+			// Get name start.
+			String nameStart = Utility.getNextMatch(string, position, "res=\"#");
+			if (nameStart != null) {
+				
+				// Get image name.
+				imageName = Utility.getNextMatch(string, position, "[^\\\"]*");
+			}
+			
+			// Get closing parenthesis.
+			String rightParenthesis = Utility.getNextMatch(string, position, "\\)");
+			if (rightParenthesis == null) {
+				return null;
+			}
+			
+			return imageName;
 		}
-		
-		// Get closing parenthesis.
-		String rightParenthesis = Utility.getNextMatch(string, position, "\\)");
-		if (rightParenthesis == null) {
-			return null;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		return imageName;
+		return null;
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(labelType);
-		Utility.localize(labelText);
-		Utility.localize(labelPosition);
-		Utility.localize(labelImage);
+		try {
+			
+			Utility.localize(labelType);
+			Utility.localize(labelText);
+			Utility.localize(labelPosition);
+			Utility.localize(labelImage);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -540,7 +635,13 @@ public class CssListStylePanel extends InsertPanel implements StringValueEditor 
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.gui.textCssListStyleBuilder");
+		try {
+			return Resources.getString("org.multipage.gui.textCssListStyleBuilder");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -549,7 +650,13 @@ public class CssListStylePanel extends InsertPanel implements StringValueEditor 
 	@Override
 	public String getResultText() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -605,7 +712,13 @@ public class CssListStylePanel extends InsertPanel implements StringValueEditor 
 	@Override
 	public String getStringValue() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -614,9 +727,14 @@ public class CssListStylePanel extends InsertPanel implements StringValueEditor 
 	 */
 	@Override
 	public void setStringValue(String string) {
-		
-		initialString = string;
-		setFromInitialString();
+		try {
+			
+			initialString = string;
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

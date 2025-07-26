@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -38,48 +38,26 @@ import javax.swing.border.LineBorder;
 
 import org.eclipse.wb.swing.FocusTraversalOnArray;
 import org.maclan.Slot;
-import org.multipage.gui.Callback;
+import org.maclan.SlotHolder;
 import org.multipage.gui.FoundAttr;
 import org.multipage.gui.Images;
 import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays slot editor for the Generator.
+ * @author vakol
  *
  */
-public class SlotEditorPanel extends JPanel implements SlotEditorGenerator {
+public class SlotEditorPanel extends SlotEditorBasePanel {
 
 	// $hide>>$
 	/**
 	 * Version.
 	 */
 	private static final long serialVersionUID = 1L;
-	
-	/**
-	 * Editor helper object
-	 */
-	protected SlotEditorHelper helper = createHelper();
-	
-	/**
-	 * Creates helper. You can override this method to customize your helper.
-	 * @return
-	 */
-	public SlotEditorHelper createHelper() {
-		
-		// You can override this code.
-		return new SlotEditorHelper(this);
-	}
-	
-	/**
-	 * Gets reference to helper.
-	 */
-	public SlotEditorHelper getHelper() {
-		
-		return helper;
-	}
 	
 	/**
 	 * Reference to this editor.
@@ -185,146 +163,177 @@ public class SlotEditorPanel extends JPanel implements SlotEditorGenerator {
 	
 	/**
 	 * Create the dialog.
-	 * @param isNew 
+	 * @param parentWindow
+	 * @param slot 
 	 * @param isNew 
 	 * @param modal 
 	 * @param useHtmlEditor 
 	 * @param foundAttr
+	 * @param callbacks
 	 * @wbp.parser.constructor
 	 */
 	public SlotEditorPanel(Window parentWindow, Slot slot, boolean isNew,
-			boolean modal, boolean useHtmlEditor, FoundAttr foundAttr) {
-				
-		this.helper.isNew = isNew;
-		this.helper.foundAttr = foundAttr;
+			boolean modal, boolean useHtmlEditor, FoundAttr foundAttr, Callbacks callbacks) {
 		
-		// Initialize components.
-		initComponents();
-		// $hide>>$
-		// Post creation.
-		postCreate(slot, useHtmlEditor);
-		// $hide<<$
+		try {
+			// Set the new flag.
+			this.isNew = isNew;
+			// Set callbacks.
+			this.callbacks = callbacks;
+			// Initialize components.
+			initComponents();
+			// $hide>>$
+			// Post creation.
+			postCreate(slot, useHtmlEditor);
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+	}
+	
+	/**
+	 * Constructor.
+	 * @param parentWindow 
+	 * @param slot
+	 * @param isNew
+	 * @param useHtmlEditor
+	 * @param useHtmlEditor2 
+	 * @param foundAttr
+	 * @param callbacks 
+	 */
+	public SlotEditorPanel(Window parentWindow, Slot slot, boolean isNew,
+			boolean useHtmlEditor, FoundAttr foundAttr, Callbacks callbacks) {
+		
+		this(null, slot, isNew, false, useHtmlEditor, foundAttr, callbacks);
 	}
 	
 	/**
 	 * Post create.
 	 */
 	protected void postCreate(Slot slot, boolean useHtmlEditor) {
-		
-		// Original slot reference
-		helper.originalSlot = slot;
-		
-		// Make copy of slot object
-		helper.editedSlot = (Slot) slot.clone();
-		
-		// Localize components, set icons and tool tips.
-		localize();
-		setIcons();
-		setToolTips();
-		setKeyBindings();
-		
-		// Create editors.
-		helper.createEditors(useHtmlEditor);
-		
-		// Set listeners
-		helper.setListeners();
-		
-		// Do additional creation.
-		boolean isUserSlot = getEditedSlot().isUserDefined();
-		if (isUserSlot) {
-			Utility.localize(checkLocalizedFlag);
+		try {
+			
+			// Original slot reference
+			originalSlot = slot;
+			// Make copy of slot object
+			editedSlot = (Slot) slot.clone();
+			
+			// Localize components, set icons and tool tips.
+			localize();
+			setIcons();
+			setToolTips();
+			setKeyBindings();
+			
+			// Create editors.
+			createEditors(useHtmlEditor);
+			// Set listeners
+			setListeners();
+			
+			// Do additional creation.
+			boolean isUserSlot = getEditedSlot().isUserDefined();
+			if (isUserSlot) {
+				Utility.localize(checkLocalizedFlag);
+			}
+			
+			// Enable slot properties trayMenu.
+			slotPropertiesMenu();
+			// Update dialog
+			updateComponents();
+			// Set debug toggle button
+			setToggleDebug(Settings.getEnableDebugging());
+			// Load dialog.
+			loadDialog();
+			// Set flag
+			initialized = true;
 		}
-		
-		// Enable slot properties trayMenu.
-		slotPropertiesMenu();
-		
-		// Update dialog
-		updateDialog();
-		
-		// Set debug toggle button
-		getToggleDebug().setSelected(Settings.getEnableDebugging());
-
-		// Load dialog.
-		helper.loadDialog();
-		
-		// Set flag
-		helper.initialized = true;
-		
-		// Remember the panel
-		helper.remember();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
-	 * Enable/disable slot properties trayMenu.
+	 * Enable/disable slot properties menu.
 	 */
 	private void slotPropertiesMenu() {
-		
-		menuSlot.setVisible(helper.getEditedSlot().isExternalProvider());
-	}
-
-	/**
-	 * Update dialog
-	 */
-	private void updateDialog() {
-		
-		// Set slot and area name.
-		helper.updateDialogSettings();
+		try {
+			
+			menuSlot.setVisible(getEditedSlot().isExternalProvider());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	protected void localize() {
-
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(buttonSave);
-		Utility.localize(buttonCommit);
-		Utility.localize(buttonRevision);
-		Utility.localize(labelSlotHolder);
-		Utility.localize(labelAlias);
-		Utility.localize(checkDefaultValue);
-		Utility.localize(labelSpecialValue);
-		Utility.localize(menuArea);
-		Utility.localize(menuSlot);
-		Utility.localize(menuAreaEdit);
-		Utility.localize(menuEditResources);
-		Utility.localize(menuEditDependencies);
-		Utility.localize(menuSlotProperties);
-		Utility.localize(checkInterpretPhp);
-		if (labelInheritable != null) {
-			Utility.localize(labelInheritable);
+		try {
+			
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(buttonSave);
+			Utility.localize(buttonCommit);
+			Utility.localize(buttonRevision);
+			Utility.localize(labelSlotHolder);
+			Utility.localize(labelAlias);
+			Utility.localize(checkDefaultValue);
+			Utility.localize(labelSpecialValue);
+			Utility.localize(menuArea);
+			Utility.localize(menuSlot);
+			Utility.localize(menuAreaEdit);
+			Utility.localize(menuEditResources);
+			Utility.localize(menuEditDependencies);
+			Utility.localize(menuSlotProperties);
+			Utility.localize(checkInterpretPhp);
+			if (labelInheritable != null) {
+				Utility.localize(labelInheritable);
+			}
+			Utility.localize(buttonExpose);
 		}
-		Utility.localize(buttonExpose);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons.
 	 */
 	protected void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
-		buttonSave.setIcon(Images.getIcon("org/multipage/generator/images/save_icon.png"));
-		buttonHelp.setIcon(Images.getIcon("org/multipage/generator/images/help_small.png"));
-		buttonSpecialValue.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
-		menuArea.setIcon(Images.getIcon("org/multipage/gui/images/edit.png"));
-		menuSlot.setIcon(Images.getIcon("org/multipage/gui/images/edit.png"));
-		buttonRender.setIcon(Images.getIcon("org/multipage/generator/images/render.png"));
-		buttonDisplay.setIcon(Images.getIcon("org/multipage/generator/images/display_home_page.png"));
-		toggleDebug.setIcon(Images.getIcon("org/multipage/generator/images/debug.png"));
-		buttonRevision.setIcon(Images.getIcon("org/multipage/generator/images/revision.png"));
-		buttonCommit.setIcon(Images.getIcon("org/multipage/generator/images/commit.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+			buttonSave.setIcon(Images.getIcon("org/multipage/generator/images/save_icon.png"));
+			buttonHelp.setIcon(Images.getIcon("org/multipage/generator/images/help_small.png"));
+			buttonSpecialValue.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
+			menuArea.setIcon(Images.getIcon("org/multipage/gui/images/edit.png"));
+			menuSlot.setIcon(Images.getIcon("org/multipage/gui/images/edit.png"));
+			buttonRender.setIcon(Images.getIcon("org/multipage/generator/images/render.png"));
+			buttonDisplay.setIcon(Images.getIcon("org/multipage/generator/images/display_home_page.png"));
+			toggleDebug.setIcon(Images.getIcon("org/multipage/generator/images/debug.png"));
+			buttonRevision.setIcon(Images.getIcon("org/multipage/generator/images/revision.png"));
+			buttonCommit.setIcon(Images.getIcon("org/multipage/generator/images/commit.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set tool tips.
 	 */
 	private void setToolTips() {
-		
-		buttonRender.setToolTipText(Resources.getString("org.multipage.generator.tooltipRenderHtmlPages"));
-		buttonDisplay.setToolTipText(Resources.getString("org.multipage.generator.tooltipDisplayHomePage"));
-		toggleDebug.setToolTipText(Resources.getString("org.multipage.generator.tooltipEnableDisplaySourceCode"));
+		try {
+			
+			buttonRender.setToolTipText(Resources.getString("org.multipage.generator.tooltipRenderHtmlPages"));
+			buttonDisplay.setToolTipText(Resources.getString("org.multipage.generator.tooltipDisplayHomePage"));
+			toggleDebug.setToolTipText(Resources.getString("org.multipage.generator.tooltipEnableDisplaySourceCode"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -332,39 +341,26 @@ public class SlotEditorPanel extends JPanel implements SlotEditorGenerator {
 	 */
 	@SuppressWarnings("serial")
 	protected void setKeyBindings() {
-		
-		panelEditor.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("control S"), "save slot");
-		panelEditor.getActionMap().put("save slot", new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-
-				// Call on save method.
-				helper.onSave();
-			}
-		});
-	}
-	
-	/**
-	 * Get slot copy
-	 * @return
-	 */
-	protected Slot getEditedSlot() {
-		
-		return helper.getEditedSlot();
-	}
-	
-	/**
-	 * Constructor.
-	 * @param slot
-	 * @param isNew
-	 * @param useHtmlEditor
-	 * @param foundAttr
-	 * @param onChangeEvent
-	 */
-	public SlotEditorPanel(Slot slot, boolean isNew, boolean useHtmlEditor, FoundAttr foundAttr,
-			Callback onChangeEvent) {
-		
-		this(null, slot, isNew, false, useHtmlEditor, foundAttr);
+		try {
+			
+			panelEditor.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("control S"), "save slot");
+			panelEditor.getActionMap().put("save slot", new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						
+						// Call on save method.
+						onSave();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -381,7 +377,7 @@ public class SlotEditorPanel extends JPanel implements SlotEditorGenerator {
 	 */
 	private void initComponents() {
 		setMinimumSize(new Dimension(450, 430));
-		setBounds(100, 100, 601, 470);
+		setBounds(100, 100, 586, 470);
 		SpringLayout springLayout = new SpringLayout();
 		getContentPane().setLayout(springLayout);
 		
@@ -390,7 +386,7 @@ public class SlotEditorPanel extends JPanel implements SlotEditorGenerator {
 		springLayout.putConstraint(SpringLayout.EAST, buttonCancel, -10, SpringLayout.EAST, getContentPane());
 		buttonCancel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				helper.onCancel(thisEditor);
+				onCancel();
 			}
 		});
 		buttonCancel.setPreferredSize(new Dimension(80, 25));
@@ -402,7 +398,7 @@ public class SlotEditorPanel extends JPanel implements SlotEditorGenerator {
 		springLayout.putConstraint(SpringLayout.EAST, buttonOk, -6, SpringLayout.WEST, buttonCancel);
 		buttonOk.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				helper.onOk(thisEditor);
+				onOk();
 			}
 		});
 		buttonOk.setPreferredSize(new Dimension(80, 25));
@@ -449,7 +445,7 @@ public class SlotEditorPanel extends JPanel implements SlotEditorGenerator {
 		springLayout.putConstraint(SpringLayout.EAST, buttonSave, -30, SpringLayout.WEST, buttonOk);
 		buttonSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				helper.onSave();
+				onSave();
 			}
 		});
 		buttonSave.setPreferredSize(new Dimension(80, 25));
@@ -469,7 +465,7 @@ public class SlotEditorPanel extends JPanel implements SlotEditorGenerator {
 		menuAreaEdit = new JMenuItem("org.multipage.generator.menuAreaEdit");
 		menuAreaEdit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				helper.onEditArea(AreaEditorFrame.NOT_SPECIFIED);
+				onEditArea(AreaEditorFrame.NOT_SPECIFIED);
 			}
 		});
 		menuArea.add(menuAreaEdit);
@@ -479,7 +475,7 @@ public class SlotEditorPanel extends JPanel implements SlotEditorGenerator {
 		menuEditResources = new JMenuItem("org.multipage.generator.menuAreaEditResources");
 		menuEditResources.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				helper.onEditArea(AreaEditorFrame.RESOURCES);
+				onEditArea(AreaEditorFrame.RESOURCES);
 			}
 		});
 		menuArea.add(menuEditResources);
@@ -487,7 +483,7 @@ public class SlotEditorPanel extends JPanel implements SlotEditorGenerator {
 		menuEditDependencies = new JMenuItem("org.multipage.generator.menuAreaEditDependencies");
 		menuEditDependencies.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				helper.onEditArea(AreaEditorFrame.DEPENDENCIES);
+				onEditArea(AreaEditorFrame.DEPENDENCIES);
 			}
 		});
 		menuArea.add(menuEditDependencies);
@@ -498,7 +494,7 @@ public class SlotEditorPanel extends JPanel implements SlotEditorGenerator {
 		menuSlotProperties = new JMenuItem("org.multipage.generator.menuSlotProperties");
 		menuSlotProperties.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				helper.onSlotProperties();
+				onSlotProperties();
 			}
 		});
 		menuSlot.add(menuSlotProperties);
@@ -518,7 +514,7 @@ public class SlotEditorPanel extends JPanel implements SlotEditorGenerator {
 		checkDefaultValue = new JCheckBox("org.multipage.generator.textSlotDefaultValue");
 		checkDefaultValue.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				helper.onDefaultValue();
+				onDefaultValue();
 			}
 		});
 		checkDefaultValue.setFont(new Font("Tahoma", Font.PLAIN, 13));
@@ -532,7 +528,7 @@ public class SlotEditorPanel extends JPanel implements SlotEditorGenerator {
 		checkInterpretPhp.setBorder(new CompoundBorder(new LineBorder(new Color(0, 0, 0)), new LineBorder(new Color(192, 192, 192))));
 		checkInterpretPhp.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				helper.onInterpretPhp();
+				onInterpretPhp();
 			}
 		});
 		checkInterpretPhp.setSelected(true);
@@ -544,7 +540,7 @@ public class SlotEditorPanel extends JPanel implements SlotEditorGenerator {
 		checkLocalizedFlag = new JCheckBox("org.multipage.generator.textUserTextLocalized");
 		checkLocalizedFlag.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				helper.onUserLocalizedCheck();
+				onUserLocalizedCheck();
 			}
 		});
 		panelAux.add(checkLocalizedFlag);
@@ -556,7 +552,7 @@ public class SlotEditorPanel extends JPanel implements SlotEditorGenerator {
 		springLayout.putConstraint(SpringLayout.EAST, textHolder, -3, SpringLayout.WEST, buttonHelp);
 		buttonHelp.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				helper.onHelp();
+				onHelp();
 			}
 		});
 		springLayout.putConstraint(SpringLayout.NORTH, buttonHelp, 3, SpringLayout.SOUTH, labelSlotHolder);
@@ -574,20 +570,20 @@ public class SlotEditorPanel extends JPanel implements SlotEditorGenerator {
 		springLayout.putConstraint(SpringLayout.SOUTH, panelAux, 0, SpringLayout.SOUTH, textSpecialValue);
 		
 		buttonDisplay = new JButton("");
+		buttonDisplay.setBorder(null);
 		buttonDisplay.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				helper.onDisplayHomePage();
+				onDisplayHomePage();
 			}
 		});
 		
 		toggleDebug = new JToggleButton("");
 		toggleDebug.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				helper.onToggleDebugging(toggleDebug.isSelected());
+				onToggleDebugging(toggleDebug.isSelected());
 			}
 		});
-		toggleDebug.setBorder(new CompoundBorder());
-		toggleDebug.setMargin(new Insets(0, 0, 0, 0));
+		toggleDebug.setMargin(new Insets(6, 6, 6, 6));
 		panelAux.add(toggleDebug);
 		
 		horizontalStrut_2 = Box.createHorizontalStrut(3);
@@ -595,9 +591,10 @@ public class SlotEditorPanel extends JPanel implements SlotEditorGenerator {
 		panelAux.add(horizontalStrut_2);
 		
 		buttonRender = new JButton("");
+		buttonRender.setBorder(null);
 		buttonRender.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				helper.onRender();
+				onRender();
 			}
 		});
 		buttonRender.setMargin(new Insets(0, 0, 0, 0));
@@ -619,7 +616,7 @@ public class SlotEditorPanel extends JPanel implements SlotEditorGenerator {
 		buttonSpecialValue = new JButton("");
 		buttonSpecialValue.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				helper.onSelectSpecialValue();
+				onSelectSpecialValue();
 			}
 		});
 		springLayout.putConstraint(SpringLayout.EAST, textSpecialValue, -3, SpringLayout.WEST, buttonSpecialValue);
@@ -636,22 +633,22 @@ public class SlotEditorPanel extends JPanel implements SlotEditorGenerator {
 		}
 		
 		buttonRevision = new JButton("org.multipage.generator.textRevisions");
-		springLayout.putConstraint(SpringLayout.EAST, buttonRevision, -6, SpringLayout.WEST, buttonSave);
 		buttonRevision.setMargin(new Insets(0, 0, 0, 0));
 		springLayout.putConstraint(SpringLayout.NORTH, buttonRevision, 0, SpringLayout.NORTH, buttonCancel);
 		buttonRevision.setPreferredSize(new Dimension(80, 25));
 		buttonRevision.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				helper.onRevision();
+				onRevision();
 			}
 		});
 		add(buttonRevision);
 		
 		buttonCommit = new JButton("org.multipage.generator.textCommit");
-		springLayout.putConstraint(SpringLayout.EAST, buttonCommit, -6, SpringLayout.WEST, buttonRevision);
+		springLayout.putConstraint(SpringLayout.EAST, buttonRevision, -6, SpringLayout.WEST, buttonCommit);
+		springLayout.putConstraint(SpringLayout.EAST, buttonCommit, -6, SpringLayout.WEST, buttonSave);
 		buttonCommit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				helper.onCommit();
+				onCommit();
 			}
 		});
 		springLayout.putConstraint(SpringLayout.NORTH, buttonCommit, 0, SpringLayout.NORTH, buttonCancel);
@@ -660,24 +657,142 @@ public class SlotEditorPanel extends JPanel implements SlotEditorGenerator {
 		add(buttonCommit);
 		
 		buttonExpose = new JButton("org.multipage.generator.textExpose");
+		springLayout.putConstraint(SpringLayout.EAST, buttonExpose, -30, SpringLayout.WEST, buttonRevision);
 		buttonExpose.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				onExpose();
 			}
 		});
 		springLayout.putConstraint(SpringLayout.NORTH, buttonExpose, 0, SpringLayout.NORTH, buttonCancel);
-		springLayout.putConstraint(SpringLayout.EAST, buttonExpose, -30, SpringLayout.WEST, buttonCommit);
 		buttonExpose.setPreferredSize(new Dimension(80, 25));
 		buttonExpose.setMargin(new Insets(0, 0, 0, 0));
 		add(buttonExpose);
 	}
 	
 	/**
-	 * On expose component
+	 * Load current slot. You can override this method to load your own slot data.
+	 * @return
 	 */
-	protected void onExpose() {
+	public Slot loadCurrentSlot() {
 		
-		// TODO: expose component
+		try {
+			boolean slotExists = updateHeadRevision();
+			if (!slotExists) {
+				close();
+				return null;
+			}
+			
+			Slot editedSlot = getEditedSlot();
+			long slotId = editedSlot.getId();
+			SlotHolder holder = editedSlot.getHolder();
+			boolean userDefined = editedSlot.isUserDefined();
+			
+			// Trim alias.
+			String alias = userDefined ? getTextAlias().getText() : editedSlot.getAlias();
+			// Create new slot.
+			Slot newSlot = new Slot(holder, alias);
+			
+			long revision = editedSlot.getRevision();
+			boolean localizedTextSelected = getCheckLocalizedText().isSelected();
+			char access = editedSlot.getAccess();
+			boolean hidden = editedSlot.isHidden();
+			boolean isDefault = getCheckDefaultValue().isSelected();
+			String name = editedSlot.getName();
+			boolean preferred = isPreferred();
+			String specialValue = getSpecialValueNull();
+			String externalProvider = editedSlot.getExternalProvider();
+			boolean readsInput = editedSlot.getReadsInput();
+			boolean writesOutput = editedSlot.getWritesOutput();
+			Long descriptionId = editedSlot.getDescriptionId();
+			
+			// Get value.
+			Object value = getValue();
+			String valueMeaning = getValueMeaning();
+			
+			newSlot.setId(slotId);
+			newSlot.setRevision(revision);
+			newSlot.setValue(value);
+			newSlot.setValueMeaning(valueMeaning);
+			newSlot.setLocalized(value instanceof String && localizedTextSelected);
+			newSlot.setAccess(access);
+			newSlot.setHidden(hidden);
+			newSlot.setDefault(isDefault);
+			newSlot.setName(name);
+			newSlot.setPreferred(preferred);
+			newSlot.setUserDefined(userDefined);
+			newSlot.setSpecialValue(specialValue);
+			newSlot.setExternalProvider(externalProvider);
+			newSlot.setReadsInput(readsInput);
+			newSlot.setWritesOutput(writesOutput);
+			newSlot.setDescriptionId(descriptionId);
+			
+			return newSlot;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
+	}
+	
+	/**
+	 * Called by system when an update is needed.
+	 */
+	public void updateComponents() {
+		try {
+			
+			boolean slotExists = updateHeadRevision();
+			if (!slotExists) {
+				close();
+				return;
+			}
+			
+			updateAreaName();
+			Safe.setText(textAlias, editedSlot.getNameForGenerator());
+			
+			boolean isDefault = editedSlot.isDefault();
+			Safe.setSelected(checkDefaultValue, isDefault);
+			disableEditor(isDefault);
+			
+			setSpecialValueEnabled(!isDefault);
+			String specialValue = getEditedSlot().getSpecialValue();
+			setSpecialValueControl(specialValue);
+			if (!isDefault && !specialValue.isEmpty()) {
+				disableEditor(true);
+			}
+			
+			// Set user slot.
+			boolean isUserSlot = getEditedSlot().isUserDefined();
+			if (!isUserSlot) {
+				checkLocalizedFlag.setVisible(false);
+			}
+			
+			// Show/hide "inheritable" bottom label.
+			if (labelInheritable != null) {
+				labelInheritable.setVisible(getEditedSlot().isInheritable());
+			}
+			
+			// Set the localized slot flag.
+			Safe.setSelected(checkLocalizedFlag, editedSlot.isLocalized());
+			
+			// Enable editor.
+			textAlias.setEditable(isUserSlot);
+			
+			updateEditorType();
+			updateSlotValue();
+			updateFoundHighlight();
+			updateEnumeration();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+	}
+	
+	/**
+	 * Enable automatic removing of application event listeners 
+	 */
+	@Override
+	public boolean canAutoRemove() {
 		
+		return true;
 	}
 }

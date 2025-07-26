@@ -1,24 +1,31 @@
 /*
- * Copyright 2010-2024 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 04-04-2024
+ * Created on : 2024-04-04
  *
  */
 package org.multipage.gui;
 
 import java.net.InetSocketAddress;
+import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
 
 import org.multipage.util.Obj;
 import org.multipage.util.RepeatedTask;
+import org.multipage.util.Safe;
 
 /**
- * Packet channel that uses sockets, server side.
+ * Packet channel that uses sockets.
  * @author vakol
  */
 public class PacketChannel {
+	
+	/**
+     * Exit flag.
+     */
+	private static boolean exit = false;
 	
 	/**
 	 * Socket address object.
@@ -75,8 +82,13 @@ public class PacketChannel {
         int objectId = hashCode();
         String objectIdText = String.valueOf(objectId);
         
+        // Set timeouts.
+        long startDelayMs = 0L;
+        long idleTimeMs = 100L;
+        long timeoutMs = -1L;
+        
         // Create thread that accepts incoming connections.
-        RepeatedTask.loopNonBlocking("AcceptXdebugConnections" + objectIdText, 0, 100, (running, exception) -> {
+        RepeatedTask.loopNonBlocking("AcceptXdebugConnections" + objectIdText, startDelayMs, idleTimeMs, timeoutMs, (running, exception) -> {
         	
         	// Set event that accepts incoming connections from input socket.
         	if (acceptNewConnection.ref) {
@@ -84,7 +96,7 @@ public class PacketChannel {
         		
 	            serverSocketChannel.accept(this, new CompletionHandler<AsynchronousSocketChannel, PacketChannel>() {
 	            
-	            	// An event that is invoked when the socket connection is completed.
+	            	// This event is invoked when the socket connection is completed.
 	            	@Override
 	    			public void completed(AsynchronousSocketChannel client, PacketChannel packetChannel) {
 	            		
@@ -95,7 +107,7 @@ public class PacketChannel {
 	    	        		clientSocketChannel = client;
 	    	
 	    	    			// Invoke callback function.
-	    	    			PacketSession packetSession = onStartListening(client);
+	    	    			PacketSession packetSession = onStartSession(client);
 	    	    			if (packetSession == null) {
 	    	    				return;
 	    	    			}
@@ -110,21 +122,34 @@ public class PacketChannel {
 	            	
 	    			// If the connection failed...
 	                public void failed(Throwable e, PacketChannel packetChannel) {
+	                	// Ignore close exception.
+	                	if (e instanceof AsynchronousCloseException) {
+                            return;
+	                	}
 	                	onException(e);
 	                }
 	            });
         	}
         	
-	        return true;
+	        return !exit;
         });
 	}
 	
 	/**
-	 * Callback function called after accepting new connection to the server. 
+	 * Set the exit flag.
+	 * @param exit
+	 */
+	public static void setExitFlag() {
+			
+        PacketChannel.exit = true;
+	}
+	
+	/**
+	 * Callback function called after accepting new connection from client to server and creating new session. 
 	 * @param client
 	 * @return
 	 */
-	protected PacketSession onStartListening(AsynchronousSocketChannel client)
+	protected PacketSession onStartSession(AsynchronousSocketChannel client)
 			throws Exception {
 		
 		// You can override this method.
@@ -173,6 +198,25 @@ public class PacketChannel {
 		}
 		catch (Exception e) {
 			onThrownException(e);
+		}
+	}
+	
+	/**
+	 * Close server channel.
+	 */
+	public void closeServer() {
+		
+		try {
+			if (serverSocketChannel == null) {
+				return;
+			}
+			if (!serverSocketChannel.isOpen()) {
+				return;
+			}
+			serverSocketChannel.close();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 	}
 

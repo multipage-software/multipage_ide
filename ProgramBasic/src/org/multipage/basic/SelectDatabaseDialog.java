@@ -1,28 +1,36 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.basic;
 
-import java.awt.*;
-import java.util.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.Collections;
+import java.util.LinkedList;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.SpringLayout;
 
 import org.multipage.gui.Images;
 import org.multipage.gui.Utility;
-
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author VK
+ * Dialog that displays database selection.
+ * @author vakol
  *
  */
 public class SelectDatabaseDialog extends JDialog {
@@ -56,13 +64,18 @@ public class SelectDatabaseDialog extends JDialog {
 	public static String showDialog(Component parent,
 			LinkedList<String> databaseNames) {
 		
-		SelectDatabaseDialog dialog = new SelectDatabaseDialog(Utility.findWindow(parent));
-		dialog.loadNames(databaseNames);
-		
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
-			return dialog.getSelectedName();
+		try {
+			SelectDatabaseDialog dialog = new SelectDatabaseDialog(Utility.findWindow(parent));
+			dialog.loadNames(databaseNames);
+			
+			dialog.setVisible(true);
+			
+			if (dialog.confirm) {
+				return dialog.getSelectedName();
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -73,9 +86,14 @@ public class SelectDatabaseDialog extends JDialog {
 	 */
 	public SelectDatabaseDialog(Window window) {
 		super(window, ModalityType.APPLICATION_MODAL);
-
-		initComponents();
-		postCreate(); // $hide$
+		
+		try {
+			initComponents();
+			postCreate(); // $hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -152,33 +170,47 @@ public class SelectDatabaseDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		Utility.centerOnScreen(this);
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		localize();
-		setIcons();
-		
+		try {
+			
+			Utility.centerOnScreen(this);
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			localize();
+			setIcons();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(label);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(label);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/basic/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/basic/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/basic/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/basic/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -186,12 +218,17 @@ public class SelectDatabaseDialog extends JDialog {
 	 * @param databaseNames
 	 */
 	private void loadNames(LinkedList<String> databaseNames) {
-		
-		Collections.sort(databaseNames);
-		
-		for (String databaseName : databaseNames) {
-			comboBox.addItem(databaseName);
+		try {
+			
+			Collections.sort(databaseNames);
+			
+			for (String databaseName : databaseNames) {
+				comboBox.addItem(databaseName);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -200,6 +237,12 @@ public class SelectDatabaseDialog extends JDialog {
 	 */
 	private String getSelectedName() {
 		
-		return (String) comboBox.getSelectedItem();
+		try {
+			return (String) comboBox.getSelectedItem();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 }

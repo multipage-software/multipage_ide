@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2021 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 01-09-2022
+ * Created on : 2022-09-01
  */
 package org.multipage.generator;
 
@@ -32,6 +32,7 @@ import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
+import org.multipage.util.Safe;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -129,15 +130,19 @@ public class GenKeyDialog extends JDialog {
 	 * @param currentDirectory
 	 */
 	public static void showDialog(Component parent, File currentDirectory, Supplier<char []> passwordLambda) {
-		
-		// Create a new frame object and make it visible.
-		GenKeyDialog dialog = new GenKeyDialog(parent);
-		
-		dialog.currentDirectory = currentDirectory;
-		dialog.passwordLambda = passwordLambda;
-		
-		dialog.setVisible(true);
-		return;
+		try {
+			
+			// Create a new frame object and make it visible.
+			GenKeyDialog dialog = new GenKeyDialog(parent);
+			
+			dialog.currentDirectory = currentDirectory;
+			dialog.passwordLambda = passwordLambda;
+			
+			dialog.setVisible(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -146,9 +151,15 @@ public class GenKeyDialog extends JDialog {
 	 */
 	public GenKeyDialog(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.DOCUMENT_MODAL);
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		initComponents();
-		postCreate(); //$hide$
+		
+		try {
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			initComponents();
+			postCreate(); //$hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -256,39 +267,52 @@ public class GenKeyDialog extends JDialog {
 	 * Post creation of the frame controls.
 	 */
 	private void postCreate() {
-		
-		localize();
-		setIcons();
-		
-		// TODO Add post creation function that initialize the dialog.
-		loadDialog();
+		try {
+			
+			localize();
+			setIcons();
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Localize texts of the frame controls.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(labelCommonName);
-		Utility.localize(labelOrganization);
-		Utility.localize(labelOrganizationalUnit);
-		Utility.localize(labelLocality);
-		Utility.localize(labelState);
-		Utility.localize(labelCountry);
-		Utility.localize(labelKayPairAlias);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(labelCommonName);
+			Utility.localize(labelOrganization);
+			Utility.localize(labelOrganizationalUnit);
+			Utility.localize(labelLocality);
+			Utility.localize(labelState);
+			Utility.localize(labelCountry);
+			Utility.localize(labelKayPairAlias);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set frame icons.
 	 */
 	private void setIcons() {
-		
-		setIconImage(Images.getImage("org/multipage/gui/images/main.png"));
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			setIconImage(Images.getImage("org/multipage/gui/images/main.png"));
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -296,14 +320,22 @@ public class GenKeyDialog extends JDialog {
 	 */
 	protected void onOk() {
 		
-		Obj<File> updatedKeystoreFile = new Obj<File>();
-		String resultText = generateNewKeyPair(updatedKeystoreFile);
-		if (resultText == null) {
-			return;
+		Obj<File> updatedKeystoreFile = null;
+		try {
+			
+			updatedKeystoreFile = new Obj<File>();
+			String resultText = generateNewKeyPair(updatedKeystoreFile);
+			if (resultText == null) {
+				return;
+			}
+			Utility.show2(this, resultText);
+			
+			saveDialog();
 		}
-		Utility.show2(this, resultText);
-		
-		saveDialog();
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+			
 		dispose();
 		
 		try {
@@ -319,8 +351,14 @@ public class GenKeyDialog extends JDialog {
 	 * The frame has been canceled with the [Cancel] or the [X] button.
 	 */
 	protected void onCancel() {
+		try {
+			
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
-		saveDialog();
 		dispose();
 	}
 	
@@ -329,46 +367,52 @@ public class GenKeyDialog extends JDialog {
 	 */
 	private String generateNewKeyPair(Obj<File> keystoreFile) {
 		
-		// Check prerequisites.
-		if (currentDirectory == null || !currentDirectory.isDirectory() || passwordLambda == null) {
-			return null;
-		}
-		
-		// Expose keystore file.
-		keystoreFile.ref = Utility.exposeApplicationKeystore(this, "org/multipage/addinloader/properties/multipage_client.p12");
-		if (keystoreFile.ref == null || !keystoreFile.ref.isFile()) {
-			return null;
-		}
-		
-		// Generate new key pair.
-		String keystoreName = keystoreFile.ref.getAbsolutePath();
-		String alias = textKeyPairAlias.getText();
-		char [] password = passwordLambda.get();
-		String distinguishedName = getDistinguishedName();
-		
-		String resultText = null;
 		try {
-			resultText = Utility.runJavaTool(currentDirectory.toString(),
-					"keytool",
-					new String [] {
-						"-genkeypair",
-						"-keystore", keystoreName,
-						"-alias", alias,
-						"-keyalg", "RSA",
-						"-dname", distinguishedName,
-						"-validity", "365",
-						"-storepass", new String(password)
-						},
-						30000, TimeUnit.MILLISECONDS
-					);
-			return resultText;
+			// Check prerequisites.
+			if (currentDirectory == null || !currentDirectory.isDirectory() || passwordLambda == null) {
+				return null;
+			}
+			
+			// Expose keystore file.
+			keystoreFile.ref = Utility.exposeApplicationKeystore(this, "org/multipage/addinloader/properties/multipage_client.p12");
+			if (keystoreFile.ref == null || !keystoreFile.ref.isFile()) {
+				return null;
+			}
+			
+			// Generate new key pair.
+			String keystoreName = keystoreFile.ref.getAbsolutePath();
+			String alias = textKeyPairAlias.getText();
+			char [] password = passwordLambda.get();
+			String distinguishedName = getDistinguishedName();
+			
+			String resultText = null;
+			try {
+				resultText = Utility.runJavaTool(currentDirectory.toString(),
+						"keytool",
+						new String [] {
+							"-genkeypair",
+							"-keystore", keystoreName,
+							"-alias", alias,
+							"-keyalg", "RSA",
+							"-dname", distinguishedName,
+							"-validity", "365",
+							"-storepass", new String(password)
+							},
+							30000, TimeUnit.MILLISECONDS
+						);
+				return resultText;
+			}
+			catch (Exception e) {
+				resultText = e.getLocalizedMessage();
+			}
+			
+			// Return keystore file name.
+			return keystoreName;
 		}
-		catch (Exception e) {
-			resultText = e.getLocalizedMessage();
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		// Return keystore file name.
-		return keystoreName;
+		return null;
 	}
 	
 	/**
@@ -377,60 +421,70 @@ public class GenKeyDialog extends JDialog {
 	 */
 	private String getDistinguishedName() {
 		
-		String dname = "";
-		String text = textCountry.getText();
-		if (!text.isEmpty())  {
-			dname += "C=" + text + ", ";
+		try {
+			String dname = "";
+			String text = textCountry.getText();
+			if (!text.isEmpty())  {
+				dname += "C=" + text + ", ";
+			}
+			text = textState.getText();
+			if (!text.isEmpty())  {
+				dname += "ST=" + text + ", ";
+			}
+			text = textLocality.getText();
+			if (!text.isEmpty())  {
+				dname += "L=" + text + ", ";
+			}
+			text = textOrganization.getText();
+			if (!text.isEmpty())  {
+				dname += "O=" + text + ", ";
+			}
+			text = textOrganizationalUnit.getText();
+			if (!text.isEmpty())  {
+				dname += "OU=" + text + ", ";
+			}
+			text = textCommonName.getText();
+			if (!text.isEmpty())  {
+				dname += "CN=" + text;
+			}
+			return dname;
 		}
-		text = textState.getText();
-		if (!text.isEmpty())  {
-			dname += "ST=" + text + ", ";
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		text = textLocality.getText();
-		if (!text.isEmpty())  {
-			dname += "L=" + text + ", ";
-		}
-		text = textOrganization.getText();
-		if (!text.isEmpty())  {
-			dname += "O=" + text + ", ";
-		}
-		text = textOrganizationalUnit.getText();
-		if (!text.isEmpty())  {
-			dname += "OU=" + text + ", ";
-		}
-		text = textCommonName.getText();
-		if (!text.isEmpty())  {
-			dname += "CN=" + text;
-		}
-		return dname;
+		return "";
 	}
 
 	/**
 	 * Load and set initial state of the frame window.
 	 */
 	private void loadDialog() {
-		
-		// Set dialog window boundaries.
-		if (bounds != null && !bounds.isEmpty()) {
-			setBounds(bounds);
+		try {
+			
+			// Set dialog window boundaries.
+			if (bounds != null && !bounds.isEmpty()) {
+				setBounds(bounds);
+			}
+			else {
+				Utility.centerOnScreen(this);
+			}
 		}
-		else {
-			Utility.centerOnScreen(this);
-		}
-		
-		// TODO Load additional states.
-		
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save current state of the frame window.
 	 */
 	private void saveDialog() {
-		
-		// Save current dialog window boundaries.
-		bounds = getBounds();
-		
-		// TODO Save additional states.
-		
+		try {
+			
+			// Save current dialog window boundaries.
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

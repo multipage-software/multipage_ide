@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2018 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 05-04-2018
+ * Created on : 2018-04-05
  *
  */
 package org.maclan.server;
@@ -13,7 +13,8 @@ import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 
 /**
- * @author user
+ * Cahced input stream.
+ * @author vakol
  *
  */
 public class CachedInputStream extends ServletInputStream {

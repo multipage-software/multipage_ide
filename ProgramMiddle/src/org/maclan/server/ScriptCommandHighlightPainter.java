@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -18,10 +18,11 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.View;
 
 /**
- * @author
+ * Class that paints highlighted commands.
+ * @author vakol
  *
  */
-public class ScriptCommandHighlightPainter  extends DefaultHighlighter.DefaultHighlightPainter {
+public class ScriptCommandHighlightPainter extends DefaultHighlighter.DefaultHighlightPainter {
 
 	/**
 	 * Constructor.

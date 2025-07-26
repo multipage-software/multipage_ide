@@ -1,25 +1,34 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import javax.swing.*;
-
-import org.multipage.util.*;
-
-import java.awt.*;
-import java.io.*;
-import java.util.regex.Matcher;
-import java.awt.event.ActionListener;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.regex.Matcher;
+
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.SpringLayout;
+
+import org.multipage.util.Obj;
+import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays CSS quotes editor.
+ * @author vakol
  *
  */
 public class CssQuotesPanel extends InsertPanel implements StringValueEditor {
@@ -92,12 +101,8 @@ public class CssQuotesPanel extends InsertPanel implements StringValueEditor {
 	 */
 	public void stopSettingControls() {
 		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				
-				settingControls = false;
-			}
+		Safe.invokeLater(() -> {
+			settingControls = false;
 		});
 	}
 	
@@ -118,13 +123,18 @@ public class CssQuotesPanel extends InsertPanel implements StringValueEditor {
 	 * @param parentWindow 
 	 */
 	public CssQuotesPanel(String initialString) {
-
-		initComponents();
 		
-		// $hide>>$
-		this.initialString = initialString;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			this.initialString = initialString;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -187,38 +197,51 @@ public class CssQuotesPanel extends InsertPanel implements StringValueEditor {
 	 * On right combo changed.
 	 */
 	protected void onRightComboChanged() {
-		
-		if (settingControls) {
-			return;
+		try {
+			
+			if (settingControls) {
+				return;
+			}
+			
+			startSettingControls();
+			textRightQuote.setText("");
+			stopSettingControls();
 		}
-		startSettingControls();
-		
-		textRightQuote.setText("");
-		
-		stopSettingControls();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On left combo box changed.
 	 */
 	protected void onLeftComboChanged() {
-		
-		if (settingControls) {
-			return;
+		try {
+			
+			if (settingControls) {
+				return;
+			}
+			
+			startSettingControls();
+			textLeftQuote.setText("");
+			stopSettingControls();
 		}
-		startSettingControls();
-		
-		textLeftQuote.setText("");
-		
-		stopSettingControls();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-
-		setFromInitialString();
+		try {
+			
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -233,59 +256,81 @@ public class CssQuotesPanel extends InsertPanel implements StringValueEditor {
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		localize();
-		
-		loadComboBoxes();
-		
-		loadDialog();
-		setListeners();
+		try {
+			
+			localize();
+			loadComboBoxes();
+			loadDialog();
+			
+			setListeners();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set listeners.
 	 */
 	private void setListeners() {
-		
-		Utility.setTextChangeListener(textLeftQuote, () -> {
+		try {
 			
-			if (settingControls) {
-				return;
-			}
-			startSettingControls();
+			Utility.setTextChangeListener(textLeftQuote, () -> {
+				try {
+					
+					if (settingControls) {
+						return;
+					}
+					
+					startSettingControls();
+					comboLeftQuote.setSelectedIndex(0);
+					stopSettingControls();
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
 			
-			comboLeftQuote.setSelectedIndex(0);
-			
-			stopSettingControls();
-		});
-		
-		Utility.setTextChangeListener(textRightQuote, () -> {
-			
-			if (settingControls) {
-				return;
-			}
-			startSettingControls();
-			
-			comboRightQuote.setSelectedIndex(0);
-			
-			stopSettingControls();
-		});
+			Utility.setTextChangeListener(textRightQuote, () -> {
+				try {
+					
+					if (settingControls) {
+						return;
+					}
+					
+					startSettingControls();
+					comboRightQuote.setSelectedIndex(0);
+					stopSettingControls();
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load combo boxes.
 	 */
 	private void loadComboBoxes() {
-		
-		final String [] quotes = new String [] {
-				"", "\"", "'", "‹", "›", "«", "»", "‘", "’","“", "”", "„"
+		try {
+			
+			final String [] quotes = new String [] {
+					"", "\"", "'", "ï¿½", "ï¿½", "ï¿½", "ï¿½", "ï¿½", "ï¿½","ï¿½", "ï¿½", "ï¿½"
+			};
+			
+			Utility.loadItems(comboLeftQuote, quotes);
+			comboLeftQuote.setSelectedIndex(1);
+			
+			Utility.loadItems(comboRightQuote, quotes);
+			comboRightQuote.setSelectedIndex(1);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
 		};
-		
-		Utility.loadItems(comboLeftQuote, quotes);
-		comboLeftQuote.setSelectedIndex(1);
-		
-		Utility.loadItems(comboRightQuote, quotes);
-		comboRightQuote.setSelectedIndex(1);
 	}
 
 	/**
@@ -295,7 +340,13 @@ public class CssQuotesPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getSpecification() {
 		
-		return getQuoteString(textLeftQuote, comboLeftQuote) + " " + getQuoteString(textRightQuote, comboRightQuote);
+		try {
+			return getQuoteString(textLeftQuote, comboLeftQuote) + " " + getQuoteString(textRightQuote, comboRightQuote);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -306,72 +357,83 @@ public class CssQuotesPanel extends InsertPanel implements StringValueEditor {
 	 */
 	private String getQuoteString(JTextField textField, JComboBox comboBox) {
 		
-		String quoteText = textField.getText();
-		if (!quoteText.isEmpty()) {
-			
-			if (quoteText.contains("'")) {
-				return "\"" + quoteText + "\"";
+		try {
+			String quoteText = textField.getText();
+			if (!quoteText.isEmpty()) {
+				
+				if (quoteText.contains("'")) {
+					return "\"" + quoteText + "\"";
+				}
+				
+				return "'" + quoteText + "'";
 			}
 			
+			// Get combo value.
+			quoteText = (String) comboBox.getSelectedItem();
+			if (quoteText.isEmpty()) {
+				return "none";
+			}
+			
+			if (quoteText.equals("'")) {
+				return "\"" + quoteText + "\"";
+			}
 			return "'" + quoteText + "'";
 		}
-		
-		// Get combo value.
-		quoteText = (String) comboBox.getSelectedItem();
-		if (quoteText.isEmpty()) {
-			return "none";
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		if (quoteText.equals("'")) {
-			return "\"" + quoteText + "\"";
-		}
-		return "'" + quoteText + "'";
+		return "";
 	}
 
 	/**
 	 * Set from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		if (initialString != null) {
+		try {
 			
-			try {
-				Obj<Integer> position = new Obj<Integer>(0);
+			if (initialString != null) {
 				
-				// Get 'none' value.
-				int positionAux = position.ref;
-				
-				String text = Utility.getNextMatch(initialString, position, "\\G\\s*none");
-				if (text != null) {
+				try {
+					Obj<Integer> position = new Obj<Integer>(0);
 					
-					comboLeftQuote.setSelectedIndex(0);
-					comboRightQuote.setSelectedIndex(0);
-					textLeftQuote.setText("");
-					textRightQuote.setText("");
+					// Get 'none' value.
+					int positionAux = position.ref;
 					
-					return;
+					String text = Utility.getNextMatch(initialString, position, "\\G\\s*none");
+					if (text != null) {
+						
+						comboLeftQuote.setSelectedIndex(0);
+						comboRightQuote.setSelectedIndex(0);
+						textLeftQuote.setText("");
+						textRightQuote.setText("");
+						
+						return;
+					}
+	
+					position.ref = positionAux;
+					
+					// Get controls' values.
+					if (!setQuoteControls(initialString, position, comboLeftQuote, textLeftQuote)) {
+						return;
+					}
+					
+					// Get space between.
+					text = Utility.getNextMatch(initialString, position, "\\G\\s+");
+					if (text == null) {
+						return;
+					}
+					
+					if (!setQuoteControls(initialString, position, comboRightQuote, textRightQuote)) {
+						return;
+					}
 				}
-
-				position.ref = positionAux;
-				
-				// Get controls' values.
-				if (!setQuoteControls(initialString, position, comboLeftQuote, textLeftQuote)) {
-					return;
+				catch (Exception e) {
 				}
-				
-				// Get space between.
-				text = Utility.getNextMatch(initialString, position, "\\G\\s+");
-				if (text == null) {
-					return;
-				}
-				
-				if (!setQuoteControls(initialString, position, comboRightQuote, textRightQuote)) {
-					return;
-				}
-			}
-			catch (Exception e) {
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};	
 	}
 
 	/**
@@ -385,36 +447,40 @@ public class CssQuotesPanel extends InsertPanel implements StringValueEditor {
 	private boolean setQuoteControls(String initialString,
 			Obj<Integer> position, JComboBox comboBox,
 			JTextField textField) {
-
-		// Initialize controls.
-		textField.setText("");
-		comboBox.setSelectedIndex(0);
 		
-		Obj<Matcher> matcher = new Obj<Matcher>();
-
-		// Get combo or text value.
-		String text = Utility.getNextMatch(initialString, position, "\\G\\s*\\'([^\\']*)\\'", matcher);
-		
-		if (text == null) {
-			text = Utility.getNextMatch(initialString, position, "\\G\\s*\\\"([^\\\"]*)\\\"", matcher);
-		}
-		
-		if (text != null && matcher.ref.groupCount() == 1) {
-			text = matcher.ref.group(1);
-				
-			// Select quote if it exists.
-			DefaultComboBoxModel model = (DefaultComboBoxModel) comboBox.getModel();
-			int index = model.getIndexOf(text);
+		try {
+			// Initialize controls.
+			textField.setText("");
+			comboBox.setSelectedIndex(0);
 			
-			if (index >= 0) {
-				comboBox.setSelectedIndex(index);
-				return true;
+			Obj<Matcher> matcher = new Obj<Matcher>();
+	
+			// Get combo or text value.
+			String text = Utility.getNextMatch(initialString, position, "\\G\\s*\\'([^\\']*)\\'", matcher);
+			
+			if (text == null) {
+				text = Utility.getNextMatch(initialString, position, "\\G\\s*\\\"([^\\\"]*)\\\"", matcher);
 			}
 			
-			textField.setText(text);
-			return true;
+			if (text != null && matcher.ref.groupCount() == 1) {
+				text = matcher.ref.group(1);
+					
+				// Select quote if it exists.
+				DefaultComboBoxModel model = (DefaultComboBoxModel) comboBox.getModel();
+				int index = model.getIndexOf(text);
+				
+				if (index >= 0) {
+					comboBox.setSelectedIndex(index);
+					return true;
+				}
+				
+				textField.setText(text);
+				return true;
+			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return false;
 	}
 
@@ -422,9 +488,14 @@ public class CssQuotesPanel extends InsertPanel implements StringValueEditor {
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(labelLeftQuote);
-		Utility.localize(labelRightQuote);
+		try {
+			
+			Utility.localize(labelLeftQuote);
+			Utility.localize(labelRightQuote);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -433,7 +504,13 @@ public class CssQuotesPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.gui.textCssQuotesBuilder");
+		try {
+			return Resources.getString("org.multipage.gui.textCssQuotesBuilder");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -442,7 +519,13 @@ public class CssQuotesPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getResultText() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -498,7 +581,13 @@ public class CssQuotesPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getStringValue() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -507,9 +596,14 @@ public class CssQuotesPanel extends InsertPanel implements StringValueEditor {
 	 */
 	@Override
 	public void setStringValue(String string) {
-		
-		initialString = string;
-		setFromInitialString();
+		try {
+			
+			initialString = string;
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

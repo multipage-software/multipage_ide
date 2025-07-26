@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -11,14 +11,17 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
+
+import javax.imageio.ImageIO;
 
 import org.apache.commons.imaging.ImageFormats;
 import org.apache.commons.imaging.Imaging;
+import org.multipage.util.Safe;
 
 /**
- * @author
+ * Utility functions for images.
+ * @author vakol
  *
  */
 public class ImgUtility {
@@ -31,12 +34,35 @@ public class ImgUtility {
 	public static BufferedImage convertByteArrayToImage(byte[] bytes) {
 		
 		BufferedImage image = null;
-		InputStream inputStream = new ByteArrayInputStream(bytes);
+		InputStream inputStream = null;
+		
 		try {
+			// Try to use Apache Commons to load the image.
+			inputStream = new ByteArrayInputStream(bytes);
 			image = Imaging.getBufferedImage(inputStream);
 		}
 		catch (Exception e) {
-			return null;
+			
+			// Otherwise use Java method.
+			if (inputStream != null) {
+				try {
+                    image = ImageIO.read(inputStream);
+                }
+				catch (Exception e2) {
+	            	Safe.exception(e2);
+	            }
+			}
+		}
+		finally {
+			// Close the input stream.
+			if (inputStream != null) {
+				try {
+					inputStream.close();
+				}
+				catch (Exception e) {
+					Safe.exception(e);
+                }
+			}
 		}
 		return image;
 	}
@@ -49,18 +75,24 @@ public class ImgUtility {
 	 * @return
 	 */
 	public static BufferedImage resizeImage(BufferedImage image, int width, int height) {
-
-		int type = image.getType();
-		if (type == 0) {
-			type = BufferedImage.TYPE_INT_ARGB;
+		
+		try {
+			int type = image.getType();
+			if (type == 0) {
+				type = BufferedImage.TYPE_INT_ARGB;
+			}
+			
+			BufferedImage resizedImage = new BufferedImage(width, height, type);
+			Graphics2D g = resizedImage.createGraphics();
+			g.drawImage(image, 0, 0, width, height, null);
+			g.dispose();
+			
+			return resizedImage;
 		}
-		
-		BufferedImage resizedImage = new BufferedImage(width, height, type);
-		Graphics2D g = resizedImage.createGraphics();
-		g.drawImage(image, 0, 0, width, height, null);
-		g.dispose();
-		
-		return resizedImage;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -72,14 +104,29 @@ public class ImgUtility {
 	public static byte[] convertImageToByteArray(BufferedImage bufferedImage, String formatName) {
 		
 		// Obtain image content.
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ByteArrayOutputStream outputStream = null;
 		try {
+			outputStream = new ByteArrayOutputStream();
 			ImageFormats format = ImageFormats.valueOf(formatName);
 			Imaging.writeImage(bufferedImage, outputStream, format);
-			return outputStream.toByteArray();
 		}
 		catch (Exception e) {
+			Safe.exception(e);
+		}
+		finally {
+			if (outputStream != null) {
+				try {
+                    outputStream.close();
+                }
+                catch (Exception e) {
+                	Safe.exception(e);
+                }
+			}
+		}
+		
+		if (outputStream == null) {
 			return null;
 		}
+		return outputStream.toByteArray();
 	}
 }

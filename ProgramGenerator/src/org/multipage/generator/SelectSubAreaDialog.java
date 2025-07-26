@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -29,10 +29,11 @@ import org.multipage.gui.Images;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays selection of the sub area.
+ * @author vakol
  *
  */
 public class SelectSubAreaDialog extends JDialog {
@@ -114,20 +115,24 @@ public class SelectSubAreaDialog extends JDialog {
 	 */
 	public static Area showDialog(Component parent, Area rootArea, Area selectedArea) {
 		
-		// Update area.
-		if (rootArea != null) {
-			rootArea = ProgramGenerator.getArea(rootArea.getId());
+		try {
+			// Update area.
+			if (rootArea != null) {
+				rootArea = ProgramGenerator.getArea(rootArea.getId());
+			}
+			
+			SelectSubAreaDialog dialog = new SelectSubAreaDialog(Utility.findWindow(parent),
+					rootArea);
+			
+			dialog.selectArea(selectedArea);
+			dialog.setVisible(true);
+			
+			if (dialog.confirm) {
+				return dialog.getSelectedArea();
+			}
 		}
-		
-		SelectSubAreaDialog dialog = new SelectSubAreaDialog(Utility.findWindow(parent),
-				rootArea);
-		
-		dialog.selectArea(selectedArea);
-		
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
-			return dialog.getSelectedArea();
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -139,13 +144,17 @@ public class SelectSubAreaDialog extends JDialog {
 	 */
 	public SelectSubAreaDialog(Window parentWindow, Area rootArea) {
 		super(parentWindow, ModalityType.DOCUMENT_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		this.rootArea = rootArea;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			this.rootArea = rootArea;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -163,7 +172,7 @@ public class SelectSubAreaDialog extends JDialog {
 		setBounds(100, 100, 464, 357);
 		
 		panel = new JPanel();
-		panel.setPreferredSize(new Dimension(10, 50));
+		panel.setPreferredSize(new Dimension(10, 35));
 		getContentPane().add(panel, BorderLayout.SOUTH);
 		SpringLayout sl_panel = new SpringLayout();
 		panel.setLayout(sl_panel);
@@ -197,75 +206,109 @@ public class SelectSubAreaDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		createPanels();
-		
-		localize();
-		setIcons();
-		
-		loadDialog();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			createPanels();
+			
+			localize();
+			setIcons();
+			
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Create panels.
 	 */
 	private void createPanels() {
-		
-		treePanel = new AreasTreePanel(rootArea);
-		
-		getContentPane().add(treePanel);
+		try {
+			
+			treePanel = new AreasTreePanel(rootArea);
+			getContentPane().add(treePanel);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setBounds(bounds);
+			}
 		}
-		else {
-			setBounds(bounds);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
-		
-		confirm = false;
-		
-		saveDialog();
+		try {
+			
+			confirm = false;
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -273,10 +316,15 @@ public class SelectSubAreaDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOK() {
-		
-		confirm = true;
-		
-		saveDialog();
+		try {
+			
+			confirm = true;
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 	
@@ -286,7 +334,13 @@ public class SelectSubAreaDialog extends JDialog {
 	 */
 	private Area getSelectedArea() {
 		
-		return treePanel.getSelectedArea();
+		try {
+			return treePanel.getSelectedArea();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -294,7 +348,12 @@ public class SelectSubAreaDialog extends JDialog {
 	 * @param area
 	 */
 	private void selectArea(Area area) {
-		
-		treePanel.selectArea(area);
+		try {
+			
+			treePanel.selectArea(area);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -35,10 +35,11 @@ import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays image properties.
+ * @author vakol
  *
  */
 public class ShowResourceImageProperties extends JDialog {
@@ -84,11 +85,16 @@ public class ShowResourceImageProperties extends JDialog {
 	 * @param resource
 	 */
 	public static void showDialog(Component parent, Resource resource) {
-		
-		ShowResourceImageProperties dialog = new ShowResourceImageProperties(
-				Utility.findWindow(parent), resource);
-		
-		dialog.setVisible(true);
+		try {
+			
+			ShowResourceImageProperties dialog = new ShowResourceImageProperties(
+					Utility.findWindow(parent), resource);
+			
+			dialog.setVisible(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -98,13 +104,17 @@ public class ShowResourceImageProperties extends JDialog {
 	 */
 	public ShowResourceImageProperties(Window parentWindow, Resource resource) {
 		super(parentWindow, ModalityType.DOCUMENT_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		this.resource = resource;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			this.resource = resource;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -258,101 +268,126 @@ public class ShowResourceImageProperties extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		Utility.centerOnScreen(this);
-		
-		localize();
-		setIcons();
-		
-		loadProperties();
+		try {
+			
+			Utility.centerOnScreen(this);
+			
+			localize();
+			setIcons();
+			
+			loadProperties();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonClose);
-		Utility.localize(labelWidthHeight);
-		Utility.localize(labelFileSize);
-		Utility.localize(labelSavedAsText);
-		Utility.localize(labelBitsPerPixel);
-		Utility.localize(labelHasAlpha);
-		Utility.localize(buttonShowContent);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonClose);
+			Utility.localize(labelWidthHeight);
+			Utility.localize(labelFileSize);
+			Utility.localize(labelSavedAsText);
+			Utility.localize(labelBitsPerPixel);
+			Utility.localize(labelHasAlpha);
+			Utility.localize(buttonShowContent);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonClose.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
-		buttonShowContent.setIcon(Images.getIcon("org/multipage/generator/images/show_content.png"));
+		try {
+			
+			buttonClose.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+			buttonShowContent.setIcon(Images.getIcon("org/multipage/generator/images/show_content.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Load properties.
 	 */
 	private void loadProperties() {
-		
-		Properties login = ProgramBasic.getLoginProperties();
-		Middle middle = ProgramBasic.getMiddle();
-		MiddleResult result;
-		
-		// Try to load resource image.
-		Obj<BufferedImage> image = new Obj<BufferedImage>();
-		
-		result = middle.loadResourceFullImage(login, resource.getId(), image);
-		if (result.isNotOK()) {
-			result.show(this);
-		}
-		
-		// Show saved as text.
-		textSavedAsText.setText(Resources.getString(
-				resource.isSavedAsText() ? "org.multipage.gui.textTrueState" : "org.multipage.gui.textFalseState"));
-		
-		this.image = image.ref;
-		
-		if (image.ref != null) {
+		try {
 			
-			// Show image dimensions.
-			String text = String.valueOf(image.ref.getWidth()) + " x " + String.valueOf(image.ref.getHeight());
-			textWidthHeight.setText(text);
+			Properties login = ProgramBasic.getLoginProperties();
+			Middle middle = ProgramBasic.getMiddle();
+			MiddleResult result;
 			
-			ColorModel colorModel = image.ref.getColorModel();
-			// Show pixel size.
-			textBitsPerPixel.setText(String.valueOf(colorModel.getPixelSize()));
+			// Try to load resource image.
+			Obj<BufferedImage> image = new Obj<BufferedImage>();
 			
-			// Show alpha channel.
-			textHasAlpha.setText(Resources.getString(
-					colorModel.hasAlpha() ? "org.multipage.gui.textTrueState" : "org.multipage.gui.textFalseState"));
+			result = middle.loadResourceFullImage(login, resource.getId(), image);
+			if (result.isNotOK()) {
+				result.show(this);
+			}
+			
+			// Show saved as text.
+			textSavedAsText.setText(Resources.getString(
+					resource.isSavedAsText() ? "org.multipage.gui.textTrueState" : "org.multipage.gui.textFalseState"));
+			
+			this.image = image.ref;
+			
+			if (image.ref != null) {
+				
+				// Show image dimensions.
+				String text = String.valueOf(image.ref.getWidth()) + " x " + String.valueOf(image.ref.getHeight());
+				textWidthHeight.setText(text);
+				
+				ColorModel colorModel = image.ref.getColorModel();
+				// Show pixel size.
+				textBitsPerPixel.setText(String.valueOf(colorModel.getPixelSize()));
+				
+				// Show alpha channel.
+				textHasAlpha.setText(Resources.getString(
+						colorModel.hasAlpha() ? "org.multipage.gui.textTrueState" : "org.multipage.gui.textFalseState"));
+			}
+			
+			// Show file length.
+	
+			Obj<Long> fileLength = new Obj<Long>(0L);
+			result = middle.loadResourceDataLength(login, resource.getId(), fileLength);
+			if (result.isNotOK()) {
+				result.show(this);
+			}
+			
+			textFileSize.setText(String.valueOf(fileLength.ref) + " Bytes");
 		}
-		
-		// Show file length.
-
-		Obj<Long> fileLength = new Obj<Long>(0L);
-		result = middle.loadResourceDataLength(login, resource.getId(), fileLength);
-		if (result.isNotOK()) {
-			result.show(this);
-		}
-		
-		textFileSize.setText(String.valueOf(fileLength.ref) + " Bytes");
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On show content
 	 */
 	protected void onShowContent() {
-		
-		if (image != null) {
+		try {
 			
-			ShowResourceContent.showDialog(this, resource, image);
+			if (image != null) {
+				
+				ShowResourceContent.showDialog(this, resource, image);
+			}
+			else {
+				// Edit the resource.
+				TextResourceEditor.showDialog(this,
+						resource.getId(), resource.isSavedAsText(), true);
+			}
 		}
-		else {
-			// Edit the resource.
-			TextResourceEditor.showDialog(this,
-					resource.getId(), resource.isSavedAsText(), true);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

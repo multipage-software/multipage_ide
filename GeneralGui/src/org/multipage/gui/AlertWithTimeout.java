@@ -1,3 +1,9 @@
+/*
+ * Copyright 2010-2025 (C) vakol
+ * 
+ * Created on : 2017-04-26
+ *
+ */
 package org.multipage.gui;
 
 import java.awt.BorderLayout;
@@ -18,10 +24,11 @@ import javax.swing.Timer;
 
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author user
+ * Dialog window that shows alert message.
+ * @author vakol
  *
  */
 public class AlertWithTimeout extends JDialog {
@@ -60,15 +67,20 @@ public class AlertWithTimeout extends JDialog {
 	 * @return
 	 */
 	public static void showDialog(Component parent, String alert, int timeout) {
-		
-		if (dialog == null) {
-			dialog = new AlertWithTimeout(parent);
-			dialog.postCreate();
+		try {
+			
+			if (dialog == null) {
+				dialog = new AlertWithTimeout(parent);
+				dialog.postCreate();
+			}
+			dialog.set(alert);
+			dialog.set(timeout);
+			dialog.setVisible(true);
+			dialog.start();
 		}
-		dialog.set(alert);
-		dialog.set(timeout);
-		dialog.setVisible(true);
-		dialog.start();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -78,17 +90,27 @@ public class AlertWithTimeout extends JDialog {
 	public AlertWithTimeout(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
 		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		initComponents();
+		try {
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			initComponents();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
 	 * Post creation of the dialog
 	 */
 	private void postCreate() {
-		
-		Utility.centerOnScreen(this);
-		localize();
+		try {
+			
+			Utility.centerOnScreen(this);
+			localize();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -122,26 +144,36 @@ public class AlertWithTimeout extends JDialog {
 	 * Localize components
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		buttonText = Resources.getString("textOk");
-		buttonTextWithTimeout = Resources.getString("org.multipage.textOkWithTimeout");
-		button(timeout);
+		try {
+			
+			Utility.localize(this);
+			buttonText = Resources.getString("textOk");
+			buttonTextWithTimeout = Resources.getString("org.multipage.textOkWithTimeout");
+			button(timeout);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set alert message
 	 */
 	private void set(String alert) {
-		
-		messages.add(alert);
-		
-		Obj<String> message = new Obj<String>("<html>");
-		messages.stream().forEach((String text) -> {
-			message.ref += text + "<br>";
-		});
-		message.ref += "<br>";
-		labelAlert.setText(message.ref);
+		try {
+			
+			messages.add(alert);
+			
+			Obj<String> message = new Obj<String>("<html>");
+			messages.stream().forEach((String text) -> {
+				message.ref += text + "<br>";
+			});
+			message.ref += "<br>";
+			labelAlert.setText(message.ref);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -149,40 +181,50 @@ public class AlertWithTimeout extends JDialog {
 	 * @param timeout
 	 */
 	private void set(int timeout) {
-		
-		if (timeout >= 0)
-			this.timeout = timeout / 1000;
-		else
-			this.timeout = -1;
+		try {
+			
+			if (timeout >= 0)
+				this.timeout = timeout / 1000;
+			else
+				this.timeout = -1;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Start count down
 	 */
 	private void start() {
-		
-		if (timeout < 0) {
-			button(-1);
-			return;
-		}
-		
-		buttonOk.setForeground(Color.GRAY);
-		
-		final int delay = 1000;
-		timer = new Timer(delay, (e) -> {
-			button(timeout);
-			if (timeout >= 0) {
-				timeout--;
-			}
-			else {
-				buttonOk.setEnabled(true);
-				buttonOk.setForeground(Color.BLACK);
-				timer.stop();
+		try {
+			
+			if (timeout < 0) {
+				button(-1);
+				return;
 			}
 			
-		});
-		timer.setInitialDelay(0);
-		timer.start();
+			buttonOk.setForeground(Color.GRAY);
+			
+			final int delay = 1000;
+			timer = new Timer(delay, (e) -> {
+				button(timeout);
+				if (timeout >= 0) {
+					timeout--;
+				}
+				else {
+					buttonOk.setEnabled(true);
+					buttonOk.setForeground(Color.BLACK);
+					timer.stop();
+				}
+				
+			});
+			timer.setInitialDelay(0);
+			timer.start();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -192,7 +234,13 @@ public class AlertWithTimeout extends JDialog {
 	 */
 	private String buttonText(int timeout) {
 		
-		return timeout >= 0 ? String.format(buttonTextWithTimeout, timeout) : buttonText;
+		try {
+			return timeout >= 0 ? String.format(buttonTextWithTimeout, timeout) : buttonText;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 	
 	/**
@@ -200,19 +248,29 @@ public class AlertWithTimeout extends JDialog {
 	 * @param timeout
 	 */
 	private void button(int timeout) {
-		
-		buttonOk.setText(buttonText(timeout));
+		try {
+			
+			buttonOk.setText(buttonText(timeout));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On OK
 	 */
 	protected void onOk() {
-		
-		if (timeout < 0) {
-			buttonOk.setText("");
-			messages.clear();
-			setVisible(false);
-		}	
+		try {
+			
+			if (timeout < 0) {
+				buttonOk.setText("");
+				messages.clear();
+				setVisible(false);
+			}
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

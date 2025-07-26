@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -36,10 +36,11 @@ import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.TextEditorPane;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays editors for text localization.
+ * @author vakol
  *
  */
 public class LocalizeTextDialog extends JDialog {
@@ -110,14 +111,20 @@ public class LocalizeTextDialog extends JDialog {
 	 */
 	public static boolean showDialog(Window parentWindow, long textId,
 			String defaultText, String localizedText, Language language) {
-
-		LocalizeTextDialog dialog = new LocalizeTextDialog(parentWindow);
-		// Set data.
-		dialog.setDialogData(textId, defaultText, localizedText,
-				language);
-		dialog.setVisible(true);
-
-		return dialog.confirm;
+		
+		try {
+			LocalizeTextDialog dialog = new LocalizeTextDialog(parentWindow);
+			// Set data.
+			dialog.setDialogData(textId, defaultText, localizedText,
+					language);
+			dialog.setVisible(true);
+	
+			return dialog.confirm;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -167,13 +174,18 @@ public class LocalizeTextDialog extends JDialog {
 	 */
 	public LocalizeTextDialog(Window parentWindow) {
 		super(parentWindow, ModalityType.APPLICATION_MODAL);
-
-		// Initialize components.
-		initComponents();
-		// $hide>>$
-		// Post creation.
-		postCreate();
-		// $hide<<$
+		
+		try {
+			// Initialize components.
+			initComponents();
+			// $hide>>$
+			// Post creation.
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -283,86 +295,116 @@ public class LocalizeTextDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		// Create editors.
-		createEditors();
-		// Initialize dialog.
-		loadDialog();
-		// Localize text.
-		localize();
-		// Set icons.
-		setIcons();
+		try {
+			
+			// Create editors.
+			createEditors();
+			// Initialize dialog.
+			loadDialog();
+			// Localize text.
+			localize();
+			// Set icons.
+			setIcons();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Create editors.
 	 */
 	private void createEditors() {
-		
-		TextEditorPane.wordWrapState = true;
-		
-		editorDefaultLanguage = new TextEditorPane(this, true);
-		editorDefaultLanguage.setEditable(false);
-		editorDefaultLanguage.selectHtmlEditor(false);
-		panelDefault.add(editorDefaultLanguage);
-		
-		editorLocalizedText = new TextEditorPane(this, true);
-		editorLocalizedText.selectHtmlEditor(false);
-		panelLocalized.add(editorLocalizedText);
+		try {
+			
+			TextEditorPane.wordWrapState = true;
+			
+			editorDefaultLanguage = new TextEditorPane(this, true);
+			editorDefaultLanguage.setEditable(false);
+			editorDefaultLanguage.selectHtmlEditor(false);
+			panelDefault.add(editorDefaultLanguage);
+			
+			editorLocalizedText = new TextEditorPane(this, true);
+			editorLocalizedText.selectHtmlEditor(false);
+			panelLocalized.add(editorLocalizedText);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-
-		// Try to use bounds.
-		if (!bounds.isEmpty()) {
-			setBounds(bounds);
+		try {
+			
+			// Try to use bounds.
+			if (!bounds.isEmpty()) {
+				setBounds(bounds);
+			}
+			else {
+				// Center dialog.
+				Utility.centerOnScreen(this);
+			}
+			// Try to set divider position.
+			if (editorDividerPosition != -1) {
+				splitPane.setDividerLocation(editorDividerPosition);
+			}
 		}
-		else {
-			// Center dialog.
-			Utility.centerOnScreen(this);
-		}
-		// Try to set divider position.
-		if (editorDividerPosition != -1) {
-			splitPane.setDividerLocation(editorDividerPosition);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		// Get bounds.
-		bounds = getBounds();
-		// Get divider position.
-		editorDividerPosition = splitPane.getDividerLocation();
+		try {
+			
+			// Get bounds.
+			bounds = getBounds();
+			// Get divider position.
+			editorDividerPosition = splitPane.getDividerLocation();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize text.
 	 */
 	private void localize() {
-
-		Utility.localize(this);
-		Utility.localize(labelDefaultLanguageText);
-		Utility.localize(labelLocalizedText);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(buttonSave);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(labelDefaultLanguageText);
+			Utility.localize(labelLocalizedText);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(buttonSave);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-
-		setIconImage(Images.getImage("org/multipage/translator/images/main_icon.png"));
-		buttonOk.setIcon(Images.getIcon("org/multipage/translator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/translator/images/cancel_icon.png"));
-		buttonSave.setIcon(Images.getIcon("org/multipage/translator/images/save_icon.png"));
+		try {
+			
+			setIconImage(Images.getImage("org/multipage/translator/images/main_icon.png"));
+			buttonOk.setIcon(Images.getIcon("org/multipage/translator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/translator/images/cancel_icon.png"));
+			buttonSave.setIcon(Images.getIcon("org/multipage/translator/images/save_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -374,21 +416,32 @@ public class LocalizeTextDialog extends JDialog {
 	 */
 	protected void setDialogData(long textId, String defaultText,
 			String localizedText, Language language) {
-
-		this.textId = textId;
-		this.language = language;
-		editorDefaultLanguage.setText(defaultText);
-		editorLocalizedText.setText(localizedText);
-		labelLocalizedText.setText(language.toString() + ":");
+		try {
+			
+			this.textId = textId;
+			this.language = language;
+			editorDefaultLanguage.setText(defaultText);
+			editorLocalizedText.setText(localizedText);
+			labelLocalizedText.setText(language.toString() + ":");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
-
-		confirm = false;
-		saveDialog();
+		try {
+			
+			confirm = false;
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -396,11 +449,17 @@ public class LocalizeTextDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-
-		confirm = true;
-		
-		saveData();
-		saveDialog();
+		try {
+			
+			confirm = true;
+			
+			saveData();
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -408,28 +467,33 @@ public class LocalizeTextDialog extends JDialog {
 	 * Save data.
 	 */
 	private void saveData() {
-
-		// Get text.
-		String text = editorLocalizedText.getText();
-		
-		MiddleResult result;
-		Middle middle = ProgramBasic.getMiddle();
-		Properties login = ProgramBasic.getLoginProperties();
-		
-		// Update localized text.
-		if (text.isEmpty()) {
-			result = middle.removeLanguageText(login, language.id, textId);
+		try {
+			
+			// Get text.
+			String text = editorLocalizedText.getText();
+			
+			MiddleResult result;
+			Middle middle = ProgramBasic.getMiddle();
+			Properties login = ProgramBasic.getLoginProperties();
+			
+			// Update localized text.
+			if (text.isEmpty()) {
+				result = middle.removeLanguageText(login, language.id, textId);
+			}
+			else {
+				result = middle.updateLanguageText(login, language.id, textId, text);
+			}
+			if (result.isNotOK()) {
+				result.show(this);
+			}
+			else {
+				// Update information.
+				onUpdateInformation();
+			}
 		}
-		else {
-			result = middle.updateLanguageText(login, language.id, textId, text);
-		}
-		if (result.isNotOK()) {
-			result.show(this);
-		}
-		else {
-			// Update information.
-			onUpdateInformation();
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

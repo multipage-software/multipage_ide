@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -20,8 +20,8 @@ import java.util.*;
 import java.awt.event.*;
 
 /**
- * 
- * @author
+ * Panel that displays font editor.
+ * @author vakol
  *
  */
 public class CssFontPanel extends InsertPanel implements StringValueEditor {
@@ -127,11 +127,17 @@ public class CssFontPanel extends InsertPanel implements StringValueEditor {
 	 */
 	private boolean lockChanges() {
 		
-		if (componentsChangeLock) {
-			return false;
+		try {
+			if (componentsChangeLock) {
+				return false;
+			}
+			componentsChangeLock = true;
+			return true;
 		}
-		componentsChangeLock = true;
-		return true;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
@@ -176,13 +182,18 @@ public class CssFontPanel extends InsertPanel implements StringValueEditor {
 	 * @param parentWindow 
 	 */
 	public CssFontPanel(String initialString) {
-
-		initComponents();
 		
-		// $hide>>$
-		this.initialString = initialString;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			this.initialString = initialString;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -329,50 +340,65 @@ public class CssFontPanel extends InsertPanel implements StringValueEditor {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-
-		loadFromString(initialString);
+		try {
+			
+			loadFromString(initialString);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Update sample.
 	 */
 	protected void updateSample() {
-		
-		Object sampleText = Resources.getString("org.multipage.gui.textThisIsTextSample");
-		
-		// Get selected font family.
-		String fontFamily = (String) listFontFamilies.getSelectedValue();
-		if (fontFamily == null) {
-			fontFamily = "serif";
+		try {
+			
+			Object sampleText = Resources.getString("org.multipage.gui.textThisIsTextSample");
+			
+			// Get selected font family.
+			String fontFamily = (String) listFontFamilies.getSelectedValue();
+			if (fontFamily == null) {
+				fontFamily = "serif";
+			}
+			
+			String text = String.format("<html><span style=\"" +
+					"font-family: %s; " +
+					"font-style: %s; " +
+					"font-size: %s; " +
+					"font-weight: %s; " +
+					"font-variant: %s; " +
+					"\">%s</span></html>",
+					fontFamily,
+					getFontStyle(),
+					getFontSize(),
+					getFontWeight(),
+					getFontVariant(),
+					sampleText);
+			
+			labelSample.setText(text);
 		}
-		
-		String text = String.format("<html><span style=\"" +
-				"font-family: %s; " +
-				"font-style: %s; " +
-				"font-size: %s; " +
-				"font-weight: %s; " +
-				"font-variant: %s; " +
-				"\">%s</span></html>",
-				fontFamily,
-				getFontStyle(),
-				getFontSize(),
-				getFontWeight(),
-				getFontVariant(),
-				sampleText);
-		
-		labelSample.setText(text);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load from initial string.
 	 */
 	private void loadFromString(String string) {
-		
-		initialString = string;
-		
-		if (initialString != null) {
-			setFromInitialString();
+		try {
+			
+			initialString = string;
+			
+			if (initialString != null) {
+				setFromInitialString();
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -380,255 +406,338 @@ public class CssFontPanel extends InsertPanel implements StringValueEditor {
 	 */
 	@Override
 	public void saveDialog() {
-		
-		fontSize = getFontSize();
-		fontWeight = getFontWeight();
-		fontStyle = getFontStyle();
-		fontVariant = getFontVariant();
-		fontFamily = getFontFamilies();
+		try {
+			
+			fontSize = getFontSize();
+			fontWeight = getFontWeight();
+			fontStyle = getFontStyle();
+			fontVariant = getFontVariant();
+			fontFamily = getFontFamilies();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		localize();
-		
-		radioStyleNormal.setSelected(true);
-		radioVariantNormal.setSelected(true);
-		
-		loadFontFamilies();
-		loadSizes();
-		loadWeights();
-		loadLineHeights();
-		
-		initToolBars();
-
-		loadDialog();
-		updateSample();
-
-		// Set listeners.
-		setListeners();
+		try {
+			
+			localize();
+			
+			radioStyleNormal.setSelected(true);
+			radioVariantNormal.setSelected(true);
+			
+			loadFontFamilies();
+			loadSizes();
+			loadWeights();
+			loadLineHeights();
+			
+			initToolBars();
+	
+			loadDialog();
+			updateSample();
+	
+			// Set listeners.
+			setListeners();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Initialize tool bars.
 	 */
 	private void initToolBars() {
-		
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/insert.png", this, "onAddFontName", "org.multipage.gui.tooltipAddFontName");
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/cancel_icon.png", this, "onRemoveFontName", "org.multipage.gui.tooltipRemoveFontName");
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/move_backward.png", this, "onMoveUp", "org.multipage.gui.tooltipMoveFontNameUp");
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/move_forward.png", this, "onMoveDown", "org.multipage.gui.tooltipMoveFontNameDown");
+		try {
+			
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/insert.png", this, "onAddFontName", "org.multipage.gui.tooltipAddFontName");
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/cancel_icon.png", this, "onRemoveFontName", "org.multipage.gui.tooltipRemoveFontName");
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/move_backward.png", this, "onMoveUp", "org.multipage.gui.tooltipMoveFontNameUp");
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/move_forward.png", this, "onMoveDown", "org.multipage.gui.tooltipMoveFontNameDown");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};		
 	}
 	
 	/**
 	 * Move font name up.
 	 */
 	public void onMoveUp() {
-		
-		int index = listFontFamilies.getSelectedIndex();
-		if (index == -1) {
+		try {
 			
-			Utility.show(this, "org.multipage.gui.messageSelectSingleFontFace");
-			return;
+			int index = listFontFamilies.getSelectedIndex();
+			if (index == -1) {
+				
+				Utility.show(this, "org.multipage.gui.messageSelectSingleFontFace");
+				return;
+			}
+			
+			// Check selection, move font up and select it.
+			if (index <= 0) {
+				return;
+			}
+			
+			String currentName = listFontFamiliesModel.get(index);
+			String previousName = listFontFamiliesModel.get(index - 1);
+			listFontFamiliesModel.set(index, previousName);
+			listFontFamiliesModel.set(index - 1, currentName);
+			
+			listFontFamilies.setSelectedIndex(index - 1);
+			listFontFamilies.ensureIndexIsVisible(index - 1);
 		}
-		
-		// Check selection, move font up and select it.
-		if (index <= 0) {
-			return;
-		}
-		
-		String currentName = listFontFamiliesModel.get(index);
-		String previousName = listFontFamiliesModel.get(index - 1);
-		listFontFamiliesModel.set(index, previousName);
-		listFontFamiliesModel.set(index - 1, currentName);
-		
-		listFontFamilies.setSelectedIndex(index - 1);
-		listFontFamilies.ensureIndexIsVisible(index - 1);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Move font name down.
 	 */
 	public void onMoveDown() {
-		
-		int index = listFontFamilies.getSelectedIndex();
-		if (index == -1) {
+		try {
 			
-			Utility.show(this, "org.multipage.gui.messageSelectSingleFontFace");
-			return;
+			int index = listFontFamilies.getSelectedIndex();
+			if (index == -1) {
+				
+				Utility.show(this, "org.multipage.gui.messageSelectSingleFontFace");
+				return;
+			}
+			
+			int count = listFontFamiliesModel.getSize();
+			
+			// Check selection, move font down and select it.
+			if (index >= count - 1) {
+				return;
+			}
+			
+			String currentName = listFontFamiliesModel.get(index);
+			String nextName = listFontFamiliesModel.get(index + 1);
+			listFontFamiliesModel.set(index, nextName);
+			listFontFamiliesModel.set(index + 1, currentName);
+			
+			listFontFamilies.setSelectedIndex(index + 1);
+			listFontFamilies.ensureIndexIsVisible(index + 1);
 		}
-		
-		int count = listFontFamiliesModel.getSize();
-		
-		// Check selection, move font down and select it.
-		if (index >= count - 1) {
-			return;
-		}
-		
-		String currentName = listFontFamiliesModel.get(index);
-		String nextName = listFontFamiliesModel.get(index + 1);
-		listFontFamiliesModel.set(index, nextName);
-		listFontFamiliesModel.set(index + 1, currentName);
-		
-		listFontFamilies.setSelectedIndex(index + 1);
-		listFontFamilies.ensureIndexIsVisible(index + 1);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Add font name.
 	 */
 	public void onAddFontName() {
-		
-		String fontName = SelectFontNameDialog.showDialog(this);
-		if (fontName == null) {
-			return;
-		}
-		
-		// Add font name to the list.
-		int selectedIndex = listFontFamilies.getSelectedIndex();
-		if (selectedIndex == -1) {
+		try {
 			
-			listFontFamiliesModel.addElement(fontName);
-			selectedIndex = listFontFamiliesModel.getSize() - 1;
+			String fontName = SelectFontNameDialog.showDialog(this);
+			if (fontName == null) {
+				return;
+			}
+			
+			// Add font name to the list.
+			int selectedIndex = listFontFamilies.getSelectedIndex();
+			if (selectedIndex == -1) {
+				
+				listFontFamiliesModel.addElement(fontName);
+				selectedIndex = listFontFamiliesModel.getSize() - 1;
+			}
+			else {
+				selectedIndex++;
+				listFontFamiliesModel.add(selectedIndex, fontName);
+			}
+			
+			listFontFamilies.ensureIndexIsVisible(selectedIndex);
+			listFontFamilies.setSelectedIndex(selectedIndex);
 		}
-		else {
-			selectedIndex++;
-			listFontFamiliesModel.add(selectedIndex, fontName);
-		}
-		
-		listFontFamilies.ensureIndexIsVisible(selectedIndex);
-		listFontFamilies.setSelectedIndex(selectedIndex);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Remove font name.
 	 */
 	public void onRemoveFontName() {
-		
-		int index = listFontFamilies.getSelectedIndex();
-		if (index == -1) {
+		try {
 			
-			Utility.show(this, "org.multipage.gui.messageSelectSingleFontFace");
-			return;
+			int index = listFontFamilies.getSelectedIndex();
+			if (index == -1) {
+				
+				Utility.show(this, "org.multipage.gui.messageSelectSingleFontFace");
+				return;
+			}
+			
+			// Ask user and delete.
+			if (Utility.ask(this, "org.multipage.gui.messageRemoveSelectedFontFaceName",
+					listFontFamilies.getSelectedValue())) {
+				
+				listFontFamiliesModel.remove(index);
+				
+				listFontFamilies.ensureIndexIsVisible(index - 1);
+				listFontFamilies.setSelectedIndex(index - 1);
+			}
 		}
-		
-		// Ask user and delete.
-		if (Utility.ask(this, "org.multipage.gui.messageRemoveSelectedFontFaceName",
-				listFontFamilies.getSelectedValue())) {
-			
-			listFontFamiliesModel.remove(index);
-			
-			listFontFamilies.ensureIndexIsVisible(index - 1);
-			listFontFamilies.setSelectedIndex(index - 1);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Listeners.
 	 */
 	private void setListeners() {
-		
-		listFontFamilies.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(ListSelectionEvent e) {
-				
-				updateSample();
-			}
-		});
-		
-		ActionListener listener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				updateSample();
-			}
+		try {
+			
+			listFontFamilies.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+				@Override
+				public void valueChanged(ListSelectionEvent e) {
+					try {
+			
+						updateSample();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+			
+			ActionListener listener = new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					try {
+			
+						updateSample();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			};
+			
+			radioStyleNormal.addActionListener(listener);
+			radioStyleItalic.addActionListener(listener);
+			radioStyleOblique.addActionListener(listener);
+			
+			listener = new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					try {
+			
+						updateSample();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			};
+			
+			radioVariantNormal.addActionListener(listener);
+			radioVariantSmallCaps.addActionListener(listener);
+			
+			comboBoxSize.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					try {
+						
+						if (isChangeLock()) {
+							return;
+						}
+						lockChanges();
+						
+						textFontSize.setText("");
+						updateSample();
+						
+						unlockChanges();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+			
+			Utility.setTextChangeListener(textFontSize, () -> {
+				try {
+					
+					if (isChangeLock()) {
+						return;
+					}
+					lockChanges();
+					
+					comboBoxSize.setSelectedIndex(0);
+					updateSample();
+					
+					unlockChanges();
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+			
+			comboLineHeight.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					try {
+						
+						if (isChangeLock()) {
+							return;
+						}
+						lockChanges();
+						
+						textLineHeight.setText("");
+						
+						unlockChanges();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+			
+			Utility.setTextChangeListener(textLineHeight, () -> {
+					try {
+						
+						if (isChangeLock()) {
+							return;
+						}
+						lockChanges();
+						
+						comboLineHeight.setSelectedIndex(0);
+						
+						unlockChanges();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+			});
+			
+			comboBoxSizeUnit.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					try {
+						
+						updateSample();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+			
+			comboBoxWeight.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					try {
+                        
+                        updateSample();
+                    }
+                    catch(Throwable expt) {
+                    	Safe.exception(expt);
+                    };
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
 		};
-		
-		radioStyleNormal.addActionListener(listener);
-		radioStyleItalic.addActionListener(listener);
-		radioStyleOblique.addActionListener(listener);
-		
-		listener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				updateSample();
-			}
-		};
-		
-		radioVariantNormal.addActionListener(listener);
-		radioVariantSmallCaps.addActionListener(listener);
-		
-		comboBoxSize.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				if (isChangeLock()) {
-					return;
-				}
-				lockChanges();
-				
-				textFontSize.setText("");
-				updateSample();
-				
-				unlockChanges();
-			}
-		});
-		
-		Utility.setTextChangeListener(textFontSize, new Runnable() {
-			@Override
-			public void run() {
-				
-				if (isChangeLock()) {
-					return;
-				}
-				lockChanges();
-				
-				comboBoxSize.setSelectedIndex(0);
-				updateSample();
-				
-				unlockChanges();
-			}
-		});
-		
-		comboLineHeight.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				if (isChangeLock()) {
-					return;
-				}
-				lockChanges();
-				
-				textLineHeight.setText("");
-				
-				unlockChanges();
-			}
-		});
-		
-		Utility.setTextChangeListener(textLineHeight, new Runnable() {
-			@Override
-			public void run() {
-				
-				if (isChangeLock()) {
-					return;
-				}
-				lockChanges();
-				
-				comboLineHeight.setSelectedIndex(0);
-				
-				unlockChanges();
-			}
-		});
-		
-		comboBoxSizeUnit.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				updateSample();
-			}
-		});
-		
-		comboBoxWeight.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				updateSample();
-			}
-		});
 	}
 
 	/**
@@ -638,79 +747,90 @@ public class CssFontPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getSpecification() {
 		
-		String specification =    getFontStyle() + " "
-								+ getFontVariant() + " "
-								+ getFontWeight() + " "
-								+ getFontSize() + "/"
-								+ getLineHeight() + " "
-								+ getFontFamilies();
-		
-		return specification;
+		try {
+			String specification =    getFontStyle() + " "
+									+ getFontVariant() + " "
+									+ getFontWeight() + " "
+									+ getFontSize() + "/"
+									+ getLineHeight() + " "
+									+ getFontFamilies();
+			
+			return specification;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
 	 * Set from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		initialString.trim();
-
-		if (initialString != null) {
-			try {
-				
-				// Read font style.
-				Obj<Integer> position = new Obj<Integer>(0);
-				int length = initialString.length();
-				
-				while (position.ref < length) {
+		try {
+			
+			initialString.trim();
+	
+			if (initialString != null) {
+				try {
 					
-					// Get font style.
-					String word = Utility.getNextMatch(initialString, position, "\\w+");
-					if (word == null) {
-						break;
-					}
-					setFontStyle(word);
+					// Read font style.
+					Obj<Integer> position = new Obj<Integer>(0);
+					int length = initialString.length();
 					
-					// Get font variant.
-					word = Utility.getNextMatch(initialString, position, "[\\w-]+");
-					if (word == null) {
-						break;
+					while (position.ref < length) {
+						
+						// Get font style.
+						String word = Utility.getNextMatch(initialString, position, "\\w+");
+						if (word == null) {
+							break;
+						}
+						setFontStyle(word);
+						
+						// Get font variant.
+						word = Utility.getNextMatch(initialString, position, "[\\w-]+");
+						if (word == null) {
+							break;
+						}
+						setFontVariant(word);
+						
+						// Get font weight.
+						word = Utility.getNextMatch(initialString, position, "[\\wd]+");
+						if (word == null) {
+							break;
+						}
+						setFontWeight(word);
+						
+						// Get size/line height.
+						word = Utility.getNextMatch(initialString, position, "[\\w\\d\\.%-/]+");
+						if (word == null) {
+							break;
+						}
+						String [] words = word.split("/");
+						if (words.length != 2) {
+							break;
+						}
+						setFontSize(words[0]);
+						setLineHeight(words[1]);
+						
+						// Get font families.
+						if (position.ref >= length) {
+							break;
+						}
+						String text = initialString.substring(position.ref);
+						if (text.isEmpty()) {
+							break;
+						}
+						setFontFamilies(text);
 					}
-					setFontVariant(word);
-					
-					// Get font weight.
-					word = Utility.getNextMatch(initialString, position, "[\\wd]+");
-					if (word == null) {
-						break;
-					}
-					setFontWeight(word);
-					
-					// Get size/line height.
-					word = Utility.getNextMatch(initialString, position, "[\\w\\d\\.%-/]+");
-					if (word == null) {
-						break;
-					}
-					String [] words = word.split("/");
-					if (words.length != 2) {
-						break;
-					}
-					setFontSize(words[0]);
-					setLineHeight(words[1]);
-					
-					// Get font families.
-					if (position.ref >= length) {
-						break;
-					}
-					String text = initialString.substring(position.ref);
-					if (text.isEmpty()) {
-						break;
-					}
-					setFontFamilies(text);
+				}
+				catch (Exception e) {
 				}
 			}
-			catch (Exception e) {
-			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -719,29 +839,33 @@ public class CssFontPanel extends InsertPanel implements StringValueEditor {
 	 */
 	private String getFontSize() {
 		
-		String numberText = textFontSize.getText();
-		
-		// Try to get number.
-		Double number = null;
 		try {
-			number = Double.parseDouble(numberText);
-		}
-		catch (Exception e) {
-		}
-		
-		if (number != null) {
-			return number.toString() + comboBoxSizeUnit.getSelectedItem();
-		}
-		
-		Object object = comboBoxSize.getSelectedItem();
-		if (object instanceof NamedItem) {
+			String numberText = textFontSize.getText();
 			
-			String textValue = ((NamedItem) object).value;
-			if (!textValue.isEmpty()) {
-				return textValue;
+			// Try to get number.
+			Double number = null;
+			try {
+				number = Double.parseDouble(numberText);
+			}
+			catch (Exception e) {
+			}
+			
+			if (number != null) {
+				return number.toString() + comboBoxSizeUnit.getSelectedItem();
+			}
+			
+			Object object = comboBoxSize.getSelectedItem();
+			if (object instanceof NamedItem) {
+				
+				String textValue = ((NamedItem) object).value;
+				if (!textValue.isEmpty()) {
+					return textValue;
+				}
 			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return "medium";
 	}
 
@@ -751,29 +875,33 @@ public class CssFontPanel extends InsertPanel implements StringValueEditor {
 	 */
 	private String getLineHeight() {
 		
-		String numberText = textLineHeight.getText();
-		
-		// Try to get number.
-		Double number = null;
 		try {
-			number = Double.parseDouble(numberText);
-		}
-		catch (Exception e) {
-		}
-		
-		if (number != null) {
-			return number.toString() + comboLineHeightUnits.getSelectedItem();
-		}
-		
-		Object object = comboLineHeight.getSelectedItem();
-		if (object instanceof NamedItem) {
+			String numberText = textLineHeight.getText();
 			
-			String textValue = ((NamedItem) object).value;
-			if (!textValue.isEmpty()) {
-				return textValue;
+			// Try to get number.
+			Double number = null;
+			try {
+				number = Double.parseDouble(numberText);
+			}
+			catch (Exception e) {
+			}
+			
+			if (number != null) {
+				return number.toString() + comboLineHeightUnits.getSelectedItem();
+			}
+			
+			Object object = comboLineHeight.getSelectedItem();
+			if (object instanceof NamedItem) {
+				
+				String textValue = ((NamedItem) object).value;
+				if (!textValue.isEmpty()) {
+					return textValue;
+				}
 			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return "normal";
 	}
 
@@ -782,28 +910,33 @@ public class CssFontPanel extends InsertPanel implements StringValueEditor {
 	 * @param size
 	 */
 	private void setFontSize(String size) {
-		
-		for (int index = 0; index < comboBoxSize.getItemCount(); index++) {
-			NamedItem item = (NamedItem) comboBoxSize.getItemAt(index);
+		try {
 			
-			if (item.value.equals(size)) {
+			for (int index = 0; index < comboBoxSize.getItemCount(); index++) {
+				NamedItem item = (NamedItem) comboBoxSize.getItemAt(index);
 				
-				comboBoxSize.setSelectedIndex(index);
-				return;
+				if (item.value.equals(size)) {
+					
+					comboBoxSize.setSelectedIndex(index);
+					return;
+				}
 			}
+			
+			// Convert text to number and units.
+			Obj<String> number = new Obj<String>();
+			Obj<String> unit = new Obj<String>();
+			
+			Utility.convertCssStringToNumberUnit(size, number, unit);
+			
+			// Output number.
+			textFontSize.setText(number.ref);
+			
+			// Set units combo.
+			Utility.selectComboItem(comboBoxSizeUnit, unit.ref);
 		}
-		
-		// Convert text to number and units.
-		Obj<String> number = new Obj<String>();
-		Obj<String> unit = new Obj<String>();
-		
-		Utility.convertCssStringToNumberUnit(size, number, unit);
-		
-		// Output number.
-		textFontSize.setText(number.ref);
-		
-		// Set units combo.
-		Utility.selectComboItem(comboBoxSizeUnit, unit.ref);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -811,28 +944,33 @@ public class CssFontPanel extends InsertPanel implements StringValueEditor {
 	 * @param height
 	 */
 	private void setLineHeight(String height) {
-		
-		for (int index = 0; index < comboLineHeight.getItemCount(); index++) {
-			NamedItem item = (NamedItem) comboLineHeight.getItemAt(index);
+		try {
 			
-			if (item.value.equals(height)) {
+			for (int index = 0; index < comboLineHeight.getItemCount(); index++) {
+				NamedItem item = (NamedItem) comboLineHeight.getItemAt(index);
 				
-				comboLineHeight.setSelectedIndex(index);
-				return;
+				if (item.value.equals(height)) {
+					
+					comboLineHeight.setSelectedIndex(index);
+					return;
+				}
 			}
+			
+			// Convert text to number and units.
+			Obj<String> number = new Obj<String>();
+			Obj<String> unit = new Obj<String>();
+			
+			Utility.convertCssStringToNumberUnit(height, number, unit);
+			
+			// Output number.
+			textLineHeight.setText(number.ref);
+			
+			// Set units combo.
+			Utility.selectComboItem(comboLineHeightUnits, unit.ref);
 		}
-		
-		// Convert text to number and units.
-		Obj<String> number = new Obj<String>();
-		Obj<String> unit = new Obj<String>();
-		
-		Utility.convertCssStringToNumberUnit(height, number, unit);
-		
-		// Output number.
-		textLineHeight.setText(number.ref);
-		
-		// Set units combo.
-		Utility.selectComboItem(comboLineHeightUnits, unit.ref);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -841,15 +979,19 @@ public class CssFontPanel extends InsertPanel implements StringValueEditor {
 	 */
 	private String getFontWeight() {
 		
-		Object object = comboBoxWeight.getSelectedItem();
-		
-		if (object instanceof NamedItem) {
-			return ((NamedItem) object).value;
+		try {
+			Object object = comboBoxWeight.getSelectedItem();
+			
+			if (object instanceof NamedItem) {
+				return ((NamedItem) object).value;
+			}
+			if (object instanceof String) {
+				return (String) object;
+			}
 		}
-		if (object instanceof String) {
-			return (String) object;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
 		return "";
 	}
 	
@@ -858,27 +1000,32 @@ public class CssFontPanel extends InsertPanel implements StringValueEditor {
 	 * @param weight
 	 */
 	private void setFontWeight(String weight) {
-		
-		for (int index = 0; index < comboBoxWeight.getItemCount(); index++) {
+		try {
 			
-			Object object = comboBoxWeight.getItemAt(index);
-			if (object instanceof NamedItem) {
+			for (int index = 0; index < comboBoxWeight.getItemCount(); index++) {
 				
-				if (((NamedItem) object).value.equals(weight)) {
+				Object object = comboBoxWeight.getItemAt(index);
+				if (object instanceof NamedItem) {
 					
-					comboBoxWeight.setSelectedIndex(index);
-					return;
+					if (((NamedItem) object).value.equals(weight)) {
+						
+						comboBoxWeight.setSelectedIndex(index);
+						return;
+					}
 				}
-			}
-			else if (object instanceof String) {
-				
-				if (object.equals(weight)) {
+				else if (object instanceof String) {
 					
-					comboBoxWeight.setSelectedIndex(index);
-					return;
+					if (object.equals(weight)) {
+						
+						comboBoxWeight.setSelectedIndex(index);
+						return;
+					}
 				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -887,14 +1034,19 @@ public class CssFontPanel extends InsertPanel implements StringValueEditor {
 	 */
 	private String getFontStyle() {
 		
-		if (radioStyleNormal.isSelected()) {
-			return "normal";
+		try {
+			if (radioStyleNormal.isSelected()) {
+				return "normal";
+			}
+			if (radioStyleItalic.isSelected()) {
+				return "italic";
+			}
+			if (radioStyleOblique.isSelected()) {
+				return "oblique";
+			}
 		}
-		if (radioStyleItalic.isSelected()) {
-			return "italic";
-		}
-		if (radioStyleOblique.isSelected()) {
-			return "oblique";
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return "";
 	}
@@ -904,16 +1056,21 @@ public class CssFontPanel extends InsertPanel implements StringValueEditor {
 	 * @param style
 	 */
 	private void setFontStyle(String style) {
-		
-		if (style.equals("normal")) {
-			radioStyleNormal.setSelected(true);
+		try {
+			
+			if (style.equals("normal")) {
+				radioStyleNormal.setSelected(true);
+			}
+			else if (style.equals("italic")) {
+				radioStyleItalic.setSelected(true);
+			}
+			else if (style.equals("oblique")) {
+				radioStyleOblique.setSelected(true);
+			}
 		}
-		else if (style.equals("italic")) {
-			radioStyleItalic.setSelected(true);
-		}
-		else if (style.equals("oblique")) {
-			radioStyleOblique.setSelected(true);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -922,11 +1079,16 @@ public class CssFontPanel extends InsertPanel implements StringValueEditor {
 	 */
 	private String getFontVariant() {
 		
-		if (radioVariantNormal.isSelected()) {
-			return "normal";
+		try {
+			if (radioVariantNormal.isSelected()) {
+				return "normal";
+			}
+			if (radioVariantSmallCaps.isSelected()) {
+				return "small-caps";
+			}
 		}
-		if (radioVariantSmallCaps.isSelected()) {
-			return "small-caps";
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return "";
 	}
@@ -936,13 +1098,18 @@ public class CssFontPanel extends InsertPanel implements StringValueEditor {
 	 * @param variant
 	 */
 	private void setFontVariant(String variant) {
-		
-		if (variant.equals("normal")) {
-			radioVariantNormal.setSelected(true);
+		try {
+			
+			if (variant.equals("normal")) {
+				radioVariantNormal.setSelected(true);
+			}
+			else if (variant.equals("small-caps")) {
+				radioVariantSmallCaps.setSelected(true);
+			}
 		}
-		else if (variant.equals("small-caps")) {
-			radioVariantSmallCaps.setSelected(true);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -951,32 +1118,38 @@ public class CssFontPanel extends InsertPanel implements StringValueEditor {
 	 */
 	private String getFontFamilies() {
 		
-		Enumeration<String> fontNames = listFontFamiliesModel.elements();
-		String outputText = "";
-		
-		boolean isFirst = true;
-		
-		while (fontNames.hasMoreElements()) {
+		try {
+			Enumeration<String> fontNames = listFontFamiliesModel.elements();
+			String outputText = "";
 			
-			String fontName = fontNames.nextElement();
-			if (!isFirst) {
-				outputText += ',';
+			boolean isFirst = true;
+			
+			while (fontNames.hasMoreElements()) {
+				
+				String fontName = fontNames.nextElement();
+				if (!isFirst) {
+					outputText += ',';
+				}
+				
+				// If a family name contains whitespace, quote it.
+				if (fontName.contains(" ")) {
+					fontName = '\"' + fontName + '\"';
+				}
+				
+				outputText += fontName;
+				
+				isFirst = false;
 			}
 			
-			// If a family name contains whitespace, quote it.
-			if (fontName.contains(" ")) {
-				fontName = '\"' + fontName + '\"';
+			if (outputText.isEmpty()) {
+				return "serif";
 			}
-			
-			outputText += fontName;
-			
-			isFirst = false;
+			return outputText;
 		}
-		
-		if (outputText.isEmpty()) {
-			return "serif";
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		return outputText;
+		return "";
 	}
 	
 	/**
@@ -984,166 +1157,198 @@ public class CssFontPanel extends InsertPanel implements StringValueEditor {
 	 * @param families
 	 */
 	private void setFontFamilies(String families) {
-
-		families = families.trim();
-		listFontFamiliesModel.clear();
-		
-		Obj<Integer> position = new Obj<Integer>(0);
-		int length = families.length();
-		
-		while (position.ref < length) {
+		try {
 			
-			String text = Utility.getNextMatch(families, position, "\\G\\s*\"");
-			boolean isEndQuote = false;
-			if (text != null) {
-				text = Utility.getNextMatch(families, position, "[^\"]*");
-				isEndQuote = true;
-			}
-			else {
-				text = Utility.getNextMatch(families, position, "[^,]*");
-			}
+			String theFamilies = families;
 			
-			if (text == null) {
-				break;
-			}
-			text = text.trim();
-			if (text.isEmpty()) {
-				break;
-			}
+			theFamilies = theFamilies.trim();
+			listFontFamiliesModel.clear();
 			
-			String fontName = text;
-			// Add font name to the list.
-			listFontFamiliesModel.addElement(fontName);
+			Obj<Integer> position = new Obj<Integer>(0);
+			int length = theFamilies.length();
 			
-			if (isEndQuote) {
-				text = Utility.getNextMatch(families, position, "\"");
+			while (position.ref < length) {
+				
+				String text = Utility.getNextMatch(theFamilies, position, "\\G\\s*\"");
+				boolean isEndQuote = false;
+				if (text != null) {
+					text = Utility.getNextMatch(theFamilies, position, "[^\"]*");
+					isEndQuote = true;
+				}
+				else {
+					text = Utility.getNextMatch(theFamilies, position, "[^,]*");
+				}
+				
+				if (text == null) {
+					break;
+				}
+				text = text.trim();
+				if (text.isEmpty()) {
+					break;
+				}
+				
+				String fontName = text;
+				// Add font name to the list.
+				listFontFamiliesModel.addElement(fontName);
+				
+				if (isEndQuote) {
+					text = Utility.getNextMatch(theFamilies, position, "\"");
+					if (text == null) {
+						break;
+					}
+				}
+				
+				text = Utility.getNextMatch(theFamilies, position, ",");
 				if (text == null) {
 					break;
 				}
 			}
-			
-			text = Utility.getNextMatch(families, position, ",");
-			if (text == null) {
-				break;
-			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load font weights.
 	 */
 	private void loadWeights() {
-
-		final NamedItem [] weights = {
-						new NamedItem("org.multipage.gui.textNormalWeight", "normal"),
-						new NamedItem("org.multipage.gui.textBoldWeight", "bold"),
-						new NamedItem("org.multipage.gui.textBolderWeight", "bolder"),
-						new NamedItem("org.multipage.gui.textLighterWeight", "lighter") };
-		
-		for (NamedItem weight : weights) {
-			comboBoxWeight.addItem(weight);
-		}
-		
-		for (int weight = 100; weight <= 900; weight += 100) {
+		try {
 			
-			comboBoxWeight.addItem(String.valueOf(weight));
+			final NamedItem [] weights = {
+							new NamedItem("org.multipage.gui.textNormalWeight", "normal"),
+							new NamedItem("org.multipage.gui.textBoldWeight", "bold"),
+							new NamedItem("org.multipage.gui.textBolderWeight", "bolder"),
+							new NamedItem("org.multipage.gui.textLighterWeight", "lighter") };
+			
+			for (NamedItem weight : weights) {
+				comboBoxWeight.addItem(weight);
+			}
+			
+			for (int weight = 100; weight <= 900; weight += 100) {
+				
+				comboBoxWeight.addItem(String.valueOf(weight));
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load line heights.
 	 */
 	private void loadLineHeights() {
-		
-		final NamedItem [] weights = {
+		try {
+			
+			final NamedItem [] weights = {
 				new NamedItem("org.multipage.gui.textNormalLineHeight", "normal")
 				};
-		
-		Utility.loadEmptyItem(comboLineHeight);
-		
-		for (NamedItem weight : weights) {
-			comboLineHeight.addItem(weight);
+			
+			Utility.loadEmptyItem(comboLineHeight);
+			
+			for (NamedItem weight : weights) {
+				comboLineHeight.addItem(weight);
+			}
+			
+			comboLineHeight.setSelectedIndex(1);
+			
+			Utility.loadCssUnits(comboLineHeightUnits);
 		}
-		
-		comboLineHeight.setSelectedIndex(1);
-		
-		Utility.loadCssUnits(comboLineHeightUnits);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load sizes.
 	 */
 	private void loadSizes() {
-		
-		final NamedItem [] sizes = {
-			new NamedItem("org.multipage.gui.textFontSizeMedium", "medium"),
-			new NamedItem("org.multipage.gui.textFontSizeXxSmall", "xx-small"),
-			new NamedItem("org.multipage.gui.textFontSizeXSmall", "x-small"),
-			new NamedItem("org.multipage.gui.textFontSizeSmall", "small"),
-			new NamedItem("org.multipage.gui.textFontSizeLarge", "large"),
-			new NamedItem("org.multipage.gui.textFontSizeXLarge", "x-large"),
-			new NamedItem("org.multipage.gui.textFontSizeXxLarge", "xx-large"),
-			new NamedItem("org.multipage.gui.textFontSizeSmaller", "smaller"),
-			new NamedItem("org.multipage.gui.textFontSizeLarger", "larger") };
-		
-		DefaultComboBoxModel<NamedItem> model = new DefaultComboBoxModel<NamedItem>();
-		comboBoxSize.setModel(model);
-		
-		Utility.loadEmptyItem(comboBoxSize);
-		
-		for (NamedItem size : sizes) {
-			model.addElement(size);
+		try {
+			
+			final NamedItem [] sizes = {
+				new NamedItem("org.multipage.gui.textFontSizeMedium", "medium"),
+				new NamedItem("org.multipage.gui.textFontSizeXxSmall", "xx-small"),
+				new NamedItem("org.multipage.gui.textFontSizeXSmall", "x-small"),
+				new NamedItem("org.multipage.gui.textFontSizeSmall", "small"),
+				new NamedItem("org.multipage.gui.textFontSizeLarge", "large"),
+				new NamedItem("org.multipage.gui.textFontSizeXLarge", "x-large"),
+				new NamedItem("org.multipage.gui.textFontSizeXxLarge", "xx-large"),
+				new NamedItem("org.multipage.gui.textFontSizeSmaller", "smaller"),
+				new NamedItem("org.multipage.gui.textFontSizeLarger", "larger") };
+			
+			DefaultComboBoxModel<NamedItem> model = new DefaultComboBoxModel<NamedItem>();
+			comboBoxSize.setModel(model);
+			
+			Utility.loadEmptyItem(comboBoxSize);
+			
+			for (NamedItem size : sizes) {
+				model.addElement(size);
+			}
+			
+			comboBoxSize.setSelectedIndex(1);
+			
+			Utility.loadCssUnits(comboBoxSizeUnit);
 		}
-		
-		comboBoxSize.setSelectedIndex(1);
-		
-		Utility.loadCssUnits(comboBoxSizeUnit);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Load font families.
 	 */
 	private void loadFontFamilies() {
-		
-		listFontFamiliesModel = new DefaultListModel<String>(); 
-		listFontFamilies.setModel(listFontFamiliesModel);
-		
-		// Set cell renderer.
-		listFontFamilies.setCellRenderer(new ListCellRenderer<String>() {
+		try {
 			
-			RendererJLabel renderer = new RendererJLabel();
+			listFontFamiliesModel = new DefaultListModel<String>(); 
+			listFontFamilies.setModel(listFontFamiliesModel);
 			
-			@Override
-			public Component getListCellRendererComponent(
-					JList<? extends String> list,
-			        String value,
-			        int index,
-			        boolean isSelected,
-			        boolean cellHasFocus) {
+			// Set cell renderer.
+			listFontFamilies.setCellRenderer(new ListCellRenderer<String>() {
 				
-				renderer.setText("<html><span style='font-family:" + value + ";font-size:12px'>" + value + "</span></html>");
-				renderer.set(isSelected, cellHasFocus, index);
-				return renderer;
-			}
-		});
+				RendererJLabel renderer = new RendererJLabel();
+				
+				@Override
+				public Component getListCellRendererComponent(
+						JList<? extends String> list,
+				        String value,
+				        int index,
+				        boolean isSelected,
+				        boolean cellHasFocus) {
+					
+					renderer.setText("<html><span style='font-family:" + value + ";font-size:12px'>" + value + "</span></html>");
+					renderer.set(isSelected, cellHasFocus, index);
+					return renderer;
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(labelFontFamily);
-		Utility.localize(labelFontStyle);
-		Utility.localize(radioStyleNormal);
-		Utility.localize(radioStyleItalic);
-		Utility.localize(radioStyleOblique);
-		Utility.localize(labelVariant);
-		Utility.localize(radioVariantNormal);
-		Utility.localize(radioVariantSmallCaps);
-		Utility.localize(labelSize);
-		Utility.localize(labelFontWeight);
-		Utility.localize(labelLineHeight);
+		try {
+			
+			Utility.localize(labelFontFamily);
+			Utility.localize(labelFontStyle);
+			Utility.localize(radioStyleNormal);
+			Utility.localize(radioStyleItalic);
+			Utility.localize(radioStyleOblique);
+			Utility.localize(labelVariant);
+			Utility.localize(radioVariantNormal);
+			Utility.localize(radioVariantSmallCaps);
+			Utility.localize(labelSize);
+			Utility.localize(labelFontWeight);
+			Utility.localize(labelLineHeight);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -1152,7 +1357,13 @@ public class CssFontPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.gui.textFontBuilder");
+		try {
+			return Resources.getString("org.multipage.gui.textFontBuilder");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -1161,7 +1372,13 @@ public class CssFontPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getResultText() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -1215,7 +1432,13 @@ public class CssFontPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getStringValue() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -1223,8 +1446,13 @@ public class CssFontPanel extends InsertPanel implements StringValueEditor {
 	 */
 	@Override
 	public void setStringValue(String string) {
-		
-		loadFromString(string);
+		try {
+			
+			loadFromString(string);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -31,7 +31,6 @@ import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SpringLayout;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -39,11 +38,11 @@ import org.multipage.gui.GraphUtility;
 import org.multipage.gui.Images;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
-import org.multipage.util.SimpleMethodRef;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays string selection.
+ * @author vakol
  *
  */
 public class SelectStringDialog extends JDialog {
@@ -95,14 +94,19 @@ public class SelectStringDialog extends JDialog {
 	public static String showDialog(Component parentComponent,
 			LinkedList<String> stringItems, String iconFileName, String titleId, String message) {
 		
-		SelectStringDialog dialog = new SelectStringDialog(Utility.findWindow(parentComponent),
-				iconFileName);
-		dialog.loadDialog(stringItems, titleId, message);
-		
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
-			return dialog.getSelectedString();
+		try {
+			SelectStringDialog dialog = new SelectStringDialog(Utility.findWindow(parentComponent),
+					iconFileName);
+			dialog.loadDialog(stringItems, titleId, message);
+			
+			dialog.setVisible(true);
+			
+			if (dialog.confirm) {
+				return dialog.getSelectedString();
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -113,12 +117,15 @@ public class SelectStringDialog extends JDialog {
 	 * @param iconFileName 
 	 */
 	public SelectStringDialog(Window parentWindow, String iconFileName) {
-
 		super(parentWindow, ModalityType.DOCUMENT_MODAL);
 		
-		initComponents();
-		
-		postCreate(iconFileName); // $hide$
+		try {
+			initComponents();
+			postCreate(iconFileName); // $hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -205,32 +212,38 @@ public class SelectStringDialog extends JDialog {
 	 * @param e 
 	 */
 	protected void onListClick(MouseEvent e) {
-		
-		if (e.getButton() == MouseEvent.BUTTON1
-				&& e.getClickCount() == 2) {
+		try {
 			
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
+			if (e.getButton() == MouseEvent.BUTTON1
+					&& e.getClickCount() == 2) {
+				
+				Safe.invokeLater(() -> {
 					onOk();
-				}
-			});
-			
+				});
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		if (getSelectedString() == null) {
-			Utility.show(this, "org.multipage.generator.textSelectSingleItem");
-			return;
+		try {
+			
+			if (getSelectedString() == null) {
+				Utility.show(this, "org.multipage.generator.textSelectSingleItem");
+				return;
+			}
+			
+			confirm = true;
 		}
-		
-		confirm = true;
-		
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -249,116 +262,163 @@ public class SelectStringDialog extends JDialog {
 	 * @param iconFileName 
 	 */
 	private void postCreate(String iconFileName) {
-		
-		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-		
-		Utility.centerOnScreen(this);
-		
-		createList(iconFileName);
-		
-		localize();
-		
-		createFilter();
+		try {
+			
+			setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+			Utility.centerOnScreen(this);
+			
+			createList(iconFileName);
+			localize();
+			createFilter();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Create filter.
 	 */
 	private void createFilter() {
-		
-		final SimpleMethodRef method = new SimpleMethodRef() {
-			@Override
-			public void run() {
-				
-				// Load list.
-				loadList();
-			}
-		};
-		
-		textFilter.getDocument().addDocumentListener(new DocumentListener() {
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				method.run();
-			}
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				method.run();
-			}
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				method.run();
-			}
-		});
-		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-
+		try {
+			
+			textFilter.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					try {
+						
+						// Load list.
+						loadList();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					try {
+											
+						// Load list.
+						loadList();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					try {
+						
+						// Load list.
+						loadList();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+			
+			Safe.invokeLater(() -> {
 				textFilter.setText("*");;
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(labelFilter);
-		Utility.localize(buttonCancel);
-		Utility.localize(buttonOK);
-		Utility.localize(labelMessage);
-		Utility.localize(labelInfo);
+		try {
+			
+			Utility.localize(labelFilter);
+			Utility.localize(buttonCancel);
+			Utility.localize(buttonOK);
+			Utility.localize(labelMessage);
+			Utility.localize(labelInfo);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Create list.
 	 * @param iconFileName
 	 */
+	@SuppressWarnings("unchecked")
 	private void createList(final String iconFileName) {
-		
-		// Set list item renderer.
-		listStrings.setCellRenderer(new ListCellRenderer<String>() {
-			@SuppressWarnings("serial")
-			class Renderer extends JLabel {
-				private boolean isSelected;
-				private boolean cellHasFocus;
-				Renderer() {
-					Icon icon = Images.getIcon(iconFileName);
-					setIcon(icon);
-					setOpaque(true);
+		try {
+			
+			// Set list item renderer.
+			listStrings.setCellRenderer(new ListCellRenderer<String>() {
+				@SuppressWarnings("serial")
+				class Renderer extends JLabel {
+					private boolean isSelected;
+					private boolean cellHasFocus;
+					Renderer() {
+						try {
+							
+							Icon icon = Images.getIcon(iconFileName);
+							setIcon(icon);
+							setOpaque(true);
+						}
+						catch(Throwable expt) {
+							Safe.exception(expt);
+						};
+					}
+					public void set(String value, int index, boolean isSelected,
+							boolean cellHasFocus) {
+						try {
+							
+							setText(value);
+							setBackground(Utility.itemColor(index));
+							this.isSelected = isSelected;
+							this.cellHasFocus = cellHasFocus;
+						}
+						catch(Throwable expt) {
+							Safe.exception(expt);
+						};
+					}
+					@Override
+					public void paint(Graphics g) {
+						try {
+							super.paint(g);
+							GraphUtility.drawSelection(g, this, isSelected, cellHasFocus);
+						}
+						catch (Throwable e) {
+							Safe.exception(e);
+						}
+					}
 				}
-				public void set(String value, int index, boolean isSelected,
-						boolean cellHasFocus) {
-					setText(value);
-					setBackground(Utility.itemColor(index));
-					this.isSelected = isSelected;
-					this.cellHasFocus = cellHasFocus;
-				}
+				Renderer renderer = new Renderer();
 				@Override
-				public void paint(Graphics g) {
-					super.paint(g);
-					GraphUtility.drawSelection(g, this, isSelected, cellHasFocus);
+				public Component getListCellRendererComponent(
+						JList<? extends String> list, String value, int index,
+						boolean isSelected, boolean cellHasFocus) {
+					
+					try {
+						if (value == null) {
+							return null;
+						}
+						renderer.set(value, index, isSelected, cellHasFocus);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return renderer;
 				}
-			}
-			Renderer renderer = new Renderer();
-			@Override
-			public Component getListCellRendererComponent(
-					JList<? extends String> list, String value, int index,
-					boolean isSelected, boolean cellHasFocus) {
-				
-				if (value == null) {
-					return null;
-				}
-				renderer.set(value, index, isSelected, cellHasFocus);
-				
-				return renderer;
-			}
-		});
-		
-		// Set list model.
-		listModel = new DefaultListModel<String>();
-		listStrings.setModel(listModel);
+			});
+			
+			// Set list model.
+			listModel = new DefaultListModel<String>();
+			listStrings.setModel(listModel);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -369,29 +429,38 @@ public class SelectStringDialog extends JDialog {
 	 * @param message 
 	 */
 	private void loadDialog(LinkedList<String> stringItems, String titleId, String message) {
-
-		setTitle(Resources.getString(titleId));
-		labelMessage.setText(message);
-		
-		this.stringItems = stringItems;
-		loadList();
+		try {
+			
+			setTitle(Resources.getString(titleId));
+			labelMessage.setText(message);
+			
+			this.stringItems = stringItems;
+			loadList();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load list.
 	 */
 	protected void loadList() {
-		
-		listModel.clear();
-		
-		String filter = textFilter.getText();
-		
-		for (String stringItem : stringItems) {
+		try {
 			
-			if (Utility.matches(stringItem, filter, false, false, false)) {
-				listModel.addElement(stringItem);
-			}
-		}	
+			listModel.clear();
+			
+			String filter = textFilter.getText();
+			for (String stringItem : stringItems) {
+				
+				if (Utility.matches(stringItem, filter, false, false, false)) {
+					listModel.addElement(stringItem);
+				}
+			}	
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -399,7 +468,13 @@ public class SelectStringDialog extends JDialog {
 	 * @return
 	 */
 	private String getSelectedString() {
-
-		return (String) listStrings.getSelectedValue();
+		
+		try {
+			return (String) listStrings.getSelectedValue();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 }

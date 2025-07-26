@@ -1,24 +1,32 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import javax.swing.*;
-
-import org.multipage.util.*;
-
-import java.awt.*;
-import java.io.*;
-import java.awt.event.ActionListener;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.SpringLayout;
+import javax.swing.SwingUtilities;
+
+import org.multipage.util.Obj;
+import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays CSS transformation origin editor.
+ * @author vakol
  *
  */
 public class CssTransformOriginPanel extends InsertPanel implements StringValueEditor {
@@ -106,12 +114,9 @@ public class CssTransformOriginPanel extends InsertPanel implements StringValueE
 	 */
 	public void stopSettingControls() {
 		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
+		Safe.invokeLater(() -> {
 				
-				settingControls = false;
-			}
+			settingControls = false;
 		});
 	}
 
@@ -122,13 +127,18 @@ public class CssTransformOriginPanel extends InsertPanel implements StringValueE
 	 * @param parentWindow 
 	 */
 	public CssTransformOriginPanel(String initialString) {
-
-		initComponents();
 		
-		// $hide>>$
-		this.initialString = initialString;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			this.initialString = initialString;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -216,48 +226,63 @@ public class CssTransformOriginPanel extends InsertPanel implements StringValueE
 	 * On position X combo change.
 	 */
 	protected void onPositionXComboChange() {
-		
-		if (comboAxisX.getSelectedIndex() == 0) {
-			return;
+		try {
+			
+			if (comboAxisX.getSelectedIndex() == 0) {
+				return;
+			}
+			
+			if (settingControls) {
+				return;
+			}
+			startSettingControls();
+			
+			textAxisX.setText("");
+			comboAxisXUnits.setSelectedIndex(0);
+			
+			stopSettingControls();
 		}
-		
-		if (settingControls) {
-			return;
-		}
-		startSettingControls();
-		
-		textAxisX.setText("");
-		comboAxisXUnits.setSelectedIndex(0);
-		
-		stopSettingControls();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On position Y combo change.
 	 */
 	protected void onPositionYComboChange() {
-		
-		if (comboAxisY.getSelectedIndex() == 0) {
-			return;
+		try {
+			
+			if (comboAxisY.getSelectedIndex() == 0) {
+				return;
+			}
+			
+			if (settingControls) {
+				return;
+			}
+			startSettingControls();
+			
+			textAxisY.setText("");
+			comboAxisYUnits.setSelectedIndex(0);
+			
+			stopSettingControls();
 		}
-		
-		if (settingControls) {
-			return;
-		}
-		startSettingControls();
-		
-		textAxisY.setText("");
-		comboAxisYUnits.setSelectedIndex(0);
-		
-		stopSettingControls();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-
-		setFromInitialString();
+		try {
+			
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -272,83 +297,104 @@ public class CssTransformOriginPanel extends InsertPanel implements StringValueE
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		localize();
-		
-		loadUnits();
-		loadComboBoxes();
-		
-		loadDialog();
-		
-		setListeners();
+		try {
+			
+			localize();
+			
+			loadUnits();
+			loadComboBoxes();
+			loadDialog();
+			
+			setListeners();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set listeners.
 	 */
 	private void setListeners() {
-		
-		Utility.setTextChangeListener(textAxisX, new Runnable() {
-			@Override
-			public void run() {
-				
-				if (settingControls) {
-					return;
+		try {
+			
+			Utility.setTextChangeListener(textAxisX, () -> {
+				try {
+					
+					if (settingControls) {
+						return;
+					}
+					
+					startSettingControls();
+					comboAxisX.setSelectedIndex(0);
+					stopSettingControls();
 				}
-				startSettingControls();
-				
-				comboAxisX.setSelectedIndex(0);
-				
-				stopSettingControls();
-			}
-		});
-		
-		Utility.setTextChangeListener(textAxisY, new Runnable() {
-			@Override
-			public void run() {
-				
-				if (settingControls) {
-					return;
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+			
+			Utility.setTextChangeListener(textAxisY, () -> {
+				try {
+					
+					if (settingControls) {
+						return;
+					}
+
+					startSettingControls();
+					comboAxisY.setSelectedIndex(0);
+					stopSettingControls();
 				}
-				startSettingControls();
-				
-				comboAxisY.setSelectedIndex(0);
-				
-				stopSettingControls();
-			}
-		});
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load combo boxes.
 	 */
 	private void loadComboBoxes() {
-		
-		Utility.loadEmptyItem(comboAxisX);
-		Utility.loadNamedItems(comboAxisX, new String [][] {
-				{"left", "org.multipage.gui.textPerspectiveOriginLeft"},
-				{"center", "org.multipage.gui.textPerspectiveOriginCenter"},
-				{"right", "org.multipage.gui.textPerspectiveOriginRight"}
-		});
-		Utility.selectComboNamedItem(comboAxisX, "center");
-		
-		Utility.loadEmptyItem(comboAxisY);
-		Utility.loadNamedItems(comboAxisY, new String [][] {
-				{"top", "org.multipage.gui.textPerspectiveOriginTop"},
-				{"center", "org.multipage.gui.textPerspectiveOriginCenter"},
-				{"bottom", "org.multipage.gui.textPerspectiveOriginBottom"}
-		});
-		Utility.selectComboNamedItem(comboAxisY, "center");
+		try {
+			
+			Utility.loadEmptyItem(comboAxisX);
+			Utility.loadNamedItems(comboAxisX, new String [][] {
+					{"left", "org.multipage.gui.textPerspectiveOriginLeft"},
+					{"center", "org.multipage.gui.textPerspectiveOriginCenter"},
+					{"right", "org.multipage.gui.textPerspectiveOriginRight"}
+			});
+			Utility.selectComboNamedItem(comboAxisX, "center");
+			
+			Utility.loadEmptyItem(comboAxisY);
+			Utility.loadNamedItems(comboAxisY, new String [][] {
+					{"top", "org.multipage.gui.textPerspectiveOriginTop"},
+					{"center", "org.multipage.gui.textPerspectiveOriginCenter"},
+					{"bottom", "org.multipage.gui.textPerspectiveOriginBottom"}
+			});
+			Utility.selectComboNamedItem(comboAxisY, "center");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load units.
 	 */
 	private void loadUnits() {
-		
-		Utility.loadCssUnits(comboAxisXUnits);
-		Utility.loadCssUnits(comboAxisYUnits);
-		Utility.loadCssUnits(comboAxisZUnits);
+		try {
+			
+			Utility.loadCssUnits(comboAxisXUnits);
+			Utility.loadCssUnits(comboAxisYUnits);
+			Utility.loadCssUnits(comboAxisZUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -358,7 +404,13 @@ public class CssTransformOriginPanel extends InsertPanel implements StringValueE
 	@Override
 	public String getSpecification() {
 		
-		return getAxisX() + " " + getAxisY() + " " + getAxisZ();
+		try {
+			return getAxisX() + " " + getAxisY() + " " + getAxisZ();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -366,8 +418,14 @@ public class CssTransformOriginPanel extends InsertPanel implements StringValueE
 	 * @return
 	 */
 	private String getAxisX() {
-
-		return Utility.getCssValueAndUnits(textAxisX, comboAxisXUnits, comboAxisX, "center");
+		
+		try {
+			return Utility.getCssValueAndUnits(textAxisX, comboAxisXUnits, comboAxisX, "center");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -376,7 +434,13 @@ public class CssTransformOriginPanel extends InsertPanel implements StringValueE
 	 */
 	private String getAxisY() {
 		
-		return Utility.getCssValueAndUnits(textAxisY, comboAxisYUnits, comboAxisY, "center");
+		try {
+			return Utility.getCssValueAndUnits(textAxisY, comboAxisYUnits, comboAxisY, "center");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -385,87 +449,103 @@ public class CssTransformOriginPanel extends InsertPanel implements StringValueE
 	 */
 	private String getAxisZ() {
 		
-		return Utility.getCssValueAndUnits(textAxisZ, comboAxisZUnits, "0");
+		try {
+			return Utility.getCssValueAndUnits(textAxisZ, comboAxisZUnits, "0");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
 	 * Set from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		// Initialize controls.
-		Utility.selectComboNamedItem(comboAxisX, "center");
-		textAxisX.setText("");
-		comboAxisXUnits.setSelectedIndex(0);
-		
-		Utility.selectComboNamedItem(comboAxisY, "center");
-		textAxisY.setText("");
-		comboAxisYUnits.setSelectedIndex(0);
-		
-		textAxisZ.setText("0");
-		comboAxisZUnits.setSelectedItem("");
-
-		if (initialString != null) {
+		try {
 			
-			Obj<Integer> position = new Obj<Integer>(0);
+			// Initialize controls.
+			Utility.selectComboNamedItem(comboAxisX, "center");
+			textAxisX.setText("");
+			comboAxisXUnits.setSelectedIndex(0);
 			
-			try {
+			Utility.selectComboNamedItem(comboAxisY, "center");
+			textAxisY.setText("");
+			comboAxisYUnits.setSelectedIndex(0);
+			
+			textAxisZ.setText("0");
+			comboAxisZUnits.setSelectedItem("");
+	
+			if (initialString != null) {
 				
-				// Set X position.
-				int positionAux = position.ref;
-				String text = Utility.getNextMatch(initialString, position, "\\G\\s*(left|center|right)\\s+");
-				if (text != null) {
-					Utility.selectComboNamedItem(comboAxisX, text.trim());
-				}
-				else {
-					position.ref = positionAux;
-					text = Utility.getNextMatch(initialString, position, "\\G\\s*\\S+\\s+");
-					if (text == null) {
-						return;
+				Obj<Integer> position = new Obj<Integer>(0);
+				
+				try {
+					
+					// Set X position.
+					int positionAux = position.ref;
+					String text = Utility.getNextMatch(initialString, position, "\\G\\s*(left|center|right)\\s+");
+					if (text != null) {
+						Utility.selectComboNamedItem(comboAxisX, text.trim());
+					}
+					else {
+						position.ref = positionAux;
+						text = Utility.getNextMatch(initialString, position, "\\G\\s*\\S+\\s+");
+						if (text == null) {
+							return;
+						}
+						
+						Utility.setCssValueAndUnits(text.trim(), textAxisX, comboAxisXUnits, "0", "px");
+						comboAxisX.setSelectedIndex(0);
 					}
 					
-					Utility.setCssValueAndUnits(text.trim(), textAxisX, comboAxisXUnits, "0", "px");
-					comboAxisX.setSelectedIndex(0);
-				}
-				
-				// Set Y position.
-				positionAux = position.ref;
-				text = Utility.getNextMatch(initialString, position, "\\G\\s*(top|center|bottom)\\s*");
-				if (text != null) {
-					Utility.selectComboNamedItem(comboAxisY, text.trim());
-				}
-				else {
-					position.ref = positionAux;
+					// Set Y position.
+					positionAux = position.ref;
+					text = Utility.getNextMatch(initialString, position, "\\G\\s*(top|center|bottom)\\s*");
+					if (text != null) {
+						Utility.selectComboNamedItem(comboAxisY, text.trim());
+					}
+					else {
+						position.ref = positionAux;
+						text = Utility.getNextMatch(initialString, position, "\\G\\s*\\S+\\s*");
+						if (text == null) {
+							return;
+						}
+						
+						Utility.setCssValueAndUnits(text.trim(), textAxisY, comboAxisYUnits, "0", "px");
+						comboAxisY.setSelectedIndex(0);
+					}
+					
+					// Set Z position.
 					text = Utility.getNextMatch(initialString, position, "\\G\\s*\\S+\\s*");
 					if (text == null) {
 						return;
 					}
-					
-					Utility.setCssValueAndUnits(text.trim(), textAxisY, comboAxisYUnits, "0", "px");
-					comboAxisY.setSelectedIndex(0);
+					Utility.setCssValueAndUnits(text.trim(), textAxisZ, comboAxisZUnits, "0", "");
+	
 				}
-				
-				// Set Z position.
-				text = Utility.getNextMatch(initialString, position, "\\G\\s*\\S+\\s*");
-				if (text == null) {
-					return;
+				catch (Exception e) {
 				}
-				Utility.setCssValueAndUnits(text.trim(), textAxisZ, comboAxisZUnits, "0", "");
-
-			}
-			catch (Exception e) {
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(labelAxisX);
-		Utility.localize(labelAxisY);
-		Utility.localize(labelAxisZ);
+		try {
+			
+			Utility.localize(labelAxisX);
+			Utility.localize(labelAxisY);
+			Utility.localize(labelAxisZ);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -474,7 +554,13 @@ public class CssTransformOriginPanel extends InsertPanel implements StringValueE
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.gui.textCssTransformOriginBuilder");
+		try {
+			return Resources.getString("org.multipage.gui.textCssTransformOriginBuilder");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -483,7 +569,13 @@ public class CssTransformOriginPanel extends InsertPanel implements StringValueE
 	@Override
 	public String getResultText() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -539,7 +631,13 @@ public class CssTransformOriginPanel extends InsertPanel implements StringValueE
 	@Override
 	public String getStringValue() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -548,9 +646,14 @@ public class CssTransformOriginPanel extends InsertPanel implements StringValueE
 	 */
 	@Override
 	public void setStringValue(String string) {
-		
-		initialString = string;
-		setFromInitialString();
+		try {
+			
+			initialString = string;
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

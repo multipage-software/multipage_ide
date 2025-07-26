@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -45,7 +45,7 @@ import org.multipage.gui.CssOutlinesPanel;
 import org.multipage.gui.CssPerspectiveOriginPanel;
 import org.multipage.gui.CssQuotesPanel;
 import org.multipage.gui.CssResourcePanel;
-import org.multipage.gui.CssResourcesUrlsPanel;
+import org.multipage.gui.CssResourceUrlsPanel;
 import org.multipage.gui.CssSpacingPanel;
 import org.multipage.gui.CssTextLinePanel;
 import org.multipage.gui.CssTextShadowPanel;
@@ -61,10 +61,11 @@ import org.multipage.gui.TextEditorPane;
 import org.multipage.gui.TextPopupMenuAddIn;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that contains editors of text slots.
+ * @author vakol
  *
  */
 public class TextSlotEditorPanel extends JPanel implements SlotValueEditorPanelInterface {
@@ -414,185 +415,234 @@ public class TextSlotEditorPanel extends JPanel implements SlotValueEditorPanelI
 	 */
 	public TextSlotEditorPanel(Window parentWindow, boolean useHtmlEditor, Slot slot) {
 		
-		initComponents();
-		
-		// $hide>>$
-		this.slot = slot;
-		createTextEditorPanel(parentWindow, useHtmlEditor);
-		
-		selectedPanel = textEditorPanel;
-		add(textEditorPanel, BorderLayout.CENTER);
-		
-		// If the application is Generator and the slot is not a user slot,
-		// disable editor selection.
-		boolean disableEditorSelection = !ProgramGenerator.isExtensionToBuilder() && !slot.isUserDefined();
-		
-		// Disable editor selection for Builder.
-		if (disableEditorSelection) {
-			panelMenu.setVisible(false);
+		try {
+			initComponents();
+			
+			// $hide>>$
+			this.slot = slot;
+			createTextEditorPanel(parentWindow, useHtmlEditor);
+			
+			selectedPanel = textEditorPanel;
+			add(textEditorPanel, BorderLayout.CENTER);
+			
+			// If the application is Generator and the slot is not a user slot,
+			// disable editor selection.
+			boolean disableEditorSelection = !ProgramGenerator.isExtensionToBuilder() && !slot.isUserDefined();
+			
+			// Disable editor selection for Builder.
+			if (disableEditorSelection) {
+				panelMenu.setVisible(false);
+			}
+			
+			localize();
+			setIcons();
+			
+			// Use intellisense for the text editor.
+			Intellisense.applyTo(textEditorPanel, (helpPageAlias, fragmentAlias) -> GeneratorMainFrame.displayOnlineArea(HelpUtility.maclanReference, helpPageAlias, fragmentAlias));
+			
+			// $hide<<$
 		}
-		
-		localize();
-		setIcons();
-		
-		// Use intellisense for the text editor.
-		Intellisense.applyTo(textEditorPanel, (helpPageAlias, fragmentAlias) -> GeneratorMainFrame.displayOnlineArea(HelpUtility.maclanReference, helpPageAlias, fragmentAlias));
-		
-		// $hide<<$
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		menuSelectEditor.setIcon(Images.getIcon("org/multipage/generator/images/edit.png"));
-		menuText.setIcon(Images.getIcon("org/multipage/generator/images/edit_text.png"));
-		menuCssFont.setIcon(Images.getIcon("org/multipage/gui/images/font_icon.png"));
-		menuCssBorder.setIcon(Images.getIcon("org/multipage/gui/images/border.png"));
-		menuCssOutlines.setIcon(Images.getIcon("org/multipage/gui/images/outlines.png"));
-		menuCssBoxShadow.setIcon(Images.getIcon("org/multipage/gui/images/shadow.png"));
-		menuCssTextShadow.setIcon(Images.getIcon("org/multipage/gui/images/text_shadow.png"));
-		menuCssBackground.setIcon(Images.getIcon("org/multipage/gui/images/background.png"));
-		menuCssNumber.setIcon(Images.getIcon("org/multipage/gui/images/number.png"));
-		menuCssBorderRadius.setIcon(Images.getIcon("org/multipage/gui/images/radius.png"));
-		menuCssBorderImage.setIcon(Images.getIcon("org/multipage/gui/images/border_image.png"));
-		menuCssClip.setIcon(Images.getIcon("org/multipage/gui/images/clip.png"));
-		menuCssFlex.setIcon(Images.getIcon("org/multipage/gui/images/flex.png"));
-		menuCssSpacing.setIcon(Images.getIcon("org/multipage/gui/images/spacing.png"));
-		menuCssCounter.setIcon(Images.getIcon("org/multipage/gui/images/increment.png"));
-		menuCssListStyle.setIcon(Images.getIcon("org/multipage/gui/images/list.png"));
-		menuCssKeyframes.setIcon(Images.getIcon("org/multipage/gui/images/keyframes.png"));
-		menuCssAnimation.setIcon(Images.getIcon("org/multipage/gui/images/animation.png"));
-		menuCssPerspectiveOrigin.setIcon(Images.getIcon("org/multipage/gui/images/perspective_origin.png"));
-		menuCssTransform.setIcon(Images.getIcon("org/multipage/gui/images/transform.png"));
-		menuCssTransformOrigin.setIcon(Images.getIcon("org/multipage/gui/images/transform_origin.png"));
-		menuCssTransition.setIcon(Images.getIcon("org/multipage/gui/images/transition.png"));
-		menuCssCursor.setIcon(Images.getIcon("org/multipage/gui/images/cursor.png"));
-		menuCssQuotes.setIcon(Images.getIcon("org/multipage/gui/images/quotes.png"));
-		menuCssTextLine.setIcon(Images.getIcon("org/multipage/gui/images/text_line.png"));
-		menuCssResource.setIcon(Images.getIcon("org/multipage/gui/images/resource.png"));
-		menuCssResourceUrl.setIcon(Images.getIcon("org/multipage/gui/images/url.png"));
-		menuCssResourcesUrls.setIcon(Images.getIcon("org/multipage/gui/images/urls.png"));
-		menuCssMime.setIcon(Images.getIcon("org/multipage/generator/images/mime_icon.png"));
-		menuHtmlAnchor.setIcon(Images.getIcon("org/multipage/gui/images/anchor.png"));
-		menuFilePath.setIcon(Images.getIcon("org/multipage/gui/images/folder.png"));
-		menuFolderPath.setIcon(Images.getIcon("org/multipage/gui/images/folder.png"));
+		try {
+			
+			menuSelectEditor.setIcon(Images.getIcon("org/multipage/generator/images/edit.png"));
+			menuText.setIcon(Images.getIcon("org/multipage/generator/images/edit_text.png"));
+			menuCssFont.setIcon(Images.getIcon("org/multipage/gui/images/font_icon.png"));
+			menuCssBorder.setIcon(Images.getIcon("org/multipage/gui/images/border.png"));
+			menuCssOutlines.setIcon(Images.getIcon("org/multipage/gui/images/outlines.png"));
+			menuCssBoxShadow.setIcon(Images.getIcon("org/multipage/gui/images/shadow.png"));
+			menuCssTextShadow.setIcon(Images.getIcon("org/multipage/gui/images/text_shadow.png"));
+			menuCssBackground.setIcon(Images.getIcon("org/multipage/gui/images/background.png"));
+			menuCssNumber.setIcon(Images.getIcon("org/multipage/gui/images/number.png"));
+			menuCssBorderRadius.setIcon(Images.getIcon("org/multipage/gui/images/radius.png"));
+			menuCssBorderImage.setIcon(Images.getIcon("org/multipage/gui/images/border_image.png"));
+			menuCssClip.setIcon(Images.getIcon("org/multipage/gui/images/clip.png"));
+			menuCssFlex.setIcon(Images.getIcon("org/multipage/gui/images/flex.png"));
+			menuCssSpacing.setIcon(Images.getIcon("org/multipage/gui/images/spacing.png"));
+			menuCssCounter.setIcon(Images.getIcon("org/multipage/gui/images/increment.png"));
+			menuCssListStyle.setIcon(Images.getIcon("org/multipage/gui/images/list.png"));
+			menuCssKeyframes.setIcon(Images.getIcon("org/multipage/gui/images/keyframes.png"));
+			menuCssAnimation.setIcon(Images.getIcon("org/multipage/gui/images/animation.png"));
+			menuCssPerspectiveOrigin.setIcon(Images.getIcon("org/multipage/gui/images/perspective_origin.png"));
+			menuCssTransform.setIcon(Images.getIcon("org/multipage/gui/images/transform.png"));
+			menuCssTransformOrigin.setIcon(Images.getIcon("org/multipage/gui/images/transform_origin.png"));
+			menuCssTransition.setIcon(Images.getIcon("org/multipage/gui/images/transition.png"));
+			menuCssCursor.setIcon(Images.getIcon("org/multipage/gui/images/cursor.png"));
+			menuCssQuotes.setIcon(Images.getIcon("org/multipage/gui/images/quotes.png"));
+			menuCssTextLine.setIcon(Images.getIcon("org/multipage/gui/images/text_line.png"));
+			menuCssResource.setIcon(Images.getIcon("org/multipage/gui/images/resource.png"));
+			menuCssResourceUrl.setIcon(Images.getIcon("org/multipage/gui/images/url.png"));
+			menuCssResourcesUrls.setIcon(Images.getIcon("org/multipage/gui/images/urls.png"));
+			menuCssMime.setIcon(Images.getIcon("org/multipage/generator/images/mime_icon.png"));
+			menuHtmlAnchor.setIcon(Images.getIcon("org/multipage/gui/images/anchor.png"));
+			menuFilePath.setIcon(Images.getIcon("org/multipage/gui/images/folder.png"));
+			menuFolderPath.setIcon(Images.getIcon("org/multipage/gui/images/folder.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Show text editor.
 	 */
 	protected void showTextEditor() {
-		
-		selectedPanel = textEditorPanel;
-		
-		remove(1);
-		add(textEditorPanel, BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+		try {
+			
+			selectedPanel = textEditorPanel;
+			
+			remove(1);
+			add(textEditorPanel, BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Show CSS font editor.
 	 */
 	protected void showCssFontEditor() {
-		
-		selectedPanel = new CssFontPanel(null);
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+		try {
+			
+			selectedPanel = new CssFontPanel(null);
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Show CSS border editor.
 	 */
 	protected void showCssBorderEditor() {
-
-		selectedPanel = new CssBorderPanel(null);
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+		try {
+			
+			selectedPanel = new CssBorderPanel(null);
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Show CSS outlines editor.
 	 */
 	protected void showCssOutlinesEditor() {
-
-		selectedPanel = new CssOutlinesPanel(null);
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+		try {
+			
+			selectedPanel = new CssOutlinesPanel(null);
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Show CSS box shadow editor.
 	 */
 	protected void showCssBoxShadowEditor() {
-		
-		selectedPanel = new CssBoxShadowPanel(null);
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+		try {
+			
+			selectedPanel = new CssBoxShadowPanel(null);
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Show CSS text shadow editor.
 	 */
 	protected void showCssTextShadowEditor() {
-		
-		selectedPanel = new CssTextShadowPanel(null);
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+		try {
+			
+			selectedPanel = new CssTextShadowPanel(null);
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Show CSS background editor.
 	 */
 	protected void showCssBackgroundEditor() {
-		
-		CssBackgroundImagesPanel editor = new CssBackgroundImagesPanel(null);
-		editor.setResourceNameCallback(new Callback() {
-			@Override
-			public Object run(Object input) {
-				
-				// Select slot area resource name
-				String selectedResourceName = selectSlotAreaResourceName(slot, editor);
-				if (selectedResourceName != null) {
+		try {
+			
+			CssBackgroundImagesPanel editor = new CssBackgroundImagesPanel(null);
+			editor.setResourceNameCallback(new Callback() {
+				@Override
+				public Object run(Object input) {
 					
-					return selectedResourceName;
+					try {
+						// Select slot area resource name
+						String selectedResourceName = selectSlotAreaResourceName(slot, editor);
+						if (selectedResourceName != null) {
+							
+							return selectedResourceName;
+						}
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					// On cancel return -1.
+					return -1;
 				}
-				
-				// On cancel return -1.
-				return -1;
-			}
-		});
-		
-		selectedPanel = editor;
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+			});
+			
+			selectedPanel = editor;
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -603,413 +653,549 @@ public class TextSlotEditorPanel extends JPanel implements SlotValueEditorPanelI
 	 */
 	protected String selectSlotAreaResourceName(Slot slot, Component parent) {
 		
-		Area area = (Area) slot.getHolder();
-		if (area == null) {
-			return null;
+		try {
+			Area area = (Area) slot.getHolder();
+			if (area == null) {
+				return null;
+			}
+			
+			// Update area from model.
+			area = ProgramGenerator.getArea(area.getId());
+			
+			LinkedList<String> resourceNames = area.getResourceNames();
+			
+			// Select resource name.
+			String selectedResourceName = SelectStringDialog.showDialog(parent, resourceNames,
+					"org/multipage/generator/images/resource.png", "org.multipage.generator.textSelectResourceName",
+					Resources.getString("org.multipage.generator.messageSelectResourceName"));
+			
+			return selectedResourceName;
 		}
-		
-		// Update area from model.
-		area = ProgramGenerator.getArea(area.getId());
-		
-		LinkedList<String> resourceNames = area.getResourceNames();
-		
-		// Select resource name.
-		String selectedResourceName = SelectStringDialog.showDialog(parent, resourceNames,
-				"org/multipage/generator/images/resource.png", "org.multipage.generator.textSelectResourceName",
-				Resources.getString("org.multipage.generator.messageSelectResourceName"));
-		
-		return selectedResourceName;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
 	 * Show CSS number editor.
 	 */
 	protected void showCssNumberEditor() {
-		
-		selectedPanel = new CssNumberPanel(null);
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+		try {
+			
+			selectedPanel = new CssNumberPanel(null);
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Show CSS border radius editor.
 	 */
 	protected void showCssBorderRadiusEditor() {
-		
-		selectedPanel = new CssBorderRadiusPanel(null);
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+		try {
+			
+			selectedPanel = new CssBorderRadiusPanel(null);
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Show CSS clip editor.
 	 */
 	protected void showCssClipEditor() {
-		
-		selectedPanel = new CssClipPanel(null);
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+		try {
+			
+			selectedPanel = new CssClipPanel(null);
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Show border image editor.
 	 */
 	private void showCssBorderImageEditor() {
-		
-		CssBorderImagePanel editor = new CssBorderImagePanel(null);
-		editor.setResourceNameCallback(new Callback() {
-			@Override
-			public Object run(Object input) {
-				
-				// Select slot area resource name
-				String selectedResourceName = selectSlotAreaResourceName(slot, editor);
-				if (selectedResourceName != null) {
+		try {
+			
+			CssBorderImagePanel editor = new CssBorderImagePanel(null);
+			editor.setResourceNameCallback(new Callback() {
+				@Override
+				public Object run(Object input) {
 					
-					return selectedResourceName;
+					try {
+						// Select slot area resource name
+						String selectedResourceName = selectSlotAreaResourceName(slot, editor);
+						if (selectedResourceName != null) {
+							
+							return selectedResourceName;
+						}
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					// On cancel return -1.
+					return -1;
 				}
-				
-				// On cancel return -1.
-				return -1;
-			}
-		});
-		
-		selectedPanel = editor;
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+			});
+			
+			selectedPanel = editor;
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 	}
 
 	/**
 	 * Show CSS flex editor.
 	 */
 	protected void showCssFlexEditor() {
-		
-		selectedPanel = new CssFlexPanel(null);
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+		try {
+			
+			selectedPanel = new CssFlexPanel(null);
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Show CSS spacing editor.
 	 */
 	protected void showCssSpacingEditor() {
-		
-		selectedPanel = new CssSpacingPanel(null);
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+		try {
+			
+			selectedPanel = new CssSpacingPanel(null);
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Show CSS counter editor.
 	 */
 	protected void showCssCounterEditor() {
-		
-		selectedPanel = new CssCountersPanel(null);
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+		try {
+			
+			selectedPanel = new CssCountersPanel(null);
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Show CSS animation editor.
 	 */
 	protected void showCssAnimationEditor() {
-		
-		selectedPanel = new CssAnimationPanel(null);
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+		try {
+			
+			selectedPanel = new CssAnimationPanel(null);
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Show CSS list style editor.
 	 */
 	protected void showCssListStyleEditor() {
-		
-		CssListStylePanel editor = new CssListStylePanel(null);
-		editor.setResourceNameCallback(new Callback() {
-			@Override
-			public Object run(Object input) {
-				
-				// Select slot area resource name
-				String selectedResourceName = selectSlotAreaResourceName(slot, editor);
-				if (selectedResourceName != null) {
+		try {
+			
+			CssListStylePanel editor = new CssListStylePanel(null);
+			editor.setResourceNameCallback(new Callback() {
+				@Override
+				public Object run(Object input) {
 					
-					return selectedResourceName;
+					try {
+						// Select slot area resource name
+						String selectedResourceName = selectSlotAreaResourceName(slot, editor);
+						if (selectedResourceName != null) {
+							
+							return selectedResourceName;
+						}
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					// On cancel return -1.
+					return -1;
 				}
-				
-				// On cancel return -1.
-				return -1;
-			}
-		});
-		selectedPanel = editor;
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+			});
+			selectedPanel = editor;
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Show CSS keyframes editor.
 	 */
 	protected void showCssKeyframesEditor() {
-		
-		selectedPanel = new CssKeyframesPanel(null);
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+		try {
+			
+			selectedPanel = new CssKeyframesPanel(null);
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Show CSS perspective origin editor.
 	 */
 	protected void showCssPerspectiveOriginEditor() {
-		
-		selectedPanel = new CssPerspectiveOriginPanel(null);
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+		try {
+			
+			selectedPanel = new CssPerspectiveOriginPanel(null);
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Show CSS transform editor.
 	 */
 	protected void showCssTransformEditor() {
-		
-		selectedPanel = new CssTransformPanel(null);
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+		try {
+			
+			selectedPanel = new CssTransformPanel(null);
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Show CSS transform origin editor.
 	 */
 	protected void showCssTransformOriginEditor() {
-		
-		selectedPanel = new CssTransformOriginPanel(null);
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+		try {
+			
+			selectedPanel = new CssTransformOriginPanel(null);
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Show CSS transition editor.
 	 */
 	protected void showCssTransitionEditor() {
-		
-		selectedPanel = new CssTransitionPanel(null);
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+		try {
+			
+			selectedPanel = new CssTransitionPanel(null);
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Show CSS cursor editor.
 	 */
 	protected void showCssCursorEditor() {
-		
-		CssCursorPanel editor = new CssCursorPanel(null);
-		editor.setResourceNameCallback(new Callback() {
-			@Override
-			public Object run(Object input) {
-				
-				// Select slot area resource name
-				String selectedResourceName = selectSlotAreaResourceName(slot, editor);
-				if (selectedResourceName != null) {
+		try {
+			
+			CssCursorPanel editor = new CssCursorPanel(null);
+			editor.setResourceNameCallback(new Callback() {
+				@Override
+				public Object run(Object input) {
 					
-					return selectedResourceName;
+					try {
+						// Select slot area resource name
+						String selectedResourceName = selectSlotAreaResourceName(slot, editor);
+						if (selectedResourceName != null) {
+							
+							return selectedResourceName;
+						}
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					// On cancel return -1.
+					return -1;
 				}
-				
-				// On cancel return -1.
-				return -1;
-			}
-		});
-		selectedPanel = editor;
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+			});
+			selectedPanel = editor;
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Show CSS quotes editor.
 	 */
 	protected void showCssQuotesEditor() {
-		
-		selectedPanel = new CssQuotesPanel(null);
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+		try {
+			
+			selectedPanel = new CssQuotesPanel(null);
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Show CSS text line editor.
 	 */
 	protected void showCssTextLineEditor() {
-		
-		selectedPanel = new CssTextLinePanel(null);
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+		try {
+			
+			selectedPanel = new CssTextLinePanel(null);
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Show CSS resource editor.
 	 */
 	protected void showCssResourceEditor() {
-		
-		CssResourcePanel editor = new CssResourcePanel(null, false);
-		editor.setResourceNameCallback(new Callback() {
-			@Override
-			public Object run(Object input) {
-				
-				// Select slot area resource name
-				String selectedResourceName = selectSlotAreaResourceName(slot, editor);
-				if (selectedResourceName != null) {
+		try {
+			
+			CssResourcePanel editor = new CssResourcePanel(null, false);
+			editor.setResourceNameCallback(new Callback() {
+				@Override
+				public Object run(Object input) {
 					
-					return selectedResourceName;
+					try {
+						// Select slot area resource name
+						String selectedResourceName = selectSlotAreaResourceName(slot, editor);
+						if (selectedResourceName != null) {
+							
+							return selectedResourceName;
+						}
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					// On cancel return -1.
+					return -1;
 				}
-				
-				// On cancel return -1.
-				return -1;
-			}
-		});
-		selectedPanel = editor;
-
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+			});
+			selectedPanel = editor;
+	
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Show CSS resource URL editor.
 	 */
 	protected void showCssResourceUrlEditor() {
-		
-		CssResourcePanel editor = new CssResourcePanel(null, true);
-		editor.setResourceNameCallback(new Callback() {
-			@Override
-			public Object run(Object input) {
-				
-				// Select slot area resource name
-				String selectedResourceName = selectSlotAreaResourceName(slot, editor);
-				if (selectedResourceName != null) {
+		try {
+			
+			CssResourcePanel editor = new CssResourcePanel(null, true);
+			editor.setResourceNameCallback(new Callback() {
+				@Override
+				public Object run(Object input) {
 					
-					return selectedResourceName;
+					try {
+						// Select slot area resource name
+						String selectedResourceName = selectSlotAreaResourceName(slot, editor);
+						if (selectedResourceName != null) {
+							
+							return selectedResourceName;
+						}
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					// On cancel return -1.
+					return -1;
 				}
-				
-				// On cancel return -1.
-				return -1;
-			}
-		});
-		selectedPanel = editor;
-
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+			});
+			selectedPanel = editor;
+	
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Show CSS resources URLs editor.
 	 */
 	protected void showCssResourcesUrlsEditor() {
-		
-		CssResourcesUrlsPanel editor = new CssResourcesUrlsPanel(null);
-		editor.setResourceNameCallback(new Callback() {
-			@Override
-			public Object run(Object input) {
-				
-				// Select slot area resource name
-				String selectedResourceName = selectSlotAreaResourceName(slot, editor);
-				if (selectedResourceName != null) {
+		try {
+			
+			CssResourceUrlsPanel editor = new CssResourceUrlsPanel(null);
+			editor.setResourceNameCallback(new Callback() {
+				@Override
+				public Object run(Object input) {
 					
-					return selectedResourceName;
+					try {
+						// Select slot area resource name
+						String selectedResourceName = selectSlotAreaResourceName(slot, editor);
+						if (selectedResourceName != null) {
+							
+							return selectedResourceName;
+						}
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					// On cancel return -1.
+					return -1;
 				}
-				
-				// On cancel return -1.
-				return -1;
-			}
-		});
-		selectedPanel = editor;
-
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+			});
+			selectedPanel = editor;
+	
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Show CSS MIME editor.
 	 */
 	protected void showCssMimeEditor() {
-		
-		selectedPanel = new CssMimePanel(null);
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+		try {
+			
+			selectedPanel = new CssMimePanel(null);
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -1017,75 +1203,105 @@ public class TextSlotEditorPanel extends JPanel implements SlotValueEditorPanelI
 	 * @param valueMeaning 
 	 */
 	protected void showHtmlAnchorEditor(String valueMeaning) {
-		
-		// Create editor.
-		final Component thisComponent = this;
-		
-		HtmlAnchorPanel editor = new HtmlAnchorPanel(null);
-		
-		// Set value meaning.
-		editor.setValueMeaning(valueMeaning);
-		
-		editor.setAreaAliasHandler(new EditorValueHandler() {
+		try {
 			
-			String areaAlias;
+			// Create editor.
+			final Component thisComponent = this;
 			
-			@Override
-			public boolean ask() {
+			HtmlAnchorPanel editor = new HtmlAnchorPanel(null);
+			
+			// Set value meaning.
+			editor.setValueMeaning(valueMeaning);
+			
+			editor.setAreaAliasHandler(new EditorValueHandler() {
 				
-				// Gets area alias
-				areaAlias = SelectAreaDialog.showDialog(Utility.findWindow(thisComponent), null);
-				return areaAlias != null;
-			}
-
-			@Override
-			public String getText() {
+				String areaAlias;
 				
-				return areaAlias;
-			}
-
-			@Override
-			public String getValue() {
-				
-				if (areaAlias == null) {
+				@Override
+				public boolean ask() {
+					
+					try {
+						// Gets area alias
+						areaAlias = SelectAreaDialog.showDialog(Utility.findWindow(thisComponent), null);
+						return areaAlias != null;
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return false;
+				}
+	
+				@Override
+				public String getText() {
+					
+					return areaAlias;
+				}
+	
+				@Override
+				public String getValue() {
+					
+					try {
+						if (areaAlias == null) {
+							return null;
+						}
+						return String.format("[@REM] areaAlias is %s[/@REM]", areaAlias);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
 					return null;
 				}
-				return String.format("[@REM] areaAlias is %s[/@REM]", areaAlias);
-			}
-		});
-		
-		editor.setResourceNameHandler(new EditorValueHandler() {
+			});
 			
-			String areaResource;
+			editor.setResourceNameHandler(new EditorValueHandler() {
+				
+				String areaResource;
+				
+				@Override
+				public boolean ask() {
+					
+					try {
+						// Select area resource name
+						areaResource = selectSlotAreaResourceName(slot, editor);
+						return areaResource != null;
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return false;
+				}
+	
+				@Override
+				public String getText() {
+					
+					return areaResource;
+				}
+	
+				@Override
+				public String getValue() {
+					
+					try {
+						return String.format("[@REM]resource[/@REM][@URL res=#%s]", areaResource);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return "";
+				}
+			});
 			
-			@Override
-			public boolean ask() {
-				
-				// Select area resource name
-				areaResource = selectSlotAreaResourceName(slot, editor);
-				return areaResource != null;
-			}
-
-			@Override
-			public String getText() {
-				
-				return areaResource;
-			}
-
-			@Override
-			public String getValue() {
-				
-				return String.format("[@REM]resource[/@REM][@URL res=#%s]", areaResource);
-			}
-		});
-		
-		selectedPanel = editor;
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+			selectedPanel = editor;
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 	}
 	
 	/**
@@ -1093,17 +1309,22 @@ public class TextSlotEditorPanel extends JPanel implements SlotValueEditorPanelI
 	 * @param valueMeaning
 	 */
 	protected void showFileEditor(String valueMeaning) {
-		
-		FilePanel filePanel = new FilePanel(null);
-		Area area = (Area) slot.getHolder();
-		filePanel.setArea(area);
-		selectedPanel = filePanel;
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+		try {
+			
+			FilePanel filePanel = new FilePanel(null);
+			Area area = (Area) slot.getHolder();
+			filePanel.setArea(area);
+			selectedPanel = filePanel;
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -1111,33 +1332,43 @@ public class TextSlotEditorPanel extends JPanel implements SlotValueEditorPanelI
 	 * @param valueMeaning
 	 */
 	protected void showFolderEditor(String valueMeaning) {
-		
-		selectedPanel = new FolderPanel(null);
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();
+		try {
+			
+			selectedPanel = new FolderPanel(null);
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Show path editor
 	 */
 	private void showPathEditor() {
-		
-		PathPanel pathPanel = new PathPanel(null);
-		selectedPanel = pathPanel;
-		
-		// Set area reference.
-		Area area = (Area) slot.getHolder();
-		pathPanel.setArea(area);
-		
-		remove(1);
-		add(selectedPanel.getComponent(), BorderLayout.CENTER);
-		
-		validate();
-		updateUI();		
+		try {
+			
+			PathPanel pathPanel = new PathPanel(null);
+			selectedPanel = pathPanel;
+			
+			// Set area reference.
+			Area area = (Area) slot.getHolder();
+			pathPanel.setArea(area);
+			
+			remove(1);
+			add(selectedPanel.getComponent(), BorderLayout.CENTER);
+			
+			validate();
+			updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -1145,180 +1376,191 @@ public class TextSlotEditorPanel extends JPanel implements SlotValueEditorPanelI
 	 * @param valueMeaning
 	 */
 	private void showEditor(String valueMeaning) {
-		
-		if (valueMeaning == null) {
+		try {
+			
+			if (valueMeaning == null) {
+				showTextEditor();
+				return;
+			}
+			
+			if (valueMeaning.equals(StringValueEditor.meansCssBorder)) {
+				showCssBorderEditor();
+				return;
+			}
+			
+			if (valueMeaning.equals(StringValueEditor.meansCssFont)) {
+				showCssFontEditor();
+				return;
+			}
+			
+			if (valueMeaning.equals(StringValueEditor.meansCssOutlines)) {
+				showCssOutlinesEditor();
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansCssBoxShadow)) {
+				showCssBoxShadowEditor();
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansCssTextShadow)) {
+				showCssTextShadowEditor();
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansCssBackground)) {
+				showCssBackgroundEditor();
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansCssNumber)) {
+				showCssNumberEditor();
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansCssBorderRadius)) {
+				showCssBorderRadiusEditor();
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansCssClip)) {
+				showCssClipEditor();
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansCssBorderImage)) {
+				showCssBorderImageEditor();
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansCssFlex)) {
+				showCssFlexEditor();
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansCssSpacing)) {
+				showCssSpacingEditor();
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansCssCounter)) {
+				showCssCounterEditor();
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansCssListStyle)) {
+				showCssListStyleEditor();
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansCssKeyframes)) {
+				showCssKeyframesEditor();
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansCssAnimation)) {
+				showCssAnimationEditor();
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansCssPerspectiveOrigin)) {
+				showCssPerspectiveOriginEditor();
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansCssTransform)) {
+				showCssTransformEditor();
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansCssTransformOrigin)) {
+				showCssTransformOriginEditor();
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansCssTransition)) {
+				showCssTransitionEditor();
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansCssCursor)) {
+				showCssCursorEditor();
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansCssQuotes)) {
+				showCssQuotesEditor();
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansCssTextLine)) {
+				showCssTextLineEditor();
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansCssResource)) {
+				showCssResourceEditor();
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansCssUrlResource)) {
+				showCssResourceUrlEditor();
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansCssUrlsResources)) {
+				showCssResourcesUrlsEditor();
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansCssMime)) {
+				showCssMimeEditor();
+				return;
+			}
+			if (StringValueEditor.meansHtmlAnchor(valueMeaning)) {
+				showHtmlAnchorEditor(valueMeaning);
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansFile)) {
+				showFileEditor(valueMeaning);
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansFolder)) {
+				showFolderEditor(valueMeaning);
+				return;
+			}
+			if (valueMeaning.equals(StringValueEditor.meansPath)) {
+				showPathEditor();
+				return;
+			}
+					
+			// Otherwise.
 			showTextEditor();
-			return;
 		}
-		
-		if (valueMeaning.equals(StringValueEditor.meansCssBorder)) {
-			showCssBorderEditor();
-			return;
-		}
-		
-		if (valueMeaning.equals(StringValueEditor.meansCssFont)) {
-			showCssFontEditor();
-			return;
-		}
-		
-		if (valueMeaning.equals(StringValueEditor.meansCssOutlines)) {
-			showCssOutlinesEditor();
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansCssBoxShadow)) {
-			showCssBoxShadowEditor();
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansCssTextShadow)) {
-			showCssTextShadowEditor();
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansCssBackground)) {
-			showCssBackgroundEditor();
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansCssNumber)) {
-			showCssNumberEditor();
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansCssBorderRadius)) {
-			showCssBorderRadiusEditor();
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansCssClip)) {
-			showCssClipEditor();
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansCssBorderImage)) {
-			showCssBorderImageEditor();
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansCssFlex)) {
-			showCssFlexEditor();
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansCssSpacing)) {
-			showCssSpacingEditor();
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansCssCounter)) {
-			showCssCounterEditor();
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansCssListStyle)) {
-			showCssListStyleEditor();
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansCssKeyframes)) {
-			showCssKeyframesEditor();
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansCssAnimation)) {
-			showCssAnimationEditor();
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansCssPerspectiveOrigin)) {
-			showCssPerspectiveOriginEditor();
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansCssTransform)) {
-			showCssTransformEditor();
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansCssTransformOrigin)) {
-			showCssTransformOriginEditor();
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansCssTransition)) {
-			showCssTransitionEditor();
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansCssCursor)) {
-			showCssCursorEditor();
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansCssQuotes)) {
-			showCssQuotesEditor();
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansCssTextLine)) {
-			showCssTextLineEditor();
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansCssResource)) {
-			showCssResourceEditor();
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansCssUrlResource)) {
-			showCssResourceUrlEditor();
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansCssUrlsResources)) {
-			showCssResourcesUrlsEditor();
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansCssMime)) {
-			showCssMimeEditor();
-			return;
-		}
-		if (StringValueEditor.meansHtmlAnchor(valueMeaning)) {
-			showHtmlAnchorEditor(valueMeaning);
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansFile)) {
-			showFileEditor(valueMeaning);
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansFolder)) {
-			showFolderEditor(valueMeaning);
-			return;
-		}
-		if (valueMeaning.equals(StringValueEditor.meansPath)) {
-			showPathEditor();
-			return;
-		}
-				
-		// Otherwise.
-		showTextEditor();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 	}
 
 	/**
 	 * Localize.
 	 */
 	private void localize() {
-		
-		Utility.localize(menuSelectEditor);
-		Utility.localize(menuText);
-		Utility.localize(menuCssFont);
-		Utility.localize(menuCssBorder);
-		Utility.localize(menuCssOutlines);
-		Utility.localize(menuCssBoxShadow);
-		Utility.localize(menuCssTextShadow);
-		Utility.localize(menuCssBackground);
-		Utility.localize(menuCssNumber);
-		Utility.localize(menuCssBorderRadius);
-		Utility.localize(menuCssBorderImage);
-		Utility.localize(menuCssClip);
-		Utility.localize(menuCssFlex);
-		Utility.localize(menuCssSpacing);
-		Utility.localize(menuCssCounter);
-		Utility.localize(menuCssListStyle);
-		Utility.localize(menuCssKeyframes);
-		Utility.localize(menuCssAnimation);
-		Utility.localize(menuCssPerspectiveOrigin);
-		Utility.localize(menuCssTransform);
-		Utility.localize(menuCssTransformOrigin);
-		Utility.localize(menuCssTransition);
-		Utility.localize(menuCssCursor);
-		Utility.localize(menuCssQuotes);
-		Utility.localize(menuCssTextLine);
-		Utility.localize(menuCssResource);
-		Utility.localize(menuCssResourceUrl);
-		Utility.localize(menuCssResourcesUrls);
-		Utility.localize(menuCssMime);
-		Utility.localize(menuHtmlAnchor);
-		Utility.localize(menuFilePath);
-		Utility.localize(menuFolderPath);
+		try {
+			
+			Utility.localize(menuSelectEditor);
+			Utility.localize(menuText);
+			Utility.localize(menuCssFont);
+			Utility.localize(menuCssBorder);
+			Utility.localize(menuCssOutlines);
+			Utility.localize(menuCssBoxShadow);
+			Utility.localize(menuCssTextShadow);
+			Utility.localize(menuCssBackground);
+			Utility.localize(menuCssNumber);
+			Utility.localize(menuCssBorderRadius);
+			Utility.localize(menuCssBorderImage);
+			Utility.localize(menuCssClip);
+			Utility.localize(menuCssFlex);
+			Utility.localize(menuCssSpacing);
+			Utility.localize(menuCssCounter);
+			Utility.localize(menuCssListStyle);
+			Utility.localize(menuCssKeyframes);
+			Utility.localize(menuCssAnimation);
+			Utility.localize(menuCssPerspectiveOrigin);
+			Utility.localize(menuCssTransform);
+			Utility.localize(menuCssTransformOrigin);
+			Utility.localize(menuCssTransition);
+			Utility.localize(menuCssCursor);
+			Utility.localize(menuCssQuotes);
+			Utility.localize(menuCssTextLine);
+			Utility.localize(menuCssResource);
+			Utility.localize(menuCssResourceUrl);
+			Utility.localize(menuCssResourcesUrls);
+			Utility.localize(menuCssMime);
+			Utility.localize(menuHtmlAnchor);
+			Utility.localize(menuFilePath);
+			Utility.localize(menuFolderPath);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1330,51 +1572,77 @@ public class TextSlotEditorPanel extends JPanel implements SlotValueEditorPanelI
 	@SuppressWarnings("serial")
 	private void createTextEditorPanel(Window parentWindow,
 			boolean useHtmlEditor) {
-		
-		// Create text editor.
-		textEditorPanel = new TextEditorPane(parentWindow, useHtmlEditor) {
+		try {
 			
-			// Constructor.
-			{
-				// Add pop-up trayMenu add-in.
-				plainMenuAddIn = ProgramGenerator.newGeneratorTextPopupMenuAddIn(slot);
-				addPopupMenusPlain(plainMenuAddIn);
-				htmlMenuAddIn = ProgramGenerator.newGeneratorTextPopupMenuAddIn(slot);
-				addPopupMenusHtml(htmlMenuAddIn);
-			}
-
-			/**
-			 * Load dialog.
-			 */
-			@Override
-			protected void loadDialog() {
+			// Create text editor.
+			textEditorPanel = new TextEditorPane(parentWindow, useHtmlEditor) {
 				
-				super.loadDialog();
-				selectHtmlEditor(openHtmlEditor);
-			}
-			
-			/**
-			 * Save dialog.
-			 */
-			@Override
-			protected void saveDialog() {
+				// Constructor.
+				{
+					try {
+						
+						// Add pop-up trayMenu add-in.
+						plainMenuAddIn = ProgramGenerator.newGeneratorTextPopupMenuAddIn(slot);
+						addPopupMenusPlain(plainMenuAddIn);
+						htmlMenuAddIn = ProgramGenerator.newGeneratorTextPopupMenuAddIn(slot);
+						addPopupMenusHtml(htmlMenuAddIn);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+	
+				/**
+				 * Load dialog.
+				 */
+				@Override
+				protected void loadDialog() {
+					try {
+						
+						super.loadDialog();
+						selectHtmlEditor(openHtmlEditor);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
 				
-				super.saveDialog();
-				openHtmlEditor = tabbedPane.getSelectedIndex() == 1;
-			}
-
-			/**
-			 * Highlight script commands.
-			 * 
-			 *  (non-Javadoc)
-			 * @see org.multipage.gui.TextEditorPane#highlightScriptCommands(javax.swing.JTextPane)
-			 */
-			@Override
-			protected void highlightScriptCommands(JTextPane textPane) {
-				
-				// Delegate call.
-				ServerUtilities.highlightScriptCommands(textPane, CustomizedColors.get(ColorId.SCRIPT_COMMAND_HIGHLIGHT));
-			}
+				/**
+				 * Save dialog.
+				 */
+				@Override
+				protected void saveDialog() {
+					try {
+						
+						super.saveDialog();
+						openHtmlEditor = tabbedPane.getSelectedIndex() == 1;
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+	
+				/**
+				 * Highlight script commands.
+				 * 
+				 *  (non-Javadoc)
+				 * @see org.multipage.gui.TextEditorPane#highlightScriptCommands(javax.swing.JTextPane)
+				 */
+				@Override
+				protected void highlightScriptCommands(JTextPane textPane) {
+					try {
+						
+						// Delegate call.
+						ServerUtilities.highlightScriptCommands(textPane, CustomizedColors.get(ColorId.SCRIPT_COMMAND_HIGHLIGHT));
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			};
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
 		};
 	}
 
@@ -1382,9 +1650,14 @@ public class TextSlotEditorPanel extends JPanel implements SlotValueEditorPanelI
 	 * Update information.
 	 */
 	public void updateInformation() {
-		
-		plainMenuAddIn.updateInformation();
-		htmlMenuAddIn.updateInformation();
+		try {
+			
+			plainMenuAddIn.updateInformation();
+			htmlMenuAddIn.updateInformation();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 
@@ -1393,8 +1666,14 @@ public class TextSlotEditorPanel extends JPanel implements SlotValueEditorPanelI
 	 */
 	@Override
 	public Object getValue() {
-
-		return selectedPanel.getStringValue();
+		
+		try {
+			return selectedPanel.getStringValue();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -1402,16 +1681,26 @@ public class TextSlotEditorPanel extends JPanel implements SlotValueEditorPanelI
 	 */
 	@Override
 	public void setValue(Object value) {
-
-		selectedPanel.setStringValue(value.toString());
+		try {
+			
+			selectedPanel.setStringValue(value.toString());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Clear editor.
 	 */
 	public void clear() {
-
-		textEditorPanel.setText("");
+		try {
+			
+			textEditorPanel.setText("");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1429,7 +1718,13 @@ public class TextSlotEditorPanel extends JPanel implements SlotValueEditorPanelI
 	 */
 	public Font getTextFont() {
 		
-		return textEditorPanel.getTextFont();
+		try {
+			return textEditorPanel.getTextFont();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -1437,8 +1732,13 @@ public class TextSlotEditorPanel extends JPanel implements SlotValueEditorPanelI
 	 * @param font
 	 */
 	public void setTextFont(Font font) {
-		
-		textEditorPanel.setTextFont(font);
+		try {
+			
+			textEditorPanel.setTextFont(font);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1446,8 +1746,13 @@ public class TextSlotEditorPanel extends JPanel implements SlotValueEditorPanelI
 	 * @param foundAttr
 	 */
 	public void highlightFound(FoundAttr foundAttr) {
-		
-		textEditorPanel.highlightFound(foundAttr);
+		try {
+			
+			textEditorPanel.highlightFound(foundAttr);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1456,7 +1761,13 @@ public class TextSlotEditorPanel extends JPanel implements SlotValueEditorPanelI
 	@Override
 	public String getValueMeaning() {
 		
-		return selectedPanel.getValueMeaning();
+		try {
+			return selectedPanel.getValueMeaning();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -1464,8 +1775,13 @@ public class TextSlotEditorPanel extends JPanel implements SlotValueEditorPanelI
 	 * @param valueMeaning
 	 */
 	public void setValueMeaning(String valueMeaning) {
-		
-		showEditor(valueMeaning);
+		try {
+			
+			showEditor(valueMeaning);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1475,9 +1791,14 @@ public class TextSlotEditorPanel extends JPanel implements SlotValueEditorPanelI
 	 */
 	public boolean setControlsGrayed(boolean isDefault) {
 		
-		// Delegate call to selected panel.
-		if (selectedPanel != null) {
-			return selectedPanel.setControlsGrayed(isDefault);
+		try {
+			// Delegate call to selected panel.
+			if (selectedPanel != null) {
+				return selectedPanel.setControlsGrayed(isDefault);
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return false;
 	}

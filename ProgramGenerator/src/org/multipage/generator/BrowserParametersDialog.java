@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -35,12 +35,13 @@ import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 import org.multipage.util.SimpleMethodRef;
 
 
 /**
- * 
- * @author
+ * Dialg that displays editor of browser parameters.
+ * @author vakol
  *
  */
 public class BrowserParametersDialog extends JDialog {
@@ -119,9 +120,14 @@ public class BrowserParametersDialog extends JDialog {
 	 * @return
 	 */
 	public static void showDialog(Component parent) {
-
-		BrowserParametersDialog dialog = new BrowserParametersDialog(Utility.findWindow(parent));
-		dialog.setVisible(true);
+		try {
+			
+			BrowserParametersDialog dialog = new BrowserParametersDialog(Utility.findWindow(parent));
+			dialog.setVisible(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -129,12 +135,15 @@ public class BrowserParametersDialog extends JDialog {
 	 * @param parentWindow
 	 */
 	public BrowserParametersDialog(Window parentWindow) {
-		
 		super(parentWindow, ModalityType.DOCUMENT_MODAL);
 		
-		initComponents();
-		
-		postCreate(); // $hide$
+		try {
+			initComponents();
+			postCreate(); // $hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -333,57 +342,77 @@ public class BrowserParametersDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		localize();
-		setIcons();
-		
-		Utility.centerOnScreen(this);
-		
-		loadDialog(serializedBrowserParameters);
-		
-		setListeners();
+		try {
+			
+			localize();
+			setIcons();
+			
+			Utility.centerOnScreen(this);
+			
+			loadDialog(serializedBrowserParameters);
+			
+			setListeners();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonCancel);
-		Utility.localize(buttonOk);
-		Utility.localize(labelFolder);
-		Utility.localize(labelHomePage);
-		Utility.localize(labelBrowserTitle);
-		Utility.localize(labelBrowserMessage);
-		Utility.localize(labelWindowSize);
-		Utility.localize(labelWindowWidth);
-		Utility.localize(labelWindowHeight);
-		Utility.localize(checkBrowserMaximized);
-		Utility.localize(buttonDefault);
-		Utility.localize(checkCreateAutorun);
-		Utility.localize(labelBrowserProgramName);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonCancel);
+			Utility.localize(buttonOk);
+			Utility.localize(labelFolder);
+			Utility.localize(labelHomePage);
+			Utility.localize(labelBrowserTitle);
+			Utility.localize(labelBrowserMessage);
+			Utility.localize(labelWindowSize);
+			Utility.localize(labelWindowWidth);
+			Utility.localize(labelWindowHeight);
+			Utility.localize(checkBrowserMaximized);
+			Utility.localize(buttonDefault);
+			Utility.localize(checkCreateAutorun);
+			Utility.localize(labelBrowserProgramName);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
-		buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		buttonDefault.setIcon(Images.getIcon("org/multipage/generator/images/default.png"));
-		buttonDefaultHomePage.setIcon(Images.getIcon("org/multipage/generator/images/default.png"));
+		try {
+			
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+			buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			buttonDefault.setIcon(Images.getIcon("org/multipage/generator/images/default.png"));
+			buttonDefaultHomePage.setIcon(Images.getIcon("org/multipage/generator/images/default.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On default home page.
 	 */
 	protected void onDefaultHomePage() {
-		
-		if (Utility.ask(this, "org.multipage.generator.textSetDefaultHomePageName")) {
-			textHomePage.setText("index.htm");
+		try {
+			
+			if (Utility.ask(this, "org.multipage.generator.textSetDefaultHomePageName")) {
+				textHomePage.setText("index.htm");
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -398,13 +427,18 @@ public class BrowserParametersDialog extends JDialog {
 	 * On confirm dialog.
 	 */
 	protected void onOK() {
-		
-		if (areErrors()) {
-			Utility.show(this, "org.multipage.generator.textThereAreErrors");
-			return;
+		try {
+			
+			if (areErrors()) {
+				Utility.show(this, "org.multipage.generator.textThereAreErrors");
+				return;
+			}
+			
+			saveDialog();
 		}
-		
-		saveDialog();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
 		dispose();
 	}
@@ -413,100 +447,150 @@ public class BrowserParametersDialog extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog(BrowserParameters browserParameters) {
-		
-		textFolder.setText(browserParameters.getFolder());
-		textHomePage.setText(browserParameters.getHomePage());
-		textBrowserTitle.setText(browserParameters.getTitle());
-		textBrowserMessage.setText(browserParameters.getMessage());
-		textWindowWidth.setText(browserParameters.getWidthText());
-		textWindowHeight.setText(browserParameters.getHeightText());
-		textBrowserProgramName.setText(browserParameters.getBrowserProgramName());
-		
-		checkBrowserMaximized.setSelected(browserParameters.isMaximized());
-		checkCreateAutorun.setSelected(browserParameters.isCreateAutorun());
-		
-		textCheckInteger(textWindowWidth, labelWidthError);
-		textCheckInteger(textWindowHeight, labelHeightError);
+		try {
+			
+			textFolder.setText(browserParameters.getFolder());
+			textHomePage.setText(browserParameters.getHomePage());
+			textBrowserTitle.setText(browserParameters.getTitle());
+			textBrowserMessage.setText(browserParameters.getMessage());
+			textWindowWidth.setText(browserParameters.getWidthText());
+			textWindowHeight.setText(browserParameters.getHeightText());
+			textBrowserProgramName.setText(browserParameters.getBrowserProgramName());
+			
+			checkBrowserMaximized.setSelected(browserParameters.isMaximized());
+			checkCreateAutorun.setSelected(browserParameters.isCreateAutorun());
+			
+			textCheckInteger(textWindowWidth, labelWidthError);
+			textCheckInteger(textWindowHeight, labelHeightError);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		serializedBrowserParameters.setFolder(textFolder.getText().trim());
-		serializedBrowserParameters.setHomePage(textHomePage.getText().trim());
-		serializedBrowserParameters.setTitle(textBrowserTitle.getText());
-		serializedBrowserParameters.setMessage(textBrowserMessage.getText());
-		serializedBrowserParameters.setBrowserProgramName(textBrowserProgramName.getText().trim());
-		
-		int number;
 		try {
-			number = Integer.parseInt(textWindowWidth.getText());
-			serializedBrowserParameters.setWidth(number);
+			
+			serializedBrowserParameters.setFolder(textFolder.getText().trim());
+			serializedBrowserParameters.setHomePage(textHomePage.getText().trim());
+			serializedBrowserParameters.setTitle(textBrowserTitle.getText());
+			serializedBrowserParameters.setMessage(textBrowserMessage.getText());
+			serializedBrowserParameters.setBrowserProgramName(textBrowserProgramName.getText().trim());
+			
+			int number;
+			try {
+				number = Integer.parseInt(textWindowWidth.getText());
+				serializedBrowserParameters.setWidth(number);
+			}
+			catch (Exception e) {
+				Utility.show2(this, e.getMessage());
+			}
+			try {
+				number = Integer.parseInt(textWindowHeight.getText());
+				serializedBrowserParameters.setHeight(number);
+			}
+			catch (Exception e) {
+				Utility.show2(this, e.getMessage());
+			}
+			
+			serializedBrowserParameters.setMaximized(checkBrowserMaximized.isSelected());
+			serializedBrowserParameters.setCreateAutorun(checkCreateAutorun.isSelected());
 		}
-		catch (Exception e) {
-			Utility.show2(this, e.getMessage());
-		}
-		try {
-			number = Integer.parseInt(textWindowHeight.getText());
-			serializedBrowserParameters.setHeight(number);
-		}
-		catch (Exception e) {
-			Utility.show2(this, e.getMessage());
-		}
-		
-		serializedBrowserParameters.setMaximized(checkBrowserMaximized.isSelected());
-		serializedBrowserParameters.setCreateAutorun(checkCreateAutorun.isSelected());
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On restore default.
 	 */
 	protected void onRestoreDefault() {
-		
-		if (Utility.ask(this, "org.multipage.generator.textSetDefaultBrowserParameters")) {
+		try {
 			
-			BrowserParameters browserParameters = new BrowserParameters();
-			loadDialog(browserParameters);
+			if (Utility.ask(this, "org.multipage.generator.textSetDefaultBrowserParameters")) {
+				
+				BrowserParameters browserParameters = new BrowserParameters();
+				loadDialog(browserParameters);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set listeners.
 	 */
 	private void setListeners() {
-		
-		class _DocumentListener implements DocumentListener {
-			private SimpleMethodRef method;
-			public _DocumentListener(SimpleMethodRef method) {
-				this.method = method;
+		try {
+			
+			class _DocumentListener implements DocumentListener {
+				private SimpleMethodRef method;
+				public _DocumentListener(SimpleMethodRef method) {
+					this.method = method;
+				}
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					try {
+						
+						method.run();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					try {
+					
+						method.run();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					try {
+						
+						method.run();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
 			}
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				method.run();
-			}
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				method.run();
-			}
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				method.run();
-			}
+			
+			textWindowWidth.getDocument().addDocumentListener(new _DocumentListener(new SimpleMethodRef() {
+				@Override
+				public void run() {
+					try {
+						
+						textCheckInteger(textWindowWidth, labelWidthError);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}}));
+			
+			textWindowHeight.getDocument().addDocumentListener(new _DocumentListener(new SimpleMethodRef() {
+				@Override
+				public void run() {
+					try {
+						
+						textCheckInteger(textWindowHeight, labelHeightError);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}}));
 		}
-		
-		textWindowWidth.getDocument().addDocumentListener(new _DocumentListener(new SimpleMethodRef() {
-			@Override
-			public void run() {
-				textCheckInteger(textWindowWidth, labelWidthError);
-			}}));
-		
-		textWindowHeight.getDocument().addDocumentListener(new _DocumentListener(new SimpleMethodRef() {
-			@Override
-			public void run() {
-				textCheckInteger(textWindowHeight, labelHeightError);
-			}}));
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -515,16 +599,21 @@ public class BrowserParametersDialog extends JDialog {
 	 * @param label 
 	 */
 	protected void textCheckInteger(JTextField textControl, JLabel label) {
-		
-		String numberText = textControl.getText();
-		
 		try {
-			Integer.parseInt(numberText);
-			label.setText("");
+			
+			String numberText = textControl.getText();
+			
+			try {
+				Integer.parseInt(numberText);
+				label.setText("");
+			}
+			catch (NumberFormatException e) {
+				label.setText(Resources.getString("org.multipage.generator.textError"));
+			}
 		}
-		catch (NumberFormatException e) {
-			label.setText(Resources.getString("org.multipage.generator.textError"));
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -532,13 +621,16 @@ public class BrowserParametersDialog extends JDialog {
 	 */
 	private boolean getTextAsInteger(JTextField textControl) {
 		
-		String numberText = textControl.getText();
-		
 		try {
+			String numberText = textControl.getText();
 			Integer.parseInt(numberText);
 			return true;
 		}
 		catch (NumberFormatException e) {
+			return false;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 			return false;
 		}
 	}
@@ -548,6 +640,12 @@ public class BrowserParametersDialog extends JDialog {
 	 */
 	private boolean areErrors() {
 		
-		return !getTextAsInteger(textWindowWidth) || !getTextAsInteger(textWindowHeight);
+		try {
+			return !getTextAsInteger(textWindowWidth) || !getTextAsInteger(textWindowHeight);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return true;
 	}
 }

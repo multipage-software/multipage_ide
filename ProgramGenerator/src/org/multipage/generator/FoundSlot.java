@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -11,10 +11,12 @@ import java.util.LinkedList;
 
 import org.maclan.Slot;
 import org.multipage.gui.FoundAttr;
+import org.multipage.util.Safe;
 
 
 /**
- * @author
+ * Class that represents found slots.
+ * @author vakol
  *
  */
 public class FoundSlot {
@@ -39,9 +41,14 @@ public class FoundSlot {
 	 */
 	public FoundSlot(Slot slot, String searchText, boolean isCaseSensitive,
 			boolean isWholeWordsButton) {
-		
-		this.slot = slot;
-		this.foundAttr = new FoundAttr(searchText, isCaseSensitive, isWholeWordsButton);
+		try {
+			
+			this.slot = slot;
+			this.foundAttr = new FoundAttr(searchText, isCaseSensitive, isWholeWordsButton);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -62,11 +69,16 @@ public class FoundSlot {
 	 */
 	public static boolean isSlotFound(LinkedList<FoundSlot> foundSlots, Slot slot) {
 		
-		// Do loop for all slots.
-		for (FoundSlot foundSlot : foundSlots) {
-			if (foundSlot.slot.equals(slot)) {
-				return true;
+		try {
+			// Do loop for all slots.
+			for (FoundSlot foundSlot : foundSlots) {
+				if (foundSlot.slot.equals(slot)) {
+					return true;
+				}
 			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return false;
 	}
@@ -80,15 +92,20 @@ public class FoundSlot {
 	public static FoundAttr getFoundAtt(LinkedList<FoundSlot> foundSlots,
 			Slot slot) {
 		
-		if (foundSlots == null) {
-			return null;
-		}
-		
-		// Do loop for all slots.
-		for (FoundSlot foundSlot : foundSlots) {
-			if (foundSlot.slot.equals(slot)) {
-				return foundSlot.foundAttr;
+		try {
+			if (foundSlots == null) {
+				return null;
 			}
+			
+			// Do loop for all slots.
+			for (FoundSlot foundSlot : foundSlots) {
+				if (foundSlot.slot.equals(slot)) {
+					return foundSlot.foundAttr;
+				}
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -98,6 +115,13 @@ public class FoundSlot {
 	 */
 	@Override
 	public String toString() {
-		return "FoundSlot [slot=" + slot + ", foundAttr=" + foundAttr + "]";
+		
+		try {
+			return "FoundSlot [slot=" + slot + ", foundAttr=" + foundAttr + "]";
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 }

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -34,11 +34,13 @@ import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.ProgressResult;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 import org.multipage.util.SwingWorkerHelper;
 
 
 /**
- * @author
+ * Dialog that displays areas that will be deleted by user.
+ * @author vakol
  *
  */
 public class AreasDeletionDialog extends JDialog {
@@ -93,33 +95,38 @@ public class AreasDeletionDialog extends JDialog {
 	 */
 	public AreasDeletionDialog(Component parentComponent, HashSet topAreas, Area parentArea) {
         super(Utility.findWindow(parentComponent), ModalityType.APPLICATION_MODAL);
-        setResizable(false);
-        
-        // Initialization.
-        this.topAreas = null;
-
-        // Ensure proper type of the top areas.
-        if (!topAreas.isEmpty()) {
-        	Object firstItem = topAreas.iterator().next();
-        	
-        	if (firstItem instanceof AreaShapes) {
-        		this.topAreas = getAreasFrom(topAreas);
-        	}
-        	else if (firstItem instanceof Area) {
-        		this.topAreas = topAreas;
-        	}
-        }
-        
-        if (this.topAreas == null) {
-        	this.topAreas = new HashSet<Area>();
-        }
-        
-        this.parentArea = parentArea;
-        
-        // Initialize content.
-        initComponents();
-        
-        postCreate(); // $hide$
+		
+        try {
+	        setResizable(false);
+	        
+	        // Initialization.
+	        this.topAreas = null;
+	
+	        // Ensure proper type of the top areas.
+	        if (!topAreas.isEmpty()) {
+	        	Object firstItem = topAreas.iterator().next();
+	        	
+	        	if (firstItem instanceof AreaShapes) {
+	        		this.topAreas = getAreasFrom(topAreas);
+	        	}
+	        	else if (firstItem instanceof Area) {
+	        		this.topAreas = topAreas;
+	        	}
+	        }
+	        
+	        if (this.topAreas == null) {
+	        	this.topAreas = new HashSet<Area>();
+	        }
+	        
+	        this.parentArea = parentArea;
+	        
+	        // Initialize content.
+	        initComponents();
+	        postCreate(); // $hide$
+	    }
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -129,37 +136,53 @@ public class AreasDeletionDialog extends JDialog {
 	 */
 	private HashSet<Area> getAreasFrom(HashSet<AreaShapes> topAreasShapes) {
 		
-		HashSet<Area> topAreas = new HashSet<Area>();
-		topAreasShapes.forEach(areaShape -> topAreas.add(areaShape.getArea()));
-		return topAreas;
+		try {
+			HashSet<Area> topAreas = new HashSet<Area>();
+			topAreasShapes.forEach(areaShape -> topAreas.add(areaShape.getArea()));
+			return topAreas;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-        setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
-
-        // Set component texts.
-        localize();
-        
-        // Center the dialog on the screen.
-        Utility.centerOnScreen(this);
-		
-		// Load content.
-		loadContent();
+		try {
+			
+			setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
+	
+	        // Set component texts.
+	        localize();
+	        
+	        // Center the dialog on the screen.
+	        Utility.centerOnScreen(this);
+			
+			// Load content.
+			loadContent();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize component texts.
 	 */
 	private void localize() {
-
-		Utility.localize(this);
-		Utility.localize(deleteIntersections);
-		Utility.localize(deleteButton);
-		Utility.localize(cancelButton);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(deleteIntersections);
+			Utility.localize(deleteButton);
+			Utility.localize(cancelButton);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -243,8 +266,13 @@ public class AreasDeletionDialog extends JDialog {
      * @param evt
      */
     private void deleteIntersectionsActionPerformed(java.awt.event.ActionEvent evt) {
-
-    	loadContent();
+    	try {
+			
+			loadContent();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
     }
     
     /**
@@ -260,95 +288,102 @@ public class AreasDeletionDialog extends JDialog {
 	 * Load content.
 	 */
 	private void loadContent() {
-		
-		AreasModel model = ProgramGenerator.getAreasModel();
-		
-		// Clear all area flags.
-		model.setAllAreasFlags(Flag.NONE);
-		
-		// Set top areas trees flags.
-		for (Area area : topAreas) {
-			model.setAreaSubTreeFlags(area, Flag.SET);
-		}
-		
-		// If the delete intersections flag is not set, reset overlapped area flags.
-		if (!deleteIntersections.isSelected()) {
-			model.resetAreasOverlapsFlags();
-		}
-
-		rootAreaToDelete = isAffectedRootArea();
-		
-		// If the global area is set, reset it.
-		if (rootAreaToDelete) {
-			resetRootArea();
-		}
-
-		// Clear model.
-		selectAreaModel.removeAllElements();
-		
-		// Get area references with not set flag.
-		for (Area area : ProgramGenerator.getAreasModel().getAreas()) {
+		try {
 			
-			// Reset the "processed" bit.
-			area.resetFlagBits(Flag.PROCESSED);
+			AreasModel model = ProgramGenerator.getAreasModel();
 			
-			if (area.isFlag(Flag.NONE)) {
-				selectAreaModel.addElement(area);
+			// Clear all area flags.
+			model.setAllAreasFlags(Flag.NONE);
+			
+			// Set top areas trees flags.
+			for (Area area : topAreas) {
+				model.setAreaSubTreeFlags(area, Flag.SET);
 			}
-		}
-		
-		int areasToDeleteCount = model.getAreasCountWithFlag(Flag.SET);
-		existAreasToDelete = areasToDeleteCount > 0;
-		
-		String messageText;
-		
-		// Create and set message.
-		if (rootAreaToDelete) {
-			messageText = String.format(Resources.getString("org.multipage.generator.messageAllSubareasOfGlobalDeleted"),
-					areasToDeleteCount);
 			
-			Toolkit.getDefaultToolkit().beep();
-			
-			if (!Utility.ask2(this, messageText)) {
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						
-						dispose();
-					}
-				});
+			// If the delete intersections flag is not set, reset overlapped area flags.
+			if (!deleteIntersections.isSelected()) {
+				model.resetAreasOverlapsFlags();
 			}
-		}
-		else {
-			messageText = String.format(Resources.getString("org.multipage.generator.messageTopAreaToDelete"),
-					getDescription(topAreas), areasToDeleteCount);
+	
+			rootAreaToDelete = isAffectedRootArea();
 			
-			// If there are no areas to delete inform user about deletion
-			// of edges.
-			if (!existAreasToDelete) {
+			// If the global area is set, reset it.
+			if (rootAreaToDelete) {
+				resetRootArea();
+			}
+	
+			// Clear model.
+			selectAreaModel.removeAllElements();
+			
+			// Get area references with not set flag.
+			for (Area area : ProgramGenerator.getAreasModel().getAreas()) {
 				
-				String parentAreaDescription = null;
-				if (parentArea != null) {
-					parentAreaDescription = parentArea.toString();
+				// Reset the "processed" bit.
+				area.resetFlagBits(Flag.PROCESSED);
+				
+				if (area.isFlag(Flag.NONE)) {
+					selectAreaModel.addElement(area);
 				}
-				
-				messageText += " " + String.format(Resources.getString("org.multipage.generator.messageAreaConnectionsDeleted"),
-						parentAreaDescription);
 			}
-		}
+			
+			int areasToDeleteCount = model.getAreasCountWithFlag(Flag.SET);
+			existAreasToDelete = areasToDeleteCount > 0;
+			
+			String messageText;
+			
+			// Create and set message.
+			if (rootAreaToDelete) {
+				messageText = String.format(Resources.getString("org.multipage.generator.messageAllSubareasOfGlobalDeleted"),
+						areasToDeleteCount);
+				
+				Toolkit.getDefaultToolkit().beep();
+				
+				if (!Utility.ask2(this, messageText)) {
+					Safe.invokeLater(() -> {
 
-		message.setText(messageText);
+						dispose();
+					});
+				}
+			}
+			else {
+				messageText = String.format(Resources.getString("org.multipage.generator.messageTopAreaToDelete"),
+						getDescription(topAreas), areasToDeleteCount);
+				
+				// If there are no areas to delete inform user about deletion
+				// of edges.
+				if (!existAreasToDelete) {
+					
+					String parentAreaDescription = null;
+					if (parentArea != null) {
+						parentAreaDescription = parentArea.toString();
+					}
+					
+					messageText += " " + String.format(Resources.getString("org.multipage.generator.messageAreaConnectionsDeleted"),
+							parentAreaDescription);
+				}
+			}
+	
+			message.setText(messageText);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Reset the global area.
 	 */
 	private void resetRootArea() {
-
-		Area area = ProgramGenerator.getAreasModel().getRootArea();
-		if (area != null) {
-			area.setFlag(Flag.NONE);
+		try {
+			
+			Area area = ProgramGenerator.getAreasModel().getRootArea();
+			if (area != null) {
+				area.setFlag(Flag.NONE);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};	
 	}
 
 	/**
@@ -356,14 +391,18 @@ public class AreasDeletionDialog extends JDialog {
 	 * @return
 	 */
 	private boolean isAffectedRootArea() {
-
-		for (Area area : topAreas) {
-			
-			if (area.getId() == 0) {
-				return true;
+		
+		try {
+			for (Area area : topAreas) {
+				
+				if (area.getId() == 0) {
+					return true;
+				}
 			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return false;
 	}
 
@@ -373,23 +412,29 @@ public class AreasDeletionDialog extends JDialog {
 	 * @return
 	 */
     private String getDescription(HashSet<Area> areas) {
-
-    	String description = "";
-    	boolean isFirst = true;
     	
-    	// Do loop for all shapes.
-    	for (Area area : areas) {
-    		
-    		if (isFirst) {
-    			isFirst = false;
-    		}
-    		else {
-    			description += areasSeparator;
-    		}
-    		
-    		description += area.toString().replaceAll("<", "&lt;");
-    	}
-		return description;
+    	try {
+	    	String description = "";
+	    	boolean isFirst = true;
+	    	
+	    	// Do loop for all shapes.
+	    	for (Area area : areas) {
+	    		
+	    		if (isFirst) {
+	    			isFirst = false;
+	    		}
+	    		else {
+	    			description += areasSeparator;
+	    		}
+	    		
+	    		description += area.toString().replaceAll("<", "&lt;");
+	    	}
+			return description;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -398,169 +443,175 @@ public class AreasDeletionDialog extends JDialog {
 	 * @param flag
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	private MiddleResult removeAffectedAreas(final AreasModel model, final int flag) {
-
-		final Middle middle = ProgramBasic.getMiddle();
-
-		// Check connection.
-		MiddleResult result = middle.checkConnection();
-		if (result.isNotOK()) {
-			return result;
-		}
 		
-		// Get areas.
-		final LinkedList<Area> areas = model.getAreas();
-		
-		// Create progress dialog.
-		ProgressDialog dialog = new ProgressDialog<MiddleResult>(this,
-				Resources.getString("org.multipage.generator.textDeleteAreasProgress"),
-				Resources.getString("org.multipage.generator.messageDeletingAreas"));
-		
-		// Execute deletion.
-		ProgressResult progressResult = dialog.execute(new SwingWorkerHelper<MiddleResult>() {
-			@Override
-			protected MiddleResult doBackgroundProcess() throws Exception {
-				
-				MiddleResult result = MiddleResult.OK;
-				
-				LinkedList<Area> affectedAreas = new LinkedList<Area>();
-				
-				// Do loop for all areas.
-				for (Area area : areas) {
+		try {
+			final Middle middle = ProgramBasic.getMiddle();
+	
+			// Check connection.
+			MiddleResult result = middle.checkConnection();
+			if (result.isNotOK()) {
+				return result;
+			}
+			
+			// Get areas.
+			final LinkedList<Area> areas = model.getAreas();
+			
+			// Create progress dialog.
+			ProgressDialog dialog = new ProgressDialog<MiddleResult>(this,
+					Resources.getString("org.multipage.generator.textDeleteAreasProgress"),
+					Resources.getString("org.multipage.generator.messageDeletingAreas"));
+			
+			// Execute deletion.
+			ProgressResult progressResult = dialog.execute(new SwingWorkerHelper<MiddleResult>() {
+				@Override
+				protected MiddleResult doBackgroundProcess() throws Exception {
 					
-					if (area.isFlag(flag)) {
+					MiddleResult result = MiddleResult.OK;
+					
+					LinkedList<Area> affectedAreas = new LinkedList<Area>();
+					
+					// Do loop for all areas.
+					for (Area area : areas) {
 						
-						// Remember affected area.
-						affectedAreas.add(area);
-						
-						// Remove constructor trees.
-						if (area.isConstructorSource()) {
+						if (area.isFlag(flag)) {
 							
-							result = middle.removeConstructorTreeOrphan(area.getConstructorGroupId());
-							if (result != MiddleResult.OK) {
+							// Remember affected area.
+							affectedAreas.add(area);
+							
+							// Remove constructor trees.
+							if (area.isConstructorSource()) {
+								
+								result = middle.removeConstructorTreeOrphan(area.getConstructorGroupId());
+								if (result != MiddleResult.OK) {
+									return result;
+								}
+							}
+							
+							// Remove affected areas' links.
+							result = middle.updateRelatedAreaClearLinks(area.getId());
+							if (result.isNotOK()) {
+								return result;
+							}
+							
+							// Remove area reference values of area slots.
+							result = middle.resetAreaSlotsAreaReferences(area.getId());
+							if (result.isNotOK()) {
+								return result;
+							}
+						}
+					}
+					
+					// Initialize progress bar.
+					double step = 100.0 / (double) affectedAreas.size();
+					double progress = 0.0;
+					
+					// Loop for all affected areas.
+					for (Area area : affectedAreas) {
+						
+						// Set progress.
+						progress += step;
+						setProgress((int) Math.floor(progress));
+						if (isScheduledCancel()) {
+							return MiddleResult.CANCELLATION;
+						}
+							
+						// If a read only area exists, exit the loop.
+						if (GeneratorMainFrame.areasLocked() && area.isReadOnly()) {
+							return MiddleResult.CANNOT_DELETE_READ_ONLY_AREA;
+						}
+						
+						// Remove adjacent edges and then the area.
+						result = middle.removeAreaAdjacentEdges(area);
+						if (result != MiddleResult.OK) {
+							return result;
+						}
+	
+						// If it is a start area, set global area as start area.
+						if (model.isHomeArea(area)) {
+	
+							result = middle.setHomeArea(0L);
+							if (result.isNotOK()) {
+								return result;
+							}
+							model.setHomeAreaId(0L);
+						}
+						
+						// If it is a constructor area, remove link to constructor holder.
+						if (area.isConstructorArea()) {
+							
+							result = middle.updateConstructorHoldersAreaLinksReset(area.getId());
+							if (result.isNotOK()) {
 								return result;
 							}
 						}
 						
-						// Remove affected areas' links.
-						result = middle.updateRelatedAreaClearLinks(area.getId());
+						// Remove this extension area links to constructor groups.
+						result = middle.updateConstructorGroupsAreaExtensionsReset(area.getId());
 						if (result.isNotOK()) {
 							return result;
 						}
 						
-						// Remove area reference values of area slots.
-						result = middle.resetAreaSlotsAreaReferences(area.getId());
+						// Remove area slots.
+						result = middle.removeSlots(area);
 						if (result.isNotOK()) {
 							return result;
 						}
+	
+						// Remove area sources.
+						result = middle.deleteAreaSources(area.getId());
+						if (result.isNotOK()) {
+							return result;
+						}
+						
+						LinkedList<AreaResource> resources = new LinkedList<AreaResource>();
+						// Load area resources.
+						result = middle.loadAreaResources(area, resources, null);
+						if (result.isNotOK()) {
+							return result;
+						}
+						
+						// Reset area start resource.
+						result = middle.resetStartResource(area);
+						if (result.isNotOK()) {
+							return result;
+						}
+						
+						// Remove all area resources.
+						for (AreaResource resource : resources) {
+							
+							Obj<Boolean> removed = new Obj<Boolean>();
+							result = middle.removeResourceFromContainer(resource, area, removed);
+							if (result.isNotOK()) {
+								return result;
+							}
+						}
+						
+						// Remove area.
+						result = middle.removeArea(area);
+						if (result != MiddleResult.OK) {
+							return result;
+						}
 					}
+	
+					return result;
 				}
-				
-				// Initialize progress bar.
-				double step = 100.0 / (double) affectedAreas.size();
-				double progress = 0.0;
-				
-				// Loop for all affected areas.
-				for (Area area : affectedAreas) {
-					
-					// Set progress.
-					progress += step;
-					setProgress((int) Math.floor(progress));
-					if (isScheduledCancel()) {
-						return MiddleResult.CANCELLATION;
-					}
-						
-					// If a read only area exists, exit the loop.
-					if (GeneratorMainFrame.areasLocked() && area.isReadOnly()) {
-						return MiddleResult.CANNOT_DELETE_READ_ONLY_AREA;
-					}
-					
-					// Remove adjacent edges and then the area.
-					result = middle.removeAreaAdjacentEdges(area);
-					if (result != MiddleResult.OK) {
-						return result;
-					}
-
-					// If it is a start area, set global area as start area.
-					if (model.isHomeArea(area)) {
-
-						result = middle.setHomeArea(0L);
-						if (result.isNotOK()) {
-							return result;
-						}
-						model.setHomeAreaId(0L);
-					}
-					
-					// If it is a constructor area, remove link to constructor holder.
-					if (area.isConstructorArea()) {
-						
-						result = middle.updateConstructorHoldersAreaLinksReset(area.getId());
-						if (result.isNotOK()) {
-							return result;
-						}
-					}
-					
-					// Remove this extension area links to constructor groups.
-					result = middle.updateConstructorGroupsAreaExtensionsReset(area.getId());
-					if (result.isNotOK()) {
-						return result;
-					}
-					
-					// Remove area slots.
-					result = middle.removeSlots(area);
-					if (result.isNotOK()) {
-						return result;
-					}
-
-					// Remove area sources.
-					result = middle.deleteAreaSources(area.getId());
-					if (result.isNotOK()) {
-						return result;
-					}
-					
-					LinkedList<AreaResource> resources = new LinkedList<AreaResource>();
-					// Load area resources.
-					result = middle.loadAreaResources(area, resources, null);
-					if (result.isNotOK()) {
-						return result;
-					}
-					
-					// Reset area start resource.
-					result = middle.resetStartResource(area);
-					if (result.isNotOK()) {
-						return result;
-					}
-					
-					// Remove all area resources.
-					for (AreaResource resource : resources) {
-						
-						Obj<Boolean> removed = new Obj<Boolean>();
-						result = middle.removeResourceFromContainer(resource, area, removed);
-						if (result.isNotOK()) {
-							return result;
-						}
-					}
-					
-					// Remove area.
-					result = middle.removeArea(area);
-					if (result != MiddleResult.OK) {
-						return result;
-					}
-				}
-
-				return result;
+			});
+			
+			// Check result.
+			if (progressResult.isOk()) {
+				result = (MiddleResult) dialog.getOutput();
 			}
-		});
-		
-		// Check result.
-		if (progressResult.isOk()) {
-			result = (MiddleResult) dialog.getOutput();
+			else {
+				result = MiddleResult.CANCELLATION;
+			}	
+			return result;
 		}
-		else {
-			result = MiddleResult.CANCELLATION;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-				
-		return result;
+		return MiddleResult.UNKNOWN_ERROR;
 	}
 
 	/**
@@ -568,61 +619,66 @@ public class AreasDeletionDialog extends JDialog {
      * @param evt
      */
     private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {
-    	
-    	// Ask user.
-		if (JOptionPane.showConfirmDialog(this,
-				Resources.getString("org.multipage.generator.messageDeleteAreas")) == JOptionPane.YES_OPTION) {
+    	try {
 			
-	    	AreasModel model = ProgramGenerator.getAreasModel();
-	    	Middle middle = ProgramBasic.getMiddle();
-	    	MiddleResult result;
-	    	
-	    	// Connect to the database.
-	    	result = middle.login(ProgramBasic.getLoginProperties());
-	    	if (result != MiddleResult.OK) {
-	    		result.show(this);
-	    		return;
-	    	}
-	    	
-	     	// If an area is affected.
-	    	if (existAreasToDelete) {
-    			
-    			// Remove affected areas.
-    			result = removeAffectedAreas(model, Flag.SET);
-    			if (result != MiddleResult.OK) {
-    				result.show(this);
-    			}
-	    	}
-	    	// If there is no area to delete, remove connection to the parent area.
-	    	else {
-	    		// Do loop for all affected shapes.
-    			if (parentArea != null) {
-    				
-		    		for (Area area : topAreas) {
-		    			
-		    			// If the area is read only, exit the loop.
-		    			if (GeneratorMainFrame.areasLocked() && area.isReadOnly()) {
-		    				result = MiddleResult.CANNOT_DELETE_READ_ONLY_AREA;
-		    				result.show(this);
-		    				break;
-		    			}
-		    			
-			    		result = middle.removeIsSubareaEdge(parentArea, area);
-			    		if (result != MiddleResult.OK) {
-			    			result.show(this);
-			    			break;
+			// Ask user.
+			if (JOptionPane.showConfirmDialog(this,
+					Resources.getString("org.multipage.generator.messageDeleteAreas")) == JOptionPane.YES_OPTION) {
+				
+		    	AreasModel model = ProgramGenerator.getAreasModel();
+		    	Middle middle = ProgramBasic.getMiddle();
+		    	MiddleResult result;
+		    	
+		    	// Connect to the database.
+		    	result = middle.login(ProgramBasic.getLoginProperties());
+		    	if (result != MiddleResult.OK) {
+		    		result.show(this);
+		    		return;
+		    	}
+		    	
+		     	// If an area is affected.
+		    	if (existAreasToDelete) {
+	    			
+	    			// Remove affected areas.
+	    			result = removeAffectedAreas(model, Flag.SET);
+	    			if (result != MiddleResult.OK) {
+	    				result.show(this);
+	    			}
+		    	}
+		    	// If there is no area to delete, remove connection to the parent area.
+		    	else {
+		    		// Do loop for all affected shapes.
+	    			if (parentArea != null) {
+	    				
+			    		for (Area area : topAreas) {
+			    			
+			    			// If the area is read only, exit the loop.
+			    			if (GeneratorMainFrame.areasLocked() && area.isReadOnly()) {
+			    				result = MiddleResult.CANNOT_DELETE_READ_ONLY_AREA;
+			    				result.show(this);
+			    				break;
+			    			}
+			    			
+				    		result = middle.removeIsSubareaEdge(parentArea, area);
+				    		if (result != MiddleResult.OK) {
+				    			result.show(this);
+				    			break;
+				    		}
 			    		}
-		    		}
-    			}
-	    	}
-			
-			// Disconnect the database.
-			result = middle.logout(result);
-	    	if (result != MiddleResult.OK) {
-	    		result.show(this);
-	    		return;
-	    	}
+	    			}
+		    	}
+				
+				// Disconnect the database.
+				result = middle.logout(result);
+		    	if (result != MiddleResult.OK) {
+		    		result.show(this);
+		    		return;
+		    	}
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
     	
     	// Close the window.
     	dispose();

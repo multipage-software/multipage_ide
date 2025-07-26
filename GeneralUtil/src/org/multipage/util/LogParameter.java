@@ -1,27 +1,30 @@
-/**
+/*
+ * Copyright 2010-2025 (C) vakol
  * 
+ * Created on : 2017-10-23
+ *
  */
 package org.multipage.util;
 
 /**
- * Input parameter for j.log(...)
- * @author user
+ * Input parameter for j.log(...).
+ * @author vakol
  *
  */
 public class LogParameter {
 	
 	/**
-	 * Output type
+	 * Output type.
 	 */
 	private String type = "out";
 	
 	/**
-	 * Indentation
+	 * Indentation.
 	 */
 	private String indentation = "";
 	
 	/**
-	 * Constructor
+	 * Constructor.
 	 */
 	public LogParameter(String type, String indentation) {
 		
@@ -30,7 +33,7 @@ public class LogParameter {
 	}
 	
 	/**
-	 * Get type
+	 * Get type.
 	 */
 	public String getType() {
 		
@@ -38,7 +41,7 @@ public class LogParameter {
 	}
 	
 	/**
-	 * Get indentation
+	 * Get indentation.
 	 */
 	public String getIndentation() {
 		
@@ -46,7 +49,7 @@ public class LogParameter {
 	}
 	
 	/**
-	 * Returns output type
+	 * Returns output type.
 	 */
 	@Override
 	public String toString() {

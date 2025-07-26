@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2019 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 10-12-2019
+ * Created on : 2019-12-10
  *
  */
 package org.multipage.generator;
@@ -25,10 +25,11 @@ import org.multipage.gui.Images;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author user
+ * Dialog that displays editor for external provider properties.
+ * @author vakol
  *
  */
 public class ExternalProviderDialog extends JDialog {
@@ -102,27 +103,33 @@ public class ExternalProviderDialog extends JDialog {
 	 */
 	public static boolean showDialog(Component parent, Slot slot) {
 		
-		// Show dialog.
-		ExternalProviderDialog dialog = new ExternalProviderDialog(parent);
-		dialog.updateTitle(slot);
-		dialog.setVisible(true);
-		
-		if (!dialog.confirm) {
-			return false;
+		try {
+			// Show dialog.
+			ExternalProviderDialog dialog = new ExternalProviderDialog(parent);
+			dialog.updateTitle(slot);
+			dialog.setVisible(true);
+			
+			if (!dialog.confirm) {
+				return false;
+			}
+			
+			// Get link.
+			String link = dialog.getExternalProviderLink();
+			slot.setExternalProvider(link);
+			
+			// Get flags.
+			boolean readsInput = dialog.getReadsInput();
+			slot.setReadsInput(readsInput);
+			
+			boolean writesOutput = dialog.getWritesOuput();
+			slot.setWritesOutput(writesOutput);
+			
+			return true;
 		}
-		
-		// Get link.
-		String link = dialog.getExternalProviderLink();
-		slot.setExternalProvider(link);
-		
-		// Get flags.
-		boolean readsInput = dialog.getReadsInput();
-		slot.setReadsInput(readsInput);
-		
-		boolean writesOutput = dialog.getWritesOuput();
-		slot.setWritesOutput(writesOutput);
-		
-		return true;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
@@ -131,10 +138,15 @@ public class ExternalProviderDialog extends JDialog {
 	public ExternalProviderDialog(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.DOCUMENT_MODAL);
 		
-		// Initialize components
-		initComponents(); 
-		// Post creation of the dialog
-		postCreation(); //$hide$
+		try {
+			// Initialize components
+			initComponents(); 
+			// Post creation of the dialog
+			postCreation(); //$hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -189,17 +201,23 @@ public class ExternalProviderDialog extends JDialog {
 	 * On OK button clicked
 	 */
 	protected void onOk() {
-		
-		// Check link string
-		String link = getExternalProviderLink();
-		if (link.isEmpty()) {
+		try {
 			
-			Utility.show(this, "org.multipage.generator.messageExternalProviderLinkNotCorrect");
-			return;
+			// Check link string
+			String link = getExternalProviderLink();
+			if (link.isEmpty()) {
+				
+				Utility.show(this, "org.multipage.generator.messageExternalProviderLinkNotCorrect");
+				return;
+			}
+			
+			confirm = true;
+			saveDialog();
 		}
-		
-		confirm = true;
-		saveDialog();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 	
@@ -207,8 +225,14 @@ public class ExternalProviderDialog extends JDialog {
 	 * On cancel dialog
 	 */
 	protected void onCancel() {
+		try {
+			
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
-		saveDialog();
 		dispose();
 	}
 
@@ -216,29 +240,44 @@ public class ExternalProviderDialog extends JDialog {
 	 * Post creation
 	 */
 	private void postCreation() {
-		
-		localize();
-		setIcons();
-		loadDialog();
+		try {
+			
+			localize();
+			setIcons();
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Localize components
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -246,33 +285,48 @@ public class ExternalProviderDialog extends JDialog {
 	 * @param slot 
 	 */
 	private void updateTitle(Slot slot) {
-		
-		String title = getTitle();
-		String slotName = slot.getNameForGenerator();
-		title = String.format(title, slotName);
-		setTitle(title);
+		try {
+			
+			String title = getTitle();
+			String slotName = slot.getNameForGenerator();
+			title = String.format(title, slotName);
+			setTitle(title);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
-			bounds = getBounds();
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+				bounds = getBounds();
+			}
+			else {
+				setBounds(bounds);
+			}
 		}
-		else {
-			setBounds(bounds);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -281,8 +335,14 @@ public class ExternalProviderDialog extends JDialog {
 	 */
 	private String getExternalProviderLink() {
 		
-		String link = panel.getExternalProviderLink();
-		return link;
+		try {
+			String link = panel.getExternalProviderLink();
+			return link;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 	
 	/**
@@ -291,8 +351,14 @@ public class ExternalProviderDialog extends JDialog {
 	 */
 	private boolean getReadsInput() {
 		
-		// Delegate call
-		return panel.getReadsInput();
+		try {
+			// Delegate call
+			return panel.getReadsInput();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
@@ -301,7 +367,13 @@ public class ExternalProviderDialog extends JDialog {
 	 */
 	private boolean getWritesOuput() {
 		
-		// Delegate call
-		return panel.getWritesOutput();
+		try {
+			// Delegate call
+			return panel.getWritesOutput();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 }

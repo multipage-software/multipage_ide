@@ -1,19 +1,25 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.maclan.server;
 
-import java.util.*;
-import java.util.Map.Entry;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Properties;
 
-import org.multipage.util.*;
+import org.multipage.util.Obj;
+import org.multipage.util.Resources;
 
 /**
- * @author
+ * Class for stack of block descriptors.
+ * @author vakol
  *
  */
 public class BlockDescriptorsStack {
@@ -237,7 +243,7 @@ public class BlockDescriptorsStack {
 				String variableName = entry.getKey();
 				String variableFullName = String.format("%s:%s", blockName, variableName);
 				
-				DebugWatchItem variableWatch = new DebugWatchItem(DebugWatchItemType.blockVariable, variableName, variableFullName, null, null);
+				DebugWatchItem variableWatch = new DebugWatchItem(DebugWatchGroup.BLOCK_VARIABLE, variableName, variableFullName, null, null);
 				
 				variableWatchList.add(variableWatch);
 			}
@@ -638,7 +644,7 @@ public class BlockDescriptorsStack {
 				String procedureName = entry.getKey();
 				String procedureFullName = String.format("%s:%s", blockName, procedureName);
 				
-				DebugWatchItem variableWatch = new DebugWatchItem(DebugWatchItemType.blockProcedure, procedureName, procedureFullName, null, null);
+				DebugWatchItem variableWatch = new DebugWatchItem(DebugWatchGroup.BLOCK_PROCEDURE, procedureName, procedureFullName, null, null);
 				
 				procedureWatchList.add(variableWatch);
 			}

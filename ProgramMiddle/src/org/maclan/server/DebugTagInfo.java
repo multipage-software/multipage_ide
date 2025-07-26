@@ -1,7 +1,7 @@
 /**
- * Copyright 2010-2024 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 25-06-2024
+ * Created on : 2024-06-25
  *
  */
 package org.maclan.server;
@@ -38,17 +38,33 @@ public class DebugTagInfo {
 	 * Inner text.
 	 */
 	private String innerText = null;
-
+	
 	/**
-	 * Current replacement text.
+	 * Make clone of current tag information.
+	 * @return
 	 */
-	private String replacement = null;
+	public DebugTagInfo cloneTagInfo() {
+
+		DebugTagInfo clonedTagInfo = new DebugTagInfo();
+		
+		clonedTagInfo.tagName = tagName;
+		clonedTagInfo.properties = properties;
+		clonedTagInfo.cmdBegin = cmdBegin;
+		clonedTagInfo.cmdEnd = cmdEnd;
+		clonedTagInfo.innerText = innerText;
+		
+		return clonedTagInfo;
+	}
 
 	/**
 	 * Get tag name.
 	 * @return
 	 */
 	public String getTagName() {
+		
+		if (tagName == null) {
+			return "";
+		}
 		return tagName;
 	}
 
@@ -122,21 +138,5 @@ public class DebugTagInfo {
 	 */
 	public void setInnerText(String innerText) {
 		this.innerText = innerText;
-	}
-	
-	/**
-	 * Get tag replacement text.
-	 * @return
-	 */
-	public String getReplacement() {
-		return replacement;
-	}
-	
-	/**
-	 * Set tag replacement text.
-	 * @param replacement
-	 */
-	public void setReplacement(String replacement) {
-		this.replacement = replacement;
 	}
 }

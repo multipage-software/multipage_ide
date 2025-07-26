@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -9,8 +9,11 @@ package org.multipage.generator;
 
 import java.io.Serializable;
 
+import org.multipage.util.Safe;
+
 /**
- * @author
+ * Format of enumeration text.
+ * @author vakol
  *
  */
 public class EnumerationTextFormat implements Serializable {
@@ -62,18 +65,22 @@ public class EnumerationTextFormat implements Serializable {
 	@Override
 	public boolean equals(Object obj) {
 		
-		if (!(obj instanceof EnumerationTextFormat)) {
-			return false;
+		try {
+			if (!(obj instanceof EnumerationTextFormat)) {
+				return false;
+			}
+			EnumerationTextFormat format = (EnumerationTextFormat) obj;
+			
+			if (format == this) {
+				return true;
+			}
+			if (format.output.equals(this.output) && format.input.equals(this.input)) {
+				return true;
+			}
 		}
-		EnumerationTextFormat format = (EnumerationTextFormat) obj;
-		
-		if (format == this) {
-			return true;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		if (format.output.equals(this.output) && format.input.equals(this.input)) {
-			return true;
-		}
-		
 		return false;
 	}
 
@@ -82,6 +89,12 @@ public class EnumerationTextFormat implements Serializable {
 	 */
 	public boolean isEmpty() {
 		
-		return output.isEmpty();
+		try {
+			return output.isEmpty();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 }

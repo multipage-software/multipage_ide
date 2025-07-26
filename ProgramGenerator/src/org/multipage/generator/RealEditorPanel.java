@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -26,10 +26,11 @@ import javax.swing.event.DocumentListener;
 import org.multipage.gui.StringValueEditor;
 import org.multipage.gui.TextFieldEx;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays editor for real value.
+ * @author vakol
  *
  */
 public class RealEditorPanel extends JPanel implements SlotValueEditorPanelInterface {
@@ -58,13 +59,18 @@ public class RealEditorPanel extends JPanel implements SlotValueEditorPanelInter
 	 * Create the panel.
 	 */
 	public RealEditorPanel() {
-
-		// Initialize components.
-		initComponents();
-		// $hide>>$
-		// Post creation.
-		postCreate();
-		// $hide<<$
+		
+		try {
+			// Initialize components.
+			initComponents();
+			// $hide>>$
+			// Post creation.
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -119,16 +125,26 @@ public class RealEditorPanel extends JPanel implements SlotValueEditorPanelInter
 	 * Set PI.
 	 */
 	protected void setPi() {
-		
-		setValue(Math.PI);
+		try {
+			
+			setValue(Math.PI);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Add value of Euler number.
 	 */
 	protected void setEuler() {
-		
-		setValue(Math.E);
+		try {
+			
+			setValue(Math.E);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -137,10 +153,16 @@ public class RealEditorPanel extends JPanel implements SlotValueEditorPanelInter
 	@Override
 	public Object getValue() {
 
-		if (number == null && !ProgramGenerator.isExtensionToBuilder()) {
-			number = 0.0;
+		try {
+			if (number == null && !ProgramGenerator.isExtensionToBuilder()) {
+				number = 0.0;
+			}
+			return number;
 		}
-		return number;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return 0.0;
 	}
 
 	/**
@@ -148,97 +170,146 @@ public class RealEditorPanel extends JPanel implements SlotValueEditorPanelInter
 	 */
 	@Override
 	public void setValue(Object value) {
-
-		if (value instanceof Double) {
-			number = (Double) value;
-			textReal.setText(String.valueOf(number));
+		try {
+			
+			if (value instanceof Double) {
+				number = (Double) value;
+				textReal.setText(String.valueOf(number));
+			}
+			else {
+				number = null;
+				textReal.setText("");
+			}
 		}
-		else {
-			number = null;
-			textReal.setText("");
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		// Set document listener.
-		setDocumentListener();
-		// Set tool tips.
-		setToolTips();
+		try {
+			
+			// Set document listener.
+			setDocumentListener();
+			// Set tool tips.
+			setToolTips();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set tool tips.
 	 */
 	private void setToolTips() {
-		
-		buttonE.setToolTipText(Resources.getString("org.multipage.generator.tooltipInsertsEulerNumber"));
-		buttonPi.setToolTipText(Resources.getString("org.multipage.generator.tooltipInsertsLudolphsNumber"));
+		try {
+			
+			buttonE.setToolTipText(Resources.getString("org.multipage.generator.tooltipInsertsEulerNumber"));
+			buttonPi.setToolTipText(Resources.getString("org.multipage.generator.tooltipInsertsLudolphsNumber"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Clear editor.
 	 */
 	public void clear() {
-
-		number = null;
-		textReal.setText("");
+		try {
+			
+			number = null;
+			textReal.setText("");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set document listener.
 	 */
 	private void setDocumentListener() {
-
-		textReal.getDocument().addDocumentListener(new DocumentListener() {
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				onEditorChange();
-			}
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				onEditorChange();
-			}
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				onEditorChange();
-			}
-		});
+		try {
+			
+			textReal.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					try {
+						
+						onEditorChange();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					try {
+						
+						onEditorChange();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					try {
+						
+						onEditorChange();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On editor change.
 	 */
 	protected void onEditorChange() {
-
-		// Try to convert the value.
-		String text = textReal.getText();
-		String message = "";
-		
 		try {
-			if (!text.isEmpty()) {
-				number = Double.parseDouble(text);
-			}
-			else {
-				number = null;
-			}
-		}
-		catch (NumberFormatException e) {
 			
-			number = null;
-			message = Resources.getString("org.multipage.generator.messageErrorRealNumber");
+			// Try to convert the value.
+			String text = textReal.getText();
+			String message = "";
+			
+			try {
+				if (!text.isEmpty()) {
+					number = Double.parseDouble(text);
+				}
+				else {
+					number = null;
+				}
+			}
+			catch (NumberFormatException e) {
+				
+				number = null;
+				message = Resources.getString("org.multipage.generator.messageErrorRealNumber");
+			}
+			
+			labelMessage.setText(message);
 		}
-		
-		labelMessage.setText(message);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * @return the textReal
 	 */
 	public JTextField getTextReal() {
+		
 		return textReal;
 	}
 

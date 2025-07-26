@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -15,8 +15,11 @@ import java.util.concurrent.ExecutionException;
 
 import javax.swing.SwingWorker;
 
+import org.multipage.util.Safe;
+
 /**
- * @author
+ * Abstract class for Swing worker thread.
+ * @author vakol
  *
  */
 public abstract class SwingWorkerHelper<TOutput> extends SwingWorker<TOutput, Void> {
@@ -52,10 +55,16 @@ public abstract class SwingWorkerHelper<TOutput> extends SwingWorker<TOutput, Vo
 	@Override
 	protected TOutput doInBackground() throws Exception {
 		
-		// Call abstract method.
-		TOutput output = doBackgroundProcess();
-		// Return output.
-		return output;
+		try {
+			// Call abstract method.
+			TOutput output = doBackgroundProcess();
+			// Return output.
+			return output;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -117,9 +126,14 @@ public abstract class SwingWorkerHelper<TOutput> extends SwingWorker<TOutput, Vo
 	 * @param listener 
 	 */
 	public void addResultChangeListener(PropertyChangeListener listener) {
-		
-		// Add listener.
-		propertyChangeSupport.addPropertyChangeListener(listener);
+		try {
+			
+			// Add listener.
+			propertyChangeSupport.addPropertyChangeListener(listener);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -127,9 +141,14 @@ public abstract class SwingWorkerHelper<TOutput> extends SwingWorker<TOutput, Vo
 	 * @param listener 
 	 */
 	public void removeResultChangeListener(PropertyChangeListener listener) {
-	
-		// Remove result change listener.
-		propertyChangeSupport.removePropertyChangeListener(listener);
+		try {
+			
+			// Remove result change listener.
+			propertyChangeSupport.removePropertyChangeListener(listener);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -162,13 +181,18 @@ public abstract class SwingWorkerHelper<TOutput> extends SwingWorker<TOutput, Vo
 	 */
 	public void setProgressBar(int progress) {
 		
-		if (progress < 0) {
-			progress = 0;
+		try {
+			if (progress < 0) {
+				progress = 0;
+			}
+			if (progress > 100) {
+				progress = 100;
+			}
+			setProgress(progress);
 		}
-		if (progress > 100) {
-			progress = 100;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		setProgress(progress);
 	}
 	
 	/**
@@ -177,13 +201,18 @@ public abstract class SwingWorkerHelper<TOutput> extends SwingWorker<TOutput, Vo
 	 */
 	public void setProgress2Bar(int progress2) {
 		
-		if (progress2 < 0) {
-			progress2 = 0;
+		try {
+			if (progress2 < 0) {
+				progress2 = 0;
+			}
+			if (progress2 > 100) {
+				progress2 = 100;
+			}
+			firePropertyChange("progress2", 0, progress2);
 		}
-		if (progress2 > 100) {
-			progress2 = 100;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		firePropertyChange("progress2", 0, progress2);
 	}
 
 	/**
@@ -191,7 +220,12 @@ public abstract class SwingWorkerHelper<TOutput> extends SwingWorker<TOutput, Vo
 	 * @param text
 	 */
 	public void addMessage(String text) {
-		
-		firePropertyChange("message", null, text);
+		try {
+			
+			firePropertyChange("message", null, text);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

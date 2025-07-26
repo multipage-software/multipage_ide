@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2018 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 28-11-2018
+ * Created on : 2018-11-20
  *
  */
 package org.multipage.util;
@@ -18,8 +18,11 @@ import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 
+import org.multipage.util.Safe;
+
 /**
- * @author user
+ * The "j" class enables to log messages with Java.
+ * @author vakol
  *
  */
 public class j {
@@ -76,13 +79,18 @@ public class j {
 	 * Static constructor. 
 	 */
 	static {
-		
-		// Fill in array of locks.
-		int count = consoleSynchronization.length;
-		
-		for (int index = 0; index < count; index++) {
-			consoleSynchronization[index] = new Object();
+		try {
+			
+			// Fill in array of locks.
+			int count = consoleSynchronization.length;
+			
+			for (int index = 0; index < count; index++) {
+				consoleSynchronization[index] = new Object();
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -92,9 +100,14 @@ public class j {
 	 * @param strings
 	 */
 	synchronized public static void log(String parameter, Object ... strings) {
-		
-		// Delegate the call.
-		log(-1, Color.BLACK, parameter, strings);
+		try {
+			
+			// Delegate the call.
+			log(-1, Color.BLACK, parameter, strings);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -105,56 +118,60 @@ public class j {
 	 * @param parameter - can be omitted or "out" or "err" or of type LogParameter (with type and indentation)
 	 * @param strings
 	 */
-	@SuppressWarnings("resource")
 	public synchronized static void log(int consoleIndex, Color color, Object parameter, Object ... strings) {
-
-		String type = "";
-		String indentation = "";
-		
-		long currentTimeMs = System.currentTimeMillis();
-		long timeDeltaMs = currentTimeMs - lastTimeStampMs;
-		
-		Timestamp timeStamp = new Timestamp(currentTimeMs);
-		String timeStampText = logTimeSpan ? new SimpleDateFormat("kk:mm:ss.SSS").format(timeStamp) + ": " : "";
-		lastTimeStampMs = currentTimeMs;
-		
-		if (logTimeDelta) {
-			formatToConsole(consoleIndex, timeStamp, "delta %dms ", color, timeDeltaMs);
-		}
-		
-		if (parameter instanceof LogParameter) {
-			LogParameter logparam = (LogParameter) parameter;
-			indentation = logparam.getIndentation();
-			type = logparam.getType();
-		}
-		else if (parameter instanceof String) {
-			type = (String) parameter;
-		}
-		
-		if (!type.isEmpty()) {
+		try {
 			
-			PrintStream os = "out".equals(type) || "test".equals(type) ? System.out : ("err".equals(type) ? System.err : null);
-			if (strings.length > 0) {
-				if (os != null) {
-					Object [] parameters = Arrays.copyOfRange(strings, 1, strings.length);
-					os.format(indentation + timeStampText + strings[0].toString() + '\n', parameters);
+			String type = "";
+			String indentation = "";
+			
+			long currentTimeMs = System.currentTimeMillis();
+			long timeDeltaMs = currentTimeMs - lastTimeStampMs;
+			
+			Timestamp timeStamp = new Timestamp(currentTimeMs);
+			String timeStampText = logTimeSpan ? new SimpleDateFormat("kk:mm:ss.SSS").format(timeStamp) + ": " : "";
+			lastTimeStampMs = currentTimeMs;
+			
+			if (logTimeDelta) {
+				formatToConsole(consoleIndex, timeStamp, "delta %dms ", color, timeDeltaMs);
+			}
+			
+			if (parameter instanceof LogParameter) {
+				LogParameter logparam = (LogParameter) parameter;
+				indentation = logparam.getIndentation();
+				type = logparam.getType();
+			}
+			else if (parameter instanceof String) {
+				type = (String) parameter;
+			}
+			
+			if (!type.isEmpty()) {
+				
+				PrintStream os = "out".equals(type) || "test".equals(type) ? System.out : ("err".equals(type) ? System.err : null);
+				if (strings.length > 0) {
+					if (os != null) {
+						Object [] parameters = Arrays.copyOfRange(strings, 1, strings.length);
+						os.format(indentation + timeStampText + strings[0].toString() + '\n', parameters);
+					}
+					else {
+						formatToConsole(consoleIndex, timeStamp, indentation + timeStampText + type + '\n', color, strings);
+					}
 				}
 				else {
-					formatToConsole(consoleIndex, timeStamp, indentation + timeStampText + type + '\n', color, strings);
+					if (os != null) {
+						os.format(indentation + timeStampText + type);
+					}
+					else {
+						formatToConsole(consoleIndex, timeStamp, indentation + timeStampText + type + '\n', color);
+					}
 				}
 			}
 			else {
-				if (os != null) {
-					os.format(indentation + timeStampText + type);
-				}
-				else {
-					formatToConsole(consoleIndex, timeStamp, indentation + timeStampText + type + '\n', color);
-				}
+				formatToConsole(consoleIndex, timeStamp, indentation + parameter.toString() + '\n', color, strings);
 			}
 		}
-		else {
-			formatToConsole(consoleIndex, timeStamp, indentation + parameter.toString() + '\n', color, strings);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -167,46 +184,51 @@ public class j {
 	 * @throws Exception 
 	 */
 	private static void formatToConsole(int consoleIndex, Timestamp timeStamp, String format, Color color, Object... strings) {
-		
-		int count = openConsoles.length;
-		
-		if (consoleIndex > 0 && consoleIndex <= count) {
+		try {
 			
-			synchronized (consoleSynchronization[consoleIndex - 1]) {
+			int count = openConsoles.length;
+			
+			if (consoleIndex > 0 && consoleIndex <= count) {
 				
-				String body = String.format(format, strings);
-				try {
-					// Get timestamp and color.
-					String timeStampText = timeStamp.toLocalDateTime().format(TIMESTAMP_FORMAT);
-					String colorText = String.format("rgb(%02X,%02X,%02X)", color.getRed(), color.getGreen(), color.getBlue());
-					String header = timeStampText + '#' + colorText;
+				synchronized (consoleSynchronization[consoleIndex - 1]) {
 					
-					// Try to get socket connected to a given console.
-					Socket consoleSocket = getConnectedSocket(consoleIndex - 1);
-					
-					// Write the log message to the console.
-					OutputStream stream = consoleSocket.getOutputStream();
-					
-					// Get header and body bytes.
-					byte [] headerBytes = header.getBytes("UTF-8");
-					byte [] bodyBytes = body.getBytes("UTF-8");
-					
-					// Send message to socket stream.
-					stream.write(START_OF_HEADING);
-					stream.write(headerBytes);	
-					stream.write(START_OF_TEXT);
-					stream.write(bodyBytes);
-					stream.write(END_OF_TRANSMISSION);
-					stream.flush();
-				}
-				catch (Exception e) {
-					e.printStackTrace();
+					String body = String.format(format, strings);
+					try {
+						// Get timestamp and color.
+						String timeStampText = timeStamp.toLocalDateTime().format(TIMESTAMP_FORMAT);
+						String colorText = String.format("rgb(%02X,%02X,%02X)", color.getRed(), color.getGreen(), color.getBlue());
+						String header = timeStampText + '#' + colorText;
+						
+						// Try to get socket connected to a given console.
+						Socket consoleSocket = getConnectedSocket(consoleIndex - 1);
+						
+						// Write the log message to the console.
+						OutputStream stream = consoleSocket.getOutputStream();
+						
+						// Get header and body bytes.
+						byte [] headerBytes = header.getBytes("UTF-8");
+						byte [] bodyBytes = body.getBytes("UTF-8");
+						
+						// Send message to socket stream.
+						stream.write(START_OF_HEADING);
+						stream.write(headerBytes);	
+						stream.write(START_OF_TEXT);
+						stream.write(bodyBytes);
+						stream.write(END_OF_TRANSMISSION);
+						stream.flush();
+					}
+					catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 			}
+			else {
+				System.err.format(format, strings);
+			} 
 		}
-		else {
-			System.err.format(format, strings);
-		} 
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -214,32 +236,37 @@ public class j {
 	 * @param consoleIndex
 	 */
 	public static void logClear(int consoleIndex) {
-		
-		// Check console index.
-		if (consoleIndex <= 0 || consoleIndex > openConsoleSockets.length) {
-			return;
-		}
-		
-		synchronized (consoleSynchronization[consoleIndex - 1])	{
+		try {
 			
-			try {
-				// Try to get socket connected to a given console.
-				Socket consoleSocket = getConnectedSocket(consoleIndex - 1);
-				
-				// Write the log message to the console.
-				OutputStream stream = consoleSocket.getOutputStream();
-				
-				byte [] bytes = "CLEAR".getBytes("UTF-8");
-				stream.write(bytes);
-				stream.write(START_OF_TEXT);
-				stream.write('_');
-				stream.write(END_OF_TRANSMISSION);
-				stream.flush();
+			// Check console index.
+			if (consoleIndex <= 0 || consoleIndex > openConsoleSockets.length) {
+				return;
 			}
-			catch (Exception e) {
-				e.printStackTrace();
+			
+			synchronized (consoleSynchronization[consoleIndex - 1])	{
+				
+				try {
+					// Try to get socket connected to a given console.
+					Socket consoleSocket = getConnectedSocket(consoleIndex - 1);
+					
+					// Write the log message to the console.
+					OutputStream stream = consoleSocket.getOutputStream();
+					
+					byte [] bytes = "CLEAR".getBytes("UTF-8");
+					stream.write(bytes);
+					stream.write(START_OF_TEXT);
+					stream.write('_');
+					stream.write(END_OF_TRANSMISSION);
+					stream.flush();
+				}
+				catch (Exception e) {
+					Safe.exception(e);
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -291,10 +318,15 @@ public class j {
 	 * @param strings
 	 */
 	public static void logMessage(String stringResource, Object ...strings) {
-		
-		// Try to load string resource.
-		String message = Resources.getString(stringResource);
-		log(-1, Color.BLACK, message, strings);
+		try {
+			
+			// Try to load string resource.
+			String message = Resources.getString(stringResource);
+			log(-1, Color.BLACK, message, strings);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -318,21 +350,25 @@ public class j {
 	 */
 	public static String stack(int stackLevel) {
 		
-		// Omit current and the caller level.
-		stackLevel += 2;
-		
-		// Get stack info.
-		StackTraceElement [] stack = Thread.currentThread().getStackTrace();
-		
-		// Try to get stack element at given level.
-		if (stackLevel > 0 && stackLevel <= stack.length) {
-			StackTraceElement stackElement = stack[stackLevel];
+		try {
+			// Omit current and the caller level.
+			stackLevel += 2;
 			
-			// Dump stack level.
-			String stackElementDump = stackElement.toString();
-			return stackElementDump;
+			// Get stack info.
+			StackTraceElement [] stack = Thread.currentThread().getStackTrace();
+			
+			// Try to get stack element at given level.
+			if (stackLevel > 0 && stackLevel <= stack.length) {
+				StackTraceElement stackElement = stack[stackLevel];
+				
+				// Dump stack level.
+				String stackElementDump = stackElement.toString();
+				return stackElementDump;
+			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return "unknown";
 	}
 }

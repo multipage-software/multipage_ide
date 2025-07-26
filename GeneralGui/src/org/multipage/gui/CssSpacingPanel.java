@@ -1,23 +1,28 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2025-04-26
  *
  */
 
 package org.multipage.gui;
 
-import javax.swing.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.io.IOException;
+import java.util.Scanner;
 
-import org.multipage.util.*;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.SpringLayout;
 
-import java.awt.*;
-import java.io.*;
-import java.util.*;
+import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays spacing editor.
+ * @author vakol
  *
  */
 public class CssSpacingPanel extends InsertPanel implements StringValueEditor {
@@ -89,13 +94,18 @@ public class CssSpacingPanel extends InsertPanel implements StringValueEditor {
 	 * @param parentWindow 
 	 */
 	public CssSpacingPanel(String initialString) {
-
-		initComponents();
 		
-		// $hide>>$
-		this.initialString = initialString;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			this.initialString = initialString;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -144,8 +154,13 @@ public class CssSpacingPanel extends InsertPanel implements StringValueEditor {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-
-		setFromInitialString();
+		try {
+			
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -160,21 +175,29 @@ public class CssSpacingPanel extends InsertPanel implements StringValueEditor {
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		localize();
-		
-		loadUnits();
-		
-		loadDialog();
+		try {
+			
+			localize();
+			loadUnits();
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load units.
 	 */
 	private void loadUnits() {
-		
-		Utility.loadCssUnits(comboHorizontalUnits);
-		Utility.loadCssUnits(comboVerticalUnits);
+		try {
+			
+			Utility.loadCssUnits(comboHorizontalUnits);
+			Utility.loadCssUnits(comboVerticalUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -184,7 +207,13 @@ public class CssSpacingPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getSpecification() {
 		
-		return getHorizontal() + " " + getVertical();
+		try {
+			return getHorizontal() + " " + getVertical();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -193,7 +222,13 @@ public class CssSpacingPanel extends InsertPanel implements StringValueEditor {
 	 */
 	private String getHorizontal() {
 		
-		return Utility.getCssValueAndUnits(textHorizontal, comboHorizontalUnits);
+		try {
+			return Utility.getCssValueAndUnits(textHorizontal, comboHorizontalUnits);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -202,32 +237,43 @@ public class CssSpacingPanel extends InsertPanel implements StringValueEditor {
 	 */
 	private String getVertical() {
 		
-		return Utility.getCssValueAndUnits(textVertical, comboVerticalUnits);
+		try {
+			return Utility.getCssValueAndUnits(textVertical, comboVerticalUnits);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
 	 * Set from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		// Initialize controls.
-		setHorizontal("0");
-		setVertical("0");
-
-		if (initialString != null) {
+		try {
 			
-			Scanner scanner = new Scanner(initialString.trim());
-			
-			try {
-				// Set values.
-				setHorizontal(scanner.next().trim());
-				setVertical(scanner.next().trim());
+			// Initialize controls.
+			setHorizontal("0");
+			setVertical("0");
+	
+			if (initialString != null) {
+				
+				Scanner scanner = new Scanner(initialString.trim());
+				
+				try {
+					// Set values.
+					setHorizontal(scanner.next().trim());
+					setVertical(scanner.next().trim());
+				}
+				catch (Exception e) {
+				}
+				
+			    scanner.close();
 			}
-			catch (Exception e) {
-			}
-			
-		    scanner.close();
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -235,8 +281,13 @@ public class CssSpacingPanel extends InsertPanel implements StringValueEditor {
 	 * @param string
 	 */
 	private void setHorizontal(String string) {
-		
-		Utility.setCssValueAndUnits(string, textHorizontal, comboHorizontalUnits);
+		try {
+			
+			Utility.setCssValueAndUnits(string, textHorizontal, comboHorizontalUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -244,17 +295,27 @@ public class CssSpacingPanel extends InsertPanel implements StringValueEditor {
 	 * @param string
 	 */
 	private void setVertical(String string) {
-		
-		Utility.setCssValueAndUnits(string, textVertical, comboVerticalUnits);
+		try {
+			
+			Utility.setCssValueAndUnits(string, textVertical, comboVerticalUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(labelHorizontal);
-		Utility.localize(labelVertical);
+		try {
+			
+			Utility.localize(labelHorizontal);
+			Utility.localize(labelVertical);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -263,7 +324,13 @@ public class CssSpacingPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.gui.textCssSpacingBuilder");
+		try {
+			return Resources.getString("org.multipage.gui.textCssSpacingBuilder");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -272,7 +339,13 @@ public class CssSpacingPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getResultText() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -328,7 +401,13 @@ public class CssSpacingPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getStringValue() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -337,9 +416,14 @@ public class CssSpacingPanel extends InsertPanel implements StringValueEditor {
 	 */
 	@Override
 	public void setStringValue(String string) {
-		
-		initialString = string;
-		setFromInitialString();
+		try {
+			
+			initialString = string;
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

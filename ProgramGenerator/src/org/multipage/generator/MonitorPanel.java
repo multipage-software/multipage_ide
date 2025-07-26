@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2019 (C) Vaclav Kolarcik
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 package org.multipage.generator;
@@ -13,14 +13,15 @@ import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 
 import org.multipage.gui.ApplicationEvents;
 import org.multipage.gui.GuiSignal;
 import org.multipage.gui.Message;
-import org.multipage.gui.NonCyclingReceiver;
-import org.multipage.gui.UpdateSignal;
+import org.multipage.gui.PreventEventEchos;
+import org.multipage.gui.UpdatableComponent;
+import org.multipage.util.Closable;
+import org.multipage.util.Safe;
 
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -34,11 +35,11 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 
 /**
- * 
- * @author user
+ * Panel that displays Area Server output monitor.
+ * @author vakol
  *
  */
-public class MonitorPanel extends Panel implements TabItemInterface, NonCyclingReceiver {
+public class MonitorPanel extends Panel implements TabItemInterface, PreventEventEchos, UpdatableComponent, Closable {
 
 	/**
 	 * Version
@@ -78,18 +79,24 @@ public class MonitorPanel extends Panel implements TabItemInterface, NonCyclingR
 	 */
 	public MonitorPanel(String url) {
 		
-		this.url = url;
-		
-		// Initialize components.
-		initComponents();
-		// Post creation.
-		postCreation(); //$hide$
+		try {
+			this.url = url;
+			
+			// Initialize components.
+			initComponents();
+			// Post creation.
+			postCreation(); //$hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
 	 * Initialize components.
 	 */
 	private void initComponents() {
+
 		setLayout(new BorderLayout(0, 0));
 	}
 	
@@ -97,12 +104,18 @@ public class MonitorPanel extends Panel implements TabItemInterface, NonCyclingR
 	 * Post creation.
 	 */
 	private void postCreation() {
-		
-		// Ensure the panel is visible and open the browser.
-		setVisible(true);
-		openBrowser(url);
-		
-		setListeners();
+		try {
+			
+			// Ensure the panel is visible and open the browser.
+			setVisible(true);
+			openBrowser(url);
+			setListeners();
+			// Register for updates.
+			GeneratorMainFrame.registerForUpdate(this);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -110,21 +123,31 @@ public class MonitorPanel extends Panel implements TabItemInterface, NonCyclingR
 	 */
 	private void openBrowser(String url) {
 		
-		// TODO: <---FIX When this panel is removed the application exits.
 		// Try to open SWT browser (with native code).
-		SwingUtilities.invokeLater(() -> {
+		Safe.invokeLater(() -> {
 			
-			swtBrowser = SwtBrowserCanvas.createLater(browserCanvas -> {
+			swtBrowser = SwtBrowserCanvas.createBrowserCanvas(browserCanvas -> {
+				try {
+					
+					// Add SWT browser into center of the panel.
+					MonitorPanel.this.add(browserCanvas, BorderLayout.CENTER);
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
 				
-				// Add SWT browser into center of the panel.
-				MonitorPanel.this.add(browserCanvas, BorderLayout.CENTER);
-				
-				// Load the URL provided.
+				// Retur URL to load.
 				return url;
 			}
 			,
 			urlChanged -> {
-				onUrlChanged(urlChanged);
+				try {
+				
+					onUrlChanged(urlChanged);
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
 			});
 		
 			if (swtBrowser == null) {
@@ -137,10 +160,8 @@ public class MonitorPanel extends Panel implements TabItemInterface, NonCyclingR
 				
 				// Initialize scene.
 				Platform.setImplicitExit(false);
-				Platform.runLater(new Runnable() {
-					
-					@Override
-					public void run() {
+				Platform.runLater(() -> {
+					try {
 						
 						webViewBrowser = new WebView();
 						webEngine = webViewBrowser.getEngine();
@@ -153,6 +174,9 @@ public class MonitorPanel extends Panel implements TabItemInterface, NonCyclingR
 						scene = new Scene(webViewBrowser, 750, 500, Color.web("#666970"));
 						javaFxPanel.setScene(scene);
 					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				});
 			}
 		});
@@ -163,33 +187,44 @@ public class MonitorPanel extends Panel implements TabItemInterface, NonCyclingR
 	 * @param urlChanged
 	 */
 	private void onUrlChanged(String urlChanged) {
-		
-		// If there exists requested area ID, display the area properties.
-		if (urlChanged == null || urlChanged.isEmpty()) {
-			return;
+		try {
+			
+			// Update main panel.
+			Safe.invokeLater(() -> {
+				MonitorPanel.this.revalidate();
+			});
+			
+			// If there exists requested area ID, display the area properties.
+			if (urlChanged == null || urlChanged.isEmpty()) {
+				return;
+			}
+			
+			Long currentAreaId = getCurrentAreaId(urlChanged);
+			if (currentAreaId <= 0L) {
+				return;
+			}
+			
+			// Select new areas.
+			HashSet<Long> selectedAreaIds = new HashSet<Long>();
+			selectedAreaIds.add(currentAreaId);
+			
+			ApplicationEvents.transmit(MonitorPanel.this, GuiSignal.displayAreaProperties, selectedAreaIds);
+			
+			// This patch resets SWT shells so that they do not grab input focus.
+			ApplicationEvents.transmit(this, GuiSignal.resetSwtBrowser);
 		}
-		
-		Long currentAreaId = getCurrentAreaId(urlChanged);
-		if (currentAreaId <= 0L) {
-			return;
-		}
-		
-		// Select new areas.
-		HashSet<Long> selectedAreaIds = new HashSet<Long>();
-		selectedAreaIds.add(currentAreaId);
-		ApplicationEvents.transmit(MonitorPanel.this, GuiSignal.selectDiagramAreas, selectedAreaIds);
-		
-		// This patch resets SWT shells so that they do not grab input focus.
-		ApplicationEvents.transmit(this, GuiSignal.resetSwtBrowser);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set web engine listeners.
-	 * @param webEngine2
+	 * @param webEngine
 	 */
-	protected void setWebEngineListeners(WebEngine webEngine2) {
-		
+	protected void setWebEngineListeners(WebEngine webEngine) {
 		try {
+			
 			ReadOnlyObjectProperty<javafx.concurrent.Worker.State> property = webEngine.getLoadWorker().stateProperty();
 	
 			ChangeListener<State> changeListener = new ChangeListener<State>() {
@@ -205,44 +240,32 @@ public class MonitorPanel extends Panel implements TabItemInterface, NonCyclingR
 			};
 			property.addListener(changeListener);
 		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set listeners.
 	 */
 	private void setListeners() {
-		
-		// Receive the "update" signal.
-		ApplicationEvents.receiver(this, UpdateSignal.updateMonitorPanel, message -> {
+		try {
 			
-			// Reload the browser.
-			swtBrowser.reload();
-			
-			// If there exists requested area ID, display the area properties.
-			String currentUrl = swtBrowser.getUrl();
-			if (currentUrl == null || currentUrl.isEmpty()) {
-				return;
-			}
-			
-			Long currentAreaId = getCurrentAreaId(currentUrl);
-			if (currentAreaId <= 0L) {
-				return;
-			}
-			
-			HashSet<Long> selectedAreaIds = new HashSet<Long>();
-			selectedAreaIds.add(currentAreaId);
-			ApplicationEvents.transmit(MonitorPanel.this, GuiSignal.selectDiagramAreas, selectedAreaIds);
-		});
-		
-		// Receive the "reset SWT" signal.
-		ApplicationEvents.receiver(this, GuiSignal.resetSwtBrowser, message -> {
-			
-			swtBrowser.enableSwt(false);
-			swtBrowser.enableSwt(true);
-		});
+			// Receive the "reset SWT" signal.
+			ApplicationEvents.receiver(this, GuiSignal.resetSwtBrowser, message -> {
+				try {
+					
+					swtBrowser.enableSwt(false);
+					swtBrowser.enableSwt(true);
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -293,33 +316,53 @@ public class MonitorPanel extends Panel implements TabItemInterface, NonCyclingR
 	 * Dispose monitor.
 	 */
 	public void dispose() {
-		 
-		// Close event listeners.
-		ApplicationEvents.removeReceivers(this);
+		try {
+			
+			// Close event listeners.
+			ApplicationEvents.removeReceivers(this);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Recreate browser.
 	 */
 	public void recreateBrowser() {
-		
-		swtBrowser.close();
-		
-		MonitorPanel.this.remove(swtBrowser);
-		
-		swtBrowser = SwtBrowserCanvas.createLater(
-			browser -> {
+		try {
 			
-				// Add SWT browser to the center of the panel.
-				MonitorPanel.this.add(browser, BorderLayout.CENTER);
-				// Load the URL provided.
-				return url;
-			}
-			,
-			urlChanged -> {
-				onUrlChanged(urlChanged);
-			}
-		);
+			swtBrowser.close();
+			MonitorPanel.this.remove(swtBrowser);
+			
+			swtBrowser = SwtBrowserCanvas.createBrowserCanvas(
+				browser -> {
+					
+					try {
+						// Add SWT browser to the center of the panel.
+						MonitorPanel.this.add(browser, BorderLayout.CENTER);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					// Load the URL provided.
+					return url;
+				}
+				,
+				urlChanged -> {
+					try {
+						
+						onUrlChanged(urlChanged);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -335,10 +378,15 @@ public class MonitorPanel extends Panel implements TabItemInterface, NonCyclingR
 	 */
 	@Override
 	public void beforeTabPanelRemoved() {
-		
-		if (swtBrowser != null) {
-			swtBrowser.close();
+		try {
+			
+			if (swtBrowser != null) {
+				swtBrowser.close();
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -346,8 +394,13 @@ public class MonitorPanel extends Panel implements TabItemInterface, NonCyclingR
 	 */
 	@Override
 	public void recreateContent() {
-		
-		recreateBrowser();
+		try {
+			
+			recreateBrowser();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -390,8 +443,38 @@ public class MonitorPanel extends Panel implements TabItemInterface, NonCyclingR
 	}
 
 	@Override
-	public HashSet<Long> getSelectedAreaIds() {
+	public HashSet<Long> getSelectedTabAreaIds() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	/**
+	 * On update components.
+	 */
+	@Override
+	public void updateComponents() {
+		try {
+			
+			// Reload the browser.
+			swtBrowser.reload();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+	}
+	
+	/**
+	 * Close the panel.
+	 */
+	@Override
+	public void close() {
+		try {
+			
+			// Unregister from updates.
+			GeneratorMainFrame.unregisterFromUpdate(this);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

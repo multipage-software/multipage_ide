@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -13,10 +13,11 @@ import javax.swing.JFrame;
 
 import org.maclan.Area;
 import org.multipage.translator.TranslatorDialog;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays Translator.
+ * @author vakol
  *
  */
 public class GeneratorTranslatorDialog extends TranslatorDialog {
@@ -32,15 +33,20 @@ public class GeneratorTranslatorDialog extends TranslatorDialog {
 	 * @param areas 
 	 */
 	public static void showDialog(JFrame parentFrame, LinkedList<Area> areas) {
-
-		/*if (areas.isEmpty()) {
-			Utility.show(null, "org.multipage.generator.messageSelectAreasToTranslate");
-			return;
-		}*/
-		// Create dialog, set selected areas and show the dialog.
-		GeneratorTranslatorDialog dialog = new GeneratorTranslatorDialog(
-				parentFrame, areas);
-		dialog.setVisible(true);
+		try {
+			
+			/*if (areas.isEmpty()) {
+				Utility.show(null, "org.multipage.generator.messageSelectAreasToTranslate");
+				return;
+			}*/
+			// Create dialog, set selected areas and show the dialog.
+			GeneratorTranslatorDialog dialog = new GeneratorTranslatorDialog(
+					parentFrame, areas);
+			dialog.setVisible(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

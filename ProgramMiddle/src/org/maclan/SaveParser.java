@@ -1,15 +1,17 @@
 /*
- * Copyright 2010-2019 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 03-03-2020
+ * Created on : 2020-03-03
  *
  */
 package org.maclan;
 
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * @author user
+ * Save tag parser.
+ * @author vakol
  *
  */
 public abstract class SaveParser {

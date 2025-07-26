@@ -1,20 +1,33 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import java.awt.*;
-import javax.swing.*;
-import java.awt.event.*;
-import java.io.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
+
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.SpringLayout;
+
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays CSS transformation matrix editor.
+ * @author vakol
  *
  */
 public class CssTransformMatrixDialog extends JDialog {
@@ -92,12 +105,17 @@ public class CssTransformMatrixDialog extends JDialog {
 	 */
 	public static CssTransformMatrix showDialog(Component parent) {
 		
-		CssTransformMatrixDialog dialog = new CssTransformMatrixDialog(parent);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			CssTransformMatrixDialog dialog = new CssTransformMatrixDialog(parent);
+			dialog.setVisible(true);
 			
-			return dialog.getMatrix();
+			if (dialog.confirm) {
+				
+				return dialog.getMatrix();
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -111,13 +129,18 @@ public class CssTransformMatrixDialog extends JDialog {
 	public static boolean editDialog(Component parent,
 			CssTransformMatrix matrix) {
 		
-		CssTransformMatrixDialog dialog = new CssTransformMatrixDialog(parent);
-		dialog.setMatrix(matrix);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			CssTransformMatrixDialog dialog = new CssTransformMatrixDialog(parent);
+			dialog.setMatrix(matrix);
+			dialog.setVisible(true);
 			
-			matrix.setFrom(dialog.getMatrix());
+			if (dialog.confirm) {
+				
+				matrix.setFrom(dialog.getMatrix());
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return false;
 	}
@@ -127,13 +150,18 @@ public class CssTransformMatrixDialog extends JDialog {
 	 * @param matrix
 	 */
 	private void setMatrix(CssTransformMatrix matrix) {
-		
-		textA.setText(String.valueOf(matrix.a));
-		textB.setText(String.valueOf(matrix.b));
-		textC.setText(String.valueOf(matrix.c));
-		textD.setText(String.valueOf(matrix.d));
-		textTx.setText(String.valueOf(matrix.tx));
-		textTy.setText(String.valueOf(matrix.ty));
+		try {
+			
+			textA.setText(String.valueOf(matrix.a));
+			textB.setText(String.valueOf(matrix.b));
+			textC.setText(String.valueOf(matrix.c));
+			textD.setText(String.valueOf(matrix.d));
+			textTx.setText(String.valueOf(matrix.tx));
+			textTy.setText(String.valueOf(matrix.ty));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -142,16 +170,22 @@ public class CssTransformMatrixDialog extends JDialog {
 	 */
 	private CssTransformMatrix getMatrix() {
 		
-		CssTransformMatrix matrix = new CssTransformMatrix();
-		
-		matrix.a = Utility.getFloat(textA, 0.0f);
-		matrix.b = Utility.getFloat(textB, 0.0f);
-		matrix.c = Utility.getFloat(textC, 0.0f);
-		matrix.d = Utility.getFloat(textD, 0.0f);
-		matrix.tx = Utility.getFloat(textTx, 0.0f);
-		matrix.ty = Utility.getFloat(textTy, 0.0f);
-		
-		return matrix;
+		try {
+			CssTransformMatrix matrix = new CssTransformMatrix();
+			
+			matrix.a = Utility.getFloat(textA, 0.0f);
+			matrix.b = Utility.getFloat(textB, 0.0f);
+			matrix.c = Utility.getFloat(textC, 0.0f);
+			matrix.d = Utility.getFloat(textD, 0.0f);
+			matrix.tx = Utility.getFloat(textTx, 0.0f);
+			matrix.ty = Utility.getFloat(textTy, 0.0f);
+			
+			return matrix;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -160,12 +194,17 @@ public class CssTransformMatrixDialog extends JDialog {
 	 */
 	public CssTransformMatrixDialog(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -278,42 +317,62 @@ public class CssTransformMatrixDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		localize();
-		setIcons();
-		
-		loadDialog();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			localize();
+			setIcons();
+			
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(this);
+		try {
+			
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(this);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
-		
-		saveDialog();
-		
-		confirm = false;
+		try {
+			
+			saveDialog();
+			confirm = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -321,10 +380,15 @@ public class CssTransformMatrixDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		saveDialog();
-		
-		confirm = true;
+		try {
+			
+			saveDialog();
+			confirm = true;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -332,20 +396,25 @@ public class CssTransformMatrixDialog extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setBounds(bounds);
+			}
+			
+			textA.setText("0.0");
+			textB.setText("0.0");
+			textC.setText("0.0");
+			textD.setText("0.0");
+			textTx.setText("0.0");
+			textTy.setText("0.0");
 		}
-		else {
-			setBounds(bounds);
-		}
-		
-		textA.setText("0.0");
-		textB.setText("0.0");
-		textC.setText("0.0");
-		textD.setText("0.0");
-		textTx.setText("0.0");
-		textTy.setText("0.0");
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**

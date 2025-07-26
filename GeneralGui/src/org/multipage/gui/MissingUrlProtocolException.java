@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 13-05-2020
+ * Created on : 2020-05-13
  *
  */
 
@@ -10,8 +10,8 @@ package org.multipage.gui;
 import java.net.MalformedURLException;
 
 /**
- * 
- * @author user
+ * Exception thrown when URL protocol is missing.
+ * @author vakol
  *
  */
 public class MissingUrlProtocolException extends MalformedURLException {

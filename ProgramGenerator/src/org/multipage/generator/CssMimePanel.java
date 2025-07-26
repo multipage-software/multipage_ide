@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -29,10 +29,11 @@ import org.multipage.gui.StringValueEditor;
 import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays editor for MIME type.
+ * @author vakol
  *
  */
 public class CssMimePanel extends InsertPanel implements StringValueEditor {
@@ -101,13 +102,18 @@ public class CssMimePanel extends InsertPanel implements StringValueEditor {
 	 * @param parentWindow 
 	 */
 	public CssMimePanel(String initialString) {
-
-		initComponents();
 		
-		// $hide>>$
-		this.initialString = initialString;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			this.initialString = initialString;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -157,23 +163,33 @@ public class CssMimePanel extends InsertPanel implements StringValueEditor {
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		localize();
-		setIcons();
-		setToolTips();
+		try {
+			
+			localize();
+			setIcons();
+			setToolTips();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On select MIME type.
 	 */
 	protected void onSelectMime() {
-		
-		MimeType mimeType = MimeTypesEditor.showDialog(this, textMime.getText());
-		if (mimeType == null) {
-			return;
+		try {
+			
+			MimeType mimeType = MimeTypesEditor.showDialog(this, textMime.getText());
+			if (mimeType == null) {
+				return;
+			}
+			
+			textMime.setText(mimeType.type);
 		}
-		
-		textMime.setText(mimeType.type);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -183,42 +199,67 @@ public class CssMimePanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getSpecification() {
 		
-		return textMime.getText();
+		try {
+			return textMime.getText();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
 	 * Set from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		if (initialString != null) {
+		try {
 			
-			textMime.setText(initialString);
+			if (initialString != null) {
+				textMime.setText(initialString);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(labelMimeType);
+		try {
+			
+			Utility.localize(labelMimeType);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonSelectMime.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
+		try {
+			
+			buttonSelectMime.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set tool tips.
 	 */
 	private void setToolTips() {
-		
-		buttonSelectMime.setToolTipText(Resources.getString("org.multipage.generator.tooltipSelectMimeType"));
+		try {
+			
+			buttonSelectMime.setToolTipText(Resources.getString("org.multipage.generator.tooltipSelectMimeType"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -227,7 +268,13 @@ public class CssMimePanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.generator.textCssMimeBuilder");
+		try {
+			return Resources.getString("org.multipage.generator.textCssMimeBuilder");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -236,7 +283,13 @@ public class CssMimePanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getResultText() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/* (non-Javadoc)
@@ -290,7 +343,13 @@ public class CssMimePanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getStringValue() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -298,9 +357,14 @@ public class CssMimePanel extends InsertPanel implements StringValueEditor {
 	 */
 	@Override
 	public void setStringValue(String string) {
-		
-		initialString = string;
-		setFromInitialString();
+		try {
+			
+			initialString = string;
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

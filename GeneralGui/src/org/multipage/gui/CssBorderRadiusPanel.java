@@ -1,25 +1,32 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.io.IOException;
+import java.util.Scanner;
 
-import java.awt.*;
-import java.io.*;
-import java.util.*;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SpringLayout;
+import javax.swing.SwingConstants;
+import javax.swing.border.LineBorder;
 
-import javax.swing.border.*;
-
-import org.multipage.util.*;
+import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays editor for CSS border radius.
+ * @author vakol
  *
  */
 public class CssBorderRadiusPanel extends InsertPanel implements StringValueEditor {
@@ -98,13 +105,18 @@ public class CssBorderRadiusPanel extends InsertPanel implements StringValueEdit
 	 * @param parentWindow 
 	 */
 	public CssBorderRadiusPanel(String initialString) {
-
-		initComponents();
 		
-		// $hide>>$
-		this.initialString = initialString;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			this.initialString = initialString;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -115,7 +127,7 @@ public class CssBorderRadiusPanel extends InsertPanel implements StringValueEdit
 		setLayout(springLayout);
 		
 		panel = new JPanel();
-		panel.setPreferredSize(new Dimension(420, 140));
+		panel.setPreferredSize(new Dimension(460, 140));
 		springLayout.putConstraint(SpringLayout.NORTH, panel, 30, SpringLayout.NORTH, this);
 		springLayout.putConstraint(SpringLayout.WEST, panel, 24, SpringLayout.WEST, this);
 		panel.setBorder(new LineBorder(new Color(0, 0, 0)));
@@ -204,8 +216,13 @@ public class CssBorderRadiusPanel extends InsertPanel implements StringValueEdit
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-
-		setFromInitialString();
+		try {
+			
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -220,23 +237,31 @@ public class CssBorderRadiusPanel extends InsertPanel implements StringValueEdit
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		localize();
-		
-		loadUnits();
-		
-		loadDialog();
+		try {
+			
+			localize();
+			loadUnits();
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load units.
 	 */
 	private void loadUnits() {
-		
-		Utility.loadCssUnits(comboBottomLeft);
-		Utility.loadCssUnits(comboBottomRight);
-		Utility.loadCssUnits(comboTopLeft);
-		Utility.loadCssUnits(comboTopRight);
+		try {
+			
+			Utility.loadCssUnits(comboBottomLeft);
+			Utility.loadCssUnits(comboBottomRight);
+			Utility.loadCssUnits(comboTopLeft);
+			Utility.loadCssUnits(comboTopRight);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -246,7 +271,13 @@ public class CssBorderRadiusPanel extends InsertPanel implements StringValueEdit
 	@Override
 	public String getSpecification() {
 		
-		return getTopLeft() + " " + getTopRight() + " " + getBottomRight() + " " + getBottomLeft();
+		try {
+			return getTopLeft() + " " + getTopRight() + " " + getBottomRight() + " " + getBottomLeft();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -255,7 +286,13 @@ public class CssBorderRadiusPanel extends InsertPanel implements StringValueEdit
 	 */
 	private String getTopLeft() {
 		
-		return Utility.getCssValueAndUnits(textTopLeft, comboTopLeft);
+		try {
+			return Utility.getCssValueAndUnits(textTopLeft, comboTopLeft);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -264,7 +301,13 @@ public class CssBorderRadiusPanel extends InsertPanel implements StringValueEdit
 	 */
 	private String getTopRight() {
 		
-		return Utility.getCssValueAndUnits(textTopRight, comboTopRight);
+		try {
+			return Utility.getCssValueAndUnits(textTopRight, comboTopRight);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -273,7 +316,13 @@ public class CssBorderRadiusPanel extends InsertPanel implements StringValueEdit
 	 */
 	private String getBottomRight() {
 		
-		return Utility.getCssValueAndUnits(textBottomRight, comboBottomRight);
+		try {
+			return Utility.getCssValueAndUnits(textBottomRight, comboBottomRight);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -282,35 +331,46 @@ public class CssBorderRadiusPanel extends InsertPanel implements StringValueEdit
 	 */
 	private String getBottomLeft() {
 		
-		return Utility.getCssValueAndUnits(textBottomLeft, comboBottomLeft);
+		try {
+			return Utility.getCssValueAndUnits(textBottomLeft, comboBottomLeft);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
 	 * Set from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		setTopLeft("0px");
-		setTopRight("0px");
-		setBottomRight("0px");
-		setBottomLeft("0px");
-
-		if (initialString != null) {
-		
-			Scanner scanner = new Scanner(initialString.trim());
+		try {
 			
-			try {
-				// Set values.
-				setTopLeft(scanner.next().trim());
-				setTopRight(scanner.next().trim());
-				setBottomRight(scanner.next().trim());
-				setBottomLeft(scanner.next().trim());
-			}
-			catch (Exception e) {
-			}
+			setTopLeft("0px");
+			setTopRight("0px");
+			setBottomRight("0px");
+			setBottomLeft("0px");
+	
+			if (initialString != null) {
 			
-		    scanner.close();
+				Scanner scanner = new Scanner(initialString.trim());
+				
+				try {
+					// Set values.
+					setTopLeft(scanner.next().trim());
+					setTopRight(scanner.next().trim());
+					setBottomRight(scanner.next().trim());
+					setBottomLeft(scanner.next().trim());
+				}
+				catch (Exception e) {
+				}
+				
+			    scanner.close();
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -318,8 +378,13 @@ public class CssBorderRadiusPanel extends InsertPanel implements StringValueEdit
 	 * @param string
 	 */
 	private void setTopLeft(String string) {
-		
-		Utility.setCssValueAndUnits(string, textTopLeft, comboTopLeft);
+		try {
+			
+			Utility.setCssValueAndUnits(string, textTopLeft, comboTopLeft);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -327,8 +392,13 @@ public class CssBorderRadiusPanel extends InsertPanel implements StringValueEdit
 	 * @param string
 	 */
 	private void setTopRight(String string) {
-		
-		Utility.setCssValueAndUnits(string, textTopRight, comboTopRight);
+		try {
+			
+			Utility.setCssValueAndUnits(string, textTopRight, comboTopRight);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -336,8 +406,13 @@ public class CssBorderRadiusPanel extends InsertPanel implements StringValueEdit
 	 * @param string
 	 */
 	private void setBottomRight(String string) {
-		
-		Utility.setCssValueAndUnits(string, textBottomRight, comboBottomRight);
+		try {
+			
+			Utility.setCssValueAndUnits(string, textBottomRight, comboBottomRight);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -345,19 +420,29 @@ public class CssBorderRadiusPanel extends InsertPanel implements StringValueEdit
 	 * @param string
 	 */
 	private void setBottomLeft(String string) {
-		
-		Utility.setCssValueAndUnits(string, textBottomLeft, comboBottomLeft);
+		try {
+			
+			Utility.setCssValueAndUnits(string, textBottomLeft, comboBottomLeft);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(labelBottomLeft);
-		Utility.localize(labelBottomRight);
-		Utility.localize(labelTopLeft);
-		Utility.localize(labelTopRight);
+		try {
+			
+			Utility.localize(labelBottomLeft);
+			Utility.localize(labelBottomRight);
+			Utility.localize(labelTopLeft);
+			Utility.localize(labelTopRight);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -366,7 +451,13 @@ public class CssBorderRadiusPanel extends InsertPanel implements StringValueEdit
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.gui.textCssBorderRadiusBuilder");
+		try {
+			return Resources.getString("org.multipage.gui.textCssBorderRadiusBuilder");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -375,7 +466,13 @@ public class CssBorderRadiusPanel extends InsertPanel implements StringValueEdit
 	@Override
 	public String getResultText() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -431,7 +528,13 @@ public class CssBorderRadiusPanel extends InsertPanel implements StringValueEdit
 	@Override
 	public String getStringValue() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -441,8 +544,14 @@ public class CssBorderRadiusPanel extends InsertPanel implements StringValueEdit
 	@Override
 	public void setStringValue(String string) {
 		
-		initialString = string;
-		setFromInitialString();
+		try {
+			
+			initialString = string;
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

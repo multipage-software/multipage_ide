@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2021 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 28-12-2021
+ * Created on : 2021-12-28
  *
  */
 package org.multipage.gui;
@@ -16,8 +16,8 @@ import java.nio.charset.Charset;
 import org.apache.commons.io.input.BOMInputStream;
 
 /**
- * Input stream interface that provides objects with application states.
- * The XStream implementation uses the XML format to read object fields.
+ * Input stream interface for classes that read objects representing application states.
+ * The XStream implementation uses XML format to read object fields.
  * @author vakol
  *
  */

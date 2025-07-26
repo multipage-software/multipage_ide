@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -28,11 +28,12 @@ import org.multipage.gui.Images;
 import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
+import org.multipage.util.Safe;
 
 
 /**
- * 
- * @author
+ * Dialog that displays MIME editor.
+ * @author vakol
  *
  */
 public class MimeEdit extends JDialog {
@@ -51,7 +52,6 @@ public class MimeEdit extends JDialog {
 	 * References to type and extension strings.
 	 */
 	private Obj<String> type;
-
 	private Obj<String> extension;
 
 	/**
@@ -78,11 +78,17 @@ public class MimeEdit extends JDialog {
 	public static boolean showDialog(Component parent, Obj<String> type,
 			Obj<String> extension, Obj<Boolean> preference) {
 		
-		MimeEdit dialog = new MimeEdit(parent, type, extension,
-				preference);
-		dialog.setVisible(true);
-		
-		return dialog.confirm;
+		try {
+			MimeEdit dialog = new MimeEdit(parent, type, extension,
+					preference);
+			dialog.setVisible(true);
+			
+			return dialog.confirm;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -95,20 +101,26 @@ public class MimeEdit extends JDialog {
 	public MimeEdit(Component parent, Obj<String> type, Obj<String> extension,
 			Obj<Boolean> preference) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
-		this.type = type;
-		this.extension = extension;
-		this.preference = preference;
-		addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				onCancel();
-			}
-		});
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		// Initialize components.
-		initComponents();
-		// Post creation.
-		postCreate();
+		
+		try {
+			this.type = type;
+			this.extension = extension;
+			this.preference = preference;
+			addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowClosing(WindowEvent e) {
+					onCancel();
+				}
+			});
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			// Initialize components.
+			initComponents();
+			// Post creation.
+			postCreate();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -188,48 +200,63 @@ public class MimeEdit extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		// Set text fields.
-		textType.setText(type.ref);
-		textType.selectAll();
-		textExtension.setText(extension.ref);
-		// Set checkbox.
-		checkboxMimePreference.setSelected(preference.ref);
-		// Localize elements.
-		localize();
-		// Set icons.
-		setIcons();
-		// Center dialog.
-		Utility.centerOnScreen(this);
+		try {
+			
+			// Set text fields.
+			textType.setText(type.ref);
+			textType.selectAll();
+			textExtension.setText(extension.ref);
+			// Set checkbox.
+			checkboxMimePreference.setSelected(preference.ref);
+			// Localize elements.
+			localize();
+			// Set icons.
+			setIcons();
+			// Center dialog.
+			Utility.centerOnScreen(this);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(this);
-		Utility.localize(labelType);
-		Utility.localize(labelExtension);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(checkboxMimePreference);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(labelType);
+			Utility.localize(labelExtension);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(checkboxMimePreference);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-
-		buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
-
+		
 		confirm = false;
 		dispose();
 	}
@@ -238,12 +265,18 @@ public class MimeEdit extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-
-		type.ref = textType.getText();
-		extension.ref = textExtension.getText();
-		preference.ref = checkboxMimePreference.isSelected();
-		
-		confirm = true;
+		try {
+			
+			type.ref = textType.getText();
+			extension.ref = textExtension.getText();
+			preference.ref = checkboxMimePreference.isSelected();
+			
+			confirm = true;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 }

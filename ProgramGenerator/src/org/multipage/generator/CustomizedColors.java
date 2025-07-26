@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -58,6 +58,7 @@ import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -66,8 +67,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /**
- * 
- * @author
+ * List of default color tables.
+ * @author vakol
  *
  */
 class TableId {
@@ -105,7 +106,13 @@ class TableId {
 			return nameString;
 		}
 		else {
-			return Resources.getString(nameString);
+			try {
+				return Resources.getString(nameString);
+			}
+			catch (Throwable e) {
+				Safe.exception(e);
+			}
+			return "";
 		}
 	}
 
@@ -118,7 +125,8 @@ class TableId {
 }
 
 /**
- * @author
+ * Dialog that displays customized GUI colors.
+ * @author vakol
  *
  */
 public class CustomizedColors extends JDialog {
@@ -192,10 +200,14 @@ public class CustomizedColors extends JDialog {
 	 * Static constructor.
 	 */
 	static {
-
-		loadDefaultTables();
-		
-		loadCurrentTable();
+		try {
+			
+			loadDefaultTables();
+			loadCurrentTable();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -233,86 +245,115 @@ public class CustomizedColors extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		// Try to select template by name.
-		setCurrentTableByName(templateState);
-		// Load current table.
-		loadCurrentTable();
+		try {
+			
+			// Try to select template by name.
+			setCurrentTableByName(templateState);
+			// Load current table.
+			loadCurrentTable();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 		
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		// Get selected template name.
-		templateState = currentColorTableId.toString();
-		// Save data to XML file.
-		saveDataToXml();
+		try {
+			
+			// Get selected template name.
+			templateState = currentColorTableId.toString();
+			// Save data to XML file.
+			saveDataToXml();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load current table.
 	 */
 	private static void loadCurrentTable() {
-
-		Hashtable<ColorId, Obj<Color>> sourceTable = colorTables.get(currentColorTableId);
-		
-		// Copy source table to current table.
-		currentColorTable.clear();
-		for (ColorId colorId : sourceTable.keySet()) {
-			// Get color.
-			Obj<Color> color = sourceTable.get(colorId);
-			// Create new color.
-			Obj<Color> newColor = new Obj<Color>();
-			newColor.ref = new Color(color.ref.getRGB());
-			// Add to current table.
-			currentColorTable.put(colorId, newColor);
+		try {
+			
+			Hashtable<ColorId, Obj<Color>> sourceTable = colorTables.get(currentColorTableId);
+			
+			// Copy source table to current table.
+			currentColorTable.clear();
+			for (ColorId colorId : sourceTable.keySet()) {
+				// Get color.
+				Obj<Color> color = sourceTable.get(colorId);
+				// Create new color.
+				Obj<Color> newColor = new Obj<Color>();
+				newColor.ref = new Color(color.ref.getRGB());
+				// Add to current table.
+				currentColorTable.put(colorId, newColor);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Add color.
 	 */
 	private static void addColor(Hashtable<ColorId, Obj<Color>> table, ColorId colorId, Color color) {
-		
-		Obj<Color> colorRef = new Obj<Color>();
-		colorRef.ref = color;
-		
-		table.put(colorId, colorRef);
+		try {
+			
+			Obj<Color> colorRef = new Obj<Color>();
+			colorRef.ref = color;
+			
+			table.put(colorId, colorRef);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Load default tables.
 	 */
 	private static void loadDefaultTables() {
-		
-		// Create tables.
-		Hashtable<ColorId, Obj<Color>> default_table = new Hashtable<ColorId, Obj<Color>>();
-		colorTables.put(TableId.DEFAULT, default_table);
-		// Set colors.
-		addColor(default_table, ColorId.INACTIVE_OUTLINES, new Color(0xff808080));
-		addColor(default_table, ColorId.TEXT_PROTECTED, new Color(0xff999999));
-		addColor(default_table, ColorId.SELECTION_PROTECTED, new Color(0xff009999));
-		addColor(default_table, ColorId.SELECTED_TEXT, new Color(0xffffffff));
-		addColor(default_table, ColorId.BACKGROUNDTEXT, new Color(0xff000000));
-		addColor(default_table, ColorId.TOOLBACKGROUND, new Color(0xffffffff));
-		addColor(default_table, ColorId.REVERSEDEDGES, new Color(0xff006699));
-		addColor(default_table, ColorId.OVERVIEWBACKGROUND, new Color(0xff646464));
-		addColor(default_table, ColorId.FREE, new Color(0xff666666));
-		addColor(default_table, ColorId.OUTLINES, new Color(0xff000000));
-		addColor(default_table, ColorId.FILLLABEL, new Color(0xff408c8c));
-		addColor(default_table, ColorId.SELECTION, new Color(0xff009999));
-		addColor(default_table, ColorId.INACTIVE_BODIES, new Color(0xffffffff));
-		addColor(default_table, ColorId.OUTLINES_PROTECTED, new Color(0xff000000));
-		addColor(default_table, ColorId.FILLBODY, new Color(0xff999999));
-		addColor(default_table, ColorId.BACKGROUND, new Color(0xff000000));
-		addColor(default_table, ColorId.SCROLLBARS, new Color(0xff007575));
-		addColor(default_table, ColorId.FILLLABEL_PROTECTED, new Color(0xff666666));
-		addColor(default_table, ColorId.TOOLLISTBACKGROUND, new Color(0xffc0c0c0));
-		addColor(default_table, ColorId.SCRIPT_COMMAND_HIGHLIGHT, new Color(0xff999999));
-		addColor(default_table, ColorId.DESCRIPTIONTEXT, new Color(0xff808080));
-		addColor(default_table, ColorId.TEXT, new Color(0xff000000));
+		try {
+			
+			// Create tables.
+			Hashtable<ColorId, Obj<Color>> default_table = new Hashtable<ColorId, Obj<Color>>();
+			colorTables.put(TableId.DEFAULT, default_table);
+			// Set colors.
+			addColor(default_table, ColorId.INACTIVE_OUTLINES, new Color(0xff808080));
+			addColor(default_table, ColorId.TEXT_PROTECTED, new Color(0xff999999));
+			addColor(default_table, ColorId.SELECTION_PROTECTED, new Color(0xff009999));
+			addColor(default_table, ColorId.SELECTED_TEXT, new Color(0xffffffff));
+			addColor(default_table, ColorId.BACKGROUNDTEXT, new Color(0xff000000));
+			addColor(default_table, ColorId.TOOLBACKGROUND, new Color(0xffffffff));
+			addColor(default_table, ColorId.REVERSEDEDGES, new Color(0xff006699));
+			addColor(default_table, ColorId.OVERVIEWBACKGROUND, new Color(0xff646464));
+			addColor(default_table, ColorId.FREE, new Color(0xff666666));
+			addColor(default_table, ColorId.OUTLINES, new Color(0xff000000));
+			addColor(default_table, ColorId.FILLLABEL, new Color(0xff408c8c));
+			addColor(default_table, ColorId.SELECTION, new Color(0xff009999));
+			addColor(default_table, ColorId.INACTIVE_BODIES, new Color(0xffffffff));
+			addColor(default_table, ColorId.OUTLINES_PROTECTED, new Color(0xff000000));
+			addColor(default_table, ColorId.FILLBODY, new Color(0xff999999));
+			addColor(default_table, ColorId.BACKGROUND, new Color(0xff000000));
+			addColor(default_table, ColorId.SCROLLBARS, new Color(0xff007575));
+			addColor(default_table, ColorId.FILLLABEL_PROTECTED, new Color(0xff666666));
+			addColor(default_table, ColorId.TOOLLISTBACKGROUND, new Color(0xffc0c0c0));
+			addColor(default_table, ColorId.SCRIPT_COMMAND_HIGHLIGHT, new Color(0xff999999));
+			addColor(default_table, ColorId.DESCRIPTIONTEXT, new Color(0xff808080));
+			addColor(default_table, ColorId.TEXT, new Color(0xff000000));
+			addColor(default_table, ColorId.AREA_PROPERTIES_FRAME, new Color(0xff4c98e4));
+			addColor(default_table, ColorId.SEARCH_DIALOG, new Color(0xff009999));
+			addColor(default_table, ColorId.DIALOG_NAVIGATOR, new Color(0xff000000));
+			addColor(default_table, ColorId.AREA_TREE_FRAME, new Color(0xff4c98e4));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
     
     /**
@@ -320,14 +361,20 @@ public class CustomizedColors extends JDialog {
      */
     public static Color get(ColorId colorId) {
     	
-    	Obj<Color> color = currentColorTable.get(colorId);
-    	if (color == null) {
-    		return Color.BLACK;
-    	}
-    	if (color.ref == null) {
-    		return Color.BLACK;
-    	}
-    	return color.ref;
+    	try {
+	    	Obj<Color> color = currentColorTable.get(colorId);
+	    	if (color == null) {
+	    		return Color.BLACK;
+	    	}
+	    	if (color.ref == null) {
+	    		return Color.BLACK;
+	    	}
+	    	return color.ref;
+	    }
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return Color.BLACK;
     }
 
     /**
@@ -429,79 +476,116 @@ public class CustomizedColors extends JDialog {
      * Constructor.
      */
     public CustomizedColors(java.awt.Frame parent) {
+    	super(parent, false);
     	
-        super(parent, false);
-        initComponents();
-        
-        // Load user color tables.
-        loadDataFromXml();
-        
-        // Create table editor.
-        tableEditor = new ColorCellEditor(this);
-        
-        // Set description and icon.
-        setTitle(Resources.getString("org.multipage.generator.textCustomizeColorsDialog"));
-        setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
-        
-        // Center dialog.
-        Dimension dimension = getSize();
-        Dimension screen = getToolkit().getScreenSize();
-        setLocation((screen.width - dimension.width) / 2, (screen.height - dimension.height) / 2);
-         
-        tableModel.loadColorTable();
-
-        // Set table model, renderer and cell editor.
-        table.setModel(tableModel);
-        table.setDefaultRenderer(Color.class, tableRenderer);
-        table.setDefaultEditor(Color.class, tableEditor);
-        // Set color column width.
-        TableColumn column = table.getColumnModel().getColumn(1);
-        column.setMaxWidth(colorColumnWidth);
-      
-        // Set combo box listener.
-        templatesCombo.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				
-				// If a content is dirty, save it.
-				saveIfDirty(false);
-				// Update selection.
-				currentColorTableId = (TableId) templatesCombo.getSelectedItem();
-				loadCurrentTable();
-				tableModel.loadColorTable();
-				GeneratorMainFrame.getFrame().repaint();
-			}
-		});
-        // Set button listeners.
-        cloneButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// Save color data.
-				saveIfDirty(true);
-			}
-		});
-        removeButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// Remove current template.
-				removeCurrent();
-			}
-		});
-        // Dialog listeners.
-        addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				// Save data.
-				saveIfDirty(false);
-			}
-			@Override
-			public void windowOpened(WindowEvent e) {
-		        // Update combo box.
-				updateComboBox();
-			}
-		});
-        // Load dialog.
-        loadDialog();
+    	try {
+	        initComponents();
+	        
+	        // $hide>>$
+	        // Load user color tables.
+	        loadDataFromXml();
+	        
+	        // Create table editor.
+	        tableEditor = new ColorCellEditor(this);
+	        
+	        // Set description and icon.
+	        setTitle(Resources.getString("org.multipage.generator.textCustomizeColorsDialog"));
+	        setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
+	        
+	        // Center dialog.
+	        Dimension dimension = getSize();
+	        Dimension screen = getToolkit().getScreenSize();
+	        setLocation((screen.width - dimension.width) / 2, (screen.height - dimension.height) / 2);
+	         
+	        tableModel.loadColorTable();
+	
+	        // Set table model, renderer and cell editor.
+	        table.setModel(tableModel);
+	        table.setDefaultRenderer(Color.class, tableRenderer);
+	        table.setDefaultEditor(Color.class, tableEditor);
+	        // Set color column width.
+	        TableColumn column = table.getColumnModel().getColumn(1);
+	        column.setMaxWidth(colorColumnWidth);
+	      
+	        // Set combo box listener.
+	        templatesCombo.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						
+						// If a content is dirty, save it.
+						saveIfDirty(false);
+						// Update selection.
+						currentColorTableId = (TableId) templatesCombo.getSelectedItem();
+						loadCurrentTable();
+						tableModel.loadColorTable();
+						GeneratorMainFrame.getFrame().repaint();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+	        // Set button listeners.
+	        cloneButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						
+						// Save color data.
+						saveIfDirty(true);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+	        removeButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						
+						// Remove current template.
+						removeCurrent();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+	        // Dialog listeners.
+	        addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowClosing(WindowEvent e) {
+					try {
+						
+						// Save data.
+						saveIfDirty(false);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void windowOpened(WindowEvent e) {
+					try {
+						
+						// Update combo box.
+						updateComboBox();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+	        // Load dialog.
+	        loadDialog();
+	        
+	        // $hide<<$
+	    }
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
     }
 
     /**
@@ -509,15 +593,20 @@ public class CustomizedColors extends JDialog {
      * @param template
      */
     protected void setCurrentTableByName(String tableName) {
-
-    	// Get table identifier.
-    	for (TableId tableId : colorTables.keySet()) {
-    		
-    		if (tableId.toString().compareTo(tableName) == 0) {
-    			currentColorTableId = tableId;
-    			break;
-    		}
-    	}
+    	try {
+			
+			// Get table identifier.
+	    	for (TableId tableId : colorTables.keySet()) {
+	    		
+	    		if (tableId.toString().compareTo(tableName) == 0) {
+	    			currentColorTableId = tableId;
+	    			break;
+	    		}
+	    	}
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -528,7 +617,6 @@ public class CustomizedColors extends JDialog {
     	Exception exception = null;
     	
 		try {
-			
 			String userDirectory = MiddleUtility.getUserDirectory();
 			String fullFileName = null;
 			
@@ -555,15 +643,33 @@ public class CustomizedColors extends JDialog {
 				db.setErrorHandler(new ErrorHandler() {
 					@Override
 					public void warning(SAXParseException exception) throws SAXException {
-						JOptionPane.showMessageDialog(null, exception.getMessage());
+						try {
+							
+							JOptionPane.showMessageDialog(null, exception.getMessage());
+						}
+						catch(Throwable expt) {
+							Safe.exception(expt);
+						};
 					}
 					@Override
-					public void fatalError(SAXParseException exception) throws SAXException {						
-						JOptionPane.showMessageDialog(null, exception.getMessage());
+					public void fatalError(SAXParseException exception) throws SAXException {
+						try {
+							
+							JOptionPane.showMessageDialog(null, exception.getMessage());
+						}
+						catch(Throwable expt) {
+							Safe.exception(expt);
+						};
 					}
 					@Override
-					public void error(SAXParseException exception) throws SAXException {						
-						JOptionPane.showMessageDialog(null, exception.getMessage());
+					public void error(SAXParseException exception) throws SAXException {
+						try {
+							
+							JOptionPane.showMessageDialog(null, exception.getMessage());
+						}
+						catch(Throwable expt) {
+							Safe.exception(expt);
+						};
 					}
 				});
 		        Document document = db.parse(file);
@@ -622,7 +728,8 @@ public class CustomizedColors extends JDialog {
 		        }
 			}
 			
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			exception = e;
 		}
 		finally {
@@ -702,7 +809,7 @@ public class CustomizedColors extends JDialog {
 			}
 	    }
 	    catch (Exception e) {
-	    	e.printStackTrace();
+	    	Safe.exception(e);
 	    }
 	}
 
@@ -710,84 +817,94 @@ public class CustomizedColors extends JDialog {
      * Remove current color table (template).
      */
     protected void removeCurrent() {
-
-    	// Inform user.
-    	String messageFormat = Resources.getString("org.multipage.generator.messageCannotRemoveDefaultColorTable");
-    	String message = String.format(messageFormat, currentColorTableId.toString());
-    	if (!currentColorTableId.isUser()) {
-    		JOptionPane.showMessageDialog(this, message);
-    		return;
-    	}
-    	messageFormat = Resources.getString("org.multipage.generator.messageRemoveColorTemplate");
-    	message = String.format(messageFormat, currentColorTableId.toString());
-    	int answer = JOptionPane.showConfirmDialog(this, message);
-    	if (answer != JOptionPane.YES_OPTION) {
-    		return;
-    	}
-    	
-    	// Remove current color table.
-    	colorTables.remove(currentColorTableId);
-    	currentColorTableId = TableId.RED_BLUE;
-    	updateComboBox();
-    	
-		// Save data to XML file.
-		saveDataToXml();
+    	try {
+			
+			// Inform user.
+	    	String messageFormat = Resources.getString("org.multipage.generator.messageCannotRemoveDefaultColorTable");
+	    	String message = String.format(messageFormat, currentColorTableId.toString());
+	    	if (!currentColorTableId.isUser()) {
+	    		JOptionPane.showMessageDialog(this, message);
+	    		return;
+	    	}
+	    	messageFormat = Resources.getString("org.multipage.generator.messageRemoveColorTemplate");
+	    	message = String.format(messageFormat, currentColorTableId.toString());
+	    	int answer = JOptionPane.showConfirmDialog(this, message);
+	    	if (answer != JOptionPane.YES_OPTION) {
+	    		return;
+	    	}
+	    	
+	    	// Remove current color table.
+	    	colorTables.remove(currentColorTableId);
+	    	currentColorTableId = TableId.RED_BLUE;
+	    	updateComboBox();
+	    	
+			// Save data to XML file.
+			saveDataToXml();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
      * Save color table if a content is dirty.
      */
     public void saveIfDirty(boolean saveAs) {
-
-    	if (dirty || saveAs) {
-    		   		    		
-    		// If current color table is not user, ask user.
-    		if (!currentColorTableId.isUser() || saveAs) {
-    			
-    			if (!saveAs) {
-	    			int answer = JOptionPane.showConfirmDialog(this, Resources.getString("org.multipage.generator.messageSaveColorTableChanges"));
-	    			if (answer != JOptionPane.YES_OPTION) {
-	    				dirty = false;
+    	try {
+			
+			if (dirty || saveAs) {
+	    		   		    		
+	    		// If current color table is not user, ask user.
+	    		if (!currentColorTableId.isUser() || saveAs) {
+	    			
+	    			if (!saveAs) {
+		    			int answer = JOptionPane.showConfirmDialog(this, Resources.getString("org.multipage.generator.messageSaveColorTableChanges"));
+		    			if (answer != JOptionPane.YES_OPTION) {
+		    				dirty = false;
+		    				return;
+		    			}
+	    			}
+	    			// Get template name.
+	    			String templateName = JOptionPane.showInputDialog(this, Resources.getString("org.multipage.generator.messageInsertTempateName"));
+	    			if (templateName == null) {
 	    				return;
 	    			}
-    			}
-    			// Get template name.
-    			String templateName = JOptionPane.showInputDialog(this, Resources.getString("org.multipage.generator.messageInsertTempateName"));
-    			if (templateName == null) {
-    				return;
-    			}
-    			if (templateName.isEmpty()) {
-    				JOptionPane.showMessageDialog(this, Resources.getString("org.multipage.generator.messageTemplateNameCannotBeEmpty"));
-    				return;
-    			}
-    			if (existTemplateName(templateName)) {
-    				JOptionPane.showMessageDialog(this, Resources.getString("org.multipage.generator.messageTemplateNameExist"));
-    				return;
-    			}
-    			// Create new table.
-    			Hashtable<ColorId, Obj<Color>> table = new Hashtable<ColorId, Obj<Color>>();
-    			// Save data.
-    			saveDataToTable(table);
-    			// Add table to templates.
-    			currentColorTableId = new TableId(true, templateName);
-    			colorTables.put(currentColorTableId, table);
-     			// Save data to XML file.
-    			saveDataToXml();
-    			
-    			updateComboBox();
-    		}
-    		// If current control table is a user table.
-    		else {
-    			// Save color table.
-    			Hashtable<ColorId, Obj<Color>> table = colorTables.get(currentColorTableId);
-    			table.clear();
-    			// Save data.
-    			saveDataToTable(table);
-    			// Save data to XML file.
-    			saveDataToXml();
-    		}
-    		dirty = false;
-    	}
+	    			if (templateName.isEmpty()) {
+	    				JOptionPane.showMessageDialog(this, Resources.getString("org.multipage.generator.messageTemplateNameCannotBeEmpty"));
+	    				return;
+	    			}
+	    			if (existTemplateName(templateName)) {
+	    				JOptionPane.showMessageDialog(this, Resources.getString("org.multipage.generator.messageTemplateNameExist"));
+	    				return;
+	    			}
+	    			// Create new table.
+	    			Hashtable<ColorId, Obj<Color>> table = new Hashtable<ColorId, Obj<Color>>();
+	    			// Save data.
+	    			saveDataToTable(table);
+	    			// Add table to templates.
+	    			currentColorTableId = new TableId(true, templateName);
+	    			colorTables.put(currentColorTableId, table);
+	     			// Save data to XML file.
+	    			saveDataToXml();
+	    			
+	    			updateComboBox();
+	    		}
+	    		// If current control table is a user table.
+	    		else {
+	    			// Save color table.
+	    			Hashtable<ColorId, Obj<Color>> table = colorTables.get(currentColorTableId);
+	    			table.clear();
+	    			// Save data.
+	    			saveDataToTable(table);
+	    			// Save data to XML file.
+	    			saveDataToXml();
+	    		}
+	    		dirty = false;
+	    	}
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
     /**
@@ -795,14 +912,19 @@ public class CustomizedColors extends JDialog {
      * @param table2
      */
     private void saveDataToTable(Hashtable<ColorId, Obj<Color>> table) {
-
-    	// Do loop for all table entries.
-		for (ColorTableEntry row : tableModel.getColorTable()) {
-			ColorId colorId = row.getId();
-			Obj<Color> color = row.getColor();
-			// Add table item.
-			table.put(colorId, color);
+    	try {
+			
+			// Do loop for all table entries.
+			for (ColorTableEntry row : tableModel.getColorTable()) {
+				ColorId colorId = row.getId();
+				Obj<Color> color = row.getColor();
+				// Add table item.
+				table.put(colorId, color);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -811,14 +933,18 @@ public class CustomizedColors extends JDialog {
      * @return
      */
     private boolean existTemplateName(String templateName) {
-
-    	// Do loop for all table identifiers.
-    	for (TableId key : colorTables.keySet()) {
-    		if (key.toString().compareTo(templateName) == 0) {
-    			return true;
-    		}
-    	}
     	
+    	try {
+	    	// Do loop for all table identifiers.
+	    	for (TableId key : colorTables.keySet()) {
+	    		if (key.toString().compareTo(templateName) == 0) {
+	    			return true;
+	    		}
+	    	}
+    	}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return false;
 	}
 
@@ -826,22 +952,27 @@ public class CustomizedColors extends JDialog {
      * Update combo box.
      */
 	private void updateComboBox() {
-
-		LinkedList<TableId> keys = new LinkedList<TableId>();
-		for (TableId tableId : colorTables.keySet()) {
-			keys.add(tableId);
-		}
-		// Sort table names.
-		Collections.sort(keys, new Comparator<TableId> () {
-			@Override
-			public int compare(TableId o1, TableId o2) {
-				// Compare table names.
-				return o1.toString().compareTo(o2.toString());
+		try {
+			
+			LinkedList<TableId> keys = new LinkedList<TableId>();
+			for (TableId tableId : colorTables.keySet()) {
+				keys.add(tableId);
 			}
-		});
-		// Set model and select item.
-        templatesCombo.setModel(new DefaultComboBoxModel(keys.toArray()));
-        templatesCombo.setSelectedItem(currentColorTableId);
+			// Sort table names.
+			Collections.sort(keys, new Comparator<TableId> () {
+				@Override
+				public int compare(TableId o1, TableId o2) {
+					// Compare table names.
+					return o1.toString().compareTo(o2.toString());
+				}
+			});
+			// Set model and select item.
+	        templatesCombo.setModel(new DefaultComboBoxModel(keys.toArray()));
+	        templatesCombo.setSelectedItem(currentColorTableId);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -857,8 +988,13 @@ public class CustomizedColors extends JDialog {
 	 * Dispose dialog.
 	 */
 	public void disposeDialog() {
-
-		saveDialog();
+		try {
+			
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }
 
@@ -922,24 +1058,29 @@ class ColorTableModel extends AbstractTableModel {
 	 * Load current color table.
 	 */
 	public void loadColorTable() {
-		
-		// Load color table.
-		colorTable.clear();
-		for (ColorId colorId : CustomizedColors.currentColorTable.keySet()) {
-			Obj<Color> color = CustomizedColors.currentColorTable.get(colorId);
-			colorTable.add(new ColorTableEntry(colorId, color));
-		}
-		
-		// Sort color table.
-		Collections.sort(colorTable, new Comparator<ColorTableEntry>() {
-			@Override
-			public int compare(ColorTableEntry o1, ColorTableEntry o2) {
-				return o1.id.getColorText().compareTo(o2.id.getColorText());
+		try {
+			
+			// Load color table.
+			colorTable.clear();
+			for (ColorId colorId : CustomizedColors.currentColorTable.keySet()) {
+				Obj<Color> color = CustomizedColors.currentColorTable.get(colorId);
+				colorTable.add(new ColorTableEntry(colorId, color));
 			}
-		});
-		
-		// Fire table changed event.
-		fireTableChanged(new TableModelEvent(this));
+			
+			// Sort color table.
+			Collections.sort(colorTable, new Comparator<ColorTableEntry>() {
+				@Override
+				public int compare(ColorTableEntry o1, ColorTableEntry o2) {
+					return o1.id.getColorText().compareTo(o2.id.getColorText());
+				}
+			});
+			
+			// Fire table changed event.
+			fireTableChanged(new TableModelEvent(this));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -947,13 +1088,18 @@ class ColorTableModel extends AbstractTableModel {
 	 */
 	@Override
 	public void setValueAt(Object aValue, int row, int column) {
-
-		ColorTableEntry colorDef = colorTable.get(row);
-		colorDef.color.ref = (Color) aValue;
-		
-		GeneratorMainFrame.getFrame().repaint();
-		
-        fireTableCellUpdated(row, column);
+		try {
+			
+			ColorTableEntry colorDef = colorTable.get(row);
+			colorDef.color.ref = (Color) aValue;
+			
+			GeneratorMainFrame.getFrame().repaint();
+			
+	        fireTableCellUpdated(row, column);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -970,8 +1116,14 @@ class ColorTableModel extends AbstractTableModel {
 	 */
 	@Override
 	public int getRowCount() {
-
-		return colorTable.size();
+		
+		try {
+			return colorTable.size();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return 0;
 	}
 
 	/**
@@ -979,13 +1131,19 @@ class ColorTableModel extends AbstractTableModel {
 	 */
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {
-
-		if (columnIndex == 0) {
-			return colorTable.get(rowIndex).id.getColorText();
+		
+		try {
+			if (columnIndex == 0) {
+				return colorTable.get(rowIndex).id.getColorText();
+			}
+			else {
+				return colorTable.get(rowIndex).color;
+			}
 		}
-		else {
-			return colorTable.get(rowIndex).color;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
+		return null;
 	}
 
 	/**
@@ -994,10 +1152,16 @@ class ColorTableModel extends AbstractTableModel {
 	@Override
 	public Class<?> getColumnClass(int columnIndex) {
 		
-		if (columnIndex == 1) {
-			return Color.class;
+		try {
+			if (columnIndex == 1) {
+				return Color.class;
+			}
+			return super.getColumnClass(columnIndex);
 		}
-		return super.getColumnClass(columnIndex);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -1005,13 +1169,19 @@ class ColorTableModel extends AbstractTableModel {
 	 */
 	@Override
 	public String getColumnName(int column) {
-
-		if (column == 0) {
-			return Resources.getString("org.multipage.generator.textColorName");
+		
+		try {
+			if (column == 0) {
+				return Resources.getString("org.multipage.generator.textColorName");
+			}
+			else {
+				return Resources.getString("org.multipage.generator.textColor");
+			}
 		}
-		else {
-			return Resources.getString("org.multipage.generator.textColor");
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
+		return "";
 	}
 
 	/**
@@ -1073,49 +1243,58 @@ class ColorCellEditor extends AbstractCellEditor implements TableCellEditor {
 	 * Constructor.
 	 */
 	ColorCellEditor(CustomizedColors dialog) {
+		try {
+			this.dialog = dialog;
+			
+			// Create color dialog.
+			colorDialog = JColorChooser.createDialog(
+					editButton,
+					Resources.getString("org.multipage.gui.textColorChooserDialog"),
+					true,
+					colorChooser,
+					new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							// Set current color.
+							currentColor = colorChooser.getColor();
+						}
+					},
+					null);
 		
-		this.dialog = dialog;
-		
-		// Create color dialog.
-		colorDialog = JColorChooser.createDialog(
-				editButton,
-				Resources.getString("org.multipage.gui.textColorChooserDialog"),
-				true,
-				colorChooser,
-				new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						// Set current color.
-						currentColor = colorChooser.getColor();
-					}
-				},
-				null);
-	
-		// Set button listener.
-		editButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				onButton();
-			}
-		});
+			// Set button listener.
+			editButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					onButton();
+				}
+			});
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
 	 * On button pressed.
 	 */
 	protected void onButton() {
-		
-		Color oldColor = currentColor;
-		
-		// Show color chooser.
-        editButton.setBackground(currentColor);
-        colorChooser.setColor(currentColor);
-		colorDialog.setVisible(true);
-        //Make the renderer reappear.
-        fireEditingStopped();
-        
-        // If a color changes, set dirty flag.
-        dialog.setDirty(!oldColor.equals(currentColor));
+		try {
+			
+			Color oldColor = currentColor;
+			
+			// Show color chooser.
+	        editButton.setBackground(currentColor);
+	        colorChooser.setColor(currentColor);
+			colorDialog.setVisible(true);
+	        //Make the renderer reappear.
+	        fireEditingStopped();
+	        
+	        // If a color changes, set dirty flag.
+	        dialog.setDirty(!oldColor.equals(currentColor));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1133,9 +1312,14 @@ class ColorCellEditor extends AbstractCellEditor implements TableCellEditor {
 	@Override
 	public Component getTableCellEditorComponent(JTable table, Object value,
 			boolean isSelected, int row, int column) {
-
-		currentColor = ((Obj<Color>) value).ref;
-		editButton.setBackground(currentColor);
+		
+		try {
+			currentColor = ((Obj<Color>) value).ref;
+			editButton.setBackground(currentColor);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return editButton;
 	}
 }
@@ -1163,7 +1347,12 @@ class ColorTableRenderer implements TableCellRenderer {
 	 */
 	ColorTableRenderer() {
 		
-		label.setOpaque(true);
+		try {
+			label.setOpaque(true);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -1172,22 +1361,27 @@ class ColorTableRenderer implements TableCellRenderer {
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value,
 			boolean isSelected, boolean hasFocus, int row, int column) {
-
-        if (isSelected) {
-            if (selectedBorder == null) {
-                selectedBorder = BorderFactory.createMatteBorder(2,5,2,5,
-                                          table.getSelectionBackground());
-            }
-            label.setBorder(selectedBorder);
-        } else {
-            if (unselectedBorder == null) {
-                unselectedBorder = BorderFactory.createMatteBorder(2,5,2,5,
-                                          table.getBackground());
-            }
-            label.setBorder(unselectedBorder);
-        }
-
-		label.setBackground(((Obj<Color>) value).ref);
+		
+		try {
+	        if (isSelected) {
+	            if (selectedBorder == null) {
+	                selectedBorder = BorderFactory.createMatteBorder(2,5,2,5,
+	                                          table.getSelectionBackground());
+	            }
+	            label.setBorder(selectedBorder);
+	        } else {
+	            if (unselectedBorder == null) {
+	                unselectedBorder = BorderFactory.createMatteBorder(2,5,2,5,
+	                                          table.getBackground());
+	            }
+	            label.setBorder(unselectedBorder);
+	        }
+	
+			label.setBackground(((Obj<Color>) value).ref);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return label;
 	}
 }

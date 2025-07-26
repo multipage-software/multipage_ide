@@ -1,25 +1,28 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import java.awt.*;
-import java.awt.image.*;
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.awt.Cursor;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.image.BufferedImage;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Hashtable;
 
-import javax.imageio.*;
-import javax.swing.*;
+import javax.swing.ImageIcon;
 
 import org.apache.commons.imaging.Imaging;
+import org.multipage.util.Safe;
 
 /**
- * @author
+ * Class that enables to load icons and images.
+ * @author vakol
  *
  */
 public class Images {
@@ -39,57 +42,75 @@ public class Images {
 	 */
 	public static ImageIcon getIcon(String urlString) {
 		
-		ImageIcon icon = icons.get(urlString);
-		
-		// If icon does't exist load it.
-		if (icon == null) {
-			URL url = ClassLoader.getSystemResource(urlString);
-			if (url != null) {
-				ImageIcon newIcon = new ImageIcon(url);
-				if (newIcon != null) {
-					icon = newIcon;
-					icons.put(urlString, icon);
+		try {
+			ImageIcon icon = icons.get(urlString);
+			
+			// If icon does't exist load it.
+			if (icon == null) {
+				URL url = ClassLoader.getSystemResource(urlString);
+				if (url != null) {
+					ImageIcon newIcon = new ImageIcon(url);
+					if (newIcon != null) {
+						icon = newIcon;
+						icons.put(urlString, icon);
+					}
 				}
 			}
+			
+			return icon;
 		}
-		
-		return icon;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
-	/**
+	/**try {
+			
+			
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	 * Get image.
 	 */
 	public static BufferedImage getImage(String urlString) {
 		
-		BufferedImage image = images.get(urlString);
-		
-		// If image doesn't exist load it.
-		if (image == null) {
-			URL url = ClassLoader.getSystemResource(urlString);
-			if (url != null) {
-				InputStream inputStream = null;
-				try {
-					inputStream = url.openStream();
-					image = Imaging.getBufferedImage(inputStream);
-					images.put(urlString, image);
-					
-				}
-				catch (Exception e) {
-					e.printStackTrace();
-				}
-				finally {
-					if (inputStream != null	) {
-						try {
-							inputStream.close();
-						}
-						catch (Exception e) {
+		try {
+			BufferedImage image = images.get(urlString);
+			
+			// If image doesn't exist load it.
+			if (image == null) {
+				URL url = ClassLoader.getSystemResource(urlString);
+				if (url != null) {
+					InputStream inputStream = null;
+					try {
+						inputStream = url.openStream();
+						image = Imaging.getBufferedImage(inputStream);
+						images.put(urlString, image);
+						
+					}
+					catch (Exception e) {
+						e.printStackTrace();
+					}
+					finally {
+						if (inputStream != null	) {
+							try {
+								inputStream.close();
+							}
+							catch (Exception e) {
+							}
 						}
 					}
 				}
 			}
+			
+			return image;
 		}
-		
-		return image;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -97,9 +118,15 @@ public class Images {
 	 */
 	public static Cursor loadCursor(String file, Point hotspot) {
 		
-		// Try to get an image.
-		BufferedImage image = getImage(file);
-		// Create cursor object.
-		return Toolkit.getDefaultToolkit().createCustomCursor(image, hotspot, "img");
+		try {
+			// Try to get an image.
+			BufferedImage image = getImage(file);
+			// Create cursor object.
+			return Toolkit.getDefaultToolkit().createCustomCursor(image, hotspot, "img");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 }

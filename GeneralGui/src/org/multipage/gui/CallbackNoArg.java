@@ -1,10 +1,14 @@
-/**
+/*
+ * Copyright 2010-2025 (C) vakol
  * 
+ * Created on : 2017-04-26
+ *
  */
 package org.multipage.gui;
 
 /**
- * @author user
+ * Interface for calling methods without arguments.
+ * @author vakol
  *
  */
 public interface CallbackNoArg {

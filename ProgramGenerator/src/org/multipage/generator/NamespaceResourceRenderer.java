@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -16,9 +16,11 @@ import javax.swing.JLabel;
 import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
 
+import org.multipage.util.Safe;
+
 /**
- * 
- * @author
+ * Renderer that displays resource within a namespace.
+ * @author vakol
  *
  */
 public class NamespaceResourceRenderer extends NamespaceResourceRendererBase {
@@ -46,22 +48,28 @@ public class NamespaceResourceRenderer extends NamespaceResourceRendererBase {
 	 * Create the panel.
 	 */
 	public NamespaceResourceRenderer() {
-		// Initialize components.
-		initComponents();
-		// $hide>>$
-		// Localize components.
-		setComponentsReferences(
-				labelTitle,
-				labelMimeTypeLabel,
-				labelMimeType,
-				labelResourceIdLabel,
-				labelResourceId,
-				checkBoxSaveAsText,
-				labelImage,
-				checkVisible
-				);
-		localize();
-		// $hide<<$
+		
+		try {
+			// Initialize components.
+			initComponents();
+			// $hide>>$
+			// Localize components.
+			setComponentsReferences(
+					labelTitle,
+					labelMimeTypeLabel,
+					labelMimeType,
+					labelResourceIdLabel,
+					labelResourceId,
+					checkBoxSaveAsText,
+					labelImage,
+					checkVisible
+					);
+			localize();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**

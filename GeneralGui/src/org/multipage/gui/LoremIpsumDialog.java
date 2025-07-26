@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -12,6 +12,7 @@ import java.awt.*;
 import javax.swing.*;
 
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -19,8 +20,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 /**
- * 
- * @author
+ * Dialog that displays Lorem Ipsum generator.
+ * @author vakol
  *
  */
 public class LoremIpsumDialog extends JDialog {
@@ -64,9 +65,14 @@ public class LoremIpsumDialog extends JDialog {
 	 */
 	public LoremIpsumDialog(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
-
-		initComponents();
-		postCreate(); // $hide$
+		
+		try {
+			initComponents();
+			postCreate(); // $hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -154,13 +160,17 @@ public class LoremIpsumDialog extends JDialog {
 	 */
 	public static String showDialog(Component parent) {
 		
-		LoremIpsumDialog dialog = new LoremIpsumDialog(parent);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
-			return dialog.getLoremIpsum();
+		try {
+			LoremIpsumDialog dialog = new LoremIpsumDialog(parent);
+			dialog.setVisible(true);
+			
+			if (dialog.confirm) {
+				return dialog.getLoremIpsum();
+			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return null;
 	}
 	
@@ -168,84 +178,108 @@ public class LoremIpsumDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		Utility.centerOnScreen(this);
-		localize();
-		setIcons();
-		
-		initLoremIpsum();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			Utility.centerOnScreen(this);
+			localize();
+			setIcons();
+			
+			initLoremIpsum();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Initialize.
 	 */
 	private void initLoremIpsum() {
-		
-		loremIpsum = new LoremIpsum();
-		
-		textParagraphs.setText("2");
-		
-		onParagraphsChange();
-		
-		Utility.setTextChangeListener(textParagraphs, new Runnable() {
-			@Override
-			public void run() {
-				
-				onParagraphsChange();
-			}
-		});
+		try {
+			
+			loremIpsum = new LoremIpsum();
+			
+			textParagraphs.setText("2");
+			onParagraphsChange();
+			
+			Utility.setTextChangeListener(textParagraphs, new Runnable() {
+				@Override
+				public void run() {
+					
+					onParagraphsChange();
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On paragraphs change.
 	 */
 	private void onParagraphsChange() {
-		
-		// Get number of paragraphs
-		String paragraphsString = textParagraphs.getText();
-		Integer paragraphsNumber = null;
-		
 		try {
-			paragraphsNumber = Integer.parseInt(paragraphsString);
-		}
-		catch (Exception e) {
-		}
-		
-		if (paragraphsNumber != null && paragraphsNumber >= 1 && paragraphsNumber <= MAXIMUM_PARAGRAPHS) {
 			
-			// Get Lorem Ipsum text.
-			String text = loremIpsum.getParagraphs(paragraphsNumber, checkUseP.isSelected());
-			textPane.setText(text);
+			// Get number of paragraphs
+			String paragraphsString = textParagraphs.getText();
+			Integer paragraphsNumber = null;
 			
-			labelError.setText("");
+			try {
+				paragraphsNumber = Integer.parseInt(paragraphsString);
+			}
+			catch (Exception e) {
+			}
+			
+			if (paragraphsNumber != null && paragraphsNumber >= 1 && paragraphsNumber <= MAXIMUM_PARAGRAPHS) {
+				
+				// Get Lorem Ipsum text.
+				String text = loremIpsum.getParagraphs(paragraphsNumber, checkUseP.isSelected());
+				textPane.setText(text);
+				
+				labelError.setText("");
+			}
+			else {
+				textPane.setText("");
+				labelError.setText(String.format(Resources.getString("org.multipage.gui.textLoremIpsumParagraphsNumberError"), MAXIMUM_PARAGRAPHS));
+			}
 		}
-		else {
-			textPane.setText("");
-			labelError.setText(String.format(Resources.getString("org.multipage.gui.textLoremIpsumParagraphsNumberError"), MAXIMUM_PARAGRAPHS));
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonCancel);
-		Utility.localize(buttonOk);
-		Utility.localize(labelParagraphs);
-		Utility.localize(checkUseP);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonCancel);
+			Utility.localize(buttonOk);
+			Utility.localize(labelParagraphs);
+			Utility.localize(checkUseP);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+		try {
+			
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -271,6 +305,12 @@ public class LoremIpsumDialog extends JDialog {
 	 */
 	private String getLoremIpsum() {
 		
-		return textPane.getText();
+		try {
+			return textPane.getText();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 }

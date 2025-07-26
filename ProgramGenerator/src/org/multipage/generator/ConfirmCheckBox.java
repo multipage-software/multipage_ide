@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -25,10 +25,11 @@ import javax.swing.border.EmptyBorder;
 import org.multipage.gui.Images;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays input checkbox.
+ * @author vakol
  *
  */
 public class ConfirmCheckBox extends JDialog {
@@ -58,12 +59,18 @@ public class ConfirmCheckBox extends JDialog {
 	 */
 	public static boolean showConfirmDialog(JFrame parentFrame, String message,
 			Obj<Boolean> selected) {
-
-		ConfirmCheckBox dialog = new ConfirmCheckBox(parentFrame, message, selected);
-		dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		dialog.setVisible(true);
-
-		return dialog.confirmed;
+		
+		try {
+			ConfirmCheckBox dialog = new ConfirmCheckBox(parentFrame, message, selected);
+			dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			dialog.setVisible(true);
+	
+			return dialog.confirmed;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -75,9 +82,14 @@ public class ConfirmCheckBox extends JDialog {
 	public ConfirmCheckBox(JFrame parentFrame, String message, Obj<Boolean> selected) {
 		setModalityType(ModalityType.APPLICATION_MODAL);
 		
-		this.selected = selected;
-		initComponents();
-		postCreation(message);
+		try {
+			this.selected = selected;
+			initComponents();
+			postCreation(message); //$hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -141,9 +153,15 @@ public class ConfirmCheckBox extends JDialog {
 	 * On OK button.
 	 */
 	protected void onOk() {
-
-		selected.ref = checkBox.isSelected();
-		confirmed = true;
+		try {
+			
+			selected.ref = checkBox.isSelected();
+			confirmed = true;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -152,29 +170,39 @@ public class ConfirmCheckBox extends JDialog {
 	 * @param message 
 	 */
 	private void postCreation(String message) {
-		
-		// Center dialog.
-		Utility.centerOnScreen(this);
-
-		// Localize dialog.
-		localize();
-		
-		checkBox.setText(message);
-		checkBox.setSelected(selected.ref);
-		
-		// Set icons.
-		okButton.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		cancelButton.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
-		setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
+		try {
+			
+			// Center dialog.
+			Utility.centerOnScreen(this);
+	
+			// Localize dialog.
+			localize();
+			
+			checkBox.setText(message);
+			checkBox.setSelected(selected.ref);
+			
+			// Set icons.
+			okButton.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			cancelButton.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+			setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize dialog.
 	 */
 	private void localize() {
-
-		Utility.localize(this);
-		Utility.localize(okButton);
-		Utility.localize(cancelButton);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(okButton);
+			Utility.localize(cancelButton);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

@@ -1,14 +1,14 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 10-03-2020
+ * Created on : 2020-03-10
  *
  */
 package org.maclan.server;
 
 /**
  * CSS lookup table value.
- * @author user
+ * @author vakol
  *
  */
 class CssLookupTableValue {

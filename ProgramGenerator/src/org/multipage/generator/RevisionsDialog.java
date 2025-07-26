@@ -1,3 +1,9 @@
+/*
+ * Copyright 2010-2025 (C) vakol
+ * 
+ * Created on : 2017-04-26
+ *
+ */
 package org.multipage.generator;
 
 import java.awt.BorderLayout;
@@ -26,6 +32,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.maclan.Area;
 import org.maclan.Middle;
 import org.maclan.MiddleResult;
 import org.maclan.Revision;
@@ -35,10 +42,14 @@ import org.multipage.gui.RendererJLabel;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
+
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 /**
- * 
- * @author user
+ * Dialog that displays slot revisions information.
+ * @author vakol
  *
  */
 public class RevisionsDialog extends JDialog {
@@ -119,16 +130,22 @@ public class RevisionsDialog extends JDialog {
 	 */
 	public static Revision showDialog(Component parent, Slot slot, Consumer<Revision> fireSelection) {
 		
-		RevisionsDialog dialog = new RevisionsDialog(parent);
-		dialog.fireSelection = fireSelection;
-		dialog.loadRevisions(slot);
-		dialog.setVisible(true);
-		
-		if (!dialog.confirmed) {
-			return null;
+		try {
+			RevisionsDialog dialog = new RevisionsDialog(parent);
+			dialog.fireSelection = fireSelection;
+			dialog.loadRevisions(slot);
+			dialog.setVisible(true);
+			
+			if (!dialog.confirmed) {
+				return null;
+			}
+			
+			return dialog.getRevision();
 		}
-		
-		return dialog.getRevision();
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -137,17 +154,23 @@ public class RevisionsDialog extends JDialog {
 	 */
 	public RevisionsDialog(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
-		addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				onCancel();
-			}
-		});
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		initComponents();
-		initList();
-		localize();
-		loadDialog();
+		
+		try {
+			addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowClosing(WindowEvent e) {
+					onCancel();
+				}
+			});
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			initComponents();
+			initList();
+			localize();
+			loadDialog();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -210,7 +233,13 @@ public class RevisionsDialog extends JDialog {
 			JScrollPane scrollPane = new JScrollPane();
 			getContentPane().add(scrollPane, BorderLayout.CENTER);
 			{
-				list = new JList();
+				list = new JList<>();
+				list.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						onRevisionDoubleClick(e);
+					}
+				});
 				list.addListSelectionListener(new ListSelectionListener() {
 					public void valueChanged(ListSelectionEvent e) {
 						onListSelectionChanged(e);
@@ -222,60 +251,140 @@ public class RevisionsDialog extends JDialog {
 	}
 	
 	/**
+	 * On double click on revision.
+	 * @param event
+	 */
+	protected void onRevisionDoubleClick(MouseEvent event) {
+		try {
+			
+			// Check double click.
+			int mouseButton = event.getButton();
+			int clickCount = event.getClickCount();
+			if (!(mouseButton == MouseEvent.BUTTON1 && clickCount == 2)) {
+				return;
+			}
+			
+			// Get selected revision.
+			Revision revision = (Revision) list.getSelectedValue();
+			if (revision == null) {
+				return;
+			}
+			
+			// Let user edit revision description.
+			String description = revision.description;
+			if (description == null) {
+				description = "";
+			}
+			
+			description = Utility.input(this, "org.multipage.generator.messageEditRevisionDescription", description);
+			if (description == null) {
+	            return;
+	        }
+			
+			if (description.isEmpty()) {
+				description = null;
+			}
+			revision.description = description;
+			
+			// Save new revision description.
+			Area slotArea = slot.getArea();
+			if (slotArea == null) {
+				list.updateUI();
+				return;
+			}
+			long areaId = slotArea.getId();
+			String slotAlias = slot.getAlias();
+			
+			Long revisionNumber = revision.number;
+			if (revisionNumber == null) {
+				revisionNumber = 0L;
+			}
+			
+			try {
+				Middle middle = ProgramBasic.loginMiddle();
+				MiddleResult result = middle.updateSlotRevisionDescription(areaId, slotAlias, revisionNumber, description);
+				result.throwPossibleException();
+			}
+			catch (Exception e) {
+				String message = e.getLocalizedMessage();
+				Utility.show2(this, message);
+			}
+			finally {
+				ProgramBasic.logoutMiddle();
+			}
+			
+			list.updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+	}
+
+	/**
 	 * On delete revision
 	 */
 	protected void onDelete() {
-		
-		// Get selected revision
-		Revision revision = (Revision) list.getSelectedValue();
-		if (revision == null) {
-			Utility.show(this, "org.multipage.generator.messageSelectRevisionToDelete");
-			return;
-		}
-		
-		// At least one revision must exist
-		if (model.size() == 1) {
-			Utility.show(this, "org.multipage.generator.messageAtLeastOneRevision");
-			return;
-		}
-		
-		// Ask user if delete the revision
-		if (!Utility.ask(this, "org.multipage.generator.messageDeleteRevisionNumber", revision.toString(last.equals(revision)))) {
-			return;
-		}
-		
-		// Delete revision
-		MiddleResult result = MiddleResult.UNKNOWN_ERROR;
 		try {
-			Middle middle = ProgramBasic.loginMiddle();
-			result = middle.removeSlotRevision(slot, revision);
+			
+			// Get selected revision
+			Revision revision = (Revision) list.getSelectedValue();
+			if (revision == null) {
+				Utility.show(this, "org.multipage.generator.messageSelectRevisionToDelete");
+				return;
+			}
+			
+			// At least one revision must exist
+			if (model.size() == 1) {
+				Utility.show(this, "org.multipage.generator.messageAtLeastOneRevision");
+				return;
+			}
+			
+			// Ask user if delete the revision
+			if (!Utility.ask(this, "org.multipage.generator.messageDeleteRevisionNumber", revision.toString(last.equals(revision)))) {
+				return;
+			}
+			
+			// Delete revision
+			MiddleResult result = MiddleResult.UNKNOWN_ERROR;
+			try {
+				Middle middle = ProgramBasic.loginMiddle();
+				result = middle.removeSlotRevision(slot, revision);
+			}
+			catch (Exception e) {
+				result = MiddleResult.sqlToResult(e);
+			}
+			finally {
+				ProgramBasic.logoutMiddle();
+			}
+			if (result.isNotOK()) {
+				result.show(this);
+				return;
+			}
+			
+			// Reload list
+			loadRevisions(slot);
 		}
-		catch (Exception e) {
-			result = MiddleResult.sqlToResult(e);
-		}
-		finally {
-			ProgramBasic.logoutMiddle();
-		}
-		if (result.isNotOK()) {
-			result.show(this);
-			return;
-		}
-		
-		// Reload list
-		loadRevisions(slot);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On OK
 	 */
 	protected void onOk() {
-		
-		Revision revision = getRevision();
-		
-		// Confirm revision
-		confirmed = revision != null;
-		
-		saveDialog();
+		try {
+			
+			Revision revision = getRevision();
+			
+			// Confirm revision
+			confirmed = revision != null;
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 	
@@ -283,8 +392,14 @@ public class RevisionsDialog extends JDialog {
 	 * On cancel
 	 */
 	protected void onCancel() {
+		try {
+			
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
-		saveDialog();
 		dispose();
 	}
 	
@@ -292,37 +407,52 @@ public class RevisionsDialog extends JDialog {
 	 * Localize components
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(labelRevisions);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(buttonDelete);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(labelRevisions);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(buttonDelete);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * 
 	 */
 	private void initList() {
-		
-		model = new DefaultListModel();
-		list.setModel(model);
-		
-		list.setCellRenderer(new ListCellRenderer<Revision>() {
+		try {
 			
-			RendererJLabel renderer = new RendererJLabel();
-			private Font monospaced = new Font(Font.MONOSPACED, Font.PLAIN, 12);
+			model = new DefaultListModel<>();
+			list.setModel(model);
 			
-			@Override
-			public Component getListCellRendererComponent(JList<? extends Revision> list, Revision revision, int index,
-					boolean isSelected, boolean cellHasFocus) {
+			list.setCellRenderer(new ListCellRenderer<Revision>() {
 				
-				renderer.setFont(monospaced );
-				renderer.setText(revision.toString(last.equals(revision)));
-				renderer.set(isSelected, cellHasFocus, index);
-				return renderer;
-			}
-		});
+				RendererJLabel renderer = new RendererJLabel();
+				private Font monospaced = new Font(Font.MONOSPACED, Font.PLAIN, 12);
+				
+				@Override
+				public Component getListCellRendererComponent(JList<? extends Revision> list, Revision revision, int index,
+						boolean isSelected, boolean cellHasFocus) {
+					
+					try {
+						renderer.setFont(monospaced );
+						renderer.setText(revision.toString(last.equals(revision)));
+						renderer.set(isSelected, cellHasFocus, index);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return renderer;
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -330,10 +460,15 @@ public class RevisionsDialog extends JDialog {
 	 * @param e
 	 */
 	protected void onListSelectionChanged(ListSelectionEvent e) {
-		
-		if (!list.getValueIsAdjusting()) {
-			onSelected(list.getSelectedIndex());
+		try {
+			
+			if (!list.getValueIsAdjusting()) {
+				onSelected(list.getSelectedIndex());
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -341,10 +476,15 @@ public class RevisionsDialog extends JDialog {
 	 * @param index
 	 */
 	private void onSelected(int index) {
-		
-		if (fireSelection != null && index >= 0) {
-			fireSelection.accept(model.getElementAt(index));
+		try {
+			
+			if (fireSelection != null && index >= 0) {
+				fireSelection.accept(model.getElementAt(index));
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -352,27 +492,38 @@ public class RevisionsDialog extends JDialog {
 	 * @param slot 
 	 */
 	private void loadRevisions(Slot slot) {
-		
-		this.slot = slot;
-		
-		MiddleResult result;
 		try {
-			Middle middle = ProgramBasic.loginMiddle();
-			LinkedList<Revision> revisions = new LinkedList<Revision>();
-			result = middle.loadRevisions(slot, revisions);
-			if (result.isOK()) {
-				display(revisions);
+			
+			this.slot = slot;
+			
+			MiddleResult result;
+			try {
+				Middle middle = ProgramBasic.loginMiddle();
+				LinkedList<Revision> revisions = new LinkedList<Revision>();
+				result = middle.loadRevisions(slot, revisions);
+				if (result.isOK()) {
+					display(revisions);
+				}
+				
+				// Set last revision slot ID.
+				Revision lastRevision = revisions.getLast();
+				if (lastRevision != null) {
+					slot.setId(lastRevision.slotId);
+				}
+			}
+			catch (Exception e) {
+				result = MiddleResult.sqlToResult(e);
+			}
+			finally {
+				ProgramBasic.logoutMiddle();
+			}
+			if (result.isNotOK()) {
+				result.show(this);
 			}
 		}
-		catch (Exception e) {
-			result = MiddleResult.sqlToResult(e);
-		}
-		finally {
-			ProgramBasic.logoutMiddle();
-		}
-		if (result.isNotOK()) {
-			result.show(this);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -380,13 +531,21 @@ public class RevisionsDialog extends JDialog {
 	 * @param revisions
 	 */
 	private void display(LinkedList<Revision> revisions) {
-		
-		model.clear();
-		
-		last = revisions.getLast();
-		for (Revision revision : revisions) {
-			model.addElement(revision);
+		try {
+			
+			model.clear();
+			if (revisions.isEmpty()) {
+				return;
+			}
+			
+			last = revisions.getLast();
+			for (Revision revision : revisions) {
+				model.addElement(revision);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -395,28 +554,55 @@ public class RevisionsDialog extends JDialog {
 	 */
 	private Revision getRevision() {
 		
-		Object value = (Revision) list.getSelectedValue();
-		return value != null ? (Revision) value : null;
+		try {
+			// Get selected revision.
+			Revision selectedRevision = (Revision) list.getSelectedValue();
+			if (selectedRevision == null) {
+				
+				// Get last list item, the current top revision.
+				int count = model.getSize();
+				if (count < 1) {
+					return null;
+				}
+				Revision currentRevision = model.get(count - 1);
+				return currentRevision;
+			}
+			return selectedRevision;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
 	 * Load dialog
 	 */
 	private void loadDialog() {
-		
-		if (!bounds.isEmpty()) {
-			setBounds(bounds);
+		try {
+			
+			if (!bounds.isEmpty()) {
+				setBounds(bounds);
+			}
+			else {
+				Utility.centerOnScreen(this);
+			}
 		}
-		else {
-			Utility.centerOnScreen(this);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

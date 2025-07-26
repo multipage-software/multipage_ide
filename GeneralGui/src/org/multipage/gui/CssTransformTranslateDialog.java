@@ -1,20 +1,33 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import java.awt.*;
-import javax.swing.*;
-import java.awt.event.*;
-import java.io.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.SpringLayout;
+
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays translation editor.
+ * @author vakol
  *
  */
 public class CssTransformTranslateDialog extends JDialog {
@@ -86,12 +99,17 @@ public class CssTransformTranslateDialog extends JDialog {
 	 */
 	public static CssTransformTranslate showDialog(Component parent) {
 		
-		CssTransformTranslateDialog dialog = new CssTransformTranslateDialog(parent);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			CssTransformTranslateDialog dialog = new CssTransformTranslateDialog(parent);
+			dialog.setVisible(true);
 			
-			return dialog.getTranslate();
+			if (dialog.confirm) {
+				
+				return dialog.getTranslate();
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -105,13 +123,18 @@ public class CssTransformTranslateDialog extends JDialog {
 	public static boolean editDialog(Component parent,
 			CssTransformTranslate translate) {
 		
-		CssTransformTranslateDialog dialog = new CssTransformTranslateDialog(parent);
-		dialog.setTranslate(translate);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			CssTransformTranslateDialog dialog = new CssTransformTranslateDialog(parent);
+			dialog.setTranslate(translate);
+			dialog.setVisible(true);
 			
-			translate.setFrom(dialog.getTranslate());
+			if (dialog.confirm) {
+				
+				translate.setFrom(dialog.getTranslate());
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return false;
 	}
@@ -121,11 +144,16 @@ public class CssTransformTranslateDialog extends JDialog {
 	 * @param translate
 	 */
 	private void setTranslate(CssTransformTranslate translate) {
-		
-		textTx.setText(String.valueOf(translate.tx));
-		textTy.setText(String.valueOf(translate.ty));
-		comboTxUnits.setSelectedItem(translate.txUnits);
-		comboTyUnits.setSelectedItem(translate.tyUnits);
+		try {
+			
+			textTx.setText(String.valueOf(translate.tx));
+			textTy.setText(String.valueOf(translate.ty));
+			comboTxUnits.setSelectedItem(translate.txUnits);
+			comboTyUnits.setSelectedItem(translate.tyUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -134,14 +162,20 @@ public class CssTransformTranslateDialog extends JDialog {
 	 */
 	private CssTransformTranslate getTranslate() {
 		
-		CssTransformTranslate translate = new CssTransformTranslate();
-		
-		translate.tx = Utility.getFloat(textTx, 0.0f);
-		translate.ty = Utility.getFloat(textTy, 0.0f);
-		translate.txUnits = (String) comboTxUnits.getSelectedItem();
-		translate.tyUnits = (String) comboTyUnits.getSelectedItem();
-		
-		return translate;
+		try {
+			CssTransformTranslate translate = new CssTransformTranslate();
+			
+			translate.tx = Utility.getFloat(textTx, 0.0f);
+			translate.ty = Utility.getFloat(textTy, 0.0f);
+			translate.txUnits = (String) comboTxUnits.getSelectedItem();
+			translate.tyUnits = (String) comboTyUnits.getSelectedItem();
+			
+			return translate;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -150,12 +184,17 @@ public class CssTransformTranslateDialog extends JDialog {
 	 */
 	public CssTransformTranslateDialog(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -236,53 +275,77 @@ public class CssTransformTranslateDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		localize();
-		setIcons();
-		
-		loadUnits();
-		
-		loadDialog();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			localize();
+			setIcons();
+			
+			loadUnits();
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load units.
 	 */
 	private void loadUnits() {
-		
-		Utility.loadCssUnits(comboTxUnits);
-		Utility.loadCssUnits(comboTyUnits);
+		try {
+			
+			Utility.loadCssUnits(comboTxUnits);
+			Utility.loadCssUnits(comboTyUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(this);
+		try {
+			
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(this);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
-		
-		saveDialog();
-		
-		confirm = false;
+		try {
+			
+			saveDialog();
+			confirm = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -290,10 +353,15 @@ public class CssTransformTranslateDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		saveDialog();
-		
-		confirm = true;
+		try {
+			
+			saveDialog();
+			confirm = true;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -317,7 +385,12 @@ public class CssTransformTranslateDialog extends JDialog {
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

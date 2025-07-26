@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 03-01-2020
+ * Created on : 2020-01-03
  *
  */
 package org.multipage.generator;
@@ -38,10 +38,11 @@ import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author user
+ * Dialog that displays information about reverting contents of the external providers.
+ * @author vakol
  *
  */
 public class RevertExternalProvidersDialog extends JDialog {
@@ -165,11 +166,17 @@ public class RevertExternalProvidersDialog extends JDialog {
 	 */
 	public static boolean showDialog(Component parent, LinkedList<Slot> externalSlots) {
 		
-		RevertExternalProvidersDialog dialog = new RevertExternalProvidersDialog(parent);
-		dialog.loadList(externalSlots);
-		dialog.setVisible(true);
-		
-		return dialog.confirm;
+		try {
+			RevertExternalProvidersDialog dialog = new RevertExternalProvidersDialog(parent);
+			dialog.loadList(externalSlots);
+			dialog.setVisible(true);
+			
+			return dialog.confirm;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
@@ -177,132 +184,152 @@ public class RevertExternalProvidersDialog extends JDialog {
 	 * @param externalSlots
 	 */
 	private void loadList(LinkedList<Slot> externalSlots) {
-		
-		// Create list model.
-		DefaultListModel<ListEntry> model = new DefaultListModel<ListEntry>();
-		listProviders.setModel(model);
-		
-		// Set list items renderer.
-		listProviders.setCellRenderer(new ListCellRenderer<ListEntry>() {
-			
-			// Create renderer.
-			ExternalProviderRevertPanel renderer = new ExternalProviderRevertPanel();
-			Dimension preferredSize = new Dimension();
-			{
-				preferredSize.height = 24;
-			}
-			
-			// Set renderer for list item.
-			@Override
-			public Component getListCellRendererComponent(JList<? extends ListEntry> list, ListEntry item, int index,
-					boolean isSelected, boolean cellHasFocus) {
-				
-				if (item != null) {
-					renderer.setContent(item, isSelected);
-				}
-				preferredSize.width = list.getWidth();
-				renderer.setPreferredSize(preferredSize);
-				return renderer;
-			}
-		});
-		
-		// Load links.
-		MiddleResult result = MiddleResult.OK;
 		try {
 			
-			Middle middle = ProgramBasic.loginMiddle();
-			for (Slot externalSlot : externalSlots) {
+			// Create list model.
+			DefaultListModel<ListEntry> model = new DefaultListModel<ListEntry>();
+			listProviders.setModel(model);
+			
+			// Set list items renderer.
+			listProviders.setCellRenderer(new ListCellRenderer<ListEntry>() {
 				
-				// Create new entry.
-				ListEntry entry = new ListEntry();
-				
-				// Set slot ID.
-				long slotId = externalSlot.getId();
-				entry.slotId = slotId;
-				
-				// Load slot text.
-				entry.slotText = ProgramBasic.getSlotText(slotId);
-				
-				// Get current external provider link and output text.
-				result = middle.loadSlotExternalLinkAndOutputText(externalSlot);
-				if (result.isNotOK()) {
-					break;
+				// Create renderer.
+				ExternalProviderRevertPanel renderer = new ExternalProviderRevertPanel();
+				Dimension preferredSize = new Dimension();
+				{
+					try {
+						preferredSize.height = 24;
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};				
 				}
-				String externalProviderLink = externalSlot.getExternalProvider();
 				
-				// Set external provider text.
-				Obj<String> text = new Obj<String>();
-				Obj<String> path = new Obj<String>();
-				Obj<String> encoding = new Obj<String>();
-				result = MiddleUtility.loadExternalProviderText(externalProviderLink, text, path, encoding);
-				if (result.isOK()) {
+				// Set renderer for list item.
+				@Override
+				public Component getListCellRendererComponent(JList<? extends ListEntry> list, ListEntry item, int index,
+						boolean isSelected, boolean cellHasFocus) {
 					
-					// Set entry.
-					entry.externalText = text.ref;
-					entry.path = path.ref;
-					entry.encoding = encoding.ref;
-					entry.processedText = externalSlot.getOutputText();
+					try {
+						if (item != null) {
+							renderer.setContent(item, isSelected);
+						}
+						preferredSize.width = list.getWidth();
+						renderer.setPreferredSize(preferredSize);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return renderer;
+				}
+			});
+			
+			// Load links.
+			MiddleResult result = MiddleResult.OK;
+			try {
+				
+				Middle middle = ProgramBasic.loginMiddle();
+				for (Slot externalSlot : externalSlots) {
 					
-					// Slot must be processed.
-					if (entry.processedText != null) {
+					// Create new entry.
+					ListEntry entry = new ListEntry();
+					
+					// Set slot ID.
+					long slotId = externalSlot.getId();
+					entry.slotId = slotId;
+					
+					// Load slot text.
+					entry.slotText = ProgramBasic.getSlotText(slotId);
+					
+					// Get current external provider link and output text.
+					result = middle.loadSlotExternalLinkAndOutputText(externalSlot);
+					if (result.isNotOK()) {
+						break;
+					}
+					String externalProviderLink = externalSlot.getExternalProvider();
+					
+					// Set external provider text.
+					Obj<String> text = new Obj<String>();
+					Obj<String> path = new Obj<String>();
+					Obj<String> encoding = new Obj<String>();
+					result = MiddleUtility.loadExternalProviderText(externalProviderLink, text, path, encoding);
+					if (result.isOK()) {
 						
-						// Check if the external provider contains slot text value.
-						entry.externalEqualsSource = entry.externalText.equals(entry.slotText);
+						// Set entry.
+						entry.externalText = text.ref;
+						entry.path = path.ref;
+						entry.encoding = encoding.ref;
+						entry.processedText = externalSlot.getOutputText();
 						
-						// Check if the external provider contains processed text.
-						entry.externalEqualsProcessed = entry.externalText.equals(entry.processedText);
+						// Slot must be processed.
+						if (entry.processedText != null) {
+							
+							// Check if the external provider contains slot text value.
+							entry.externalEqualsSource = entry.externalText.equals(entry.slotText);
+							
+							// Check if the external provider contains processed text.
+							entry.externalEqualsProcessed = entry.externalText.equals(entry.processedText);
+						}
+						else {
+							entry.result = MiddleResult.NOT_PROCESSED;
+						}
 					}
 					else {
-						entry.result = MiddleResult.NOT_PROCESSED;
+						entry.result = result;
 					}
+					
+					model.addElement(entry);
 				}
-				else {
-					entry.result = result;
-				}
-				
-				model.addElement(entry);
+			}
+			catch (Exception e) {
+				result = MiddleResult.exceptionToResult(e);
+			}
+			finally {
+				ProgramBasic.logoutMiddle();
+			}
+			if (result.isNotOK()) {
+				result.show(this);
 			}
 		}
-		catch (Exception e) {
-			result = MiddleResult.exceptionToResult(e);
-		}
-		finally {
-			ProgramBasic.logoutMiddle();
-		}
-		if (result.isNotOK()) {
-			result.show(this);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On list clicked.
 	 */
 	protected void onListClicked(MouseEvent e) {
-		
-		// If it is a double click.
-		if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
+		try {
 			
-			// Get selected list entry.
-			ListEntry entry = listProviders.getSelectedValue();
-			if (entry == null) {
-				return;
+			// If it is a double click.
+			if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
+				
+				// Get selected list entry.
+				ListEntry entry = listProviders.getSelectedValue();
+				if (entry == null) {
+					return;
+				}
+				
+				// If it is an error entry, inform user about it.
+				if (entry.result != null) {
+					entry.result.show(this);
+					return;
+				}
+				
+				// If content is not equal, display differ window.
+				if (!entry.externalEqualsProcessed && !entry.externalEqualsSource) {
+					DifferDialog.showDialog(this, entry);
+					return;
+				}
+				
+				// Display OK message.
+				Utility.show(this, "org.multipage.generator.messageProviderIsOkNoActionNeeded");
 			}
-			
-			// If it is an error entry, inform user about it.
-			if (entry.result != null) {
-				entry.result.show(this);
-				return;
-			}
-			
-			// If content is not equal, display differ window.
-			if (!entry.externalEqualsProcessed && !entry.externalEqualsSource) {
-				DifferDialog.showDialog(this, entry);
-				return;
-			}
-			
-			// Display OK message.
-			Utility.show(this, "org.multipage.generator.messageProviderIsOkNoActionNeeded");
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -312,11 +339,15 @@ public class RevertExternalProvidersDialog extends JDialog {
 	public RevertExternalProvidersDialog(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
 		
-		// initialize dialog components.
-		initComponents();
-		
-		// Do post creation functions.
-		postCreation(); //$hide$
+		try {
+			// initialize dialog components.
+			initComponents();
+			// Do post creation functions.
+			postCreation(); //$hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -383,64 +414,94 @@ public class RevertExternalProvidersDialog extends JDialog {
 	 * Post creation of dialog.
 	 */
 	private void postCreation() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		localize();
-		setIcons();
-		
-		loadDialog();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			localize();
+			setIcons();
+			
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(labelRevertQuestion);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(labelRevertQuestion);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setBounds(bounds);
+			}
 		}
-		else {
-			setBounds(bounds);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
-		
-		saveDialog();
-		
-		confirm = false;
+		try {
+			
+			saveDialog();
+			confirm = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 	
@@ -448,10 +509,15 @@ public class RevertExternalProvidersDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		saveDialog();
-		
-		confirm = true;
+		try {
+			
+			saveDialog();
+			confirm = true;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 }

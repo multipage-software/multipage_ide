@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -15,9 +15,11 @@ import java.util.Properties;
 import org.multipage.gui.Images;
 import org.multipage.gui.StatusBar;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * @author
+ * Displays main status bar.
+ * @author vakol
  *
  */
 public class MainStatusBar extends StatusBar {
@@ -60,13 +62,19 @@ public class MainStatusBar extends StatusBar {
 	 */
 	@Override
 	public void paint(Graphics g) {
-		super.paint(g);
 		
-		if (login != null) {
-			drawWithLogin(g);
+		try {
+			super.paint(g);
+			
+			if (login != null) {
+				drawWithLogin(g);
+			}
+			else {
+				drawSimple(g);
+			}
 		}
-		else {
-			drawSimple(g);
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 	}
 
@@ -76,15 +84,20 @@ public class MainStatusBar extends StatusBar {
 	 */
 	private void drawSimple(Graphics g) {
 		
-		final int space = 5;
-		int y = (height + fontSize) / 2;
-		
-		// Use font.
-		g.setFont(font);
-				
-		// Draw main text.
-		if (mainText != null) {
-			g.drawString(mainText, space, y);
+		try {
+			final int space = 5;
+			int y = (height + fontSize) / 2;
+			
+			// Use font.
+			g.setFont(font);
+					
+			// Draw main text.
+			if (mainText != null) {
+				g.drawString(mainText, space, y);
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 	}
 
@@ -93,102 +106,107 @@ public class MainStatusBar extends StatusBar {
 	 * @param g
 	 */
 	private void drawWithLogin(Graphics g) {
+		
+		try {
+			BufferedImage connectedImage = Images.getImage("org/multipage/generator/images/connected.png");
+			BufferedImage disconnectedImage = Images.getImage("org/multipage/generator/images/disconnected.png");
+			BufferedImage securedImage = Images.getImage("org/multipage/generator/images/secure.png");
+			BufferedImage notsecuredImage = Images.getImage("org/multipage/generator/images/not_secure.png");
+			BufferedImage hostImage = Images.getImage("org/multipage/generator/images/host.png");
+			BufferedImage databaseImage = Images.getImage("org/multipage/generator/images/database.png");
+			BufferedImage userImage = Images.getImage("org/multipage/generator/images/user.png");
+			
+			final int space = 5;
+			int y = (height + fontSize) / 2,
+			    yimage = (height - securedImage.getHeight()) / 2,
+			    x = getWidth() - space;
+			
+			// Use font.
+			g.setFont(font);
+			FontMetrics metrics = g.getFontMetrics();
+			
+			// Draw strings.
+			String text;
+			
+			if (connection) {
+				text = Resources.getString("org.multipage.generator.textConnected");
+				x -= metrics.stringWidth(text);
+				g.drawString(text, x, y);
+				x -= connectedImage.getWidth() + space;
+				g.drawImage(connectedImage, x, yimage, null);
+				x -= space;
+				g.drawLine(x, 0, x, height);
+				x -= space;
 				
-		BufferedImage connectedImage = Images.getImage("org/multipage/generator/images/connected.png");
-		BufferedImage disconnectedImage = Images.getImage("org/multipage/generator/images/disconnected.png");
-		BufferedImage securedImage = Images.getImage("org/multipage/generator/images/secure.png");
-		BufferedImage notsecuredImage = Images.getImage("org/multipage/generator/images/not_secure.png");
-		BufferedImage hostImage = Images.getImage("org/multipage/generator/images/host.png");
-		BufferedImage databaseImage = Images.getImage("org/multipage/generator/images/database.png");
-		BufferedImage userImage = Images.getImage("org/multipage/generator/images/user.png");
-		
-		final int space = 5;
-		int y = (height + fontSize) / 2,
-		    yimage = (height - securedImage.getHeight()) / 2,
-		    x = getWidth() - space;
-		
-		// Use font.
-		g.setFont(font);
-		FontMetrics metrics = g.getFontMetrics();
-		
-		// Draw strings.
-		String text;
-		
-		if (connection) {
-			text = Resources.getString("org.multipage.generator.textConnected");
+				text = Resources.getString("org.multipage.generator.textNumberConnections");
+				text = String.format(text, numberConnections);
+				x -= metrics.stringWidth(text);
+				g.drawString(text, x, y);
+				//x -= space;
+				//g.drawImage(connectedImage, x, yimage, null);
+			}
+			else {
+				text = Resources.getString("org.multipage.generator.textDisconnected");
+				x -= metrics.stringWidth(text);
+				g.drawString(text, x, y);
+				x -= disconnectedImage.getWidth() + space;
+				g.drawImage(disconnectedImage, x, yimage, null);
+			}
+			x -= space;
+			g.drawLine(x, 0, x, height);
+			x -= space;
+			if (login.getProperty("ssl") == "true") {
+				text = Resources.getString("org.multipage.generator.textSecured");
+				x -= metrics.stringWidth(text);
+				g.drawString(text, x, y);
+				x -= securedImage.getWidth() + space;
+				g.drawImage(securedImage, x, yimage, null);
+			}
+			else {
+				text = Resources.getString("org.multipage.generator.textNotSecured");
+				x -= metrics.stringWidth(text);
+				g.drawString(text, x, y);
+				x -= notsecuredImage.getWidth() + space;
+				g.drawImage(notsecuredImage, x, yimage, null);
+			}
+			x -= space;
+			g.drawLine(x, 0, x, height);
+			x -= space;
+			text = login.getProperty("server") + ":" + login.getProperty("port");
 			x -= metrics.stringWidth(text);
 			g.drawString(text, x, y);
-			x -= connectedImage.getWidth() + space;
-			g.drawImage(connectedImage, x, yimage, null);
+			x -= hostImage.getWidth() + space;
+			g.drawImage(hostImage, x, yimage, null);
 			x -= space;
 			g.drawLine(x, 0, x, height);
 			x -= space;
 			
-			text = Resources.getString("org.multipage.generator.textNumberConnections");
-			text = String.format(text, numberConnections);
+			text = login.getProperty("database");
 			x -= metrics.stringWidth(text);
 			g.drawString(text, x, y);
-			//x -= space;
-			//g.drawImage(connectedImage, x, yimage, null);
-		}
-		else {
-			text = Resources.getString("org.multipage.generator.textDisconnected");
+			x -= databaseImage.getWidth() + space;
+			g.drawImage(databaseImage, x, yimage, null);
+			x -= space;
+			g.drawLine(x, 0, x, height);
+			x -= space;
+			
+			text = login.getProperty("username");
 			x -= metrics.stringWidth(text);
 			g.drawString(text, x, y);
-			x -= disconnectedImage.getWidth() + space;
-			g.drawImage(disconnectedImage, x, yimage, null);
+			x -= userImage.getWidth() + space;
+			g.drawImage(userImage, x, yimage, null);
+			x -= space;
+			g.drawLine(x, 0, x, height);
+			x -= space;
+			
+			// Draw main text.
+			if (mainText != null) {
+				g.setClip(space, 0, x, height);
+				g.drawString(mainText, space, y);
+			}
 		}
-		x -= space;
-		g.drawLine(x, 0, x, height);
-		x -= space;
-		if (login.getProperty("ssl") == "true") {
-			text = Resources.getString("org.multipage.generator.textSecured");
-			x -= metrics.stringWidth(text);
-			g.drawString(text, x, y);
-			x -= securedImage.getWidth() + space;
-			g.drawImage(securedImage, x, yimage, null);
-		}
-		else {
-			text = Resources.getString("org.multipage.generator.textNotSecured");
-			x -= metrics.stringWidth(text);
-			g.drawString(text, x, y);
-			x -= notsecuredImage.getWidth() + space;
-			g.drawImage(notsecuredImage, x, yimage, null);
-		}
-		x -= space;
-		g.drawLine(x, 0, x, height);
-		x -= space;
-		text = login.getProperty("server") + ":" + login.getProperty("port");
-		x -= metrics.stringWidth(text);
-		g.drawString(text, x, y);
-		x -= hostImage.getWidth() + space;
-		g.drawImage(hostImage, x, yimage, null);
-		x -= space;
-		g.drawLine(x, 0, x, height);
-		x -= space;
-		
-		text = login.getProperty("database");
-		x -= metrics.stringWidth(text);
-		g.drawString(text, x, y);
-		x -= databaseImage.getWidth() + space;
-		g.drawImage(databaseImage, x, yimage, null);
-		x -= space;
-		g.drawLine(x, 0, x, height);
-		x -= space;
-		
-		text = login.getProperty("username");
-		x -= metrics.stringWidth(text);
-		g.drawString(text, x, y);
-		x -= userImage.getWidth() + space;
-		g.drawImage(userImage, x, yimage, null);
-		x -= space;
-		g.drawLine(x, 0, x, height);
-		x -= space;
-		
-		// Draw main text.
-		if (mainText != null) {
-			g.setClip(space, 0, x, height);
-			g.drawString(mainText, space, y);
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 	}
 
@@ -197,18 +215,28 @@ public class MainStatusBar extends StatusBar {
 	 * @param connection
 	 */
 	public void setConnection(boolean connection) {
-
-		this.connection = connection;
-		repaint();
+		try {
+			
+			this.connection = connection;
+			repaint();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * @param mainText the mainText to set
 	 */
 	public void setMainText(String mainText) {
-		
-		this.mainText = mainText;
-		repaint();
+		try {
+			
+			this.mainText = mainText;
+			repaint();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -216,8 +244,13 @@ public class MainStatusBar extends StatusBar {
 	 * @param number
 	 */
 	public void setNumberConnections(int number) {
-		
-		this.numberConnections = number;
-		repaint();
+		try {
+			
+			this.numberConnections = number;
+			repaint();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 18-02-2020
+ * Created on : 2020-02-18
  *
  */
 package org.multipage.generator;
@@ -10,9 +10,11 @@ import java.util.function.Supplier;
 
 import org.maclan.MiddleUtility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * @author user
+ * Helper class for application paths.
+ * @author vakol
  *
  */
 public class ProgramPaths {
@@ -43,10 +45,15 @@ public class ProgramPaths {
 		 * Constructor.
 		 */
 		public PathSupplier(String captionResource, String tag, Supplier<String> supplier) {
-			
-			this.caption = Resources.getString(captionResource);
-			this.tag = tag;
-			this.supplier = supplier;
+			try {
+				
+				this.caption = Resources.getString(captionResource);
+				this.tag = tag;
+				this.supplier = supplier;
+			}
+			catch(Throwable expt) {
+				Safe.exception(expt);
+			};
 		}
 		
 		/**
@@ -64,15 +71,21 @@ public class ProgramPaths {
 		 */
 		public static PathSupplier newAreaPath(String captionText, String tag, String solvedPath) {
 			
-			PathSupplier pathSupplier = new PathSupplier();
-			
-			pathSupplier.caption = captionText;
-			pathSupplier.tag = tag;
-			pathSupplier.supplier = () -> {
-				return solvedPath;
-			};
-			
-			return pathSupplier;
+			try {
+				PathSupplier pathSupplier = new PathSupplier();
+				
+				pathSupplier.caption = captionText;
+				pathSupplier.tag = tag;
+				pathSupplier.supplier = () -> {
+					return solvedPath;
+				};
+				
+				return pathSupplier;
+			}
+			catch (Throwable e) {
+				Safe.exception(e);
+			}
+			return null;
 		}
 	}
 	

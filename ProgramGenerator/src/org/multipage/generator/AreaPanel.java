@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -41,10 +41,11 @@ import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays area server URL editor.
+ * @author vakol
  *
  */
 public class AreaPanel extends InsertPanel implements StringValueEditor, ExternalProviderInterface {
@@ -121,13 +122,17 @@ public class AreaPanel extends InsertPanel implements StringValueEditor, Externa
 	 * @param parentWindow 
 	 */
 	public AreaPanel(String initialString) {
-
-		initComponents();
 		
-		// $hide>>$
-		this.initialString = initialString;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			this.initialString = initialString;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -195,11 +200,16 @@ public class AreaPanel extends InsertPanel implements StringValueEditor, Externa
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		localize();
-		setIcons();
-		setToolTips();
-		loadTree(null);
+		try {
+			
+			localize();
+			setIcons();
+			setToolTips();
+			loadTree(null);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -207,8 +217,8 @@ public class AreaPanel extends InsertPanel implements StringValueEditor, Externa
 	 */
 	protected void onExternalAreaProvider() {
 		
-		String urlText = textAreaServerUrl.getText();
 		try {
+			String urlText = textAreaServerUrl.getText();
 			URL url = new URL(urlText);
 			
 			// Ask user for password. TODO: make Utility.inputPwd(...)
@@ -265,32 +275,42 @@ public class AreaPanel extends InsertPanel implements StringValueEditor, Externa
 	 * @param areasProviders
 	 */
 	private void loadTree(Hashtable<String, String[]> areasProviders) {
-		
-		DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
-		
-		tree.setRootVisible(false);
-		treeModel = new DefaultTreeModel(root);
-		tree.setModel(treeModel);
-		
-		
-		if (areasProviders != null) {
-			areasProviders.forEach( (areaAlias, providersAliases) -> {
-				
-				DefaultMutableTreeNode area = new DefaultMutableTreeNode(areaAlias);
-				root.add(area);
-				
-				for (String providerAlias : providersAliases) {
-					DefaultMutableTreeNode provider = new DefaultMutableTreeNode(
-															new ProviderNode(areaAlias, providerAlias));
-					area.add(provider);
-				}
-			});
+		try {
+			
+			DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
+			
+			tree.setRootVisible(false);
+			treeModel = new DefaultTreeModel(root);
+			tree.setModel(treeModel);
+			
+			
+			if (areasProviders != null) {
+				areasProviders.forEach( (areaAlias, providersAliases) -> {
+					try {
+						
+						DefaultMutableTreeNode area = new DefaultMutableTreeNode(areaAlias);
+						root.add(area);
+						
+						for (String providerAlias : providersAliases) {
+							DefaultMutableTreeNode provider = new DefaultMutableTreeNode(
+																	new ProviderNode(areaAlias, providerAlias));
+							area.add(provider);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				});
+			}
+			else {
+				tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+			}
+			
+			Utility.expandAll(tree, true);
 		}
-		else {
-			tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-		}
-		
-		Utility.expandAll(tree, true);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -300,25 +320,29 @@ public class AreaPanel extends InsertPanel implements StringValueEditor, Externa
 	@Override
 	public String getSpecification() {
 		
-		// Try to get selected area node
-		TreePath path = tree.getSelectionPath();
-		if (path != null) {
-			
-			DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) path.getLastPathComponent();;
-			Object nodeObject = selectedNode.getUserObject();
-			
-			if (nodeObject instanceof ProviderNode) {
+		try {
+			// Try to get selected area node
+			TreePath path = tree.getSelectionPath();
+			if (path != null) {
 				
-				ProviderNode provider = (ProviderNode) nodeObject;
+				DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) path.getLastPathComponent();;
+				Object nodeObject = selectedNode.getUserObject();
 				
-				// Compile Area Server link
-				String url = textAreaServerUrl.getText();
-				String specification = String.format("%s,areaAlias=\"%s\",providerAlias=\"%s\"",
-															url, provider.areaAlias, provider.alias);
-				return specification;
+				if (nodeObject instanceof ProviderNode) {
+					
+					ProviderNode provider = (ProviderNode) nodeObject;
+					
+					// Compile Area Server link
+					String url = textAreaServerUrl.getText();
+					String specification = String.format("%s,areaAlias=\"%s\",providerAlias=\"%s\"",
+																url, provider.areaAlias, provider.alias);
+					return specification;
+				}
 			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		// Return empty string
 		return "";
 	}
@@ -327,44 +351,63 @@ public class AreaPanel extends InsertPanel implements StringValueEditor, Externa
 	 * Set from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		if (initialString != null) {
+		try {
 			
-			textAreaServerUrl.setText(initialString);
+			if (initialString != null) {
+				textAreaServerUrl.setText(initialString);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(labelAreaServerUrl);
-		Utility.localize(labelExternalProviders);
-		Utility.localize(buttonConnectProvider);
+		try {
+			
+			Utility.localize(labelAreaServerUrl);
+			Utility.localize(labelExternalProviders);
+			Utility.localize(buttonConnectProvider);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		// TODO: create new icon
-		//buttonConnectProvider.setIcon(Images.getIcon("org/multipage/generator/images/connect.png"));
-		
-		DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer) tree.getCellRenderer();
-		Icon areaIcon = Images.getIcon("org/multipage/generator/images/area_node.png");
-		renderer.setOpenIcon(areaIcon);
-		renderer.setClosedIcon(areaIcon);
-		renderer.setLeafIcon(Images.getIcon("org/multipage/generator/images/slot.png"));
+		try {
+			
+			// TODO: create new icon
+			//buttonConnectProvider.setIcon(Images.getIcon("org/multipage/generator/images/connect.png"));
+			
+			DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer) tree.getCellRenderer();
+			Icon areaIcon = Images.getIcon("org/multipage/generator/images/area_node.png");
+			renderer.setOpenIcon(areaIcon);
+			renderer.setClosedIcon(areaIcon);
+			renderer.setLeafIcon(Images.getIcon("org/multipage/generator/images/slot.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set tool tips.
 	 */
 	private void setToolTips() {
-		
-		buttonConnectProvider.setToolTipText(Resources.getString("org.multipage.generator.tooltipSelectMimeType"));
+		try {
+			
+			buttonConnectProvider.setToolTipText(Resources.getString("org.multipage.generator.tooltipSelectMimeType"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -373,7 +416,13 @@ public class AreaPanel extends InsertPanel implements StringValueEditor, Externa
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.generator.textCssMimeBuilder");
+		try {
+			return Resources.getString("org.multipage.generator.textCssMimeBuilder");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -382,7 +431,13 @@ public class AreaPanel extends InsertPanel implements StringValueEditor, Externa
 	@Override
 	public String getResultText() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -436,7 +491,13 @@ public class AreaPanel extends InsertPanel implements StringValueEditor, Externa
 	@Override
 	public String getStringValue() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -444,9 +505,14 @@ public class AreaPanel extends InsertPanel implements StringValueEditor, Externa
 	 */
 	@Override
 	public void setStringValue(String string) {
-		
-		initialString = string;
-		setFromInitialString();
+		try {
+			
+			initialString = string;
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

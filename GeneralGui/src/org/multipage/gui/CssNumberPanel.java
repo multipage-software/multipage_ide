@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2025-04-26
  *
  */
 
@@ -15,8 +15,8 @@ import java.awt.*;
 import java.io.*;
 
 /**
- * 
- * @author
+ * Panel that displays number editor.
+ * @author vakol
  *
  */
 public class CssNumberPanel extends InsertPanel implements StringValueEditor {
@@ -85,13 +85,18 @@ public class CssNumberPanel extends InsertPanel implements StringValueEditor {
 	 * @param parentWindow 
 	 */
 	public CssNumberPanel(String initialString) {
-
-		initComponents();
 		
-		// $hide>>$
-		this.initialString = initialString;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			this.initialString = initialString;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -124,8 +129,13 @@ public class CssNumberPanel extends InsertPanel implements StringValueEditor {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-
-		setFromInitialString();
+		try {
+			
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -140,20 +150,28 @@ public class CssNumberPanel extends InsertPanel implements StringValueEditor {
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		localize();
-		
-		loadUnits();
-		
-		loadDialog();
+		try {
+			
+			localize();
+			loadUnits();
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load units.
 	 */
 	private void loadUnits() {
-		
-		Utility.loadCssUnits(comboUnits);
+		try {
+			
+			Utility.loadCssUnits(comboUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -163,7 +181,13 @@ public class CssNumberPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getSpecification() {
 		
-		return getNumber() + getUnits();
+		try {
+			return getNumber() + getUnits();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -188,29 +212,45 @@ public class CssNumberPanel extends InsertPanel implements StringValueEditor {
 	 */
 	private String getUnits() {
 		
-		return (String) comboUnits.getSelectedItem();
+		try {
+			return (String) comboUnits.getSelectedItem();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
 	 * Set from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		textNumber.setText("");
-		Utility.selectComboItem(comboUnits, "px");
-
-		if (initialString != null) {
-		
-			Utility.setCssValueAndUnits(initialString.trim(), textNumber, comboUnits);
+		try {
+			
+			textNumber.setText("");
+			Utility.selectComboItem(comboUnits, "px");
+	
+			if (initialString != null) {
+			
+				Utility.setCssValueAndUnits(initialString.trim(), textNumber, comboUnits);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(labelInsertNumber);
+		try {
+			
+			Utility.localize(labelInsertNumber);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -219,7 +259,13 @@ public class CssNumberPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.gui.textCssNumberBuilder");
+		try {
+			return Resources.getString("org.multipage.gui.textCssNumberBuilder");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -228,7 +274,13 @@ public class CssNumberPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getResultText() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -282,7 +334,13 @@ public class CssNumberPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getStringValue() {
 		
-		return getResultText();
+		try {
+			return getResultText();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -290,9 +348,14 @@ public class CssNumberPanel extends InsertPanel implements StringValueEditor {
 	 */
 	@Override
 	public void setStringValue(String string) {
-		
-		initialString = string;
-		setFromInitialString();
+		try {
+			
+			initialString = string;
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

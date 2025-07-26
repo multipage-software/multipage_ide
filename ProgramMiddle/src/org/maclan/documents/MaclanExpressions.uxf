@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1.0">
+  <zoom_level>6</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>54</x>
+      <y>222</y>
+      <w>276</w>
+      <h>552</h>
+    </coordinates>
+    <panel_attributes>org.maclan.server.lang_elements::AreaServer
+--
+-server: org.maclan.server.AreaServer
++request: Request
++response: Response
++level: long
++thisArea: Area
++startArea: Area
++homeArea: Area
++requestedArea: Area
+--
++AreaServer(org.maclan.server.AreaServer server): ctor
++print(Object object): void
++println(Object object): void
++unbox(): Object
++box(Object object): Object
+-boxHelper(Object object): Object
++unbox(Object object): Object
+-unboxHelper(Object object): Object
++toString(): String
++isRendering(): boolean
++getStartLanguageId(): long
++area(Undefined undefined): Area
++area(): Area
++area(Long areaId): Area
++area(String alias): Area
++subareas(Object areaObject): LinkedList&lt;Area&gt;
++superareas(Object areaObject): LinkedList&lt;Area&gt;
++input(Slot slot): void
++watch(Slot slot): void
++stopWatchingAll(): void
++slot(String slotAlias, Object areaObjectOrType, Object skipDefaultOrArea, Object parent, Object inheritanceLevel): Object
++slot(String slotAlias, Object areaObject, String type): Object
++slotDefined(String slotAlias, Object areaObject, Boolean skipDefault, Boolean parent): boolean
++resource(Long resourceId): Resource
++areaResource(String name, Object areaObject): Resource
++getResourceUrl(String resourceName, Object areaObject): String
+~getAreaJsParameter(Object areaObject): org.maclan.Area
++getAreaUrl(Object areaObject, Long languageId, Long versionId, Boolean localhost): String
++createTree(Object rootAreaObject, String relationName): String
++getEnumeration(String description): EnumerationObj
++getEnumeration(String description, String valueName): EnumerationValue
++defined(String variableName): boolean
++process(String textToProcess, Object areaObject): String
++process(String textToProcess): String
++processWithErrors(String textToProcess, Object areaObject): String
++processWithErrors(String textToProcess): String
++get(String variableName): Object
++set(String variableName, Object variableValue): void
++variable(String variableName, Object variableValue): void
++getCurrentLangId(): long
++clearCssRules(): void
++insertCssRules(Area area, String selector, String mediaSlotName, String importantSlotName): void
++insertGlobalCss(String selector, String mediaSlotName, String importantSlotName): void
++getCssRules(): String
++getGlobalCss(): String
+--
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>390</x>
+      <y>348</y>
+      <w>306</w>
+      <h>432</h>
+    </coordinates>
+    <panel_attributes>org.maclan.expression::ExpressionSolver
+--
+-SENTINEL = -1: int
++UNARY_MINUS = -2: int
++UNARY_PLUS = -3: int
+-lookupTable = { { MINUS, UNARY_MINUS }, { PLUS, UNARY_PLUS } }: int[][]
++booleanTypeName = "Boolean": String
++longTypeName = "Long": String
++doubleTypeName = "Double": String
++stringTypeName = "Text": String
++trueValueConstant = "true": String
++falseValueConstant = "false": String
+--
++ExpressionSolver(Reader reader): ctor
+-push_operator(LinkedList&lt;Integer&gt; operatorStack, int operator): void
+-push_operand(LinkedList&lt;ExpressionElement&gt; operandStack, ExpressionElement operand): void
+-pop_operator(LinkedList&lt;Integer&gt; operatorStack): int
+-pop_operand(LinkedList&lt;ExpressionElement&gt; operandStack): ExpressionElement
+-top_operand(LinkedList&lt;ExpressionElement&gt; operandStack): ExpressionElement
+-top_operator(LinkedList&lt;Integer&gt; operatorStack): int
+-next(int index): Token
+-next(): Token
+-consume(): Token
+-consume(int count): void
+-expect(int tokenId): void
+-error(String message): void
+-mkLeaf(String term, int kind): Operand
+-mkNode(int operator, ExpressionElement left, ExpressionElement right): BinaryOperator
+-mkNode(int operator, ExpressionElement right): UnaryOperator
+-isHigherPrecedence(int operatorX, int operatorY): boolean
+-solveAbiguity(int operator): int
+-getOriginalOperator(int operator): int
++getOperatorName(int operator): String
++parse(): ExpressionElement
+-processE(LinkedList&lt;Integer&gt; operatorStack, LinkedList&lt;ExpressionElement&gt; operandStack): void
+-processP(LinkedList&lt;Integer&gt; operatorStack, LinkedList&lt;ExpressionElement&gt; operandStack): void
+-popOperator(LinkedList&lt;Integer&gt; operatorStack, LinkedList&lt;ExpressionElement&gt; operandStack): void
+-pushOperator(int operator, LinkedList&lt;Integer&gt; operatorStack, LinkedList&lt;ExpressionElement&gt; operandStack): void
++evaluateToBoolean(String expressionText, IdentifierSolver identifierSolver, FunctionSolver functionSolver): boolean
++evaluate(String expressionText, IdentifierSolver identifierSolver, FunctionSolver functionSolver, Obj&lt;ExpressionElement&gt; root): Object
++evaluate(String expressionText, IdentifierSolver identifierSolver, FunctionSolver functionSolver): Object
+--
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>324</x>
+      <y>264</y>
+      <w>234</w>
+      <h>96</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;370.0;140.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>456</x>
+      <y>114</y>
+      <w>126</w>
+      <h>126</h>
+    </coordinates>
+    <panel_attributes>enum SlotType
+--
+UNKNOWN
+TEXT
+LOCALIZED_TEXT
+INTEGER
+REAL
+BOOLEAN
+ENUMERATION
+COLOR
+AREA_REFERENCE
+EXTERNAL_PROVIDER
+PATH
+bg=CYAN</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>768</x>
+      <y>168</y>
+      <w>192</w>
+      <h>354</h>
+    </coordinates>
+    <panel_attributes>BinaryOperator
+--
+-operators[][] = { { ExpressionSolver.PROCEDURE_PARAMETER, 1, "procedureParameter" }, { ExpressionSolver.BOOLEAN_OR, 2, "booleanOr" }, { ExpressionSolver.BOOLEAN_AND, 3, "booleanAnd" }, { ExpressionSolver.BOOLEAN_XOR, 4, "booleanXor" }, { ExpressionSolver.NOT_EQUAL, 5, "notEqual" }, { ExpressionSolver.EQUAL, 5, "equal" }, { ExpressionSolver.IS_OPRATOR, 5, "isOperator" }, { ExpressionSolver.GREATER, 6, "greater" }, { ExpressionSolver.GREATER_EQUAL, 6, "greaterEqual" }, { ExpressionSolver.LESS, 6, "less" }, { ExpressionSolver.LESS_EQUAL, 6, "lessEqual" }, { ExpressionSolver.PLUS, 7, "addition" }, { ExpressionSolver.MINUS, 7, "subtraction" }, { ExpressionSolver.MULTIPLICATION, 8, "multiplication" }, { ExpressionSolver.DIVISION, 8, "division" }, { ExpressionSolver.AS_OPERATOR, 9, "asOperator" }, { ExpressionSolver.REMAINDER, 10, "remainder" }, { ExpressionSolver.MEMBER_ACCESS, 12, "" } }: Object
+-operator: int
+-left: ExpressionElement
+-right: ExpressionElement
+-server: AreaServer
+--
++BinaryOperator(int operator, ExpressionElement left, ExpressionElement right): ctor
++isOperator(int operator): boolean
++getPrecedence(int operator): Integer
+-getMethodName(): String
++toString(): String
++getChildCount(): int
++getChild(int index): ExpressionElement
++getValueObject(IdentifierSolver identifierSolver, FunctionSolver functionSolver): Object
+-memberAccess(IdentifierSolver identifierSolver, FunctionSolver functionSolver): Object
++booleanOr(Object leftValue, Object rightValue): boolean
++booleanAnd(Object leftValue, Object rightValue): boolean
++booleanXor(Object leftValue, Object rightValue): boolean
++notEqual(Object leftValue, Object rightValue): boolean
++equal(Object leftValue, Object rightValue): boolean
++greater(Object leftValue, Object rightValue): boolean
++greaterEqual(Object leftValue, Object rightValue): boolean
++less(Object leftValue, Object rightValue): boolean
++lessEqual(Object leftValue, Object rightValue): boolean
++addition(Object leftValue, Object rightValue): Object
++subtraction(Object leftValue, Object rightValue): Object
++multiplication(Object leftValue, Object rightValue): Object
++division(Object leftValue, Object rightValue): Object
++remainder(Object leftValue, Object rightValue): Object
++asOperator(Object leftValue, Object rightValue): Object
++isOperator(Object leftValue, Object rightValue): Object
++procedureParameter(Object leftValue, Object rightValue): Object
++getOperator(): int
++getLeft(): ExpressionElement
++getRight(): ExpressionElement
+--
+
+bg=YELLOW</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>984</x>
+      <y>168</y>
+      <w>180</w>
+      <h>162</h>
+    </coordinates>
+    <panel_attributes>UnaryOperator
+--
+-operators[][] = { { ExpressionSolver.BOOLEAN_NEGATION, 10, "booleanNegation" }, { ExpressionSolver.UNARY_MINUS, 10, "unaryMinus" }, { ExpressionSolver.UNARY_PLUS, 10, "unaryPlus" } }: Object
+-operator: int
+-right: ExpressionElement
+--
++UnaryOperator(int operator, ExpressionElement right): ctor
++isOperator(int operator): boolean
++getPrecedence(int operator): Integer
+-getMethodName(): String
++toString(): String
++getChildCount(): int
++getChild(int index): ExpressionElement
++getValueObject(IdentifierSolver identifierSolver, FunctionSolver functionSolver): Object
++booleanNegation(Object rightValue): boolean
++unaryMinus(Object rightValue): Object
++unaryPlus(Object rightValue): Object
+--
+
+bg=YELLOW</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>

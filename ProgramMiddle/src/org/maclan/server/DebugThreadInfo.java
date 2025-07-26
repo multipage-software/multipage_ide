@@ -1,7 +1,7 @@
 /**
- * Copyright 2010-2024 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 25-06-2024
+ * Created on : 2024-06-25
  *
  */
 package org.maclan.server;
@@ -31,7 +31,23 @@ public class DebugThreadInfo {
 	 * Thread name.
 	 */
 	private String threadName = null;
-
+	
+	/**
+	 * Make clone of current thread information.
+	 * @return
+	 */
+	public DebugThreadInfo cloneThreadInfo() {
+		
+		DebugThreadInfo clonedThreadInfo = new DebugThreadInfo();
+		
+		clonedThreadInfo.processId = processId;
+		clonedThreadInfo.processName = processName;	
+		clonedThreadInfo.threadId = threadId;
+		clonedThreadInfo.threadName = threadName;
+		
+		return clonedThreadInfo;
+	}
+	
 	/**
 	 * Get process ID.
 	 * @return

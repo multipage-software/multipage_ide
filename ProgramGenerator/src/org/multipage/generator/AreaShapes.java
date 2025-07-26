@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -33,10 +33,12 @@ import org.multipage.gui.Images;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 
 /**
- *
+ * Class for area shapes displayed in diagram.
+ * @author vakol
  */
 public class AreaShapes {
 
@@ -76,40 +78,20 @@ public class AreaShapes {
 	private static String textNumberOfSlots = null;
 
 	/**
-	 * Affected shapes.
+	 * All affected shapes. Single area can be at multiple positions in the diagram.
 	 */
 	private static HashSet<AreaShapes> affectedShapes = new HashSet<AreaShapes>();
 	
 	/**
-	 * Affected coordinate.
+	 * Main affected shape coordinates. Holds information about parent area.
 	 */
-	private static AreaCoordinates affectedCoordinate;
+	private static AreaCoordinates affectedCoordinate = null;
 
 	/**
 	 * Has more info text.
 	 */
 	private static String textHasMoreInfo;
-
-	/**
-	 * Coordinates.
-	 */
-	private LinkedList<AreaCoordinates> coordinates = new LinkedList<AreaCoordinates>();
 	
-	/**
-	 * Selected area flag.
-	 */
-	private boolean selected = false;
-	
-	/**
-	 * Visibility flag.
-	 */
-	private boolean visible = true;
-	
-	/**
-	 * Area node.
-	 */
-	private Area area;
-
 	/**
 	 * Affected opacity.
 	 */
@@ -121,11 +103,32 @@ public class AreaShapes {
 	private static boolean affectedShapesVisible = true;
 
 	/**
+	 * Coordinates.
+	 */
+	private LinkedList<AreaCoordinates> coordinates = new LinkedList<AreaCoordinates>();
+	
+	/**
+	 * Area node.
+	 */
+	private Area area;
+	
+	/**
+	 * Visibility flag.
+	 */
+	private boolean visible = true;
+	
+	/**
 	 * Ge arc size.
 	 */
 	private static int getArcSizePercent() {
 		
-		return CustomizedControls.getArcSizePercent();
+		try {
+			return CustomizedControls.getArcSizePercent();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return 0;
 	}
 	
 	/**
@@ -135,18 +138,24 @@ public class AreaShapes {
 	 */
 	public static boolean addAffected(AreaShapes shapes) {
 		
-		// If the parameter is null remove all affected shapes
-		// from the list.
-		if (shapes == null) {
-
-			affectedShapes.clear();
-			affectedShapesVisible = false;
-			return true;
+		try {
+			// If the parameter is null remove all affected shapes
+			// from the list.
+			if (shapes == null) {
+	
+				affectedShapes.clear();
+				affectedShapesVisible = false;
+				return true;
+			}
+			
+			// The method returns true if the shape is new.
+			affectedShapesVisible = true;
+			return affectedShapes.add(shapes);
 		}
-		
-		// The method returns true if the shape is new.
-		affectedShapesVisible = true;
-		return affectedShapes.add(shapes);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
@@ -154,19 +163,25 @@ public class AreaShapes {
 	 */
 	public static boolean setAffected(AreaShapes shapes) {
 		
-		boolean alreadyExists = affectedShapes.contains(shapes);
-		affectedShapes.clear();
-		
-		// If the parameter is null remove all affected shapes.
-		if (shapes == null) {
-			affectedShapesVisible = false;
-			return true;
+		try {
+			boolean alreadyExists = affectedShapes.contains(shapes);
+			affectedShapes.clear();
+			
+			// If the parameter is null remove all affected shapes.
+			if (shapes == null) {
+				affectedShapesVisible = false;
+				return true;
+			}
+			
+			affectedShapesVisible = true;
+			affectedShapes.add(shapes);
+			
+			return alreadyExists;
 		}
-		
-		affectedShapesVisible = true;
-		affectedShapes.add(shapes);
-		
-		return alreadyExists;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -174,14 +189,19 @@ public class AreaShapes {
 	 * @param area
 	 */
 	public static void setAffected(Area area) {
-		
-		Object user = area.getUser();
-		
-		if (user != null && user instanceof AreaShapes) {
-			AreaShapes shapes = (AreaShapes) user;
+		try {
 			
-			setAffected(shapes);
+			Object user = area.getUser();
+			
+			if (user != null && user instanceof AreaShapes) {
+				AreaShapes shapes = (AreaShapes) user;
+				
+				setAffected(shapes);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -198,16 +218,22 @@ public class AreaShapes {
 	 * @return
 	 */
 	public static AreaShapes getOneAffectedShape() {
-
-		Iterator<AreaShapes> iterator = affectedShapes.iterator();
 		
-		// If it is no item exit the method with null value;
-		if (!iterator.hasNext()) {
-			return null;
+		try {
+			Iterator<AreaShapes> iterator = affectedShapes.iterator();
+			
+			// If it is no item exit the method with null value;
+			if (!iterator.hasNext()) {
+				return null;
+			}
+			
+			// Get area shape.
+			return iterator.next();
 		}
-		
-		// Get area shape.
-		return iterator.next();
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -215,25 +241,34 @@ public class AreaShapes {
 	 * @return
 	 */
 	public static Area getOneAffectedArea() {
-
-		AreaShapes shape = getOneAffectedShape();
-		if (shape == null) {
-			return null;
+		
+		try {
+			AreaShapes shape = getOneAffectedShape();
+			if (shape == null) {
+				return null;
+			}
+			return shape.getArea();
 		}
-		return shape.getArea();
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
 	 * Get first height.
 	 */
 	public double getFirstHeight() {
-
-		if (coordinates.size() > 0) {
-			return AreaCoordinates.getHeight(coordinates.getFirst().getWidth());
+		
+		try {
+			if (coordinates.size() > 0) {
+				return AreaCoordinates.getHeight(coordinates.getFirst().getWidth());
+			}
 		}
-		else {
-			return 0.0;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
+		return 0.0;
 	}
 
 	/**
@@ -249,13 +284,16 @@ public class AreaShapes {
 	 * Get first label height.
 	 */
 	public double getFirstLabelHeight() {
-
-		if (coordinates.size() > 0) {
-			return getFirstHeight() * AreaCoordinates.areaFreeZonePercent / 100;
+		
+		try {
+			if (coordinates.size() > 0) {
+				return getFirstHeight() * AreaCoordinates.areaFreeZonePercent / 100;
+			}
 		}
-		else {
-			return 0.0;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
+		return 0.0;
 	}
 	
 	/**
@@ -265,19 +303,24 @@ public class AreaShapes {
 	 */
 	public AreaShapes(double x, double y, double width, Area area,
 			Area parentArea, boolean showMoreInfo, boolean isReference) {
-		
-		// Add coordinates.
-		coordinates.add(new AreaCoordinates(x, y, width, area, parentArea, showMoreInfo,
-				isReference));
-		this.area = area;
-		
-		if (textNumberOfSlots == null) {
-			textNumberOfSlots = Resources.getString("org.multipage.generator.textNumberOfSlots");
+		try {
+			
+			// Add coordinates.
+			coordinates.add(new AreaCoordinates(x, y, width, area, parentArea, showMoreInfo,
+					isReference));
+			this.area = area;
+			
+			if (textNumberOfSlots == null) {
+				textNumberOfSlots = Resources.getString("org.multipage.generator.textNumberOfSlots");
+			}
+			
+			if (textHasMoreInfo == null) {
+				textHasMoreInfo = Resources.getString("org.multipage.generator.textHasMoreInfo");
+			}
 		}
-		
-		if (textHasMoreInfo == null) {
-			textHasMoreInfo = Resources.getString("org.multipage.generator.textHasMoreInfo");
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -288,430 +331,453 @@ public class AreaShapes {
 	 * @param pixel 
 	 */
 	public void draw(Graphics2D g2, AffineTransform transformation, double zoom,
-			AreasDiagram areasDiagram, boolean overview) {
-
-		// If the shapes are not visible, exit the method.
-		if (!visible) {
-			return;
-		}
+			AreaDiagramPanel areasDiagram, boolean overview) {
 		
-		boolean isReadOnly = area.isReadOnly() && readOnlyLighter;
-		final boolean isBuilder = ProgramGenerator.isExtensionToBuilder();
-		boolean isAreaConstructor = area.isAreaConstructor();
-		
-		// Set colors.
-		Color selectedColor = CustomizedColors.get(ColorId.SELECTION);
-		Color selectedReadOnlyColor = CustomizedColors.get(ColorId.SELECTION_PROTECTED);
-		Color fillLabelColor = CustomizedColors.get(
-				isReadOnly ? ColorId.FILLLABEL_PROTECTED : ColorId.FILLLABEL);
-		Color freeColor = CustomizedColors.get(ColorId.FREE);
-		Color outlinesColor = CustomizedColors.get(
-				isReadOnly ? ColorId.OUTLINES_PROTECTED : ColorId.OUTLINES);
-		Color areaNameColor = CustomizedColors.get(
-				isSelected() ? ColorId.SELECTED_TEXT : (isReadOnly ? ColorId.TEXT_PROTECTED : ColorId.TEXT));
-		Color decsriptionTextColor = CustomizedColors.get(ColorId.DESCRIPTIONTEXT);
-		
-		// Create and set alpha composite.
-		float alphaValue = 1.0f;
-		AlphaComposite defaultAlphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alphaValue);
-		AlphaComposite transparentAlphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
-				alphaValue * 0.7f);
-		AlphaComposite forcedAlphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f);
-		
-		g2.setComposite(defaultAlphaComposite);
-		// Remember old font.
-		Font oldFont = g2.getFont();
-		
-		// Get old stroke.
-		Stroke oldStroke = g2.getStroke();
-		
-		BasicStroke simpleStroke = new BasicStroke(isReadOnly ? 1 : 1);
-		g2.setStroke(simpleStroke);
-
-		// Area free zone in percent.
-		double freePercent = AreaCoordinates.areaFreeZonePercent;
-		
-		// Get diagram rectangle in current coordinates.
-		Rectangle2D diagram = areasDiagram.getRectInCoord();
-		
-		// Do loop for all coordinates.
-		for (AreaCoordinates coord : coordinates) {
-			
-			// Compute parameters.
-			boolean inherits = coord.getInherits();
-			String description = area.getDescriptionForDiagram();
-			double height = coord.getHeight();
-			double labelEndSpace = coord.getWidth() * 0.01;
-			double houseSize = 0;
-			double startSize = 0;
-			double houseBorderSize = 0;
-			double startBorderSize = 0;
-			double labelHeight = coord.getLabelHeight();
-			double width = coord.getWidth();
-			double labelStartSpace = coord.getWidth() * 0.01;
-			double inheritSignWidth = inherits && isBuilder ? (inheritSignWidthPercent * width / 100) : labelStartSpace;
-			boolean isHomeArea = ProgramGenerator.getAreasModel().isHomeArea(area);
-			boolean isStartResource = area.isStartArea();
-			boolean isHelp = area.isHelp();
-			boolean isLabelLeftIcon;
-			double arcWidth = width * getArcSizePercent() / 100;
-			double arcHeight = width * getArcSizePercent() / 100;
-			
-			// Set is icon flag.
-			if (isBuilder) {
-				isLabelLeftIcon = isHomeArea || isStartResource || inherits;
-			}
-			else {
-				isLabelLeftIcon = isHomeArea;
+		try {
+			// If the shapes are not visible, exit the method.
+			if (!visible) {
+				return;
 			}
 			
-			// If the shape has children.
-			if (coord.isShowMoreInfo() && ProgramGenerator.isExtensionToBuilder()) {
+			boolean selected = areasDiagram.isAreaSelected(area.getId());
+			boolean isReadOnly = area.isReadOnly() && readOnlyLighter;
+			final boolean isBuilder = ProgramGenerator.isExtensionToBuilder();
+			boolean isAreaConstructor = area.isAreaConstructor();
+			
+			// Set colors.
+			Color selectedColor = CustomizedColors.get(ColorId.SELECTION);
+			Color selectedReadOnlyColor = CustomizedColors.get(ColorId.SELECTION_PROTECTED);
+			Color fillLabelColor = CustomizedColors.get(
+					isReadOnly ? ColorId.FILLLABEL_PROTECTED : ColorId.FILLLABEL);
+			Color freeColor = CustomizedColors.get(ColorId.FREE);
+			Color outlinesColor = CustomizedColors.get(
+					isReadOnly ? ColorId.OUTLINES_PROTECTED : ColorId.OUTLINES);
+			Color areaNameColor = CustomizedColors.get(
+					selected ? ColorId.SELECTED_TEXT : (isReadOnly ? ColorId.TEXT_PROTECTED : ColorId.TEXT));
+			Color decsriptionTextColor = CustomizedColors.get(ColorId.DESCRIPTIONTEXT);
+			
+			// Create and set alpha composite.
+			float alphaValue = 1.0f;
+			AlphaComposite defaultAlphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alphaValue);
+			AlphaComposite transparentAlphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
+					alphaValue * 0.7f);
+			AlphaComposite forcedAlphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f);
+			
+			g2.setComposite(defaultAlphaComposite);
+			// Remember old font.
+			Font oldFont = g2.getFont();
+			
+			// Get old stroke.
+			Stroke oldStroke = g2.getStroke();
+			
+			BasicStroke simpleStroke = new BasicStroke(isReadOnly ? 1 : 1);
+			g2.setStroke(simpleStroke);
+	
+			// Area free zone in percent.
+			double freePercent = AreaCoordinates.areaFreeZonePercent;
+			
+			// Get diagram rectangle in current coordinates.
+			Rectangle2D diagram = areasDiagram.getRectInCoord();
+			
+			// Do loop for all coordinates.
+			for (AreaCoordinates coord : coordinates) {
 				
-				int infoFontSizeInt = GraphUtility.getSizeTransform(transformation,
-						coord.getInfoFontSize());
+				// Compute parameters.
+				boolean inherits = coord.getInherits();
+				String description = area.getDescriptionForDiagram();
+				double height = coord.getHeight();
+				double labelEndSpace = coord.getWidth() * 0.01;
+				double houseSize = 0;
+				double startSize = 0;
+				double houseBorderSize = 0;
+				double startBorderSize = 0;
+				double labelHeight = coord.getLabelHeight();
+				double width = coord.getWidth();
+				double labelStartSpace = coord.getWidth() * 0.01;
+				double inheritSignWidth = inherits && isBuilder ? (inheritSignWidthPercent * width / 100) : labelStartSpace;
+				boolean isHomeArea = ProgramGenerator.getAreasModel().isHomeArea(area);
+				boolean isStartResource = area.isStartArea();
+				boolean isHelp = area.isHelp();
+				boolean isLabelLeftIcon;
+				double arcWidth = width * getArcSizePercent() / 100;
+				double arcHeight = width * getArcSizePercent() / 100;
 				
-				if (infoFontSizeInt < maximumFontSize) {
-					
-					Font descriptionFont = new Font("Dialog", Font.BOLD, infoFontSizeInt);
-					
-					// Get metrics from the graphics.
-					FontMetrics metrics = g2.getFontMetrics(descriptionFont);
-					// Get the height of a line of text.
-					double textHeight = 0;//metrics.getHeight() / transformation.getScaleY();
-					// Get the advance of my text.
-					double textWidth = metrics.stringWidth(textHasMoreInfo) / transformation.getScaleX();
-					
-					Rectangle2D childPart = coord.getChildAreaRectangle();
-					
-					double x = childPart.getX() + (childPart.getWidth() - textWidth) / 2.0;
-					double y = childPart.getY() + (childPart.getHeight() - textHeight) / 2.0;
-					
-					g2.setColor(selectedColor);
-					g2.setFont(descriptionFont);
-
-					GraphUtility.drawStringTransform(g2, transformation, textHasMoreInfo, x, y);
-				}
-			}
-			
-			// Compute label rectangle.
-			Rectangle2D label = coord.getLabel();
-			// Compute free area.
-			Rectangle2D free = coord.getFree();
-			
-			boolean drawFree = true;
-			boolean drawLabel = true;
-			
-			if (!overview) {
-				drawFree = Utility.isIntersection(diagram, free);
-				drawLabel = Utility.isIntersection(diagram, label);
-			}
-			
-			if (drawLabel) {
-
-				// If the width or height of shape is less than minimal size,
-				// do not draw the shape.
-				if (width * zoom < minimalShapeSize || height * zoom < minimalShapeSize) {
-					continue;
-				}
-				
-				// Draw label background and flags.
-				g2.setColor(selected ? (isReadOnly ? selectedReadOnlyColor :  selectedColor) : fillLabelColor);
-				GraphUtility.fillLabelRectTransform(g2, transformation, coord.getX(), coord.getY(),
-						coord.getWidth(), labelHeight, arcWidth, arcHeight);
-
-				// If it is home area, draw house.
-				if (isHomeArea) {
-					
-					houseBorderSize = height * 0.07;
-					houseSize = height * freePercent / 100 - 2 * houseBorderSize;
-					g2.setComposite(transparentAlphaComposite);
-					
-					g2.setColor(areaNameColor);
-					
-					// Draw house.
-					GraphUtility.drawHouseTransform(g2, transformation,
-							coord.getX() + houseBorderSize, coord.getY() + houseBorderSize,
-							houseSize, houseSize, 7.5);
-					
-					g2.setComposite(defaultAlphaComposite);
-				}
-				// Draw start resource.
-				if (isStartResource && isBuilder) {
-					
-					// Get image.
-					BufferedImage start = Images.getImage("org/multipage/generator/images/start.png");
-					if (start != null) {
-						startBorderSize = height * 1 / 100;
-						startSize = height * freePercent / 100 - 2 * startBorderSize;
-						g2.setComposite(transparentAlphaComposite);
-						// Draw start icon.
-						GraphUtility.drawImageTransform(g2, transformation, start,
-								coord.getX() + houseSize + 2 * houseBorderSize + startBorderSize,
-								coord.getY() + startBorderSize, startSize, startSize);
-						g2.setComposite(defaultAlphaComposite);
-					}
-				}
-				// Draw inheritance sign.
-				if (inherits && isBuilder) {
-
-					g2.setColor(areaNameColor);
-					double hMargin = labelHeight * 0.25;
-					double x = coord.getX() + inheritSignWidth / 2 + (isHomeArea ? inheritSignWidth : 0) + (isStartResource ? inheritSignWidth : 0);
-					double y1 = coord.getY() + hMargin;
-					double y2 = y1 + labelHeight - 2 * hMargin;
-					double length = 0.3 * height * freePercent / 100;
-					double stroke = width * 0.015;
-					
-					GraphUtility.drawArrowTransform(g2, transformation, stroke, x, y2, x, y1, Math.PI / 2, length);
-					g2.setStroke(simpleStroke);
-				}
-				// Draw help button.
-				if (isHelp) {
-					
-					double helpSize = coord.getHelpIconSize();
-					double x = coord.getHelpIconX();
-					double y = coord.getHelpIconY();
-
-					g2.setComposite(forcedAlphaComposite);
-					GraphUtility.drawImageTransform(g2, transformation, Images.getImage("org/multipage/generator/images/help_icon.png"),
-							x, y, helpSize, helpSize);
-					g2.setComposite(defaultAlphaComposite);
-					
-				}
-			}
-			
-			Shape oldClip = g2.getClip();
-
-			// Draw free area.
-			double freeX = free.getX(),
-		       freeY = free.getY(),
-		       freeWidth = free.getWidth(),
-		       freeHeight = free.getHeight();
-			
-			if (drawFree) {
-
-				g2.setColor(freeColor);
-				GraphUtility.fillFreeRectTransform(g2, transformation, freeX, freeY, freeWidth, freeHeight, arcWidth, arcHeight);
-			}
-			
-			// Draw label text and help icon.
-			if (drawLabel) {
-				double labelWidth;
-				if (isHelp) {
-					labelWidth = coord.getHelpIconX() - coord.getX() - labelEndSpace;
+				// Set is icon flag.
+				if (isBuilder) {
+					isLabelLeftIcon = isHomeArea || isStartResource || inherits;
 				}
 				else {
-					labelWidth = coord.getWidth() - labelEndSpace;
+					isLabelLeftIcon = isHomeArea;
 				}
 				
-				g2.setColor(areaNameColor);
-				GraphUtility.clipRectTransform(g2, transformation, coord.getX(), coord.getY(), labelWidth, height * freePercent / 100);
-				
-				if (!description.isEmpty()) {
+				// If the shape has children.
+				if (coord.isShowMoreInfo() && ProgramGenerator.isExtensionToBuilder()) {
 					
-					// Get font size.
-					double fontSize = coord.getLabelFontSize();
-					int fontSizeInt = GraphUtility.getSizeTransform(transformation, fontSize);
+					int infoFontSizeInt = GraphUtility.getSizeTransform(transformation,
+							coord.getInfoFontSize());
 					
-					// Draw label.
-					if (fontSizeInt < maximumFontSize) {
-
-						Font labelFont = new Font("Dialog", Font.PLAIN, fontSizeInt);
-					    AttributedString as = new AttributedString(description);
-					    as.addAttribute(TextAttribute.FONT, labelFont);
-					    
-					    // If the area is not visible strike the text through.
-					    if (!area.isVisible()) {
-					    	as.addAttribute(TextAttribute.STRIKETHROUGH,
-					    			TextAttribute.STRIKETHROUGH_ON, 0, description.length());
-					    }
-					    
-						GraphUtility.drawStringTransform(g2, transformation, as.getIterator(),
-								coord.getX() + houseSize + 2 * houseBorderSize + startSize + 2 * startBorderSize + inheritSignWidth
-								+ (!isLabelLeftIcon ? width * 0.07 : 0),
-								freeY - (height * freePercent / 100 - coord.getLabelFontSize()) / 2);
+					if (infoFontSizeInt < maximumFontSize) {
+						
+						Font descriptionFont = new Font("Dialog", Font.BOLD, infoFontSizeInt);
+						
+						// Get metrics from the graphics.
+						FontMetrics metrics = g2.getFontMetrics(descriptionFont);
+						// Get the height of a line of text.
+						double textHeight = 0;//metrics.getHeight() / transformation.getScaleY();
+						// Get the advance of my text.
+						double textWidth = metrics.stringWidth(textHasMoreInfo) / transformation.getScaleX();
+						
+						Rectangle2D childPart = coord.getChildAreaRectangle();
+						
+						double x = childPart.getX() + (childPart.getWidth() - textWidth) / 2.0;
+						double y = childPart.getY() + (childPart.getHeight() - textHeight) / 2.0;
+						
+						g2.setColor(selectedColor);
+						g2.setFont(descriptionFont);
+	
+						GraphUtility.drawStringTransform(g2, transformation, textHasMoreInfo, x, y);
 					}
 				}
-			}
-
-			g2.setClip(oldClip);
-			
-			// Draw number of slots.
-			if (drawFree) {
 				
-				double descrSize = coord.getDescriptionFontSize();
-				int descrSizeInt = GraphUtility.getSizeTransform(transformation, descrSize);
+				// Compute label rectangle.
+				Rectangle2D label = coord.getLabel();
+				// Compute free area.
+				Rectangle2D free = coord.getFree();
 				
-				if (descrSizeInt < maximumFontSize) {
-
-					g2.setColor(decsriptionTextColor);
-					oldClip = g2.getClip();
+				boolean drawFree = true;
+				boolean drawLabel = true;
+				
+				if (!overview) {
+					drawFree = Utility.isIntersection(diagram, free);
+					drawLabel = Utility.isIntersection(diagram, label);
+				}
+				
+				if (drawLabel) {
+	
+					// If the width or height of shape is less than minimal size,
+					// do not draw the shape.
+					if (width * zoom < minimalShapeSize || height * zoom < minimalShapeSize) {
+						continue;
+					}
 					
-					Font descriptionFont = new Font("Dialog", Font.PLAIN, descrSizeInt);
-					g2.setFont(descriptionFont);
-					GraphUtility.clipRectTransform(g2, transformation, freeX, freeY, freeWidth, freeHeight);
-					GraphUtility.drawStringTransform(g2, transformation,
-							textNumberOfSlots + " " + String.valueOf(area.getSlotAliasesCount()),
-							freeX + 2 * descrSize, freeY + 3 * descrSize);
-					
-					// Draw list of slots.
-					double yTextPosition = freeY + 4 * descrSize
-						+ freeAreaTextGapePercent * descrSize / 100.0;
-					double xTextPosition = freeX + 2 * descrSize;
-					
-					int slotIndex = 0;
-					
-					for (String slotName : isBuilder ? area.getSlotAliases() : area.getSlotNames()) {
+					// Draw label background and flags.
+					g2.setColor(selected ? (isReadOnly ? selectedReadOnlyColor :  selectedColor) : fillLabelColor);
+					GraphUtility.fillLabelRectTransform(g2, transformation, coord.getX(), coord.getY(),
+							coord.getWidth(), labelHeight, arcWidth, arcHeight);
+	
+					// If it is home area, draw house.
+					if (isHomeArea) {
 						
-						// Draw maximum of 17 slots.
-						if (slotIndex > 16) {
-							break;
+						houseBorderSize = height * 0.07;
+						houseSize = height * freePercent / 100 - 2 * houseBorderSize;
+						g2.setComposite(transparentAlphaComposite);
+						
+						g2.setColor(areaNameColor);
+						
+						// Draw house.
+						GraphUtility.drawHouseTransform(g2, transformation,
+								coord.getX() + houseBorderSize, coord.getY() + houseBorderSize,
+								houseSize, houseSize, 7.5);
+						
+						g2.setComposite(defaultAlphaComposite);
+					}
+					// Draw start resource.
+					if (isStartResource && isBuilder) {
+						
+						// Get image.
+						BufferedImage start = Images.getImage("org/multipage/generator/images/start.png");
+						if (start != null) {
+							startBorderSize = height * 1 / 100;
+							startSize = height * freePercent / 100 - 2 * startBorderSize;
+							g2.setComposite(transparentAlphaComposite);
+							// Draw start icon.
+							GraphUtility.drawImageTransform(g2, transformation, start,
+									coord.getX() + houseSize + 2 * houseBorderSize + startBorderSize,
+									coord.getY() + startBorderSize, startSize, startSize);
+							g2.setComposite(defaultAlphaComposite);
 						}
-		
-						// Draw the text.
-						GraphUtility.drawStringTransform(g2, transformation, slotName, xTextPosition, yTextPosition);
+					}
+					// Draw inheritance sign.
+					if (inherits && isBuilder) {
+	
+						g2.setColor(areaNameColor);
+						double hMargin = labelHeight * 0.25;
+						double x = coord.getX() + inheritSignWidth / 2 + (isHomeArea ? inheritSignWidth : 0) + (isStartResource ? inheritSignWidth : 0);
+						double y1 = coord.getY() + hMargin;
+						double y2 = y1 + labelHeight - 2 * hMargin;
+						double length = 0.3 * height * freePercent / 100;
+						double stroke = width * 0.015;
 						
-						yTextPosition += descrSize * 1.5;
+						GraphUtility.drawArrowTransform(g2, transformation, stroke, x, y2, x, y1, Math.PI / 2, length);
+						g2.setStroke(simpleStroke);
+					}
+					// Draw help button.
+					if (isHelp) {
 						
-						slotIndex++;
+						double helpSize = coord.getHelpIconSize();
+						double x = coord.getHelpIconX();
+						double y = coord.getHelpIconY();
+	
+						g2.setComposite(forcedAlphaComposite);
+						GraphUtility.drawImageTransform(g2, transformation, Images.getImage("org/multipage/generator/images/help_icon.png"),
+								x, y, helpSize, helpSize);
+						g2.setComposite(defaultAlphaComposite);
+						
+					}
+				}
+				
+				Shape oldClip = g2.getClip();
+	
+				// Draw free area.
+				double freeX = free.getX(),
+			       freeY = free.getY(),
+			       freeWidth = free.getWidth(),
+			       freeHeight = free.getHeight();
+				
+				if (drawFree) {
+	
+					g2.setColor(freeColor);
+					GraphUtility.fillFreeRectTransform(g2, transformation, freeX, freeY, freeWidth, freeHeight, arcWidth, arcHeight);
+				}
+				
+				// Draw label text and help icon.
+				if (drawLabel) {
+					double labelWidth;
+					if (isHelp) {
+						labelWidth = coord.getHelpIconX() - coord.getX() - labelEndSpace;
+					}
+					else {
+						labelWidth = coord.getWidth() - labelEndSpace;
 					}
 					
-					g2.setClip(oldClip);
+					g2.setColor(areaNameColor);
+					GraphUtility.clipRectTransform(g2, transformation, coord.getX(), coord.getY(), labelWidth, height * freePercent / 100);
+					
+					if (!description.isEmpty()) {
+						
+						// Get font size.
+						double fontSize = coord.getLabelFontSize();
+						int fontSizeInt = GraphUtility.getSizeTransform(transformation, fontSize);
+						
+						// Draw label.
+						if (fontSizeInt < maximumFontSize) {
+	
+							Font labelFont = new Font("Dialog", Font.PLAIN, fontSizeInt);
+						    AttributedString as = new AttributedString(description);
+						    as.addAttribute(TextAttribute.FONT, labelFont);
+						    
+						    // If the area is not visible strike the text through.
+						    if (!area.isVisible()) {
+						    	as.addAttribute(TextAttribute.STRIKETHROUGH,
+						    			TextAttribute.STRIKETHROUGH_ON, 0, description.length());
+						    }
+						    
+							GraphUtility.drawStringTransform(g2, transformation, as.getIterator(),
+									coord.getX() + houseSize + 2 * houseBorderSize + startSize + 2 * startBorderSize + inheritSignWidth
+									+ (!isLabelLeftIcon ? width * 0.07 : 0),
+									freeY - (height * freePercent / 100 - coord.getLabelFontSize()) / 2);
+						}
+					}
+				}
+	
+				g2.setClip(oldClip);
+				
+				// Draw slots.
+				if (drawFree) {
+					
+					double descrSize = coord.getDescriptionFontSize();
+					int descrSizeInt = GraphUtility.getSizeTransform(transformation, descrSize);
+					
+					if (descrSizeInt < maximumFontSize) {
+	
+						g2.setColor(decsriptionTextColor);
+						oldClip = g2.getClip();
+						
+						Font descriptionFont = new Font("Dialog", Font.PLAIN, descrSizeInt);
+						g2.setFont(descriptionFont);
+						GraphUtility.clipRectTransform(g2, transformation, freeX, freeY, freeWidth, freeHeight);
+						GraphUtility.drawStringTransform(g2, transformation,
+								textNumberOfSlots + " " + String.valueOf(area.getSlotAliasesCount()),
+								freeX + 2 * descrSize, freeY + 3 * descrSize);
+						
+						// Draw list of slots.
+						double yTextPosition = freeY + 4 * descrSize
+							+ freeAreaTextGapePercent * descrSize / 100.0;
+						double xTextPosition = freeX + 2 * descrSize;
+						
+						int slotIndex = 0;
+						
+						for (String slotName : isBuilder ? area.getSlotAliases() : area.getSlotNames()) {
+							
+							// Draw maximum of 17 slots.
+							if (slotIndex > 16) {
+								break;
+							}
+			
+							// Draw the text.
+							GraphUtility.drawStringTransform(g2, transformation, slotName, xTextPosition, yTextPosition);
+							
+							yTextPosition += descrSize * 1.5;
+							
+							slotIndex++;
+						}
+						
+						g2.setClip(oldClip);
+					}
+				}
+				
+				// Draw boundaries.
+				boolean drawBoundary = true;
+				if (!overview) {
+					drawBoundary = Utility.isBoundaryIntersection(diagram, coord.getRectangle());
+				}
+				
+				// Draw boundary.
+				if (drawBoundary) {
+					final float dash[] = { 1.0f };
+					final float strokeWidth = 1.0f;
+	
+					g2.setStroke(new BasicStroke(strokeWidth, BasicStroke.CAP_BUTT,
+					        BasicStroke.JOIN_MITER, 20.0f, dash, 0.0f));
+					
+					g2.setColor(selected ? (isReadOnly ? selectedReadOnlyColor : selectedColor) : outlinesColor);
+					
+					GraphUtility.drawRoundRectTransform(g2, transformation, coord.getX(), coord.getY(),
+							coord.getWidth(), height, arcWidth, arcHeight);
+					
+					g2.setColor(decsriptionTextColor);
+					
+					GraphUtility.drawLineTransform(g2, transformation, coord.getX() + coord.getWidth() - freeWidth, coord.getY() + labelHeight,
+							coord.getX() + coord.getWidth(), coord.getY() + labelHeight);
+					
+					
+					// Draw reference.
+					if (coord.isRecursion()) {
+						
+						// Draw recursion.
+						g2.setColor(selected ? (isReadOnly ? selectedReadOnlyColor : selectedColor) : fillLabelColor);
+						double centralAreaWidth = coord.getWidth() - free.getWidth();
+						double centralAreaHeight = height - label.getHeight();
+						double marginVertical = centralAreaWidth * 0.35;
+						double marginHorizontal = centralAreaHeight * 0.3;
+						double x1 = coord.getX() + marginVertical;
+						double y1 = coord.getY() + label.getHeight() + marginHorizontal;
+						double x2 = coord.getX() + centralAreaWidth - marginVertical;
+						double y2 = coord.getY() + height - marginHorizontal;
+						
+						GraphUtility.drawRecursionTransform(g2, transformation, x1, y1, x2, y2);
+					}
+				}
+				
+				// Draw if it has a constructor.
+				if (drawBoundary && isAreaConstructor && !overview) {
+	
+					final AlphaComposite constructorAlphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f);
+	
+					g2.setStroke(simpleStroke);
+					
+					g2.setComposite(constructorAlphaComposite);
+					g2.setColor(selected ? (isReadOnly ? selectedReadOnlyColor : selectedColor) : outlinesColor);
+					
+					GraphUtility.drawRoundRectTransform(g2, transformation, coord.getX(), coord.getY(),
+							coord.getWidth(), height, arcWidth, arcHeight);
 				}
 			}
 			
-			// Draw boundaries.
-			boolean drawBoundary = true;
-			if (!overview) {
-				drawBoundary = Utility.isBoundaryIntersection(diagram, coord.getRectangle());
-			}
+			// Set old stroke.
+			g2.setStroke(oldStroke);
 			
-			// Draw boundary.
-			if (drawBoundary) {
-				final float dash[] = { 1.0f };
-				final float strokeWidth = 1.0f;
-
-				g2.setStroke(new BasicStroke(strokeWidth, BasicStroke.CAP_BUTT,
-				        BasicStroke.JOIN_MITER, 20.0f, dash, 0.0f));
-				
-				g2.setColor(selected ? (isReadOnly ? selectedReadOnlyColor : selectedColor) : outlinesColor);
-				
-				GraphUtility.drawRoundRectTransform(g2, transformation, coord.getX(), coord.getY(),
-						coord.getWidth(), height, arcWidth, arcHeight);
-				
-				g2.setColor(decsriptionTextColor);
-				
-				GraphUtility.drawLineTransform(g2, transformation, coord.getX() + coord.getWidth() - freeWidth, coord.getY() + labelHeight,
-						coord.getX() + coord.getWidth(), coord.getY() + labelHeight);
-				
-				
-				// Draw reference.
-				if (coord.isRecursion()) {
-					
-					// Draw recursion.
-					g2.setColor(selected ? (isReadOnly ? selectedReadOnlyColor : selectedColor) : fillLabelColor);
-					double centralAreaWidth = coord.getWidth() - free.getWidth();
-					double centralAreaHeight = height - label.getHeight();
-					double marginVertical = centralAreaWidth * 0.35;
-					double marginHorizontal = centralAreaHeight * 0.3;
-					double x1 = coord.getX() + marginVertical;
-					double y1 = coord.getY() + label.getHeight() + marginHorizontal;
-					double x2 = coord.getX() + centralAreaWidth - marginVertical;
-					double y2 = coord.getY() + height - marginHorizontal;
-					
-					GraphUtility.drawRecursionTransform(g2, transformation, x1, y1, x2, y2);
-				}
-			}
-			
-			// Draw if it has a constructor.
-			if (drawBoundary && isAreaConstructor && !overview) {
-
-				final AlphaComposite constructorAlphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f);
-
-				g2.setStroke(simpleStroke);
-				
-				g2.setComposite(constructorAlphaComposite);
-				g2.setColor(selected ? (isReadOnly ? selectedReadOnlyColor : selectedColor) : outlinesColor);
-				
-				GraphUtility.drawRoundRectTransform(g2, transformation, coord.getX(), coord.getY(),
-						coord.getWidth(), height, arcWidth, arcHeight);
-			}
+			// Set old font and dispose existing font.
+			g2.setFont(oldFont);
 		}
-		
-		// Set old stroke.
-		g2.setStroke(oldStroke);
-		
-		// Set old font and dispose existing font.
-		g2.setFont(oldFont);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
 	 * Draw affected shapes.
 	 * @param transformation 
+	 * @param areaDiagramPanel 
 	 */
-	public static void drawAffectedShapes(Graphics2D g2, AffineTransform transformation, double zoom) {
+	public static void drawAffectedShapes(Graphics2D g2, AffineTransform transformation, double zoom, AreaDiagramPanel areaDiagramPanel) {
 		
-		// If there area no affected shapes, exit the method.
-		if (affectedShapes == null) {
-			return;
-		}
-
-		// If the affected shapes are not visible exit the method.
-		if (!affectedShapesVisible) {
-			return;
-		}
-
-		// Draw gradient rectangle for all affected shapes and coordinates.
-		for (AreaShapes shape : affectedShapes) {
-			
-			// Get area read only flag value.
-			Area area = shape.getArea();
-			boolean isReadOnly = area.isReadOnly() && AreaShapes.readOnlyLighter;
-			
-			for (AreaCoordinates coord : shape.getCoordinates()) {
+		try {
+			// If there area no affected shapes, exit the method.
+			if (affectedShapes == null) {
+				return;
+			}
+	
+			// If the affected shapes are not visible exit the method.
+			if (!affectedShapesVisible) {
+				return;
+			}
+	
+			// Draw gradient rectangle for all affected shapes and coordinates.
+			for (AreaShapes shape : affectedShapes) {
 				
-				ColorId colorId = shape.isSelected() ? ColorId.SELECTION :
-					(isReadOnly ? ColorId.OUTLINES_PROTECTED : ColorId.OUTLINES);
+				// Get area read only flag value.
+				Area area = shape.getArea();
+				boolean isReadOnly = area.isReadOnly() && AreaShapes.readOnlyLighter;
 				
-				GraphUtility.drawGradientRectangleTransf(g2, transformation,
-						coord.getX(), coord.getY(), coord.getWidth(), coord.getHeight(),
-						affectedLineWidth / zoom, CustomizedColors.get(colorId),
-						affectedIntesnity);
+				for (AreaCoordinates coord : shape.getCoordinates()) {
+					
+					ColorId colorId = areaDiagramPanel.isShapeSelected(shape) ? ColorId.SELECTION :
+						(isReadOnly ? ColorId.OUTLINES_PROTECTED : ColorId.OUTLINES);
+					
+					GraphUtility.drawGradientRectangleTransf(g2, transformation,
+							coord.getX(), coord.getY(), coord.getWidth(), coord.getHeight(),
+							affectedLineWidth / zoom, CustomizedColors.get(colorId),
+							affectedIntesnity);
+				}
 			}
 		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
-
+	
 	/**
 	 * Get minimal size.
 	 * @return
 	 */
 	public double getMinimalSize() {
-
-		double minimal = 0.0;
 		
-		// Find minimal width.
-		for (AreaCoordinates coord : coordinates) {
-			double width = coord.getWidth();
-			if (minimal == 0.0) {
-				minimal = width;
+		try {
+			double minimal = 0.0;
+			
+			// Find minimal width.
+			for (AreaCoordinates coord : coordinates) {
+				double width = coord.getWidth();
+				if (minimal == 0.0) {
+					minimal = width;
+				}
+				else if (width < minimal) {
+					minimal = width;
+				}
 			}
-			else if (width < minimal) {
-				minimal = width;
-			}
+			return minimal;
 		}
-		return minimal;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return 0.0;
 	}
 
 	/**
 	 * Multiply.
 	 */
 	public void multiply(double multiply) {
-		
-		// Do loop for all coordinates.
-		for (AreaCoordinates coord : coordinates) {
-			coord.multiply(multiply);
+		try {
+			
+			// Do loop for all coordinates.
+			for (AreaCoordinates coord : coordinates) {
+				coord.multiply(multiply);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -720,13 +786,19 @@ public class AreaShapes {
 	@Override
 	public String toString() {
 		
-		String text = "AreaShapes ";
-		
-		// Do loop for all coordinates.
-		for (AreaCoordinates coord : coordinates) {
-			text += "[x=" + coord.getX() + ", y=" + coord.getY() + ", width=" + coord.getWidth() +  ", height=" + coord.getHeight() + "]";
+		try {
+			String text = "AreaShapes ";
+			
+			// Do loop for all coordinates.
+			for (AreaCoordinates coord : coordinates) {
+				text += "[x=" + coord.getX() + ", y=" + coord.getY() + ", width=" + coord.getWidth() +  ", height=" + coord.getHeight() + "]";
+			}
+			return text;
 		}
-		return text;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -735,17 +807,22 @@ public class AreaShapes {
 	 * @return
 	 */
 	public AreaCoordinates isCaptionHit(Point2D point) {
-
-		// Do loop for all coordinates.
-		for (AreaCoordinates coord : coordinates) {
-			Rectangle2D rect = new Rectangle2D.Double(coord.getX(),
-					                                  coord.getY(),
-					                                  coord.getWidth(),
-					                                  AreaCoordinates.getHeight(coord.getWidth()) * AreaCoordinates.areaFreeZonePercent / 100);
 		
-			if (rect.contains(point)) {
-				return coord;
+		try {
+			// Do loop for all coordinates.
+			for (AreaCoordinates coord : coordinates) {
+				Rectangle2D rect = new Rectangle2D.Double(coord.getX(),
+						                                  coord.getY(),
+						                                  coord.getWidth(),
+						                                  AreaCoordinates.getHeight(coord.getWidth()) * AreaCoordinates.areaFreeZonePercent / 100);
+			
+				if (rect.contains(point)) {
+					return coord;
+				}
 			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -757,55 +834,47 @@ public class AreaShapes {
 	 */
 	public AreaCoordinates isAreaFreeHit(Point2D point) {
 		
-		// Do loop for all coordinates.
-		for (AreaCoordinates coord : coordinates) {
-			Rectangle2D rect = new Rectangle2D.Double(coord.getFreeX(),
-					                                  coord.getFreeY(),
-					                                  coord.getFreeWidth(),
-					                                  coord.getFreeHeight());
-		
-			if (rect.contains(point)) {
-				return coord;
+		try {
+			// Do loop for all coordinates.
+			for (AreaCoordinates coord : coordinates) {
+				Rectangle2D rect = new Rectangle2D.Double(coord.getFreeX(),
+						                                  coord.getFreeY(),
+						                                  coord.getFreeWidth(),
+						                                  coord.getFreeHeight());
+			
+				if (rect.contains(point)) {
+					return coord;
+				}
 			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
-
-	/**
-	 * Select area.
-	 * @param b
-	 */
-	public void select(boolean selected) {
-
-		this.selected = selected;
-	}
 	
-	/**
-	 * Is selected.
-	 */
-	public boolean isSelected() {
-		
-		return selected;
-	}
-
 	/**
 	 * Returns true if whole shape is inside rectangle.
 	 * @param rectangle
 	 * @return
 	 */
 	public boolean isInside(Rectangle2D rectangle) {
-
-		// Do loop for all coordinates.
-		for (AreaCoordinates coord : coordinates) {
-			if (rectangle.contains(coord.getX(),
-					               coord.getY(),
-					               coord.getWidth(),
-					               coord.getHeight())) {
-				
-				return true;
+		
+		try {
+			// Do loop for all coordinates.
+			for (AreaCoordinates coord : coordinates) {
+				if (rectangle.contains(coord.getX(),
+						               coord.getY(),
+						               coord.getWidth(),
+						               coord.getHeight())) {
+					
+					return true;
+				}
 			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return false;
 	}
 
@@ -814,18 +883,21 @@ public class AreaShapes {
 	 * @return
 	 */
 	public Rectangle2D getFirstRectangle() {
-
-		AreaCoordinates coord = coordinates.getFirst();
 		
-		if (coord != null) {
-			return new Rectangle2D.Double(coord.getX(),
-										  coord.getY(),
-										  coord.getWidth(),
-										  coord.getHeight());
+		try {
+			AreaCoordinates coord = coordinates.getFirst();
+			
+			if (coord != null) {
+				return new Rectangle2D.Double(coord.getX(),
+											  coord.getY(),
+											  coord.getWidth(),
+											  coord.getHeight());
+			}
 		}
-		else {
-			return null;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
+		return null;
 	}
 
 	/**
@@ -833,14 +905,17 @@ public class AreaShapes {
 	 */
 	public double getFirstX() {
 		
-		AreaCoordinates coord = coordinates.getFirst();
-		
-		if (coord != null) {
-			return coord.getX();
+		try {
+			AreaCoordinates coord = coordinates.getFirst();
+			
+			if (coord != null) {
+				return coord.getX();
+			}
 		}
-		else {
-			return 0.0;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
+		return 0.0;
 	}
 
 	/**
@@ -848,14 +923,17 @@ public class AreaShapes {
 	 */
 	public double getFirstY() {
 		
-		AreaCoordinates coord = coordinates.getFirst();
-		
-		if (coord != null) {
-			return coord.getY();
+		try {
+			AreaCoordinates coord = coordinates.getFirst();
+			
+			if (coord != null) {
+				return coord.getY();
+			}
 		}
-		else {
-			return 0.0;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
+		return 0.0;
 	}
 
 	/**
@@ -863,14 +941,17 @@ public class AreaShapes {
 	 */
 	public double getFirstWidth() {
 		
-		AreaCoordinates coord = coordinates.getFirst();
-		
-		if (coord != null) {
-			return coord.getWidth();
+		try {
+			AreaCoordinates coord = coordinates.getFirst();
+			
+			if (coord != null) {
+				return coord.getWidth();
+			}
 		}
-		else {
-			return 0.0;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
+		return 0.0;
 	}
 
 	/**
@@ -879,10 +960,15 @@ public class AreaShapes {
 	 */
 	public void add(double x, double y, double width, Area area, Area parentArea,
 			boolean hasSubShapes, boolean isReference) {
-
-		// Add coordinates.
-		coordinates.add(new AreaCoordinates(x, y, width, area, parentArea,
-				hasSubShapes, isReference));
+		try {
+			
+			// Add coordinates.
+			coordinates.add(new AreaCoordinates(x, y, width, area, parentArea,
+					hasSubShapes, isReference));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -908,11 +994,16 @@ public class AreaShapes {
 	 * @param point
 	 */
 	public void setFirstLocation(Point point) {
-
-		AreaCoordinates coord = coordinates.getFirst();
-		
-		coord.setX(point.x);
-		coord.setY(point.y);
+		try {
+			
+			AreaCoordinates coord = coordinates.getFirst();
+			
+			coord.setX(point.x);
+			coord.setY(point.y);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -921,39 +1012,50 @@ public class AreaShapes {
 	 * @return
 	 */
 	public boolean getMinimalAffectedRect(Point2D transformedMouse, Obj<AreaCoordinates> outputCoordinate) {
-
-		outputCoordinate.ref = null;
 		
-		double surface = Double.MAX_VALUE;
-		
-		// Do loop for all area coordinates.
-		for (AreaCoordinates coordinate : coordinates) {
-			Rectangle2D rectangle = coordinate.getRectangle();
+		try {
+			outputCoordinate.ref = null;
 			
-			// If the point is inside the rectangle, return the rectangle.
-			if (rectangle.contains(transformedMouse)) {
+			double surface = Double.MAX_VALUE;
+			
+			// Do loop for all area coordinates.
+			for (AreaCoordinates coordinate : coordinates) {
+				Rectangle2D rectangle = coordinate.getRectangle();
 				
-				double currentSurface = rectangle.getWidth() * rectangle.getHeight();
-				
-				if (currentSurface <= surface) {
-					outputCoordinate.ref = coordinate;
+				// If the point is inside the rectangle, return the rectangle.
+				if (rectangle.contains(transformedMouse)) {
 					
-					currentSurface = surface;
+					double currentSurface = rectangle.getWidth() * rectangle.getHeight();
+					
+					if (currentSurface <= surface) {
+						outputCoordinate.ref = coordinate;
+						
+						currentSurface = surface;
+					}
 				}
 			}
+			
+			return outputCoordinate.ref != null;
 		}
-		
-		return outputCoordinate.ref != null;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
 	 * Reset affected.
 	 */
 	public static void resetAffected() {
-
-		affectedShapes.clear();
-		affectedCoordinate = null;
-		affectedShapesVisible = false;
+		try {
+			
+			affectedShapes.clear();
+			affectedCoordinate = null;
+			affectedShapesVisible = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -961,9 +1063,14 @@ public class AreaShapes {
 	 * @return
 	 */
 	public static Area getAffectedParentArea() {
-
-		if (affectedCoordinate != null) {
-			return affectedCoordinate.getParentArea();
+		
+		try {
+			if (affectedCoordinate != null) {
+				return affectedCoordinate.getParentArea();
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -992,10 +1099,15 @@ public class AreaShapes {
 	 */
 	public Point2D firstLabelCenter() {
 		
-		AreaCoordinates coordinate = coordinates.getFirst();
-		
-		if (coordinate != null) {
-			return coordinate.getLabelCenter();
+		try {
+			AreaCoordinates coordinate = coordinates.getFirst();
+			
+			if (coordinate != null) {
+				return coordinate.getLabelCenter();
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return new Point2D.Double();
 	}
@@ -1012,28 +1124,33 @@ public class AreaShapes {
 	/**
 	 * Affect all selected.
 	 * @param model 
+	 * @param areaDiagramPanel 
 	 */
-	public static void affectAllSelected(AreasModel model) {
-
-		// Clear the list.
-		affectedShapes.clear();
-		affectedShapesVisible = false;
-		
-		// Do loop for all selected areas.
-		for (Area area : model.getAreas()) {
-			Object user = area.getUser();
-			if (user instanceof AreaShapes) {
-				AreaShapes shape = (AreaShapes) user;
-				
-				if (shape.isSelected()) {
+	public static void affectAllSelected(AreasModel model, AreaDiagramPanel areaDiagramPanel) {
+		try {
+			
+			// Clear the list.
+			affectedShapes.clear();
+			affectedShapesVisible = false;
+			
+			// Do loop for all selected areas.
+			for (Area area : model.getAreas()) {
+				Object user = area.getUser();
+				if (user instanceof AreaShapes) {
+					AreaShapes shape = (AreaShapes) user;
 					
-					// Add selected shape to the list of affected shapes.
-					affectedShapes.add(shape);
-					affectedShapesVisible = true;
+					if (areaDiagramPanel.isShapeSelected(shape)) {
+						
+						// Add selected shape to the list of affected shapes.
+						affectedShapes.add(shape);
+						affectedShapesVisible = true;
+					}
 				}
 			}
 		}
-
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1059,8 +1176,14 @@ public class AreaShapes {
 	 * @return
 	 */
 	public AreaCoordinates getFirstCoordinates() {
-
-		return coordinates.getFirst();
+		
+		try {
+			return coordinates.getFirst();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -1070,27 +1193,31 @@ public class AreaShapes {
 	 */
 	public Area getVisibleParent(Rectangle2D diagramRect) {
 		
-		// Do loop for all parents.
-		for (Area parentArea : area.getSuperareas()) {
-			
-			Object user = parentArea.getUser();
-			if (!(user instanceof AreaShapes)) {
-				continue;
-			}
-			
-			AreaShapes shapes = (AreaShapes) user;
-
-			LinkedList<AreaCoordinates> superCoordinates = shapes.getCoordinates();
-			
-			// Do loop for all coordinates.
-			for (AreaCoordinates coord : superCoordinates) {
+		try {
+			// Do loop for all parents.
+			for (Area parentArea : area.getSuperareas()) {
 				
-				if (Utility.isIntersection(diagramRect, coord.getRectangle())) {
-					return parentArea;
+				Object user = parentArea.getUser();
+				if (!(user instanceof AreaShapes)) {
+					continue;
+				}
+				
+				AreaShapes shapes = (AreaShapes) user;
+	
+				LinkedList<AreaCoordinates> superCoordinates = shapes.getCoordinates();
+				
+				// Do loop for all coordinates.
+				for (AreaCoordinates coord : superCoordinates) {
+					
+					if (Utility.isIntersection(diagramRect, coord.getRectangle())) {
+						return parentArea;
+					}
 				}
 			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return null;
 	}
 
@@ -1101,31 +1228,36 @@ public class AreaShapes {
 	 */
 	public static void drawRootBody(Graphics2D g2, AffineTransform transform) {
 		
-		float alphaValue = 1.0f;
-		AlphaComposite defaultAlphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alphaValue);
-		g2.setComposite(defaultAlphaComposite);
-	
-		Area root = ProgramGenerator.getAreasModel().getRootArea();
-		if (root != null) {
-			Object user = root.getUser();
-			if (user instanceof AreaShapes) {
-				AreaShapes shape = (AreaShapes) user;
-				
-				if (!shape.getCoordinates().isEmpty()) {
-					AreaCoordinates coord = shape.getCoordinates().getFirst();
+		try {
+			float alphaValue = 1.0f;
+			AlphaComposite defaultAlphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alphaValue);
+			g2.setComposite(defaultAlphaComposite);
+		
+			Area root = ProgramGenerator.getAreasModel().getRootArea();
+			if (root != null) {
+				Object user = root.getUser();
+				if (user instanceof AreaShapes) {
+					AreaShapes shape = (AreaShapes) user;
 					
-					g2.setColor(CustomizedColors.get(ColorId.FILLBODY));
-					
-					double x = coord.getX();
-					double y = coord.getY() + coord.getLabelHeight();
-					double width = coord.getWidth() - coord.getFreeWidth();
-					double height = coord.getHeight() - coord.getLabelHeight();
-					double arcWidth = coord.getWidth() * getArcSizePercent() / 100;
-					double arcHeight = coord.getWidth() * getArcSizePercent() / 100;
-					
-					GraphUtility.fillRootRectTransform(g2, transform, x, y, width, height, arcWidth, arcHeight);
+					if (!shape.getCoordinates().isEmpty()) {
+						AreaCoordinates coord = shape.getCoordinates().getFirst();
+						
+						g2.setColor(CustomizedColors.get(ColorId.FILLBODY));
+						
+						double x = coord.getX();
+						double y = coord.getY() + coord.getLabelHeight();
+						double width = coord.getWidth() - coord.getFreeWidth();
+						double height = coord.getHeight() - coord.getLabelHeight();
+						double arcWidth = coord.getWidth() * getArcSizePercent() / 100;
+						double arcHeight = coord.getWidth() * getArcSizePercent() / 100;
+						
+						GraphUtility.fillRootRectTransform(g2, transform, x, y, width, height, arcWidth, arcHeight);
+					}
 				}
 			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 	}
 
@@ -1136,53 +1268,42 @@ public class AreaShapes {
 	 */
 	public double getBiggestInsideSurface(Rectangle2D rectangle) {
 		
-		double maximumSurface = 0.0;
-		
-		double rx = rectangle.getX();
-		double ry = rectangle.getY();
-		double rwidth = rectangle.getWidth();
-		double rheight = rectangle.getHeight();
-		
-		// Do loop for all coordinates.
-		for (AreaCoordinates coord : coordinates) {
+		try {
+			double maximumSurface = 0.0;
 			
-			double x = coord.getX();
-			double y =  coord.getY();
-			double width = coord.getWidth();
-			double height = coord.getLabelHeight();
+			double rx = rectangle.getX();
+			double ry = rectangle.getY();
+			double rwidth = rectangle.getWidth();
+			double rheight = rectangle.getHeight();
 			
-			if (rectangle.intersects(x, y, width, height)) {
-
-				// Get intersection width and height.
-				double intersectionWidth = Utility.getIntersectionLength(x, width, rx, rwidth);
-				double intersectionHeight = Utility.getIntersectionLength(y, height, ry, rheight);
+			// Do loop for all coordinates.
+			for (AreaCoordinates coord : coordinates) {
 				
-				// Coordinates are inside given rectangle.
-				double surface = intersectionWidth * intersectionHeight;
+				double x = coord.getX();
+				double y =  coord.getY();
+				double width = coord.getWidth();
+				double height = coord.getLabelHeight();
 				
-				if (surface > maximumSurface) {
-					maximumSurface = surface;
+				if (rectangle.intersects(x, y, width, height)) {
+	
+					// Get intersection width and height.
+					double intersectionWidth = Utility.getIntersectionLength(x, width, rx, rwidth);
+					double intersectionHeight = Utility.getIntersectionLength(y, height, ry, rheight);
+					
+					// Coordinates are inside given rectangle.
+					double surface = intersectionWidth * intersectionHeight;
+					
+					if (surface > maximumSurface) {
+						maximumSurface = surface;
+					}
 				}
 			}
+			
+			return maximumSurface;
 		}
-		
-		return maximumSurface;
-	}
-
-	/**
-	 * Select area.
-	 * @param area
-	 */
-	public static void select(Area area, boolean selected) {
-		
-		Object user = area.getUser();
-		
-		if (user instanceof AreaShapes) {
-			AreaShapes shape = (AreaShapes) user;
-			shape.select(selected);
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		else if (user instanceof Boolean || user == null) {
-			area.setUser((Boolean) selected);
-		}
+		return 0.0;
 	}
 }

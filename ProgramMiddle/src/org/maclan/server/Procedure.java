@@ -1,20 +1,22 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.maclan.server;
 
-import java.util.*;
+import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import org.maclan.MiddleUtility;
 import org.multipage.util.Resources;
 
 /**
- * @author
+ * Class for procedure tags.
+ * @author vakol
  *
  */
 public class Procedure {

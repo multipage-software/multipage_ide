@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -17,10 +17,12 @@ import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.View;
 
+import org.multipage.util.Safe;
+
 
 /**
- * A private subclass of the default highlight painter
- * @author
+ * Subclass of default highlight painter.
+ * @author vakol
  *
  */
 class FindHighlightPainter extends DefaultHighlighter.DefaultHighlightPainter {
@@ -39,11 +41,17 @@ class FindHighlightPainter extends DefaultHighlighter.DefaultHighlightPainter {
 	@Override
 	public void paint(Graphics g, int offs0, int offs1, Shape bounds,
 			JTextComponent c) {
-		// Set transparency.
-		Graphics2D g2 = (Graphics2D) g;
-		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.6f));
-		super.paint(g, offs0, offs1, bounds, c);
-		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+		try {
+			
+			// Set transparency.
+			Graphics2D g2 = (Graphics2D) g;
+			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.6f));
+			super.paint(g, offs0, offs1, bounds, c);
+			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -52,11 +60,18 @@ class FindHighlightPainter extends DefaultHighlighter.DefaultHighlightPainter {
 	@Override
 	public Shape paintLayer(Graphics g, int offs0, int offs1, Shape bounds,
 			JTextComponent c, View view) {
-		// Set transparency.
-		Graphics2D g2 = (Graphics2D) g;
-		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.6f));
-		Shape shape = super.paintLayer(g, offs0, offs1, bounds, c, view);
-		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
-		return shape;
+		
+		try {
+			// Set transparency.
+			Graphics2D g2 = (Graphics2D) g;
+			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.6f));
+			Shape shape = super.paintLayer(g, offs0, offs1, bounds, c, view);
+			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+			return shape;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 }

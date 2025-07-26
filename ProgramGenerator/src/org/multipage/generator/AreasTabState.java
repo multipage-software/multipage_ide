@@ -1,16 +1,18 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 14-12-2020
+ * Created on : 2020-12-14
  *
  */
 package org.multipage.generator;
 
 import java.io.Serializable;
 
+import org.multipage.util.Safe;
+
 /**
- * 
- * @author sechance
+ * State of tab that contains areas.
+ * @author vakol
  *
  */
 public class AreasTabState extends TabState implements Serializable {
@@ -30,9 +32,14 @@ public class AreasTabState extends TabState implements Serializable {
 	 * @param tabState
 	 */
 	public void setTabStateFrom(AreasTabState tabState) {
-		
-		super.setTabStateFrom(tabState);
-		
-		areaId = tabState.areaId;
+		try {
+			
+			super.setTabStateFrom(tabState);
+			
+			areaId = tabState.areaId;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

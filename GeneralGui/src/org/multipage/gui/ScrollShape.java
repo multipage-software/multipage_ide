@@ -1,17 +1,22 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import java.awt.*;
-import java.awt.geom.*;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Point;
+import java.awt.geom.Rectangle2D;
+
+import org.multipage.util.Safe;
 
 /**
- * @author
+ * Abstract base class for scroll bars.
+ * @author vakol
  *
  */
 public abstract class ScrollShape implements CursorArea {
@@ -79,14 +84,26 @@ public abstract class ScrollShape implements CursorArea {
 	 * Constructor.
 	 */
 	public ScrollShape(Cursor cursor, Component component) {
-		
-		cursorArea = new CursorAreaImpl(cursor, component,
+		try {
+			
+			cursorArea = new CursorAreaImpl(cursor, component,
 				new CursorAreaListener() {
 					@Override
 					public boolean visible() {
-						return isVisible();
+						
+						try {
+							return isVisible();
+						}
+						catch (Throwable e) {
+							Safe.exception(e);
+						}
+						return false;
 					}
 				});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -115,10 +132,15 @@ public abstract class ScrollShape implements CursorArea {
 	 * Invoke on scroll.
 	 */
 	protected void invokeOnScroll() {
-
-		if (listener != null) {
-			listener.onScroll(win);
+		try {
+			
+			if (listener != null) {
+				listener.onScroll(win);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -132,12 +154,17 @@ public abstract class ScrollShape implements CursorArea {
 	 * On mouse released.
 	 */
 	public void onMouseReleased() {
-
-		delta = 0.0;
-		pressedPosition = null;
-		if (timer != null) {
-			timer.stop();
-			timer = null;
+		try {
+			
+			delta = 0.0;
+			pressedPosition = null;
+			if (timer != null) {
+				timer.stop();
+				timer = null;
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

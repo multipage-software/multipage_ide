@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -32,10 +32,11 @@ import org.multipage.basic.ProgramBasic;
 import org.multipage.gui.Images;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays namespace.
+ * @author vakol
  *
  */
 public class NameSpaceField extends JPanel {
@@ -72,12 +73,18 @@ public class NameSpaceField extends JPanel {
 	 * Create the panel.
 	 */
 	public NameSpaceField() {
-		// Initialize components.
-		initComponents();
-		// Post creation.
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		
+		try {
+			// Initialize components.
+			initComponents();
+			// Post creation.
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -118,59 +125,69 @@ public class NameSpaceField extends JPanel {
 	 * Set namespace.
 	 */
 	public void setNameSpace(long id) {
-
-		// Load namespaces.
-		MiddleResult result = ProgramBasic.getMiddle().loadNamespaces(
-				ProgramBasic.getLoginProperties(), model);
-		if (result.isNotOK()) {
-			result.show(this);
-			return;
-		}
-		
-		// Get namespace path.
-		LinkedList<Namespace> namespacePath = model.getNamespacePath(id);
-		namespaceId = id;
-		
-		// Create labels.
-		panel.removeAll();
-		boolean even = true;
-		boolean first = true;
-		
-		for (Namespace namespace : namespacePath) {
-			// Add arrow.
-			if (!first) {
-				panel.add(new JLabel(Images.getIcon("org/multipage/generator/images/namespace_arrow.png")));
-			}
-			else {
-				first = false;
-			}
-			// Create label and add it to the panel.
-			JLabel namespaceLabel = new JLabel(" " + namespace.getDescription() + " ");
-			// Set color.
-			namespaceLabel.setOpaque(true);
-			namespaceLabel.setBackground(even ? evenColor : oddColor);
-			panel.add(namespaceLabel);
+		try {
 			
-			even = !even;
+			// Load namespaces.
+			MiddleResult result = ProgramBasic.getMiddle().loadNamespaces(
+					ProgramBasic.getLoginProperties(), model);
+			if (result.isNotOK()) {
+				result.show(this);
+				return;
+			}
+			
+			// Get namespace path.
+			LinkedList<Namespace> namespacePath = model.getNamespacePath(id);
+			namespaceId = id;
+			
+			// Create labels.
+			panel.removeAll();
+			boolean even = true;
+			boolean first = true;
+			
+			for (Namespace namespace : namespacePath) {
+				// Add arrow.
+				if (!first) {
+					panel.add(new JLabel(Images.getIcon("org/multipage/generator/images/namespace_arrow.png")));
+				}
+				else {
+					first = false;
+				}
+				// Create label and add it to the panel.
+				JLabel namespaceLabel = new JLabel(" " + namespace.getDescription() + " ");
+				// Set color.
+				namespaceLabel.setOpaque(true);
+				namespaceLabel.setBackground(even ? evenColor : oddColor);
+				panel.add(namespaceLabel);
+				
+				even = !even;
+			}
+			
+			// Add button.
+			panel.add(buttonSet);
+			
+			validate();
+			
+			// Set scroll bar to the end.
+			setScrollBarEnd();
 		}
-		
-		// Add button.
-		panel.add(buttonSet);
-		
-		validate();
-		
-		// Set scroll bar to the end.
-		setScrollBarEnd();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		// Set button.
-		buttonSet.setIcon(Images.getIcon("org/multipage/generator/images/star.png"));
-		buttonSet.setToolTipText(Resources.getString("org.multipage.generator.tooltipSetNamespace"));
+		try {
+			
+			// Set button.
+			buttonSet.setIcon(Images.getIcon("org/multipage/generator/images/star.png"));
+			buttonSet.setToolTipText(Resources.getString("org.multipage.generator.tooltipSetNamespace"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -178,35 +195,50 @@ public class NameSpaceField extends JPanel {
 	 * @param e 
 	 */
 	protected void onResized() {
-		
-		setScrollBarEnd();
+		try {
+			
+			setScrollBarEnd();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set scrollbar to the end.
 	 */
 	private void setScrollBarEnd() {
-
-		JScrollBar scrollBar = scrollPane.getHorizontalScrollBar();
-		scrollBar.setValue(scrollBar.getMaximum());
+		try {
+			
+			JScrollBar scrollBar = scrollPane.getHorizontalScrollBar();
+			scrollBar.setValue(scrollBar.getMaximum());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On set button.
 	 */
 	protected void onSetButton() {
-
-		// Get namespace ID.
-		Obj<Long> namespaceIdObj = new Obj<Long>(namespaceId);
-		
-		if (!NamespaceTreeDialog.showDialog(this,
-				namespaceIdObj)) {
-			return;
+		try {
+			
+			// Get namespace ID.
+			Obj<Long> namespaceIdObj = new Obj<Long>(namespaceId);
+			
+			if (!NamespaceTreeDialog.showDialog(this,
+					namespaceIdObj)) {
+				return;
+			}
+			
+			// Set namespace.
+			namespaceId = namespaceIdObj.ref;
+			setNameSpace(namespaceId);
 		}
-		
-		// Set namespace.
-		namespaceId = namespaceIdObj.ref;
-		setNameSpace(namespaceId);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -221,10 +253,15 @@ public class NameSpaceField extends JPanel {
 	 * @param enable
 	 */
 	public void setEnabledComponents(boolean enable) {
- 
-		// Enable / disable components.
-		buttonSet.setEnabled(enable);
-		setEnabled(enable);
-		scrollPane.getHorizontalScrollBar().setEnabled(enable);
+		try {
+			
+			// Enable / disable components.
+			buttonSet.setEnabled(enable);
+			setEnabled(enable);
+			scrollPane.getHorizontalScrollBar().setEnabled(enable);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

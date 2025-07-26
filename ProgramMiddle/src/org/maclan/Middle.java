@@ -1,25 +1,33 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.maclan;
 
-import java.awt.image.*;
-import java.io.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
 import java.util.function.Function;
 
-import org.multipage.util.*;
+import org.multipage.util.Obj;
+import org.multipage.util.SwingWorkerHelper;
 
 /**
- * 
- * @author
+ * Interface for the middle layer.
+ * @author vakol
  *
  */
 public interface Middle extends MiddleLight {
@@ -932,6 +940,24 @@ public interface Middle extends MiddleLight {
 	public MiddleResult loadSlots(LinkedList<Slot> allSlots);
 	
 	/**
+	 * Get IDs of all localized texts bound to slot revisions.
+	 * @param slot
+	 * @param localizedTextsIds
+	 * @return
+	 */
+	public MiddleResult loadSlotTextValueIds(Slot slot, HashSet<Long> localizedTextsIds);
+	
+	/**
+	 * Get localized text ID from the last slot revision.
+	 * @param slotAlias 
+	 * @param areaId 
+	 * @param revisionNumber 
+	 * @param localizedTextsId
+	 * @return
+	 */
+	public MiddleResult loadSlotTextValueId(String slotAlias, long areaId, long revisionNumber, Obj<Long> localizedTextsId);
+	
+	/**
 	 * Remove slot.
 	 * @param slot
 	 * @return
@@ -1100,7 +1126,7 @@ public interface Middle extends MiddleLight {
 			long subAreaId, String relationNameSuper);
 
 	/**
-	 * Update slot holder.
+	 * Update slot holder for all revisions.
 	 * @param slot
 	 * @param holder
 	 * @return
@@ -1109,7 +1135,7 @@ public interface Middle extends MiddleLight {
 			SlotHolder holder);
 
 	/**
-	 * Update slots holder.
+	 * Update slots holder for all revisions.
 	 * @param slots
 	 * @param holder
 	 * @return
@@ -1488,6 +1514,14 @@ public interface Middle extends MiddleLight {
 	 */
 	public MiddleResult loadVersions(Properties login,
 			long languageId, LinkedList<VersionObj> versions);
+	
+	/**
+     * Load last revision number of the input slot.
+     * @param areaId
+     * @param slotAlias
+     * @param revisionNumber
+     */
+	public MiddleResult loadSlotLastRevisionNumber(long areaId, String slotAlias, Obj<Long> revisionNumber);
 
 	/**
 	 * Insert version.
@@ -1566,6 +1600,7 @@ public interface Middle extends MiddleLight {
 	 * @return
 	 */
 	public MiddleResult updateAreaFolderName(long areaId, String folderName);
+	
 
 	/**
 	 * Update slot access.
@@ -1810,10 +1845,11 @@ public interface Middle extends MiddleLight {
 	/**
 	 * Reset slot enumeration value.
 	 * @param slotId
+	 * @param forceLastRevision
 	 * @return
 	 */
-	public MiddleResult updateSlotResetEnumerationValue(long slotId);
-
+	public MiddleResult updateSlotResetEnumerationValue(long slotId, boolean forceLastRevision);
+	
 	/**
 	 * Insert enumerations data.
 	 * @param areaTreeData
@@ -2019,6 +2055,31 @@ public interface Middle extends MiddleLight {
 			String description);
 	
 	/**
+	 * Get slot area ID and slot alias.
+	 * @param slotId
+	 * @param areaId
+	 * @param slotAlias
+	 * @return
+	 */
+	public MiddleResult loadSlotAreaIdAndAlias(long slotId, Obj<Long> areaId, Obj<String> slotAlias);
+	
+	/**
+	 * Check if slot exists.
+	 * @param slotId
+	 * @param slotExists
+	 * @return
+	 */
+	public MiddleResult loadSlotExists(Long slotId, Obj<Boolean> slotExists);
+	
+	/**
+	 * Load slot ID of last slot revision.
+	 * @param slotId
+	 * @param lastRevisionSlotId
+	 * @return
+	 */
+	public MiddleResult loadSlotIdLastRevision(long slotId, Obj<Long> lastRevisionSlotId);
+	
+	/**
 	 * Update slot description.
 	 * @param slotId
 	 * @param description
@@ -2183,11 +2244,32 @@ public interface Middle extends MiddleLight {
 	public MiddleResult updateConstructorHoldersAreaLinksReset(long areaId);
 
 	/**
+	 * Load slot description ID.
 	 * @param slotId
+	 * @param lastRevision
 	 * @param descriptionId
 	 * @return
 	 */
-	public MiddleResult loadSlotDescriptionId(long slotId, Obj<Long> descriptionId);
+	public MiddleResult loadSlotDescriptionId(long slotId, boolean lastRevision, Obj<Long> descriptionId);
+	
+	/**
+	 * Load slot description ID.
+	 * @param slotAlias
+	 * @param areaId
+	 * @param revisionNumber
+	 * @param descriptionId
+	 * @return
+	 */
+	public MiddleResult loadSlotDescriptionId(String slotAlias, long areaId, long revisionNumber,
+			Obj<Long> descriptionId);
+	
+	/**
+	 * Load description IDs attached to all revisions of the slot.
+	 * @param slot
+	 * @param descriptionIds
+	 * @return
+	 */
+	public MiddleResult loadSlotDescriptionIds(Slot slot, HashSet<Long> descriptionIds);
 
 	/**
 	 * Update slot description ID. Can be null.
@@ -2904,10 +2986,11 @@ public interface Middle extends MiddleLight {
 	/**
 	 * Set preferred slot flag.
 	 * @param slotId
+	 * @param forceLastRevision
 	 * @param isPreferred
 	 * @return
 	 */
-	public MiddleResult updateSlotIsPreferred(long slotId, boolean isPreferred);
+	public MiddleResult updateSlotIsPreferred(long slotId, boolean forceLastRevision, boolean isPreferred);
 
 	/**
 	 * Update constructor holder alias
@@ -3167,9 +3250,10 @@ public interface Middle extends MiddleLight {
 	 * Inserts new revision of the slot
 	 * @param slot
 	 * @param newSlot
+	 * @param revisionDescription 
 	 * @return
 	 */
-	public MiddleResult insertSlotRevision(Slot slot, Slot newSlot);
+	public MiddleResult insertSlotRevision(Slot slot, Slot newSlot, String revisionDescription);
 	
 	/**
 	 * Remove slot revision
@@ -3213,10 +3297,11 @@ public interface Middle extends MiddleLight {
 	/**
 	 * Load slot text value.
 	 * @param slotId
+	 * @param forceLastRevision
 	 * @param textValue
 	 * @return
 	 */
-	public MiddleResult loadSlotTextValue(long slotId, Obj<String> textValue);
+	public MiddleResult loadSlotTextValue(long slotId, boolean forceLastRevision, Obj<String> textValue);
 	
 	/**
 	 * Load slot properties.
@@ -3280,6 +3365,22 @@ public interface Middle extends MiddleLight {
 	 * Set GUIDs for areas without them.
 	 */
 	public MiddleResult updateAreaEmptyGuids();
-
 	
+	/**
+	 * Update slot revision description.
+	 * @param areaId
+	 * @param slotAlias
+	 * @param revisionNumber
+	 * @param description
+	 * @return
+	 */
+	public MiddleResult updateSlotRevisionDescription(long areaId, String slotAlias, long revisionNumber, String description);
+	
+	/**
+     * Update slot alias for all revisions.
+     * @param oldAlias
+     * @param areaId
+     * @param slotAlias
+     */
+	public MiddleResult updateSlotAlias(String oldAlias, long areaId, String newAlias);
 }

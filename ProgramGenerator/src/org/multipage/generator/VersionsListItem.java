@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -18,10 +18,11 @@ import javax.swing.SpringLayout;
 import org.maclan.VersionObj;
 import org.multipage.gui.Images;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays version of an area.
+ * @author vakol
  *
  */
 public class VersionsListItem extends JPanel {
@@ -42,9 +43,14 @@ public class VersionsListItem extends JPanel {
 	 * Create the panel.
 	 */
 	public VersionsListItem() {
-
-		initComponents();
-		postCreate(); // $hide$
+		
+		try {
+			initComponents();
+			postCreate(); // $hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -79,8 +85,13 @@ public class VersionsListItem extends JPanel {
 	 * Set icon.
 	 */
 	private void postCreate() {
-		
-		labelImage.setIcon(Images.getIcon("org/multipage/generator/images/version_icon.png"));
+		try {
+			
+			labelImage.setIcon(Images.getIcon("org/multipage/generator/images/version_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -89,13 +100,18 @@ public class VersionsListItem extends JPanel {
 	 * @param index
 	 */
 	public void setProperties(VersionObj version, int index) {
-
-		// Set background color.
-		setBackground(Utility.itemColor(index));
-		
-		// Version description.
-		labelName.setText(version.getDescription());
-		// Set check box.
-		checkBox.setSelected((Boolean) version.getUser());
+		try {
+			
+			// Set background color.
+			setBackground(Utility.itemColor(index));
+			
+			// Version description.
+			labelName.setText(version.getDescription());
+			// Set check box.
+			checkBox.setSelected((Boolean) version.getUser());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

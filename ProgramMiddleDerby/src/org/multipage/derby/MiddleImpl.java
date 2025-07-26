@@ -1,29 +1,95 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.derby;
 
-import java.awt.image.*;
-import java.io.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.sql.*;
-import java.util.*;
-import java.util.concurrent.*;
+import java.sql.Blob;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+import java.util.UUID;
+import java.util.concurrent.CancellationException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.sql.rowset.serial.SerialBlob;
 
-import org.maclan.*;
+import org.maclan.Area;
+import org.maclan.AreaData;
+import org.maclan.AreaResource;
+import org.maclan.AreaResourceRef;
+import org.maclan.AreaSource;
+import org.maclan.AreaSourceData;
+import org.maclan.AreaTreesData;
+import org.maclan.AreasModel;
+import org.maclan.ConstructorGroup;
+import org.maclan.ConstructorGroupRef;
+import org.maclan.ConstructorHolder;
+import org.maclan.ConstructorSubObject;
+import org.maclan.DatBlock;
+import org.maclan.DescriptionData;
+import org.maclan.DictionaryItem;
+import org.maclan.EnumerationData;
+import org.maclan.EnumerationObj;
+import org.maclan.EnumerationValue;
+import org.maclan.EnumerationValueData;
+import org.maclan.IsSubArea;
+import org.maclan.Language;
+import org.maclan.LanguageRef;
+import org.maclan.LocText;
+import org.maclan.LocalizedText;
+import org.maclan.Middle;
+import org.maclan.MiddleResult;
+import org.maclan.MiddleUtility;
+import org.maclan.Mime;
+import org.maclan.MimeType;
+import org.maclan.Namespace;
+import org.maclan.NamespacesModel;
+import org.maclan.ResContainer;
+import org.maclan.Resource;
+import org.maclan.ResourceRef;
+import org.maclan.Revision;
+import org.maclan.Slot;
+import org.maclan.SlotData;
+import org.maclan.SlotHolder;
+import org.maclan.SlotType;
+import org.maclan.TextHolderType;
+import org.maclan.VersionData;
+import org.maclan.VersionObj;
 import org.multipage.gui.Utility;
-import org.multipage.util.*;
+import org.multipage.util.ImgUtility;
+import org.multipage.util.Obj;
+import org.multipage.util.SwingWorkerHelper;
 
 /**
- * @author
+ * Implementation of the middle layer.
+ * @author vakol
  *
  */
 public class MiddleImpl extends MiddleLightImpl implements Middle {
@@ -155,9 +221,16 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	
 	private static final String selectAreaSlotTextValueIds = "SELECT localized_text_value_id " +
             												 "FROM area_slot " +
-												             "WHERE alias = ? " +
-												             "AND area_id = ?";
-
+												             "WHERE (alias = ?) " +
+												             "AND (area_id = ?)";
+	
+	private static final String selectAreaSlotTextValueIdRevision = "SELECT localized_text_value_id "
+																  + "FROM area_slot "
+																  + "WHERE (area_id = ?) "
+																  + "AND (alias = ?) "
+																  + "AND (revision = ?) "
+																  + "AND (localized_text_value_id IS NOT NULL)";
+	
 	private static final String selectAreaTextIds = "SELECT description_id, id, EXISTS( SELECT * FROM constructor_holder WHERE constructor_holder.area_id = area.id) AS is_constructor_area " +
 												    "FROM area " +
 												    "WHERE localized = TRUE";
@@ -181,8 +254,8 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	private static final String selectAreaSlotTextIds = "SELECT area_slot.localized_text_value_id, area_slot.id, area_slot.alias, revision, area.id AS areaid, area.description_id, " +
 															    "EXISTS( SELECT * FROM constructor_holder WHERE constructor_holder.area_id = area.id) AS is_constructor_area " +
 														        "FROM area, area_slot " +
-														        "INNER JOIN (SELECT alias AS slot_alias, MAX(revision) AS last_revision FROM area_slot GROUP BY alias) lst " +
-														        "ON area_slot.alias = slot_alias AND revision = last_revision " +
+														        "INNER JOIN (SELECT area_id AS slot_area_id, alias AS slot_alias, MAX(revision) AS last_revision FROM area_slot GROUP BY area_id, alias) lst " +
+														        "ON area_slot.area_id = slot_area_id AND area_slot.alias = slot_alias AND revision = last_revision " +
 														        "WHERE localized_text_value_id IS NOT NULL " +
 														        "AND area.id = area_slot.area_id";
 
@@ -194,14 +267,25 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	                                                    "FROM area_slot " +
 	                                                    "WHERE area_id = ?";
 	
-	private static final String selectAreaSlotsExternal = "SELECT alias "
+	private static final String selectAreaSlotsExternal = "SELECT alias, area_id, revision "
 													    + "FROM area_slot "
+													    + "INNER JOIN (SELECT area_id AS slot_area_id, alias AS slot_alias, MAX(revision) AS last_revision FROM area_slot GROUP BY area_id, alias) lst "
+												        + "ON area_slot.area_id = slot_area_id AND area_slot.alias = slot_alias AND revision = last_revision "
 													    + "WHERE area_id = ? "
 													    + "AND external_provider IS NOT NULL";
 	
-	private static final String selectAreaSlotAliasesPublic = "SELECT alias FROM area_slot WHERE area_id = ? AND access = 'T'";
+	private static final String selectAreaSlotAliasesPublic = "SELECT alias, area_id, revision "
+															+ "FROM area_slot "
+															+ "INNER JOIN (SELECT area_id AS slot_area_id, alias AS slot_alias, MAX(revision) AS last_revision FROM area_slot GROUP BY area_id, alias) lst "
+													        + "ON area_slot.area_id = slot_area_id AND area_slot.alias = slot_alias AND revision = last_revision "
+															+ "WHERE area_id = ? "
+															+ "AND access = 'T'";
 	
-	private static final String selectAreaSlotAliases = "SELECT alias, revision FROM area_slot WHERE area_id = ?";
+	private static final String selectAreaSlotAliases = "SELECT alias, area_id, revision "
+													  + "FROM area_slot "
+													  + "INNER JOIN (SELECT area_id AS slot_area_id, alias AS slot_alias, MAX(revision) AS last_revision FROM area_slot GROUP BY area_id, alias) lst "
+												      + "ON area_slot.area_id = slot_area_id AND area_slot.alias = slot_alias AND revision = last_revision "
+													  + "WHERE area_id = ?";
 	
 	private static final String selectAreaSuperAreasIdsInherited = "SELECT area_id " +
 	                                                               "FROM is_subarea " +
@@ -211,12 +295,16 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	private static final String selectStartAreaId = "SELECT area_id " +
 	                                                "FROM start_area";
 
-	private static final String selectAreaSlotNames = "SELECT alias, name, area_id " +
-           											  "FROM area_slot";
+	private static final String selectAreaSlotNames = "SELECT alias, name, area_id, revision "
+           											+ "FROM area_slot " 
+           											+ "INNER JOIN (SELECT area_id AS slot_area_id, alias AS slot_alias, MAX(revision) AS last_revision FROM area_slot GROUP BY area_id, alias) lst "
+												    + "ON area_slot.area_id = slot_area_id AND area_slot.alias = slot_alias AND revision = last_revision ";
 
-	private static final String selectAreaSlotNamesVisible = "SELECT alias, name, area_id " +
-											                 "FROM area_slot " +
-											                 "WHERE hidden = false";
+	private static final String selectAreaSlotNamesVisible = "SELECT alias, name, area_id, revision "
+											               + "FROM area_slot "
+											               + "INNER JOIN (SELECT area_id AS slot_area_id, alias AS slot_alias, MAX(revision) AS last_revision FROM area_slot GROUP BY area_id, alias) lst "
+														   + "ON area_slot.area_id = slot_area_id AND area_slot.alias = slot_alias AND revision = last_revision "
+											               + "WHERE hidden = false";
 
 	private static final String selectResourceName = "SELECT description, type " +
 	                                                 "FROM resource, mime_type " +
@@ -230,29 +318,50 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	private static final String selectAreaHelpExists = "SELECT help IS NOT NULL as is_help " +
 	                                                   "FROM area WHERE id = ?";
 	
-	private static final String selectLanguages2 = "SELECT id, description, alias, priority FROM language";
+	private static final String selectLanguages2 = "SELECT id, description, alias, priority "
+												 + "FROM language";
 	
-	private static final String selectArea = "SELECT guid, start_resource, description_id, visible, area.alias, read_only, help, localized, filename, version_id, folder, constructors_group_id, constructor_holder_id, start_resource_not_localized, related_area_id, file_extension, can_import, project_root, enabled FROM area WHERE area.id = ?";
+	private static final String selectArea = "SELECT guid, start_resource, description_id, visible, area.alias, read_only, help, localized, filename, version_id, folder, constructors_group_id, constructor_holder_id, start_resource_not_localized, related_area_id, file_extension, can_import, project_root, enabled "
+										   + "FROM area "
+										   + "WHERE area.id = ?";
 
-	private static final String selectIsSubArea = "SELECT subarea_id, inheritance, priority_sub, priority_super, name_sub, name_super, hide_sub, recursion, id FROM is_subarea WHERE area_id = ? ORDER BY id ASC";
+	private static final String selectIsSubArea = "SELECT subarea_id, inheritance, priority_sub, priority_super, name_sub, name_super, hide_sub, recursion, id "
+												+ "FROM is_subarea "
+												+ "WHERE area_id = ? "
+												+ "ORDER BY id ASC";
 
-	private static final String selectSlot = "SELECT alias, revision, created, localized_text_value_id, text_value, integer_value, real_value, access, hidden, id, boolean_value, enumeration_value_id, color, description_id, is_default, name, value_meaning, preferred, user_defined, special_value, area_value, external_provider, reads_input, writes_output FROM area_slot WHERE area_id = ?";
+	private static final String selectSlot = "SELECT alias, revision, revision_description, created, localized_text_value_id, text_value, integer_value, real_value, access, hidden, id, boolean_value, enumeration_value_id, color, description_id, is_default, name, value_meaning, preferred, user_defined, special_value, area_value, external_provider, reads_input, writes_output "
+										   + "FROM area_slot "
+										   + "WHERE area_id = ?";
 
-	private static final String selectLocalizedText = "SELECT text FROM localized_text WHERE text_id = ? AND language_id = ?";
+	private static final String selectLocalizedText = "SELECT text "
+													+ "FROM localized_text "
+													+ "WHERE text_id = ? AND language_id = ?";
 	
-	private static final String selectAreaResourcesRef = "SELECT resource_id, local_description FROM area_resource WHERE area_id = ?";
+	private static final String selectAreaResourcesRef = "SELECT resource_id, local_description FROM area_resource "
+													   + "WHERE area_id = ?";
 	
-	private static final String selectMimeType3 = "SELECT extension, type, preference FROM mime_type WHERE id = ?";
+	private static final String selectMimeType3 = "SELECT extension, type, preference "
+												+ "FROM mime_type "
+												+ "WHERE id = ?";
 	
-	private static final String selectResourceRef = "SELECT description, mime_type_id, text, protected, visible, blob FROM resource WHERE id = ?";
+	private static final String selectResourceRef = "SELECT description, mime_type_id, text, protected, visible, blob "
+												  + "FROM resource "
+												  + "WHERE id = ?";
 	
-	private static final String selectLanguageFlag = "SELECT icon FROM language WHERE id = ?";
+	private static final String selectLanguageFlag = "SELECT icon "
+												   + "FROM language "
+												   + "WHERE id = ?";
 
-	private static final String selectLanguageIds = "SELECT alias, id FROM language";
+	private static final String selectLanguageIds = "SELECT alias, id "
+												  + "FROM language";
 	
-	private static final String selectVersionAliasesIds = "SELECT alias, id FROM version";
+	private static final String selectVersionAliasesIds = "SELECT alias, id "
+														+ "FROM version";
 	
-	private static final String selectMimeType4 = "SELECT id FROM mime_type WHERE type = ? AND extension = ?";
+	private static final String selectMimeType4 = "SELECT id "
+												+ "FROM mime_type "
+												+ "WHERE type = ? AND extension = ?";
 
 	private static final String selectVersionDescriptionId = "SELECT description_id " +
 			                                                 "FROM version " +
@@ -302,10 +411,36 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 													            "FROM constructor_holder " +
 													            "WHERE group_id = ? " +
 													            "ORDER BY name ASC";
+	
+	private static final String selectSlotAreaIdAndAlias = "SELECT area_id, alias "
+											    		 + "FROM area_slot "
+											    		 + "WHERE id = ?";
+	
+	private static final String selectSlotId = "SELECT id "
+											 + "FROM area_slot "
+											 + "WHERE id = ?";
+	
+	private static final String selectSlotIdLastRevision = "SELECT id "
+														 + "FROM area_slot "
+														 + "JOIN (SELECT area_id AS slot_area_id, alias AS slot_alias, MAX(revision) AS last_revision FROM area_slot GROUP BY alias, area_id) as lst "
+														 + "ON (area_id = slot_area_id) AND (alias = slot_alias) AND (revision = last_revision) "
+														 + "WHERE (area_slot.area_id = ?) AND (alias = ?)";
 
 	private static final String selectSlotDescriptionId = "SELECT description_id " +
 			                                              "FROM area_slot " +
 			                                              "WHERE id = ?";
+	
+	private static final String selectSlotRevisionDescriptionId = "SELECT description_id "
+																+ "FROM area_slot "
+													            + "WHERE (alias = ?) "
+													            + "AND (area_id = ?) "
+													            + "AND (revision = ?)";
+	
+	private static final String selectSlotDescriptionIds = "SELECT description_id "
+														 + "FROM area_slot "
+														 + "WHERE (area_id = ?) "
+														 + "AND (alias = ?) "
+														 + "AND (description_id IS NOT NULL)";
 
 	private static final String selectDescriptionIsReferenced = "SELECT COUNT(*) AS count " +
 			                                                    "FROM area_slot " +
@@ -389,12 +524,17 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	
 	private static final String selectAreaDirectUserSlotAliases = "SELECT alias "
 																+ "FROM area_slot "
+																+ "INNER JOIN (SELECT area_id AS slot_area_id, alias AS slot_alias, MAX(revision) AS last_revision FROM area_slot GROUP BY area_id, alias) lst "
+																+ "ON area_slot.area_id = slot_area_id AND area_slot.alias = slot_alias AND revision = last_revision "
 																+ "WHERE area_id = ? "
 																+ "AND user_defined = TRUE";
 	
 	private static final String selecSlotExternalLinkAndOutputText = "SELECT external_provider, output_text "
 														   		   + "FROM area_slot "
-														   		   + "WHERE id = ?";
+														   		   + "INNER JOIN (SELECT area_id AS slot_area_id, alias AS slot_alias, MAX(revision) AS last_revision FROM area_slot GROUP BY area_id, alias) lst "
+																   + "ON area_slot.area_id = slot_area_id AND area_slot.alias = slot_alias AND revision = last_revision "
+														   		   + "WHERE (alias = ?) "
+														   		   + "AND (area_id = ?)";
 	
 	private static final String selectSlotTextValue = "SELECT text_value "
 													+ "FROM area_slot "
@@ -402,7 +542,15 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	
 	private static final String selectSlotProperties = "SELECT reads_input, writes_output "
 													 + "FROM area_slot "
-													 + "WHERE id = ?";
+													 + "INNER JOIN (SELECT area_id AS slot_area_id, alias AS slot_alias, MAX(revision) AS last_revision FROM area_slot GROUP BY area_id, alias) lst "
+													 + "ON area_slot.area_id = slot_area_id AND area_slot.alias = slot_alias AND revision = last_revision "
+													 + "WHERE (alias = ?) "
+													 + "AND (area_id = ?)";
+	
+	private static final String selectSlotLastRevisionNumber = "SELECT MAX(revision) AS max_revision "
+															 + "FROM area_slot "
+															 + "WHERE (area_id = ?) AND (alias = ?) "
+															 + "GROUP BY area_id, alias";
 
 	private static final String insertNamespace = "INSERT INTO namespace (description, parent_id, id) " +
 	                                              "VALUES (?, ?, DEFAULT)";
@@ -428,11 +576,11 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	private static final String insertStartArea = "INSERT INTO start_area (area_id) " +
 	                                              "VALUES (?)";
 
-	private static final String insertAreaSlot = "INSERT INTO area_slot (alias, area_id, revision, localized_text_value_id, text_value, integer_value, real_value, access, hidden, boolean_value, enumeration_value_id, color, area_value, description_id, is_default, name, value_meaning, preferred, user_defined, special_value, external_provider, reads_input, writes_output, id) " +
-	                                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, DEFAULT)";
+	private static final String insertAreaSlot = "INSERT INTO area_slot (alias, area_id, revision, revision_description, localized_text_value_id, text_value, integer_value, real_value, access, hidden, boolean_value, enumeration_value_id, color, area_value, description_id, is_default, name, value_meaning, preferred, user_defined, special_value, external_provider, reads_input, writes_output, id) " +
+	                                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, DEFAULT)";
 	
-	private static final String insertAreaSlot2 = "INSERT INTO area_slot (alias, area_id, revision, created, localized_text_value_id, text_value, integer_value, real_value, access, hidden, boolean_value, enumeration_value_id, color, description_id, is_default, name, value_meaning, preferred, user_defined, special_value, area_value, external_provider, reads_input, writes_output) " +
-                                                  "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+	private static final String insertAreaSlot2 = "INSERT INTO area_slot (alias, area_id, revision, revision_description, created, localized_text_value_id, text_value, integer_value, real_value, access, hidden, boolean_value, enumeration_value_id, color, description_id, is_default, name, value_meaning, preferred, user_defined, special_value, area_value, external_provider, reads_input, writes_output) " +
+                                                  "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
 	private static final String insertLanguageProperties = "INSERT INTO language (description, alias, priority, id) " +
 													 	   "VALUES (?, ?, ?, DEFAULT)";
@@ -613,12 +761,14 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	private static final String updateSlotAccess = "UPDATE area_slot " +
 			                                       "SET access = ? " +
 			                                       "WHERE area_id = ? " +
-			                                       "AND alias = ?";
+			                                       "AND alias = ? " +
+			                                       "AND revision = ?";
 	
 	private static final String updateSlotHidden = "UPDATE area_slot " +
 			                                       "SET hidden = ? " +
 			                                       "WHERE area_id = ? " +
-			                                       "AND alias = ?";
+			                                       "AND alias = ? " +
+			                                       "AND revision = ?";
 	
 	private static final String updateAreaConstructorGroupReferenceOld = "UPDATE area " +
 	                                                                  "SET constructor_group_id = ? " +
@@ -657,7 +807,8 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	
 	private static final String updateSlotDescriptionId = "UPDATE area_slot " +
 			                                              "SET description_id = ? " +
-			                                              "WHERE id = ?";
+			                                              "WHERE (alias = ?) " +
+			                                              "AND (area_id = ?)";
 
 	private static final String updateDescription = "UPDATE description " +
 			                                        "SET description = ? " +
@@ -740,17 +891,19 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	
 	private static final String updateSlotIsDefault = "UPDATE area_slot " +
             										  "SET is_default = ? " +
-            										  "WHERE area_id = ? " +
-            										  "AND alias = ?";
+            										  "WHERE (area_id = ?) " +
+            										  "AND (alias = ?) " +
+            										  "AND (revision = ?)";
 	
 	private static final String updateSlotIsPreferred = "UPDATE area_slot " +
-            										  "SET preferred = ? " +
-            										  "WHERE area_id = ? " +
-            										  "AND alias = ?";
+            										    "SET preferred = ? " +
+            										    "WHERE (area_id = ?) " +
+            										    "AND (alias = ?) " +
+            										    "AND (revision = ?)";
 	
 	private static final String updateSlotIsPreferred2 = "UPDATE area_slot " +
-													  "SET preferred = ? " +
-													  "WHERE id = ?";
+													  	 "SET preferred = ? " +
+													  	 "WHERE id = ?";
 	
 	private static final String updateConstructorAlias = "UPDATE constructor_holder "
 														+ "SET alias = ? "
@@ -775,12 +928,24 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 													+ "WHERE id = ?";
 	
 	private static final String updateAreaSlotUnlock = "UPDATE area_slot "
-													 + "SET read_lock = NULL, write_lock = NULL "
-													 + "WHERE id = ?";
+													 + "SET input_lock = NULL, output_lock = NULL "
+													 + "WHERE (alias = ?) "
+													 + "AND (area_id = ?)";
 	
 	private static final String updateSlotProperties = "UPDATE area_slot "
 													 + "SET external_provider = ?, reads_input = ?, writes_output = ? "
 													 + "WHERE id = ?";
+	
+	private static final String updateSlotRevisionDescription = "UPDATE area_slot "
+															  + "SET revision_description = ? "
+															  + "WHERE (area_id = ?) "
+															  + "AND (alias = ?) "
+															  + "AND (revision = ?)";
+	
+	private static final String updateSlotAlias = "UPDATE area_slot "
+												+ "SET alias = ? "
+												+ "WHERE (alias = ?) "
+												+ "AND (area_id = ?)";
 
 	private static final String deleteNamespace = "DELETE FROM namespace " +
 	                                              "WHERE id = ?";
@@ -857,6 +1022,11 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	
 	private static final String deleteAreaSources = "DELETE FROM area_sources "
 			                                      + "WHERE area_id = ?";
+	
+	private static final String deleteSlotRevision = "DELETE FROM area_slot "
+												   + "WHERE (alias = ?) "
+												   + "AND (area_id = ?) "
+												   + "AND (revision = ?)";
 
 	/**
 	 * Model reference.
@@ -5936,7 +6106,7 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 		Long colorValue = (Long) set.getObject("color");
 		Long areaValue = (Long) set.getObject("area_value");
 		
-		if (revision  != null) {
+		if (revision != null) {
 			
 			slot.setRevision(revision);
 		}
@@ -6109,22 +6279,22 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	}
 	
 	/**
-	 * Load revised slot
+	 * Load revised slot.
 	 * @param revision
 	 * @param editedSlot
 	 */
 	@Override
 	public MiddleResult loadRevisedSlot(Revision revision, Slot editedSlot) {
 		
-		// Check connection
+		// Check connection.
 		MiddleResult result = checkConnection();
 		if (result.isNotOK()) {
 			return result;
 		}
 			
 		try {
-			// Select command
-			PreparedStatement statement = connection.prepareStatement("SELECT revision, alias, text_value, get_localized_text(localized_text_value_id, ?) AS localized_text_value, integer_value, real_value, access, hidden, area_slot.id, boolean_value, enumeration_value_id, color, description_id, is_default, name, value_meaning, preferred, user_defined, special_value, area_value " +
+			// Select command.
+			PreparedStatement statement = connection.prepareStatement("SELECT revision, alias, text_value, get_localized_text(localized_text_value_id, ?) AS localized_text_value, integer_value, real_value, access, hidden, area_slot.id, boolean_value, enumeration_value_id, color, description_id, is_default, name, value_meaning, preferred, user_defined, special_value, area_value, external_provider, reads_input, writes_output, output_text, exposed " +
 												                      "FROM area_slot " +
 												                      "WHERE alias = ? AND area_id = ? AND revision = ? " +
 												                      "ORDER BY alias ASC");
@@ -6136,7 +6306,7 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			ResultSet set = statement.executeQuery();
 			if (set.next()) {
 				
-				// Load slot helper
+				// Load slot helper.
 				loadSlotHelper(set, editedSlot);
 			}
 
@@ -6152,12 +6322,13 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	}
 	
 	/**
-	 * Get IDs of all localized texts bound with slot revisions
+	 * Get IDs of all localized texts bound to slot revisions.
 	 * @param slot
 	 * @param localizedTextsIds
 	 * @return
 	 */
-	private MiddleResult loadSlotTextValueIds(Slot slot, LinkedList<Long> localizedTextsIds) {
+	@Override
+	public MiddleResult loadSlotTextValueIds(Slot slot, HashSet<Long> localizedTextsIds) {
 		
 		localizedTextsIds.clear();
 		
@@ -6173,7 +6344,6 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			
 			// Select command depending on slot holder.
 			if (holder instanceof Area) {
-			
 				command = selectAreaSlotTextValueIds;
 			}
 			else {
@@ -6206,10 +6376,81 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	}
 	
 	/**
+	 * Get localized text ID from the last slot revision.
+	 * @param slotAlias 
+	 * @param areaId 
+	 * @param revisionNumber 
+	 * @param localizedTextsId
+	 * @return
+	 */
+	@Override
+	public MiddleResult loadSlotTextValueId(String slotAlias, long areaId, long revisionNumber, Obj<Long> localizedTextsId) {
+		
+		// Initialization.
+		localizedTextsId.ref = null;
+		
+		// Check input.
+		if (slotAlias == null || slotAlias.isEmpty() || areaId < 0L || localizedTextsId == null) {
+			return MiddleResult.BAD_PARAMETER;
+		}
+		
+		// Check connection.
+		MiddleResult result = checkConnection();
+		if (result.isNotOK()) {
+			return result;
+		}
+		
+		PreparedStatement statement = null;
+		ResultSet set = null;
+		try {
+			// Create statement.
+			statement = connection.prepareStatement(selectAreaSlotTextValueIdRevision);
+			statement.setLong(1, areaId);
+			statement.setString(2, slotAlias);
+			statement.setLong(3, revisionNumber);
+			
+			set = statement.executeQuery();
+			boolean found = set.next();
+			if (found) {
+				
+				Object textId = set.getObject("localized_text_value_id");
+				if (textId instanceof Long) {
+					localizedTextsId.ref = (Long) textId;
+				}
+			}
+
+			// Close statement.
+			statement.close();
+		}
+		catch (Exception e) {
+			result = MiddleResult.sqlToResult(e);
+		}
+		finally {
+            if (set != null) {
+                try {
+                    set.close();
+                }
+                catch (Exception e) {
+                }
+            }			
+			if (statement != null) {
+                try {
+                    statement.close();
+                }
+                catch (Exception e) {
+                }
+            }
+		}
+		
+		return result;
+	}
+	
+	/**
 	 * Remove slot.
 	 * @param slot
 	 * @return
 	 */
+	@Override
 	public MiddleResult removeSlot(Slot slot) {
 		
 		// Check connection.
@@ -6220,15 +6461,15 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 		
 		SlotHolder holder = slot.getHolder();
 		
-		LinkedList<Long> localizedTextsIds = new LinkedList<Long>();
+		HashSet<Long> localizedTextsIds = new HashSet<>();
 		
 		// Get localized texts IDs for all revisions of the slot.
 		result = loadSlotTextValueIds(slot, localizedTextsIds);
 		if (result.isOK()) {
 			
-			// Get slot description ID.
-			Obj<Long> descriptionId = new Obj<Long>();
-			result = loadSlotDescriptionId(slot.getId(), descriptionId);
+			// Get slot description IDs.
+			HashSet<Long> descriptionIds = new HashSet<>();
+			result = loadSlotDescriptionIds(slot, descriptionIds);
 			if (result.isOK()) {
 				
 				try {
@@ -6260,17 +6501,18 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 						}
 					}
 					
-					// Delete possible slot description.
-					if (descriptionId.ref != null) {
+					// Delete possible slot descriptions.
+					for (Long descriptionId : descriptionIds) {
 						
+                        // Check if the description is referenced in other slots.
 						Obj<Boolean> isReferenced = new Obj<Boolean>(false);
-						result = loadDescriptionIsReferenced(descriptionId.ref, isReferenced);
+						result = loadDescriptionIsReferenced(descriptionId, isReferenced);
 						
 						if (result.isOK()) {
 							
-							// If the description is not referenced in other slot, remove it.
+							// If the description is not referenced in other slots, remove it.
 							if (!isReferenced.ref) {
-								result = deleteDescription(descriptionId.ref);
+								result = deleteDescription(descriptionId);
 							}
 						}
 					}
@@ -6319,32 +6561,33 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 				statement.setString(1, slot.getAlias().trim());
 				statement.setLong(2, holder.getId());
 				statement.setLong(3, slot.getRevision());
+				statement.setString(4, slot.getRevisionDescription());
 				
 				// Reset values.
-				statement.setNull(4, Types.BIGINT);
-				statement.setString(5, null);
-				statement.setNull(6, Types.INTEGER);
-				statement.setNull(7, Types.REAL);
-				statement.setString(8, Character.toString(slot.getAccess()));
-				statement.setBoolean(9, slot.isHidden());
-				statement.setNull(10, Types.BOOLEAN);
-				statement.setNull(11, Types.BIGINT);
+				statement.setNull(5, Types.BIGINT);
+				statement.setString(6, null);
+				statement.setNull(7, Types.INTEGER);
+				statement.setNull(8, Types.REAL);
+				statement.setString(9, Character.toString(slot.getAccess()));
+				statement.setBoolean(10, slot.isHidden());
+				statement.setNull(11, Types.BOOLEAN);
 				statement.setNull(12, Types.BIGINT);
 				statement.setNull(13, Types.BIGINT);
-				statement.setObject(14, slot.getDescriptionId());
-				statement.setBoolean(15, slot.isDefault());
+				statement.setNull(14, Types.BIGINT);
+				statement.setObject(15, slot.getDescriptionId());
+				statement.setBoolean(16, slot.isDefault());
 				String name = slot.getName();
 				if (name.isEmpty()) {
 					name = null;
 				}
-				statement.setString(16, name);
-				statement.setString(17, slot.getValueMeaning());
-				statement.setBoolean(18, slot.isPreferred());
-				statement.setBoolean(19, slot.isUserDefined());
-				statement.setString(20, slot.getSpecialValueNull());
-				statement.setString(21, slot.getExternalProvider());
-				statement.setBoolean(22, slot.getReadsInput());
-				statement.setBoolean(23, slot.getWritesOutput());
+				statement.setString(17, name);
+				statement.setString(18, slot.getValueMeaning());
+				statement.setBoolean(19, slot.isPreferred());
+				statement.setBoolean(20, slot.isUserDefined());
+				statement.setString(21, slot.getSpecialValueNull());
+				statement.setString(22, slot.getExternalProvider());
+				statement.setBoolean(23, slot.getReadsInput());
+				statement.setBoolean(24, slot.getWritesOutput());
 				
 				SlotType type = slot.getType();
 				// On localized text.
@@ -6355,36 +6598,36 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 					result = insertText(slot.getTextValue(), textIdOutput);
 					if (result.isOK()) {
 						
-						statement.setLong(4, textIdOutput.ref);
+						statement.setLong(5, textIdOutput.ref);
 					}
 				}
 				// On text.
 				else if (type == SlotType.TEXT || type == SlotType.PATH) {
-					statement.setString(5, slot.getTextValue());
+					statement.setString(6, slot.getTextValue());
 				}
 				// On integer number.
 				else if (type == SlotType.INTEGER) {
-					statement.setLong(6, slot.getIntegerValue());
+					statement.setLong(7, slot.getIntegerValue());
 				}
 				// On real number.
 				else if (type == SlotType.REAL) {
-					statement.setDouble(7, slot.getRealValue());
+					statement.setDouble(8, slot.getRealValue());
 				}
 				// On boolean value.
 				else if (type == SlotType.BOOLEAN) {
-					statement.setBoolean(10, slot.getBooleanValue());
+					statement.setBoolean(11, slot.getBooleanValue());
 				}
 				// On enumeration.
 				else if (type == SlotType.ENUMERATION) {
-					statement.setLong(11, slot.getEnumerationValue().getId());
+					statement.setLong(12, slot.getEnumerationValue().getId());
 				}
 				// On color.
 				else if (type == SlotType.COLOR) {
-					statement.setLong(12, slot.getColorLong());
+					statement.setLong(13, slot.getColorLong());
 				}
 				// On area reference value.
 				else if (type == SlotType.AREA_REFERENCE) {
-					statement.setLong(13, slot.getAreaIdValue());
+					statement.setLong(14, slot.getAreaIdValue());
 				}
 				// On unknown value.
 				else if (slot.getValue() != null) {
@@ -6460,14 +6703,15 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	}
 	
 	/**
-	 * Inserts new revision of the slot
+	 * Inserts new revision of the slot.
 	 * @param slot
 	 * @param newSlot
+	 * @param revisionDescription
 	 * @return
 	 */
-	public MiddleResult insertSlotRevision(Slot slot, Slot newSlot) {
+	public MiddleResult insertSlotRevision(Slot slot, Slot newSlot, String revisionDescription) {
 		
-		// Get current revision number
+		// Get current revision number.
 		Obj<Long> revision = new Obj<Long>();
 		MiddleResult result = loadSlotHeadRevision(slot, revision);
 		if (result.isNotOK()) {
@@ -6477,10 +6721,11 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			return MiddleResult.ERROR_GETTING_REVISION;
 		}
 		
-		// Increment revision number
+		// Increment revision number and set revision description (truncated if the length exceeds 80 characters).
 		newSlot.setRevision(revision.ref + 1);
+		newSlot.setRevisionDescription(revisionDescription);
 		
-		// Insert new revision
+		// Insert new revision.
 		result = insertSlot(newSlot);
 		if (result.isNotOK()) {
 			return result;
@@ -6940,8 +7185,8 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			statement.setLong(1, holder.getId());
 			ResultSet set = statement.executeQuery();
 			
-			LinkedList<Long> localizedTextIds = new LinkedList<Long>();
-			HashSet<Long> descriptionIds = new HashSet<Long>();
+			HashSet<Long> localizedTextIds = new HashSet<>();
+			HashSet<Long> descriptionIds = new HashSet<>();
 			
 			// Load localized texts IDs and description IDs.
 			while (set.next()) {
@@ -7342,11 +7587,12 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	}
 
 	/**
-	 * Update slot holder.
+	 * Update slot holder for all revisions.
 	 * @param slot
 	 * @param holder
 	 * @return
 	 */
+	@Override
 	public MiddleResult updateSlotHolder(Slot slot,
 			SlotHolder holder) {
 		
@@ -7385,11 +7631,12 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	}
 
 	/**
-	 * Update slots holder.
+	 * Update slots holder for all revisions.
 	 * @param slots
 	 * @param holder
 	 * @return
 	 */
+	@Override
 	public MiddleResult updateSlotsHolder(List<Slot> slots,
 			SlotHolder holder) {
 		
@@ -8047,8 +8294,12 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	public MiddleResult loadAreaTreeData(Properties login, long areaId, Long parentAreaId,
 			AreaTreesData areaTreeData, SwingWorkerHelper<MiddleResult> swingWorkerHelper) {
 		
-		// TODO Auto-generated method stub
-		return null;	
+		LinkedList<Long> areaIds = new LinkedList<>();
+		areaIds.add(areaId);
+		
+		// Delegate the call.
+		MiddleResult result = loadAreaTreeData(login, areaIds, parentAreaId, areaTreeData, swingWorkerHelper);
+		return result;	
 	}
 	
 	/**
@@ -8770,6 +9021,7 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 							areaId,
 							(String) set.getObject("alias"),
 							set.getLong("revision"),
+							(String) set.getObject("revision_description"),
 							set.getTimestamp("created"),
 							(Long) set.getObject("localized_text_value_id"),
 							(String) set.getObject("text_value"),
@@ -9956,34 +10208,37 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 				statement = connection.prepareStatement(insertAreaSlot2);
 				statement.setString(1, slotData.alias.trim());
 				statement.setLong(2, areaTreeData.getNewAreaId(slotData.areaId));
+				
 				statement.setLong(3, slotData.revision != null ? slotData.revision : 0);
-				statement.setTimestamp(4, slotData.created != null ? slotData.created : new Timestamp(System.currentTimeMillis()));
+				statement.setString(4, slotData.revisionDescription);
+				
+				statement.setTimestamp(5, slotData.created != null ? slotData.created : new Timestamp(System.currentTimeMillis()));
 				
 				// Reset values.
-				statement.setNull(5, Types.BIGINT);
-				statement.setString(6, null);
-				statement.setNull(7, Types.BIGINT);
-				statement.setNull(8, Types.DOUBLE);
-				statement.setString(9, slotData.access);
-				statement.setBoolean(10, slotData.hidden);
-				statement.setNull(11, Types.BOOLEAN);
-				statement.setNull(12, Types.BIGINT);
+				statement.setNull(6, Types.BIGINT);
+				statement.setString(7, null);
+				statement.setNull(8, Types.BIGINT);
+				statement.setNull(9, Types.DOUBLE);
+				statement.setString(10, slotData.access);
+				statement.setBoolean(11, slotData.hidden);
+				statement.setNull(12, Types.BOOLEAN);
 				statement.setNull(13, Types.BIGINT);
+				statement.setNull(14, Types.BIGINT);
 				Long newDescription = areaTreeData.getNewDescriptionId(slotData.descriptionId);
-				statement.setObject(14, newDescription);
-				statement.setBoolean(15, slotData.isDefault);
+				statement.setObject(15, newDescription);
+				statement.setBoolean(16, slotData.isDefault);
 				String name = null;
 				if (slotData.name != null && !slotData.name.isEmpty()) {
 					name = slotData.name;
 				}
-				statement.setString(16, name);
-				statement.setString(17, slotData.valueMeaning);
-				statement.setBoolean(18, slotData.preferred);
-				statement.setBoolean(19, slotData.userDefined);
-				statement.setString(20, slotData.specialValue);
-				statement.setString(22, slotData.externalProvider);
-				statement.setObject(23, slotData.readsInput);
-				statement.setObject(24, slotData.writesOutput);
+				statement.setString(17, name);
+				statement.setString(18, slotData.valueMeaning);
+				statement.setBoolean(19, slotData.preferred);
+				statement.setBoolean(20, slotData.userDefined);
+				statement.setString(21, slotData.specialValue);
+				statement.setString(23, slotData.externalProvider);
+				statement.setObject(24, slotData.readsInput);
+				statement.setObject(25, slotData.writesOutput);
 				
 				Long newAreaValue = null;
 				if (slotData.areaValue != null) {
@@ -9994,27 +10249,27 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 						newAreaValue = slotData.areaValue;
 					}
 				}
-				statement.setObject(21, newAreaValue);
+				statement.setObject(22, newAreaValue);
 				
 				// On localized text.
 				if (newTextId.ref != null) {
-					statement.setLong(5, newTextId.ref);
+					statement.setLong(6, newTextId.ref);
 				}
 				// On text.
 				else if (slotData.textValue != null) {
-					statement.setString(6, slotData.textValue);
+					statement.setString(7, slotData.textValue);
 				}
 				// On integer number.
 				else if (slotData.integerValue != null) {
-					statement.setLong(7, slotData.integerValue);
+					statement.setLong(8, slotData.integerValue);
 				}
 				// On real number.
 				else if (slotData.realValue != null) {
-					statement.setDouble(8, slotData.realValue);
+					statement.setDouble(9, slotData.realValue);
 				}
 				// On boolean value.
 				else if (slotData.booleanValue != null) {
-					statement.setBoolean(11, slotData.booleanValue);
+					statement.setBoolean(12, slotData.booleanValue);
 				}
 				// On enumeration value.
 				else if (slotData.enumerationValueId != null) {
@@ -10023,12 +10278,12 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 						result = MiddleResult.IMPORTED_ENUMERATION_VALUE_NOT_FOUND;
 					}
 					else {
-						statement.setLong(12, enumerationValue.getNewId());
+						statement.setLong(13, enumerationValue.getNewId());
 					}
 				}
 				// On color value.
 				else if (slotData.color != null) {
-					statement.setLong(13, slotData.color);
+					statement.setLong(14, slotData.color);
 				}
 				// Execute statement.
 				if (result.isOK()) {
@@ -10813,6 +11068,69 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 		
 		return result;
 	}
+	
+	/**
+	 * Load last revision number of the input slot.
+	 */
+	@Override
+	public MiddleResult loadSlotLastRevisionNumber(long areaId, String slotAlias, Obj<Long> revisionNumber) {
+		
+		// Check input.
+		if (areaId < 0L || slotAlias == null || revisionNumber == null) {
+			return MiddleResult.BAD_PARAMETER;
+		}
+		
+		// Output initialization.
+		revisionNumber.ref = 0L;
+		
+		// Check connection.
+		MiddleResult result = checkConnection();
+		if (result.isNotOK()) {
+			return result;
+		}
+		
+		PreparedStatement statement = null;
+		ResultSet set = null;
+		
+		try {
+			// UPDATE statement.
+			statement = connection.prepareStatement(selectSlotLastRevisionNumber);
+			statement.setLong(1, areaId);
+			statement.setString(2, slotAlias);
+			
+			// Execute query and get maximum revision number found.
+			set = statement.executeQuery();
+			boolean isResult = set.next();
+			if (isResult) {
+				revisionNumber.ref = set.getLong("max_revision");
+			}
+			else {
+				result = MiddleResult.NO_RECORD;
+			}
+		}
+		catch (SQLException e) {
+			
+			result = MiddleResult.sqlToResult(e);
+		}
+		finally {
+			// Close objects.
+			try {
+				if (set != null) {
+					set.close();
+				}
+			}
+			catch (Exception e) {
+			}			
+			try {
+				if (statement != null) {
+					statement.close();
+				}
+			}
+			catch (Exception e) {
+			}
+		}
+		return result;
+	}
 
 	/**
 	 * Insert version.
@@ -11211,6 +11529,8 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 
 		return result;
 	}
+	
+	
 
 	/**
 	 * Update slot access.
@@ -11224,15 +11544,23 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			return result;
 		}
 		
+		// Get last revision number of the slot.
+		Obj<Long> revisionNumber = new Obj<>();
+		result = loadSlotLastRevisionNumber(areaId, alias, revisionNumber);
+		if (result.isNotOK()) {
+			return result;
+		}
+		
 		PreparedStatement statement = null;
 		
 		try {
 			// UPDATE statement.
 			statement = connection.prepareStatement(updateSlotAccess);
-
+			
 			statement.setString(1, access);
 			statement.setLong(2, areaId);
 			statement.setString(3, alias);
+			statement.setLong(4, revisionNumber.ref);
 			
 			statement.execute();
 		}
@@ -11266,6 +11594,13 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			return result;
 		}
 		
+		// Get last revision number of the slot.
+		Obj<Long> revisionNumber = new Obj<>();
+		result = loadSlotLastRevisionNumber(areaId, alias, revisionNumber);
+		if (result.isNotOK()) {
+			return result;
+		}
+		
 		PreparedStatement statement = null;
 		
 		try {
@@ -11275,6 +11610,7 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			statement.setBoolean(1, hidden);
 			statement.setLong(2, areaId);
 			statement.setString(3, alias);
+			statement.setLong(4, revisionNumber.ref); 
 			
 			statement.execute();
 		}
@@ -12291,9 +12627,11 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 
 	/**
 	 * Reset slot enumeration value.
+	 * @param slotId
+	 * @param forceLastRevision
 	 */
 	@Override
-	public MiddleResult updateSlotResetEnumerationValue(long slotId) {
+	public MiddleResult updateSlotResetEnumerationValue(long slotId, boolean forceLastRevision) {
 				
 		// Check connection.
 		MiddleResult result = checkConnection();
@@ -12301,13 +12639,23 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			return result;
 		}
 		
+		// Conditionally get last revision of the slot.
+		if (forceLastRevision) {
+			Obj<Long> lastRevisionSlotId = new Obj<>();
+			
+			result = loadSlotIdLastRevision(slotId, lastRevisionSlotId);
+			if (result.isNotOK()) {
+				return result;
+			}
+			
+			slotId = lastRevisionSlotId.ref;
+		}
+				
 		PreparedStatement statement = null;
 		
 		try {
-			
 			// UPDATE statement.
 			statement = connection.prepareStatement(updateSlotResetEnumerationValue);
-			
 			statement.setLong(1, slotId);
 
 			statement.execute();
@@ -15508,7 +15856,7 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			// Load slot description ID.
 			Obj<Long> descriptionId = new Obj<Long>();
 			
-			result = loadSlotDescriptionId(slotId, descriptionId);
+			result = loadSlotDescriptionId(slotId, true, descriptionId);
 			if (result.isNotOK()) {
 				return result;
 			}
@@ -15592,6 +15940,123 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	}
 	
 	/**
+	 * Get slot area ID and slot alias.
+	 * @param slotId
+	 * @param areaId
+	 * @param slotAlias
+	 * @return
+	 */
+	public MiddleResult loadSlotAreaIdAndAlias(long slotId, Obj<Long> areaId, Obj<String> slotAlias) {
+		
+		// Check connection.
+		MiddleResult result = checkConnection();
+		if (result.isNotOK()) {
+			return result;
+		}
+		
+		PreparedStatement statement = null;
+        ResultSet set = null;
+        
+        try {
+            // Select statement.
+
+            statement = connection.prepareStatement(selectSlotAreaIdAndAlias);
+            statement.setLong(1, slotId);
+            
+            // Execute statement.
+            set = statement.executeQuery();
+            if (set.next()) {
+            	
+                areaId.ref = set.getLong(1);
+                slotAlias.ref = set.getString(2);
+            }
+            else {
+                return MiddleResult.NO_RECORD;
+            }
+		}
+		catch (SQLException e) {
+			
+			result = MiddleResult.sqlToResult(e);
+		}
+		finally {
+			// Close objects.
+			try {
+				if (set != null) {
+					set.close();
+				}
+				if (statement != null) {
+					statement.close();
+				}
+			}
+			catch (Exception e) {
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Load slot ID of last slot revision.
+	 * @param slotId
+	 * @param lastRevisionSlotId
+	 */
+	@Override
+	public MiddleResult loadSlotIdLastRevision(long slotId, Obj<Long> lastRevisionSlotId) {
+		
+		// Initialization.
+		lastRevisionSlotId.ref = slotId;
+		
+		// Load slot area ID and slot alias from input slot ID.
+		Obj<Long> areaId = new Obj<>();
+		Obj<String> slotAlias = new Obj<>();
+		
+		MiddleResult result = loadSlotAreaIdAndAlias(slotId, areaId, slotAlias);
+		if (result.isNotOK()) {
+			return result;
+		}
+		
+		PreparedStatement statement = null;
+		ResultSet set = null;
+		
+		try {
+			// Select statement.
+			statement = connection.prepareStatement(selectSlotIdLastRevision);
+			
+			statement.setLong(1, areaId.ref);
+			statement.setString(2, slotAlias.ref);
+			
+			set = statement.executeQuery();
+			
+			boolean success = set.next();
+			if (success) {
+				lastRevisionSlotId.ref = set.getLong("id");
+			}
+			else {
+				result = MiddleResult.NO_RECORD;
+			}
+		}
+		catch (SQLException e) {
+			
+			result = MiddleResult.sqlToResult(e);
+		}
+		finally {
+			// Close objects.
+			try {
+				if (set != null) {
+					set.close();
+				}
+				if (statement != null) {
+					statement.close();
+				}
+			}
+			catch (Exception e) {
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
 	 * Update slot description.
 	 */
 	@Override
@@ -15608,9 +16073,19 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			newDescription = null;
 		}
 		
+		// Get ID of last slot revision.
+		Obj<Long> lastRevisionSlotId = new Obj<>();
+		result = loadSlotIdLastRevision(slotId, lastRevisionSlotId);
+		
+		if (result.isNotOK()) {
+			return result;
+		}
+		
+		slotId = lastRevisionSlotId.ref;
+		
 		// Get old area slot description ID.
 		Obj<Long> oldDescriptionId = new Obj<Long>();
-		result = loadSlotDescriptionId(slotId, oldDescriptionId);
+		result = loadSlotDescriptionId(slotId, false, oldDescriptionId);
 		
 		if (result.isNotOK()) {
 			return result;
@@ -15680,11 +16155,12 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	/**
 	 * Load slot description ID.
 	 * @param slotId
+	 * @param forceLastRevision
 	 * @param descriptionId
 	 * @return
 	 */
 	@Override
-	public MiddleResult loadSlotDescriptionId(long slotId,
+	public MiddleResult loadSlotDescriptionId(long slotId, boolean forceLastRevision,
 			Obj<Long> descriptionId) {
 		
 		descriptionId.ref = null;
@@ -15693,6 +16169,18 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 		MiddleResult result = checkConnection();
 		if (result.isNotOK()) {
 			return result;
+		}
+		
+		// Conditionally load last revision of the slot.
+		if (forceLastRevision) {
+			Obj<Long> lastRevisionSlotId = new Obj<>();
+			
+			result = loadSlotIdLastRevision(slotId, lastRevisionSlotId);
+			if (result.isNotOK()) {
+				return result;
+			}
+			
+			slotId = lastRevisionSlotId.ref;
 		}
 		
 		PreparedStatement statement = null;
@@ -15732,6 +16220,139 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	}
 	
 	/**
+	 * Load slot description ID.
+	 * @param slotAlias
+	 * @param areaId
+	 * @param revisionNumber
+	 * @param descriptionId
+	 * @return
+	 */
+	@Override
+	public MiddleResult loadSlotDescriptionId(String slotAlias, long areaId, long revisionNumber,
+			Obj<Long> descriptionId) {
+		
+		// Check input.
+		if (slotAlias == null || slotAlias.isEmpty() || revisionNumber < 0L || descriptionId == null) {
+			return MiddleResult.BAD_PARAMETER;
+		}
+		
+		// Initialization.
+		descriptionId.ref = null;
+		
+		// Check connection.
+		MiddleResult result = checkConnection();
+		if (result.isNotOK()) {
+			return result;
+		}
+		
+		PreparedStatement statement = null;
+		ResultSet set = null;
+		
+		try {
+			// SELECT statement.
+			statement = connection.prepareStatement(selectSlotRevisionDescriptionId);
+			statement.setString(1, slotAlias);
+			statement.setLong(2, areaId);
+			statement.setLong(3, revisionNumber);
+			
+			// Execute statement.
+			set = statement.executeQuery();
+			if (set.next()) {
+				
+				descriptionId.ref = (Long) set.getObject("description_id");
+			}
+		}
+		catch (SQLException e) {
+			
+			result = MiddleResult.sqlToResult(e);
+		}
+		finally {
+			// Close objects.
+			try {
+				if (set != null) {
+					set.close();
+				}
+				if (statement != null) {
+					statement.close();
+				}
+			}
+			catch (Exception e) {
+			}
+		}
+
+		return result;
+	}
+	
+	/**
+	 * Load description IDs attached to all revisions of the slot.
+	 * @param slot
+	 * @param descriptionIds
+	 * @return
+	 */
+	@Override
+	public MiddleResult loadSlotDescriptionIds(Slot slot, HashSet<Long> descriptionIds) {
+		
+		// Initialize description list.
+		descriptionIds.clear();
+		
+		// Check connection.
+		MiddleResult result = checkConnection();
+		if (result.isNotOK()) {
+			return result;
+		}
+		
+		// Get holder area ID and slot alias.
+		SlotHolder area = slot.getHolder();
+		String alias = slot.getAlias();
+		
+		if (area == null || alias == null) {
+			return MiddleResult.INVALID_SLOT_DATA;
+		}
+		
+		long areaId = area.getId();
+		
+		PreparedStatement statement = null;
+		ResultSet set = null;
+		
+		try {
+			// SELECT statement.
+			statement = connection.prepareStatement(selectSlotDescriptionIds);
+
+			statement.setLong(1, areaId);
+			statement.setString(2, alias);
+			
+			// Execute statement.
+			set = statement.executeQuery();
+			while (set.next()) {
+				
+				Long descriptionId = (Long) set.getObject("description_id");
+				if (descriptionId != null) {
+					
+					descriptionIds.add(descriptionId);
+				}
+			}	
+		}
+		catch (SQLException e) {
+			result = MiddleResult.sqlToResult(e);
+		}
+		finally {
+			// Close objects.
+			try {
+				if (set != null) {
+					set.close();
+				}
+				if (statement != null) {
+					statement.close();
+				}
+			}
+			catch (Exception e) {
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
 	 * Update slot description ID. Can be null.
 	 * @param slotId
 	 * @param descriptionId
@@ -15746,13 +16367,23 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			return result;
 		}
 		
+		// Load slot alias and holder area ID.
+		Obj<Long> areaId = new Obj<>();
+		Obj<String> slotAlias = new Obj<>();
+		
+		result = loadSlotAreaIdAndAlias(slotId, areaId, slotAlias);
+		if (result.isNotOK()) {
+			return result;
+		}
+		
 		PreparedStatement statement = null;
 		
 		try {
 			// UPDATE statement.
 			statement = connection.prepareStatement(updateSlotDescriptionId);
 			statement.setObject(1, descriptionId);
-			statement.setLong(2, slotId);
+			statement.setString(2, slotAlias.ref);
+			statement.setLong(3, areaId.ref);
 			
 			// Execute statement.
 			statement.executeUpdate();
@@ -16001,6 +16632,18 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 		MiddleResult result = checkConnection();
 		if (result.isNotOK()) {
 			return result;
+		}
+		
+		// Load slot ID of the last revision.
+		Obj<Long> lastRevisionSlotId = new Obj<>();
+		
+		result = loadSlotIdLastRevision(slotId, lastRevisionSlotId);
+		if (result.isNotOK()) {
+			return result;
+		}
+		
+		if (lastRevisionSlotId.ref != null) {
+			slotId = lastRevisionSlotId.ref;
 		}
 		
 		PreparedStatement statement = null;
@@ -17843,6 +18486,13 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			return result;
 		}
 		
+		// Get last revision number of the slot.
+		Obj<Long> revisionNumber = new Obj<>();
+		result = loadSlotLastRevisionNumber(areaId, alias, revisionNumber);
+		if (result.isNotOK()) {
+			return result;
+		}
+		
 		PreparedStatement statement = null;
 		
 		try {
@@ -17852,6 +18502,7 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			statement.setBoolean(1, isDefault);
 			statement.setLong(2, areaId);
 			statement.setString(3, alias);
+			statement.setLong(4, revisionNumber.ref);
 			
 			statement.execute();
 		}
@@ -17886,6 +18537,13 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			return result;
 		}
 		
+		// Get last revision number of the slot.
+		Obj<Long> revisionNumber = new Obj<>();
+		result = loadSlotLastRevisionNumber(areaId, alias, revisionNumber);
+		if (result.isNotOK()) {
+			return result;
+		}
+		
 		PreparedStatement statement = null;
 		
 		try {
@@ -17895,6 +18553,7 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			statement.setBoolean(1, isPreferred);
 			statement.setLong(2, areaId);
 			statement.setString(3, alias);
+			statement.setLong(4, revisionNumber.ref);
 			
 			statement.execute();
 		}
@@ -18090,7 +18749,7 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 		if (result.isOK()) {
 			
 			// Delegate method.
-			result = updateSlotIsPreferred(slotId, isPreferred);
+			result = updateSlotIsPreferred(slotId, true, isPreferred);
 			
 			MiddleResult logoutResult = logout(result);
 			if (result.isOK()) {
@@ -18103,9 +18762,12 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	
 	/**
 	 * Set slot preferred flag.
+	 * @param slotId
+	 * @param forceLastRevision
+	 * @param isPreferred
 	 */
 	@Override
-	public MiddleResult updateSlotIsPreferred(long slotId, boolean isPreferred) {
+	public MiddleResult updateSlotIsPreferred(long slotId, boolean forceLastRevision, boolean isPreferred) {
 
 		// Check connection.
 		MiddleResult result = checkConnection();
@@ -18113,10 +18775,21 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			return result;
 		}
 		
+		// Conditionally get last revision of the slot.
+		if (forceLastRevision) {
+			Obj<Long> lastRevisionSlotId = new Obj<>();
+			
+			result = loadSlotIdLastRevision(slotId, lastRevisionSlotId);
+			if (result.isNotOK()) {
+				return result;
+			}
+			
+			slotId = lastRevisionSlotId.ref;
+		}
+		
 		PreparedStatement statement = null;
 		
 		try {
-			
 			// UPDATE statement.
 			statement = connection.prepareStatement(updateSlotIsPreferred2);
 			statement.setBoolean(1, isPreferred);
@@ -19026,7 +19699,7 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 		try {
 			
 			// SELECT statement.
-			statement = connection.prepareStatement("SELECT revision, created FROM area_slot WHERE alias = ? AND area_id = ? ORDER BY revision ASC");
+			statement = connection.prepareStatement("SELECT revision, revision_description, created, id FROM area_slot WHERE alias = ? AND area_id = ? ORDER BY revision ASC");
 			statement.setString(1, slot.getAlias());
 			statement.setLong(2, slot.getHolder().getId());
 			
@@ -19035,7 +19708,9 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 				
 				Revision revision = new Revision();
 				revision.number = set.getLong("revision");
+				revision.description = set.getString("revision_description");
 				revision.created = set.getTimestamp("created");
+				revision.slotId = set.getLong("id");
 				revisions.add(revision);
 			}
 		}
@@ -19061,26 +19736,65 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	}
 	
 	/**
-	 * Remove slot revisions
+	 * Remove slot revision.
 	 */
 	@Override
 	public MiddleResult removeSlotRevision(Slot slot, Revision revision) {
+		
+		// Check input.
+		if (slot == null || revision == null) {
+			return MiddleResult.BAD_PARAMETER;
+		}
 		
 		// Check connection.
 		MiddleResult result = checkConnection();
 		if (result.isNotOK()) {
 			return result;
 		}
-		PreparedStatement statement = null;
-		ResultSet set = null;
 		
-		try {
+		// Get revision number.
+		String slotAlias = slot.getAlias();
+		long areaId = slot.getHolder().getId();
+		long revisionNumber = revision.number;
+		
+		// Get localized texts ID for given revision of the slot.
+		Obj<Long> localizedTextsId = new Obj<>();
+		
+		result = loadSlotTextValueId(slotAlias, areaId, revisionNumber, localizedTextsId);
+		if (result.isNotOK()) {
+            return result;
+        }
+		
+		// Get description ID.
+		Obj<Long> descriptionId = new Obj<>();
+		
+		result = loadSlotDescriptionId(slotAlias, areaId, revisionNumber, descriptionId);
+		if (result.isNotOK()) {
+            return result;
+        }
+		
+		// Check if the description is orphan.
+		if (descriptionId.ref != null) {
+			Obj<Boolean> isOrphan = new Obj<>();
 			
+			result = loadDescriptionIsOrphan(descriptionId.ref, isOrphan);
+			if (result.isNotOK()) {
+	            return result;
+	        }
+			
+			// If the description is not orphan, it cannot be removed.
+			if (!isOrphan.ref) {
+                descriptionId.ref = null;
+            }
+		}
+		
+		PreparedStatement statement = null;		
+		try {
 			// SELECT statement.
-			statement = connection.prepareStatement("DELETE FROM area_slot WHERE alias = ? AND area_id = ? AND revision = ?");
-			statement.setString(1, slot.getAlias());
-			statement.setLong(2, slot.getHolder().getId());
-			statement.setLong(3, revision.number);
+			statement = connection.prepareStatement(deleteSlotRevision);
+			statement.setString(1, slotAlias);
+			statement.setLong(2, areaId);
+			statement.setLong(3, revisionNumber);
 			
 			statement.execute();
 		}
@@ -19091,9 +19805,6 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 		finally {
 			// Close objects.
 			try {
-				if (set != null) {
-					set.close();
-				}
 				if (statement != null) {
 					statement.close();
 				}
@@ -19102,9 +19813,27 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			}
 		}
 		
+		// Remove localized text.
+		if (localizedTextsId.ref != null) {
+			
+			result = removeText(localizedTextsId.ref);
+			if (result.isNotOK()) {
+	            return result;
+	        }
+		}
+		
+		// Remove slot description.
+		if (descriptionId.ref != null) {
+			
+			result = removeText(descriptionId.ref);
+			if (result.isNotOK()) {
+	            return result;
+	        }
+		}
+		
 		return result;
 	}
-	
+
 	/**
 	 * Load external slots found in an area.
 	 * @param area - input area
@@ -19166,9 +19895,15 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	
 	/**
 	 * Load slot's external provider link and output text.
+	 * @param externalSlot
 	 */
 	@Override
 	public MiddleResult loadSlotExternalLinkAndOutputText(Slot externalSlot) {
+		
+		// Check input.
+		if (externalSlot == null) {
+			return MiddleResult.BAD_PARAMETER;
+		}
 		
 		// Check connection.
 		MiddleResult result = checkConnection();
@@ -19176,16 +19911,27 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			return result;
 		}
 		
+		// Get slot alias and slot area ID.
+		String slotAlias = externalSlot.getAlias();
+		if (slotAlias == null || slotAlias.isEmpty()) {
+			return MiddleResult.INVALID_SLOT_DATA;
+		}
+		
+		SlotHolder holder = externalSlot.getHolder();
+		if (holder == null) {
+            return MiddleResult.INVALID_SLOT_DATA;
+        }
+		long areaId = holder.getId();
+		
 		PreparedStatement statement = null;
 		ResultSet set = null;
 		
 		try {
-			
 			// SELECT statement.
 			statement = connection.prepareStatement(selecSlotExternalLinkAndOutputText);
 			
-			long slotId = externalSlot.getId();
-			statement.setLong(1, slotId);
+			statement.setString(1, slotAlias);
+			statement.setLong(2, areaId);
 			
 			set = statement.executeQuery();
 			
@@ -19208,6 +19954,10 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 				if (set != null) {
 					set.close();
 				}
+			}
+			catch (Exception e) {
+			}
+			try {
 				if (statement != null) {
 					statement.close();
 				}
@@ -19232,13 +19982,24 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			return result;
 		}
 		
+		// Load slot alias and holder area ID.
+		Obj<Long> areaId = new Obj<>();
+		Obj<String> slotAlias = new Obj<>();
+		
+		result = loadSlotAreaIdAndAlias(slotId, areaId, slotAlias);
+		if (result.isNotOK()) {
+			return result;
+		}
+		
 		PreparedStatement statement = null;
 		
 		try {
 			// SELECT statement.
 			statement = connection.prepareStatement(updateAreaSlotUnlock);
 			
-			statement.setLong(1, slotId);
+			statement.setString(1, slotAlias.ref);
+			statement.setLong(2, areaId.ref);
+			
 			statement.executeUpdate();
 		}
 		catch (SQLException e) {
@@ -19261,16 +20022,29 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	/**
 	 * Load slot text value.
 	 * @param slotId
+	 * @param forceLastRevision
 	 * @param textValue
 	 * @return
 	 */
 	@Override
-	public MiddleResult loadSlotTextValue(long slotId, Obj<String> textValue) {
+	public MiddleResult loadSlotTextValue(long slotId, boolean forceLastRevision, Obj<String> textValue) {
 		
 		// Check connection.
 		MiddleResult result = checkConnection();
 		if (result.isNotOK()) {
 			return result;
+		}
+		
+		// Conditionally get last revision of the slot.
+		if (forceLastRevision) {
+			Obj<Long> lastRevisionSlotId = new Obj<>();
+			
+			result = loadSlotIdLastRevision(slotId, lastRevisionSlotId);
+			if (result.isNotOK()) {
+				return result;
+			}
+			
+			slotId = lastRevisionSlotId.ref;
 		}
 		
 		PreparedStatement statement = null;
@@ -19314,25 +20088,39 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	@Override
 	public MiddleResult loadSlotProperties(Slot slot) {
 		
+		// Check input.
+		if (slot == null) {
+			return MiddleResult.BAD_PARAMETER;
+		}
+		
 		// Check connection.
 		MiddleResult result = checkConnection();
 		if (result.isNotOK()) {
 			return result;
 		}
 		
+		SlotHolder holder = slot.getHolder();
+		if (!(holder instanceof Area)) {
+            return MiddleResult.INVALID_SLOT_DATA;
+        }
+		long areaId = holder.getId();
+		
+		String slotAlias = slot.getAlias();
+		if (slotAlias == null || slotAlias.isEmpty()) {
+			return MiddleResult.INVALID_SLOT_DATA;
+		}
+		
 		PreparedStatement statement = null;
 		ResultSet set = null;
 		
 		try {
-			
 			// SELECT statement.
 			statement = connection.prepareStatement(selectSlotProperties);
 			
-			long slotId = slot.getId();
+			statement.setString(1, slotAlias);
+			statement.setLong(2, areaId);
 			
-			statement.setLong(1, slotId);
 			set = statement.executeQuery();
-			
 			if (set.next()) {
 				
 				Boolean readsInput = (Boolean) set.getObject("reads_input");
@@ -19350,6 +20138,10 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 				if (set != null) {
 					set.close();
 				}
+			}
+			catch (Exception e) {
+			}
+			try {
 				if (statement != null) {
 					statement.close();
 				}
@@ -19373,11 +20165,21 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			return result;
 		}
 		
+		long slotId = slot.getId();
+		
+		// Get last revision of the slot.
+		Obj<Long> lastRevisionSlotId = new Obj<>();
+		
+		result = loadSlotIdLastRevision(slotId, lastRevisionSlotId);
+		if (result.isNotOK()) {
+			return result;
+		}
+		
+		slotId = lastRevisionSlotId.ref;
+		
 		PreparedStatement statement = null;
-		ResultSet set = null;
 		
 		try {
-			
 			// SELECT statement.
 			statement = connection.prepareStatement(updateSlotProperties);
 			
@@ -19394,7 +20196,6 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			statement.setBoolean(3, writesOutput);
 			
 			// Set slot ID.
-			long slotId = slot.getId();
 			statement.setLong(4, slotId);
 			
 			int count = statement.executeUpdate();
@@ -19409,9 +20210,6 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 		finally {
 			// Close objects.
 			try {
-				if (set != null) {
-					set.close();
-				}
 				if (statement != null) {
 					statement.close();
 				}
@@ -19783,6 +20581,151 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			}
 		}
 		
+		return result;
+	}
+
+	/**
+	 * Update slot revision description.
+	 */
+	@Override
+	public MiddleResult updateSlotRevisionDescription(long areaId, String slotAlias, long revisionNumber, String description) {
+
+		// Check connection.
+		MiddleResult result = checkConnection();
+		if (result.isNotOK()) {
+			return result;
+		}
+		
+		// Try to execute statement.
+		PreparedStatement statement = null;
+		try {
+			statement = connection.prepareStatement(updateSlotRevisionDescription);
+			
+			statement.setString(1, description);
+			statement.setLong(2, areaId);
+			statement.setString(3, slotAlias);
+			statement.setLong(4, revisionNumber);
+			
+			int count = statement.executeUpdate();
+			if (count <= 0) {
+				result = MiddleResult.ELEMENT_DOESNT_EXIST;
+			}
+		}
+		catch (Exception e) {
+			result = MiddleResult.sqlToResult(e);
+		}
+		finally {
+			
+			// Close statement.
+			try {
+				if (statement != null) {
+					statement.close();
+				}
+			}
+			catch (SQLException e) {
+				if (result.isOK()) {
+					result = MiddleResult.sqlToResult(e);
+				}
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+     * Update slot alias for all revisions.
+     * @param oldAlias
+     * @param areaId
+     * @param slotAlias
+     */
+	@Override
+	public MiddleResult updateSlotAlias(String oldAlias, long areaId, String newAlias) {
+		
+		// Check connection.
+		MiddleResult result = checkConnection();
+		if (result.isNotOK()) {
+			return result;
+		}
+		
+		// Try to execute statement.
+		PreparedStatement statement = null;
+		try {
+			statement = connection.prepareStatement(updateSlotAlias);
+			
+			statement.setString(1, newAlias);
+			statement.setString(2, oldAlias);
+			statement.setLong(3, areaId);
+			
+			statement.executeUpdate();
+		}
+		catch (Exception e) {
+			result = MiddleResult.sqlToResult(e);
+		}
+		finally {
+			
+			// Close statement.
+			try {
+				if (statement != null) {
+					statement.close();
+				}
+			}
+			catch (SQLException e) {
+				if (result.isOK()) {
+					result = MiddleResult.sqlToResult(e);
+				}
+			}
+		}
+				
+		return result;
+	}
+
+	/**
+	 * Check if slot exists.
+	 */
+	@Override
+	public MiddleResult loadSlotExists(Long slotId, Obj<Boolean> slotExists) {
+		
+		slotExists.ref = false;
+		
+		// Check connection.
+		MiddleResult result = checkConnection();
+		if (result.isNotOK()) {
+			return result;
+		}
+		
+		// Try to execute statement.
+		PreparedStatement statement = null;
+		ResultSet set = null;
+		try {
+			statement = connection.prepareStatement(selectSlotId);
+			statement.setLong(1, slotId);
+			
+			set = statement.executeQuery();
+			slotExists.ref = set.next();
+		}
+		catch (Exception e) {
+			result = MiddleResult.sqlToResult(e);
+		}
+		finally {
+			
+			// Close result set.
+			try {
+				if (set != null) {
+					set.close();
+				}
+			}
+			catch (SQLException e) {
+			}
+			// Close statement.
+			try {
+				if (statement != null) {
+					statement.close();
+				}
+			}
+			catch (SQLException e) {
+			}
+		}
+				
 		return result;
 	}
 }

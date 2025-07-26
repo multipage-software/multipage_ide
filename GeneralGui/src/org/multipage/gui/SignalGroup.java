@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 21-07-2017
+ * Created on : 2017-07-21
  *
  */
 package org.multipage.gui;
@@ -14,10 +14,11 @@ import java.util.LinkedList;
  *
  */
 public enum SignalGroup implements ApplicationEvent {
-	
+	;
 	/**
 	 * Update groups.
 	 */
+	/*
 	UPDATE_AREAS(
 			UpdateSignal.updateAreasModel,
 			UpdateSignal._updateAreasDiagram,
@@ -46,18 +47,18 @@ public enum SignalGroup implements ApplicationEvent {
 	UPDATE_MONITOR(
 			UpdateSignal.updateMonitorPanel
 			),
-	
+	*/
 	/**
 	 * Group that contains all update signals.
 	 */
-	UPDATE_ALL(
+	/*UPDATE_ALL(
 			UPDATE_AREAS,
 			UPDATE_PROPERTIES,
 			UPDATE_SLOT_VALUE,
 			UPDATE_DIAGRAM,
 			UPDATE_TREE,
 			UPDATE_MONITOR			
-			);
+			);*/
 	
 	/**
 	 * Signals.

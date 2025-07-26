@@ -1,22 +1,26 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.translator;
 
-import javax.swing.*;
+import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 
 import org.maclan.MiddleResult;
 import org.maclan.MiddleUtility;
-import org.multipage.basic.*;
-import org.multipage.gui.*;
+import org.multipage.basic.ProgramBasic;
+import org.multipage.gui.GeneralGui;
+import org.multipage.gui.StateSerializer;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * @author
+ * Main entry point for the Translator application.
+ * @author vakol
  *
  */
 public class TranslatorMain {
@@ -48,87 +52,95 @@ public class TranslatorMain {
         try {
 			UIManager.setLookAndFeel(
 			    UIManager.getSystemLookAndFeelClassName());
-		} catch (Exception e) {
 		}
-        
-		// Get local identifiers.
-		String language;
-		String country;
-		
-		if (args.length == 0) {
+        catch (Exception e) {
+		}
+        try {
 			
-			language = defaultLanguage;
-			country = defaultCountry;
-		}
-		else if (args.length == 2) {
+			// Get local identifiers.
+			String language;
+			String country;
 			
-			language = args[0];
-			country = args[1];
-		}
-		else {
-			// If are wrong parameters.
-			JOptionPane.showMessageDialog(
-					null,
-					"Error application arguments.\nUse:\n\tjava ProgramDictionary language COUNTRY",
-					"Swing GUI Builder",
-					JOptionPane.ERROR_MESSAGE);
-			System.exit(1);
-			return;
-		}
-		
-		// Set path to middle objects.
-		MiddleUtility.setPathToMiddle("org.maclan.postgresql");
-		
-		// Create serializer.
-		serializer = new StateSerializer(serilizedDataLocation);
-		
-		// Initialize general GUI module.
-		if (!GeneralGui.initialize(language, country, serializer)) {
-			System.exit(2);
-			return;
-		}
-		// Initialize program basic module.
-		if (!ProgramBasic.initialize(language, country, serializer, null)) {
-			System.exit(3);
-			return;
-		}
-		// Initialize this module.
-		if (!ProgramDictionary.initialize(language, country, serializer)) {
-			System.exit(4);
-			return;
-		}
-		
-		// Create and show user interface.
-		SwingUtilities.invokeLater(new Runnable() {
+			if (args.length == 0) {
+				
+				language = defaultLanguage;
+				country = defaultCountry;
+			}
+			else if (args.length == 2) {
+				
+				language = args[0];
+				country = args[1];
+			}
+			else {
+				// If are wrong parameters.
+				JOptionPane.showMessageDialog(
+						null,
+						"Error application arguments.\nUse:\n\tjava ProgramDictionary language COUNTRY",
+						"Swing GUI Builder",
+						JOptionPane.ERROR_MESSAGE);
+				System.exit(1);
+				return;
+			}
 			
-			@Override
-			public void run() {
+			// Set path to middle objects.
+			MiddleUtility.setPathToMiddle("org.maclan.postgresql");
+			
+			// Create serializer.
+			serializer = new StateSerializer(serilizedDataLocation);
+			
+			// Initialize general GUI module.
+			if (!GeneralGui.initialize(language, country, serializer)) {
+				System.exit(2);
+				return;
+			}
+			// Initialize program basic module.
+			if (!ProgramBasic.initialize(language, country, serializer, null)) {
+				System.exit(3);
+				return;
+			}
+			// Initialize this module.
+			if (!ProgramDictionary.initialize(language, country, serializer)) {
+				System.exit(4);
+				return;
+			}
+			
+			// Create and show user interface.
+			Safe.invokeLater(() -> {
+				
 				// User interface.
 				userInterface();
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * User interface.
 	 */
 	protected static void userInterface() {
-
-		// Load serializer data.
-		serializer.startLoadingSerializedStates();
-		
-		// Database login.
-		MiddleResult loginResult = ProgramBasic.loginDialog(null, Resources.getString("org.multipage.translator.textLoginDialog"));
-		if (loginResult.isOK()) {
+		try {
 			
-			// Show dictionary dialog.
-			TranslatorDialog.showDialog(null);
+			// Load serializer data.
+			serializer.startLoadingSerializedStates();
+			
+			// Database login.
+			MiddleResult loginResult = ProgramBasic.loginDialog(null, Resources.getString("org.multipage.translator.textLoginDialog"));
+			if (loginResult.isOK()) {
+				
+				// Show dictionary dialog.
+				TranslatorDialog.showDialog(null);
+			}
+			
+			// Save serializer data.
+			serializer.startSavingSerializedStates();
+			
+			// Exit application.
+			System.exit(0);
 		}
-		
-		// Save serializer data.
-		serializer.startSavingSerializedStates();
-		
-		// Exit application.
-		System.exit(0);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

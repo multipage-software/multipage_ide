@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -11,8 +11,11 @@ import java.io.*;
 import java.util.*;
 import java.util.function.Consumer;
 
+import org.multipage.util.Safe;
+
 /**
- * @author
+ * CSS property objects.
+ * @author vakol
  *
  */
 public class CssProperty {
@@ -52,7 +55,7 @@ public class CssProperty {
 			}
 		}
 		catch (Exception e) {
-			
+			Safe.exception(e);
 		}
 		finally {
 			try {
@@ -61,6 +64,7 @@ public class CssProperty {
 				}
 			}
 			catch (IOException e) {
+				Safe.exception(e);
 			}
 		}
 	}
@@ -72,45 +76,51 @@ public class CssProperty {
 	 */
 	private static CssProperty parseProperty(String line) {
 		
-		String [] parts = line.split(",");
-		int length = parts.length;
-		
-		// Get last flags.
-		boolean flagsFound = false;
-		String flags = null;
-		
-		if (length > 1) {
-			flags = parts[length - 1].trim();
+		try {
+			String [] parts = line.split(",");
+			int length = parts.length;
 			
-			// Check flags.
-			if (checkFlags(flags)) {
-				flagsFound = true;
-			}
-			else {
-				flags = "n";
-			}
-		}
-		
-		// Get property names.
-		int lastPropertyIndex = length - (flagsFound ? 2 : 1);
-		LinkedList<String> propertyNames = new LinkedList<String>();
-		
-		for (int index = 0; index <= lastPropertyIndex; index++) {
+			// Get last flags.
+			boolean flagsFound = false;
+			String flags = null;
 			
-			String propertyName = parts[index].trim();
-			if (!propertyName.isEmpty()) {
+			if (length > 1) {
+				flags = parts[length - 1].trim();
 				
-				propertyNames.add(propertyName);
+				// Check flags.
+				if (checkFlags(flags)) {
+					flagsFound = true;
+				}
+				else {
+					flags = "n";
+				}
 			}
+			
+			// Get property names.
+			int lastPropertyIndex = length - (flagsFound ? 2 : 1);
+			LinkedList<String> propertyNames = new LinkedList<String>();
+			
+			for (int index = 0; index <= lastPropertyIndex; index++) {
+				
+				String propertyName = parts[index].trim();
+				if (!propertyName.isEmpty()) {
+					
+					propertyNames.add(propertyName);
+				}
+			}
+			
+			// Check if a property name exists.
+			if (propertyNames.isEmpty()) {
+				return null;
+			}
+			
+			// Create and return property object.
+			return new CssProperty(propertyNames, flags);
 		}
-		
-		// Check if a property name exists.
-		if (propertyNames.isEmpty()) {
-			return null;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		// Create and return property object.
-		return new CssProperty(propertyNames, flags);
+		return null;
 	}
 
 	/**
@@ -120,27 +130,33 @@ public class CssProperty {
 	 */
 	private static boolean checkFlags(String flags) {
 		
-		final char [] flagArray = { 'n', 'a'};
-		
-		for (int index = 0; index < flags.length(); index++) {
-			char character = flags.charAt(index);
+		try {
+			final char [] flagArray = { 'n', 'a'};
 			
-			boolean isFound = false;
-			for (int index2 = 0; index2 < flagArray.length; index2++) {
-				char flagCharacter = flagArray[index2];
+			for (int index = 0; index < flags.length(); index++) {
+				char character = flags.charAt(index);
 				
-				if (character == flagCharacter) {
-					isFound = true;
-					break;
+				boolean isFound = false;
+				for (int index2 = 0; index2 < flagArray.length; index2++) {
+					char flagCharacter = flagArray[index2];
+					
+					if (character == flagCharacter) {
+						isFound = true;
+						break;
+					}
+				}
+				
+				if (!isFound) {
+					return false;
 				}
 			}
 			
-			if (!isFound) {
-				return false;
-			}
+			return true;
 		}
-		
-		return true;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -149,32 +165,38 @@ public class CssProperty {
 	 * @return
 	 */
 	public static LinkedList<CssProperty> getProperties(char type) {
-
-		LinkedList<CssProperty> foundProperties = new LinkedList<CssProperty>();
 		
-		// Find properties.
-		properties.forEach(new Consumer<CssProperty>() {
-			@Override
-			public void accept(CssProperty property) {
-				
-				if (property.isFlag(type)) {
-					foundProperties.add(property);
+		try {
+			LinkedList<CssProperty> foundProperties = new LinkedList<CssProperty>();
+			
+			// Find properties.
+			properties.forEach(new Consumer<CssProperty>() {
+				@Override
+				public void accept(CssProperty property) {
+					
+					if (property.isFlag(type)) {
+						foundProperties.add(property);
+					}
 				}
-			}
-		});
-		
-		// Sort the output list.
-		Collections.sort(foundProperties, new Comparator<CssProperty>() {
-			@Override
-			public int compare(CssProperty property1, CssProperty property2) {
-				
-				String primalName1 = property1.getPrimalName();
-				String primalName2 = property2.getPrimalName();
-				
-				return primalName1.compareTo(primalName2);
-			}});
-		
-		return foundProperties;
+			});
+			
+			// Sort the output list.
+			Collections.sort(foundProperties, new Comparator<CssProperty>() {
+				@Override
+				public int compare(CssProperty property1, CssProperty property2) {
+					
+					String primalName1 = property1.getPrimalName();
+					String primalName2 = property2.getPrimalName();
+					
+					return primalName1.compareTo(primalName2);
+				}});
+			
+			return foundProperties;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -193,9 +215,14 @@ public class CssProperty {
 	 * @param flags
 	 */
 	public CssProperty(LinkedList<String> propertyNames, String flags) {
-		
-		this.propertyNames = propertyNames;
-		this.flags = flags;
+		try {
+			
+			this.propertyNames = propertyNames;
+			this.flags = flags;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -203,23 +230,34 @@ public class CssProperty {
 	 * @param propertyName
 	 */
 	public CssProperty(String propertyName) {
-		
-		this.propertyNames = new LinkedList<String>();
-		this.propertyNames.add(propertyName);
-		this.flags = "n";
+		try {
+			
+			this.propertyNames = new LinkedList<String>();
+			this.propertyNames.add(propertyName);
+			this.flags = "n";
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
-	 * Returns true value if this property has given flag.
+	 * Returns true value if this property has given input flag.
 	 * @param flag
 	 * @return
 	 */
 	protected boolean isFlag(char flag) {
 		
-		if (flag == '*') {
-			return true;
+		try {
+			if (flag == '*') {
+				return true;
+			}
+			return flags.indexOf(flag) != -1;
 		}
-		return flags.indexOf(flag) != -1;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
@@ -228,10 +266,16 @@ public class CssProperty {
 	 */
 	public String getPrimalName() {
 		
-		if (propertyNames.isEmpty()) {
-			return "";
+		try {
+			if (propertyNames.isEmpty()) {
+				return "";
+			}
+			return propertyNames.getFirst();
 		}
-		return propertyNames.getFirst();
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 	
 	/**
@@ -240,11 +284,17 @@ public class CssProperty {
 	@Override
 	public int hashCode() {
 		
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((propertyNames == null) ? 0 : (propertyNames.isEmpty() ? 0 : getPrimalName().hashCode()));
-		return result;
+		try {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result
+					+ ((propertyNames == null) ? 0 : (propertyNames.isEmpty() ? 0 : getPrimalName().hashCode()));
+			return result;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return -1;
 	}
 
 	/**
@@ -253,20 +303,26 @@ public class CssProperty {
 	@Override
 	public boolean equals(Object obj) {
 		
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		CssProperty other = (CssProperty) obj;
-		if (propertyNames == null) {
-			if (other.propertyNames != null)
+		try {
+			if (this == obj)
+				return true;
+			if (obj == null)
 				return false;
-		} else if (!propertyNames.equals(other.propertyNames))
-			return false;
-		
-		return true;
+			if (getClass() != obj.getClass())
+				return false;
+			CssProperty other = (CssProperty) obj;
+			if (propertyNames == null) {
+				if (other.propertyNames != null)
+					return false;
+			} else if (!propertyNames.equals(other.propertyNames))
+				return false;
+			
+			return true;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -274,8 +330,15 @@ public class CssProperty {
 	 */
 	@Override
 	public String toString() {
-		return "properties=" + propertyNames.toString() + ", flags="
-				+ flags + "]";
+		
+		try {
+			return "properties=" + propertyNames.toString() + ", flags="
+					+ flags + "]";
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -284,23 +347,29 @@ public class CssProperty {
 	 */
 	public String getHtmlText() {
 		
-		String text = "";
-		boolean isFirst = true;
-		
-		for (String propertyName : propertyNames) {
+		try {
+			String text = "";
+			boolean isFirst = true;
 			
-			if (!isFirst) {
-				text += ", ";
-				text += propertyName;
-			}
-			else {
-				text += String.format("<b>%s</b>", propertyName);
+			for (String propertyName : propertyNames) {
+				
+				if (!isFirst) {
+					text += ", ";
+					text += propertyName;
+				}
+				else {
+					text += String.format("<b>%s</b>", propertyName);
+				}
+				
+				isFirst = false;
 			}
 			
-			isFirst = false;
+			return String.format("<html>%s</html>", text);
 		}
-		
-		return String.format("<html>%s</html>", text);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -309,23 +378,29 @@ public class CssProperty {
 	 */
 	public String getText() {
 		
-		String text = "";
-		boolean isFirst = true;
-		
-		for (String propertyName : propertyNames) {
+		try {
+			String text = "";
+			boolean isFirst = true;
 			
-			if (!isFirst) {
-				text += ", ";
-				text += propertyName;
-			}
-			else {
-				text += propertyName;
+			for (String propertyName : propertyNames) {
+				
+				if (!isFirst) {
+					text += ", ";
+					text += propertyName;
+				}
+				else {
+					text += propertyName;
+				}
+				
+				isFirst = false;
 			}
 			
-			isFirst = false;
+			return text;
 		}
-		
-		return text;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**

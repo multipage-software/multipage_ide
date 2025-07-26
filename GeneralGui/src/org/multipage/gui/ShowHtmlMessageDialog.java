@@ -1,21 +1,30 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JScrollPane;
+import javax.swing.SpringLayout;
 
-import java.awt.event.*;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays message in HTML format.
+ * @author vakol
  *
  */
 public class ShowHtmlMessageDialog extends JDialog {
@@ -39,13 +48,16 @@ public class ShowHtmlMessageDialog extends JDialog {
 	 * @return
 	 */
 	public static void showDialog(Component parent, String htmlMessage) {
-		
-		ShowHtmlMessageDialog dialog = new ShowHtmlMessageDialog(parent);
-		dialog.textPane.setText(htmlMessage);
-		dialog.textPane.setCaretPosition(0);
-		dialog.setVisible(true);
-		
-		return;
+		try {
+			
+			ShowHtmlMessageDialog dialog = new ShowHtmlMessageDialog(parent);
+			dialog.textPane.setText(htmlMessage);
+			dialog.textPane.setCaretPosition(0);
+			dialog.setVisible(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -54,12 +66,16 @@ public class ShowHtmlMessageDialog extends JDialog {
 	 */
 	public ShowHtmlMessageDialog(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -106,30 +122,45 @@ public class ShowHtmlMessageDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		localize();
-		setIcons();
-		
-		loadDialog();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			localize();
+			setIcons();
+			
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonOk);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -144,7 +175,12 @@ public class ShowHtmlMessageDialog extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		Utility.centerOnScreen(this);
+		try {
+			
+			Utility.centerOnScreen(this);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

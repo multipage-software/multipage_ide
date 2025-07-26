@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-27
  *
  */
 
@@ -10,7 +10,8 @@ package org.multipage.gui;
 import javax.swing.*;
 
 /**
- * @author
+ * Interface for popup menu add-ins.
+ * @author vakol
  *
  */
 public interface TextPopupMenuAddIn {

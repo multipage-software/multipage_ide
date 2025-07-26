@@ -1,11 +1,14 @@
-/**
+/*
+ * Copyright 2010-2025 (C) vakol
  * 
+ * Created on : 2018-11-28
+ *
  */
 package org.multipage.addinloader;
 
 /**
  * Input parameter for j.log(...)
- * @author user
+ * @author vakol
  *
  */
 public class LogParameter {

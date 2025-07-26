@@ -1,10 +1,16 @@
+/*
+ * Copyright 2010-2025 (C) vakol
+ * 
+ * Created on : 2024-04-04
+ *
+ */
 package org.multipage.gui;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
- * Packet object that consists from packet elements.
+ * Packet object that consists of packet elements.
  * @author vakol
  */
 public class Packet {

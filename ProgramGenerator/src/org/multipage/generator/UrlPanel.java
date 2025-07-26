@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -33,10 +33,11 @@ import org.multipage.gui.StringValueEditor;
 import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays URL editor.
+ * @author vakol
  *
  */
 public class UrlPanel extends InsertPanel implements StringValueEditor, ExternalProviderInterface {
@@ -108,13 +109,17 @@ public class UrlPanel extends InsertPanel implements StringValueEditor, External
 	 * @param parentWindow 
 	 */
 	public UrlPanel(String initialString) {
-
-		initComponents();
 		
-		// $hide>>$
-		this.initialString = initialString;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			this.initialString = initialString;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -183,57 +188,77 @@ public class UrlPanel extends InsertPanel implements StringValueEditor, External
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		localize();
-		setIcons();
-		setToolTips();
-		initializePanel();
+		try {
+			
+			localize();
+			setIcons();
+			setToolTips();
+			initializePanel();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Initialize panel
 	 */
 	private void initializePanel() {
-		
-		// If text changes, reset message
-		Utility.setTextChangeListener(textUrl, () -> {
-			labelMessage.setText("");
-		});
+		try {
+			
+			// If text changes, reset message
+			Utility.setTextChangeListener(textUrl, () -> {
+				try {
+					
+					labelMessage.setText("");
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On check URL.
 	 */
 	protected void onCheckUrl() {
-		
-		new Thread(() -> {
+		try {
 			
-			String urlText = textUrl.getText();
-			URL url;
-			try {
-				url = new URL(urlText);
+			new Thread(() -> {
 				
-				// Display waiting message
-				labelMessage.setText(Resources.getString("org.multipage.generator.messageWaitingForUrlResponse"));
+				try {
+					String urlText = textUrl.getText();
+					URL url = new URL(urlText);
+					
+					// Display waiting message
+					labelMessage.setText(Resources.getString("org.multipage.generator.messageWaitingForUrlResponse"));
+					
+					// Try to open and close URL stream
+					InputStream stream = url.openStream();
+					stream.close();
+					
+					// Display success message
+					labelMessage.setText(Resources.getString("org.multipage.generator.messageUrlSuccess"));
+				}
+				catch (Exception e) {
+					
+					// Display error message
+					labelMessage.setText(String.format(
+							Resources.getString("org.multipage.generator.messageUrlError"), e.getLocalizedMessage()));
+				}
 				
-				// Try to open and close URL stream
-				InputStream stream = url.openStream();
-				stream.close();
-				
-				// Display success message
-				labelMessage.setText(Resources.getString("org.multipage.generator.messageUrlSuccess"));
-			}
-			catch (Exception e) {
-				
-				// Display error message
-				labelMessage.setText(String.format(
-						Resources.getString("org.multipage.generator.messageUrlError"), e.getLocalizedMessage()));
-			}
+			}).start();
 			
-		}).start();
-		
-		// Create local message loop to not leave this event handler
-		Toolkit.getDefaultToolkit().getSystemEventQueue().createSecondaryLoop().enter();
+			// Create local message loop to not leave this event handler
+			Toolkit.getDefaultToolkit().getSystemEventQueue().createSecondaryLoop().enter();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -243,43 +268,68 @@ public class UrlPanel extends InsertPanel implements StringValueEditor, External
 	@Override
 	public String getSpecification() {
 		
-		return textUrl.getText();
+		try {
+			return textUrl.getText();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
 	 * Set from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		if (initialString != null) {
+		try {
 			
-			textUrl.setText(initialString);
+			if (initialString != null) {
+				textUrl.setText(initialString);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(labelUrl);
-		Utility.localize(labelEncoding);
+		try {
+			
+			Utility.localize(labelUrl);
+			Utility.localize(labelEncoding);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonCheckUrl.setIcon(Images.getIcon("org/multipage/generator/images/check_icon.png"));
+		try {
+			
+			buttonCheckUrl.setIcon(Images.getIcon("org/multipage/generator/images/check_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set tool tips.
 	 */
 	private void setToolTips() {
-		
-		buttonCheckUrl.setToolTipText(Resources.getString("org.multipage.generator.tooltipCheckUrlResponse"));
+		try {
+			
+			buttonCheckUrl.setToolTipText(Resources.getString("org.multipage.generator.tooltipCheckUrlResponse"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -288,7 +338,13 @@ public class UrlPanel extends InsertPanel implements StringValueEditor, External
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.generator.textUrlPanel");
+		try {
+			return Resources.getString("org.multipage.generator.textUrlPanel");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -297,7 +353,13 @@ public class UrlPanel extends InsertPanel implements StringValueEditor, External
 	@Override
 	public String getResultText() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -351,7 +413,13 @@ public class UrlPanel extends InsertPanel implements StringValueEditor, External
 	@Override
 	public String getStringValue() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -359,9 +427,14 @@ public class UrlPanel extends InsertPanel implements StringValueEditor, External
 	 */
 	@Override
 	public void setStringValue(String string) {
-		
-		initialString = string;
-		setFromInitialString();
+		try {
+			
+			initialString = string;
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

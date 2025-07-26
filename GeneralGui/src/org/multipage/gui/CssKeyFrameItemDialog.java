@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2025-04-26
  *
  */
 
@@ -19,8 +19,8 @@ import java.io.*;
 import java.util.function.BiConsumer;
 
 /**
- * 
- * @author
+ * Dialog that displays key frame item editor.
+ * @author vakol
  *
  */
 public class CssKeyFrameItemDialog extends JDialog {
@@ -122,14 +122,19 @@ public class CssKeyFrameItemDialog extends JDialog {
 	 * @param parent
 	 * @return
 	 */
-	public static CssKeyframe showDialog(Component parent) {
+	public static CssKeyFrame showDialog(Component parent) {
 		
-		CssKeyFrameItemDialog dialog = new CssKeyFrameItemDialog(parent);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			CssKeyFrameItemDialog dialog = new CssKeyFrameItemDialog(parent);
+			dialog.setVisible(true);
 			
-			return dialog.getKeyframe();
+			if (dialog.confirm) {
+				
+				return dialog.getKeyframe();
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -140,15 +145,20 @@ public class CssKeyFrameItemDialog extends JDialog {
 	 * @param keyframe
 	 */
 	public static boolean editDialog(Component parent,
-			CssKeyframe keyframe) {
+			CssKeyFrame keyframe) {
 		
-		CssKeyFrameItemDialog dialog = new CssKeyFrameItemDialog(parent);
-		dialog.readKeyframe(keyframe);
-		
-		dialog.setVisible(true);
-		if (dialog.confirm) {
+		try {
+			CssKeyFrameItemDialog dialog = new CssKeyFrameItemDialog(parent);
+			dialog.readKeyframe(keyframe);
 			
-			return dialog.editKeyframe(keyframe);
+			dialog.setVisible(true);
+			if (dialog.confirm) {
+				
+				return dialog.editKeyframe(keyframe);
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return false;
 	}
@@ -157,66 +167,86 @@ public class CssKeyFrameItemDialog extends JDialog {
 	 * Read keyframe.
 	 * @param keyframe
 	 */
-	private void readKeyframe(CssKeyframe keyframe) {
-		
-		// Load points in time.
-		for (String timePoint : keyframe.timePoints) {
-			listTimePointsModel.addElement(timePoint);
-		}
-		
-		// Load animated properties.
-		keyframe.forEachProperty(new BiConsumer<String, String>() {
-			@Override
-			public void accept(String namesText, String value) {
-				
-				tablePropertiesModel.addRow(new String [] { namesText, value });
+	private void readKeyframe(CssKeyFrame keyframe) {
+		try {
+			
+			// Load points in time.
+			for (String timePoint : keyframe.timePoints) {
+				listTimePointsModel.addElement(timePoint);
 			}
-		});
+			
+			// Load animated properties.
+			keyframe.forEachProperty(new BiConsumer<String, String>() {
+				@Override
+				public void accept(String namesText, String value) {
+					try {
+						
+						tablePropertiesModel.addRow(new String [] { namesText, value });
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set keyframe.
 	 * @param keyframe
 	 */
-	private boolean editKeyframe(CssKeyframe keyframe) {
+	private boolean editKeyframe(CssKeyFrame keyframe) {
 		
-		if (!checkKeyframe()) {
-			return false;
-		}
-		
-		keyframe.clear();
-		
-		// Process time points.
-		for (int index = 0; index < listTimePointsModel.size(); index++) {
+		try {
+			if (!checkKeyframe()) {
+				return false;
+			}
 			
-			String timePoint = listTimePointsModel.get(index);
-			keyframe.addTimePoint(timePoint);
-		}
-		
-		// Process animated properties.
-		for (int index = 0; index < tablePropertiesModel.getRowCount(); index++) {
+			keyframe.clear();
 			
-			String propertyDefinition = (String) tablePropertiesModel.getValueAt(index, 0);
-			String value = (String) tablePropertiesModel.getValueAt(index, 1);
+			// Process time points.
+			for (int index = 0; index < listTimePointsModel.size(); index++) {
+				
+				String timePoint = listTimePointsModel.get(index);
+				keyframe.addTimePoint(timePoint);
+			}
 			
-			keyframe.addProperty(propertyDefinition, value);
+			// Process animated properties.
+			for (int index = 0; index < tablePropertiesModel.getRowCount(); index++) {
+				
+				String propertyDefinition = (String) tablePropertiesModel.getValueAt(index, 0);
+				String value = (String) tablePropertiesModel.getValueAt(index, 1);
+				
+				keyframe.addProperty(propertyDefinition, value);
+			}
+			
+			return true;
 		}
-		
-		return true;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
 	 * Get keyframe.
 	 * @return
 	 */
-	private CssKeyframe getKeyframe() {
+	private CssKeyFrame getKeyframe() {
 		
-		CssKeyframe keyframe = new CssKeyframe();
-			
-		if (editKeyframe(keyframe)) {
-			return keyframe;
+		try {
+			CssKeyFrame keyframe = new CssKeyFrame();
+				
+			if (editKeyframe(keyframe)) {
+				return keyframe;
+			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return null;
 	}
 
@@ -225,8 +255,14 @@ public class CssKeyFrameItemDialog extends JDialog {
 	 */
 	private boolean checkKeyframe() {
 		
-		// Check time points.
-		return checkTimePoints() && checkProperties();
+		try {
+			// Check time points.
+			return checkTimePoints() && checkProperties();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return true;
 	}
 
 	/**
@@ -235,7 +271,13 @@ public class CssKeyFrameItemDialog extends JDialog {
 	 */
 	private boolean checkProperties() {
 		
-		return tablePropertiesModel.getRowCount() > 0;
+		try {
+			return tablePropertiesModel.getRowCount() > 0;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -244,7 +286,13 @@ public class CssKeyFrameItemDialog extends JDialog {
 	 */
 	private boolean checkTimePoints() {
 		
-		return !listTimePointsModel.isEmpty();
+		try {
+			return !listTimePointsModel.isEmpty();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -253,12 +301,15 @@ public class CssKeyFrameItemDialog extends JDialog {
 	 */
 	public CssKeyFrameItemDialog(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
-
-		initComponents();
-		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -480,65 +531,85 @@ public class CssKeyFrameItemDialog extends JDialog {
 	 * On main panel click.
 	 */
 	protected void onPanelClick() {
-		
-		stopTableEditing();
+		try {
+			
+			stopTableEditing();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On table scroll click.
 	 */
 	protected void onTableScrollClick() {
-		
-		stopTableEditing();
+		try {
+			
+			stopTableEditing();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Delete property.
 	 */
 	protected void deleteProperty() {
-		
-		int index = tableProperties.getSelectedRow();
-		if (index == -1) {
+		try {
 			
-			Utility.show(this, "org.multipage.gui.messageSelectSingleCssAnimatedProperty");
-			return;
+			int index = tableProperties.getSelectedRow();
+			if (index == -1) {
+				
+				Utility.show(this, "org.multipage.gui.messageSelectSingleCssAnimatedProperty");
+				return;
+			}
+			
+			if (!Utility.ask(this, "org.multipage.gui.messageDeleteAnimatedCssProperty")) {
+				return;
+			}
+			
+			tablePropertiesModel.removeRow(index);
 		}
-		
-		if (!Utility.ask(this, "org.multipage.gui.messageDeleteAnimatedCssProperty")) {
-			return;
-		}
-		
-		tablePropertiesModel.removeRow(index);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Add property.
 	 */
 	protected void onAddProperty() {
-		
-		String propertyName = textAnimatedProperty.getText();
-		String propertyValue = textPropertyValue.getText();
-		
-		// Check values.
-		if (propertyName.isEmpty() || propertyValue.isEmpty()) {
-			Utility.show(this, "org.multipage.gui.messageInsertAnimatedCssPropertyAndValue");
-			return;
-		}
-		
-		// Add table row.
-		if (existsProperty(propertyName)) {
-			Utility.show(this, "org.multipage.gui.messageAnimatedPropertyAlreadyExists");
+		try {
 			
+			String propertyName = textAnimatedProperty.getText();
+			String propertyValue = textPropertyValue.getText();
+			
+			// Check values.
+			if (propertyName.isEmpty() || propertyValue.isEmpty()) {
+				Utility.show(this, "org.multipage.gui.messageInsertAnimatedCssPropertyAndValue");
+				return;
+			}
+			
+			// Add table row.
+			if (existsProperty(propertyName)) {
+				Utility.show(this, "org.multipage.gui.messageAnimatedPropertyAlreadyExists");
+				
+				textAnimatedProperty.setText("");
+				textPropertyValue.setText("");
+				return;
+			}
+			
+			tablePropertiesModel.addRow(new String [] { propertyName, propertyValue});
+			
+			// Reset input fields.
 			textAnimatedProperty.setText("");
 			textPropertyValue.setText("");
-			return;
 		}
-		
-		tablePropertiesModel.addRow(new String [] { propertyName, propertyValue});
-		
-		// Reset input fields.
-		textAnimatedProperty.setText("");
-		textPropertyValue.setText("");
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -548,12 +619,17 @@ public class CssKeyFrameItemDialog extends JDialog {
 	 */
 	private boolean existsProperty(String propertyName) {
 		
-		for (int index = 0; index < tablePropertiesModel.getRowCount(); index++) {
-			String foundPropertyName = (String) tablePropertiesModel.getValueAt(index, 0);
-			
-			if (foundPropertyName.equals(propertyName)) {
-				return true;
+		try {
+			for (int index = 0; index < tablePropertiesModel.getRowCount(); index++) {
+				String foundPropertyName = (String) tablePropertiesModel.getValueAt(index, 0);
+				
+				if (foundPropertyName.equals(propertyName)) {
+					return true;
+				}
 			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return false;
 	}
@@ -562,91 +638,104 @@ public class CssKeyFrameItemDialog extends JDialog {
 	 * On find property.
 	 */
 	protected void onFindProperty() {
-		
-		CssProperty property = CssFindPropertyDialog.showDialog(this, CssProperty.ANIMATED);
-		if (property == null) {
-			return;
-		}
-		
-		String text = property.getText();
-		textAnimatedProperty.setText(text);
-		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				
-				textAnimatedProperty.setCaretPosition(0);
+		try {
+			
+			CssProperty property = CssFindPropertyDialog.showDialog(this, CssProperty.ANIMATED);
+			if (property == null) {
+				return;
 			}
-		});
-		
+			
+			String text = property.getText();
+			textAnimatedProperty.setText(text);
+			
+			Safe.invokeLater(() -> {
+				textAnimatedProperty.setCaretPosition(0);
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On delete time point.
 	 */
 	protected void onDeleteTimePoint() {
-		
-		int index = listTimePoints.getSelectedIndex();
-		if (index == -1) {
+		try {
 			
-			Utility.show(this, "org.multipage.gui.messageSelectTimePoint");
-			return;
+			int index = listTimePoints.getSelectedIndex();
+			if (index == -1) {
+				
+				Utility.show(this, "org.multipage.gui.messageSelectTimePoint");
+				return;
+			}
+			
+			listTimePointsModel.remove(index);
 		}
-		
-		listTimePointsModel.remove(index);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On add time point.
 	 */
 	protected void onAddTimePoint() {
-		
-		String comboText = Utility.getSelectedNamedItem(comboFromTo);
-		if (comboText == null) {
-			comboText = "";
-		}
-		String editorText = textTimePoint.getText();
-
-		// Set values.
-		if (!comboText.isEmpty()) {
-			listTimePointsModel.addElement(comboText);
-		}
-		else if (!editorText.isEmpty()) {
+		try {
 			
-			try {
-				int percentage = Integer.parseInt(editorText);
+			String comboText = Utility.getSelectedNamedItem(comboFromTo);
+			if (comboText == null) {
+				comboText = "";
+			}
+			String editorText = textTimePoint.getText();
+	
+			// Set values.
+			if (!comboText.isEmpty()) {
+				listTimePointsModel.addElement(comboText);
+			}
+			else if (!editorText.isEmpty()) {
 				
-				if (percentage >= 0 && percentage <= 100) {
-					listTimePointsModel.addElement(editorText + "%");
+				try {
+					int percentage = Integer.parseInt(editorText);
 					
-					// Reset editor and combo.
-					textTimePoint.setText("");
-					comboFromTo.setSelectedIndex(1);
-					return;
+					if (percentage >= 0 && percentage <= 100) {
+						listTimePointsModel.addElement(editorText + "%");
+						
+						// Reset editor and combo.
+						textTimePoint.setText("");
+						comboFromTo.setSelectedIndex(1);
+						return;
+					}
 				}
+				catch (Exception e) {
+				}
+				Utility.show(this, "org.multipage.gui.messageEnterTimePointPercentage");
 			}
-			catch (Exception e) {
+			else {
+				Utility.show(this, "org.multipage.gui.messageEnterTimePoint");
 			}
-			Utility.show(this, "org.multipage.gui.messageEnterTimePointPercentage");
 		}
-		else {
-			Utility.show(this, "org.multipage.gui.messageEnterTimePoint");
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On select "from, to" combo.
 	 */
 	protected void onSelectFromToCombo() {
-		
-		if (settingControls) {
-			return;
+		try {
+			
+			if (settingControls) {
+				return;
+			}
+			startSettingControls();
+			textTimePoint.setText("");
+			stopSettingControls();
 		}
-		startSettingControls();
-		
-		textTimePoint.setText("");
-		
-		stopSettingControls();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -662,12 +751,8 @@ public class CssKeyFrameItemDialog extends JDialog {
 	 */
 	public void stopSettingControls() {
 		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				
-				settingControls = false;
-			}
+		Safe.invokeLater(() -> {
+			settingControls = false;
 		});
 	}
 
@@ -675,129 +760,171 @@ public class CssKeyFrameItemDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		localize();
-		setIcons();
-		setToolTips();
-		
-		loadComboBoxes();
-		initList();
-		initTable();
-		
-		loadDialog();
-		setListeners();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			localize();
+			setIcons();
+			setToolTips();
+			
+			loadComboBoxes();
+			initList();
+			initTable();
+			
+			loadDialog();
+			setListeners();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Initialize table.
 	 */
 	private void initTable() {
-		
-		// Create and set table model.
-		tablePropertiesModel = new DefaultTableModel();
-		tableProperties.setModel(tablePropertiesModel);
-		
-		// Add columns.
-		tablePropertiesModel.addColumn(Resources.getString("org.multipage.gui.textCssPropertyColumn"));
-		tablePropertiesModel.addColumn(Resources.getString("org.multipage.gui.textCssPropertyValueColumn"));
-		
-		tableProperties.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+		try {
+			
+			// Create and set table model.
+			tablePropertiesModel = new DefaultTableModel();
+			tableProperties.setModel(tablePropertiesModel);
+			
+			// Add columns.
+			tablePropertiesModel.addColumn(Resources.getString("org.multipage.gui.textCssPropertyColumn"));
+			tablePropertiesModel.addColumn(Resources.getString("org.multipage.gui.textCssPropertyValueColumn"));
+			
+			tableProperties.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Stop editing table.
 	 */
 	private void stopTableEditing() {
-		
-		if (tableProperties.isEditing()) {
-			tableProperties.getCellEditor().stopCellEditing();
+		try {
+			
+			if (tableProperties.isEditing()) {
+				tableProperties.getCellEditor().stopCellEditing();
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set tool tips.
 	 */
 	private void setToolTips() {
-		
-		buttonAddTimePoint.setToolTipText(Resources.getString("org.multipage.gui.tooltipAddTimePoint"));
-		buttonDeleteTimePoint.setToolTipText(Resources.getString("org.multipage.gui.tooltipDeleteTimePoint"));
-		buttonAddProperty.setToolTipText(Resources.getString("org.multipage.gui.tooltipAddKeyframeProperty"));
-		buttonDeleteProperty.setToolTipText(Resources.getString("org.multipage.gui.tooltipDeleteKeyframeProperty"));
-		textTimePoint.setToolTipText(Resources.getString("org.multipage.gui.textInsertTimePointPercentage"));
+		try {
+			
+			buttonAddTimePoint.setToolTipText(Resources.getString("org.multipage.gui.tooltipAddTimePoint"));
+			buttonDeleteTimePoint.setToolTipText(Resources.getString("org.multipage.gui.tooltipDeleteTimePoint"));
+			buttonAddProperty.setToolTipText(Resources.getString("org.multipage.gui.tooltipAddKeyframeProperty"));
+			buttonDeleteProperty.setToolTipText(Resources.getString("org.multipage.gui.tooltipDeleteKeyframeProperty"));
+			textTimePoint.setToolTipText(Resources.getString("org.multipage.gui.textInsertTimePointPercentage"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Initialize list.
 	 */
 	private void initList() {
-		
-		listTimePointsModel = new DefaultListModel<String>();
-		listTimePoints.setModel(listTimePointsModel);
+		try {
+			
+			listTimePointsModel = new DefaultListModel<String>();
+			listTimePoints.setModel(listTimePointsModel);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set listeners.
 	 */
 	private void setListeners() {
-		
-		Utility.setTextChangeListener(textTimePoint, new Runnable() {
-			@Override
-			public void run() {
-				
-				if (settingControls) {
-					return;
+		try {
+			
+			Utility.setTextChangeListener(textTimePoint, () -> {
+				try {
+					
+					if (settingControls) {
+						return;
+					}
+					
+					startSettingControls();
+					comboFromTo.setSelectedIndex(0);
+					stopSettingControls();
 				}
-				startSettingControls();
-				
-				comboFromTo.setSelectedIndex(0);
-				
-				stopSettingControls();
-			}
-		});
-		
-		// Time points edit listener.
-		listTimePoints.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				
-				if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
-					editTimePoint();
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+			
+			// Time points edit listener.
+			listTimePoints.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					try {
+						
+						if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
+							editTimePoint();
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Edit selected time point.
 	 */
 	protected void editTimePoint() {
-		
-		String timePoint = listTimePoints.getSelectedValue();
-		if (timePoint == null) {
+		try {
 			
-			Utility.show(this, "org.multipage.gui.messageYouHaveToSelectTimePoint");
-			return;
-		}
-		
-		// Get new value.
-		String newTimePoint = Utility.input(this, "org.multipage.gui.messageEditTimePoint", timePoint);
-		if (newTimePoint == null) {
-			return;
-		}
-		
-		// Check new value.
-		if (!checkTimePoint(newTimePoint)) {
+			String timePoint = listTimePoints.getSelectedValue();
+			if (timePoint == null) {
+				
+				Utility.show(this, "org.multipage.gui.messageYouHaveToSelectTimePoint");
+				return;
+			}
 			
-			Utility.show(this, "org.multipage.gui.messageBadTimePointDefinition");
-			return;
+			// Get new value.
+			String newTimePoint = Utility.input(this, "org.multipage.gui.messageEditTimePoint", timePoint);
+			if (newTimePoint == null) {
+				return;
+			}
+			
+			// Check new value.
+			if (!checkTimePoint(newTimePoint)) {
+				
+				Utility.show(this, "org.multipage.gui.messageBadTimePointDefinition");
+				return;
+			}
+			
+			// Save new value.
+			int index = listTimePoints.getSelectedIndex();
+			if (index >= 0) {
+				listTimePointsModel.set(index, newTimePoint);
+			}
 		}
-		
-		// Save new value.
-		int index = listTimePoints.getSelectedIndex();
-		if (index >= 0) {
-			listTimePointsModel.set(index, newTimePoint);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -807,27 +934,31 @@ public class CssKeyFrameItemDialog extends JDialog {
 	 */
 	private boolean checkTimePoint(String timePoint) {
 		
-		if (timePoint.equals("from") || timePoint.equals("to")) {
-			return true;
-		}
-		
-		Obj<Integer> position = new Obj<Integer>(0);
-		 
-		String text = Utility.getNextMatch(timePoint, position, "^\\d+%$");
-		if (text == null) {
-			return false;
-		}
-		
-		String percentText = text.substring(0, position.ref - 1);
 		try {
-			int percent = Integer.parseInt(percentText);
-			if (percent >= 0 && percent <= 100) {
+			if (timePoint.equals("from") || timePoint.equals("to")) {
 				return true;
 			}
+			
+			Obj<Integer> position = new Obj<Integer>(0);
+			 
+			String text = Utility.getNextMatch(timePoint, position, "^\\d+%$");
+			if (text == null) {
+				return false;
+			}
+			
+			String percentText = text.substring(0, position.ref - 1);
+			try {
+				int percent = Integer.parseInt(percentText);
+				if (percent >= 0 && percent <= 100) {
+					return true;
+				}
+			}
+			catch (Exception e) {
+			}
 		}
-		catch (Exception e) {
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
 		return false;
 	}
 
@@ -835,57 +966,77 @@ public class CssKeyFrameItemDialog extends JDialog {
 	 * Load combo boxes.
 	 */
 	private void loadComboBoxes() {
-		
-		Utility.loadEmptyItem(comboFromTo);
-		Utility.loadNamedItems(comboFromTo, new String [][] {
-				{"from", "org.multipage.gui.textCssKeyframeFrom"},
-				{"to", "org.multipage.gui.textCssKeyframeTo"}
-				});
-		
-		comboFromTo.setSelectedIndex(1);
+		try {
+			
+			Utility.loadEmptyItem(comboFromTo);
+			Utility.loadNamedItems(comboFromTo, new String [][] {
+					{"from", "org.multipage.gui.textCssKeyframeFrom"},
+					{"to", "org.multipage.gui.textCssKeyframeTo"}
+					});
+			
+			comboFromTo.setSelectedIndex(1);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
-		buttonAddTimePoint.setIcon(Images.getIcon("org/multipage/gui/images/arrow.png"));
-		menuDelete.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
-		buttonDeleteTimePoint.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
-		buttonAddProperty.setIcon(Images.getIcon("org/multipage/gui/images/arrow.png"));
-		buttonDeleteProperty.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
-		buttonFindProperty.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
-		menuDeleteProperty.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+			buttonAddTimePoint.setIcon(Images.getIcon("org/multipage/gui/images/arrow.png"));
+			menuDelete.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+			buttonDeleteTimePoint.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+			buttonAddProperty.setIcon(Images.getIcon("org/multipage/gui/images/arrow.png"));
+			buttonDeleteProperty.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+			buttonFindProperty.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
+			menuDeleteProperty.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(labelPointsInTime);
-		Utility.localize(menuDelete);
-		Utility.localize(labelProperties);
-		Utility.localize(labelTime);
-		Utility.localize(labelCssProperty);
-		Utility.localize(labelCssPropertyValue);
-		Utility.localize(menuDeleteProperty);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(labelPointsInTime);
+			Utility.localize(menuDelete);
+			Utility.localize(labelProperties);
+			Utility.localize(labelTime);
+			Utility.localize(labelCssProperty);
+			Utility.localize(labelCssPropertyValue);
+			Utility.localize(menuDeleteProperty);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
+		try {
+			
+			saveDialog();
+			confirm = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
-		saveDialog();
-		
-		confirm = false;
 		dispose();
 	}
 
@@ -893,21 +1044,27 @@ public class CssKeyFrameItemDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		// Check input.
-		if (!checkTimePoints()) {
-			Utility.show(this, "org.multipage.gui.messageYouHaveToInsertTimePoints");
-			return;
+		try {
+			
+			// Check input.
+			if (!checkTimePoints()) {
+				Utility.show(this, "org.multipage.gui.messageYouHaveToInsertTimePoints");
+				return;
+			}
+			
+			if (!checkProperties()) {
+				Utility.show(this, "org.multipage.gui.messageYouHaveToSetAnimatedProperties");
+				return;
+			}
+			
+			saveDialog();
+			
+			confirm = true;
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
-		if (!checkProperties()) {
-			Utility.show(this, "org.multipage.gui.messageYouHaveToSetAnimatedProperties");
-			return;
-		}
-		
-		saveDialog();
-		
-		confirm = true;
 		dispose();
 	}
 
@@ -915,21 +1072,31 @@ public class CssKeyFrameItemDialog extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setBounds(bounds);
+			}
 		}
-		else {
-			setBounds(bounds);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -938,20 +1105,44 @@ public class CssKeyFrameItemDialog extends JDialog {
 	 * @param popup
 	 */
 	private static void addPopup(Component component, final JPopupMenu popup) {
-		component.addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e);
+		try {
+			
+			component.addMouseListener(new MouseAdapter() {
+				public void mousePressed(MouseEvent e) {
+					try {
+						
+						if (e.isPopupTrigger()) {
+							showMenu(e);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-			public void mouseReleased(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e);
+				public void mouseReleased(MouseEvent e) {
+					try {
+						
+						if (e.isPopupTrigger()) {
+							showMenu(e);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-			private void showMenu(MouseEvent e) {
-				popup.show(e.getComponent(), e.getX(), e.getY());
-			}
-		});
+				private void showMenu(MouseEvent e) {
+					try {
+						
+						popup.show(e.getComponent(), e.getX(), e.getY());
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

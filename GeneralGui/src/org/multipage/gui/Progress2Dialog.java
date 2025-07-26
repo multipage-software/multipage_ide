@@ -1,23 +1,43 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import javax.swing.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
-import org.multipage.util.*;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.SpringLayout;
+import javax.swing.SwingConstants;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
+import org.multipage.util.ProgressResult;
+import org.multipage.util.Resources;
+import org.multipage.util.Safe;
+import org.multipage.util.SwingWorkerHelper;
 
 /**
- * 
- * @author
+ * Dialog that displays main and secondary progress bars.
+ * @author vakol
  *
  */
 public class Progress2Dialog<TOutput> extends JDialog {
@@ -57,26 +77,32 @@ public class Progress2Dialog<TOutput> extends JDialog {
 	 */
 	public Progress2Dialog(Component parent, String title, String message) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
-		setTitle(title);
-		addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				onCancel();
-			}
-			@Override
-			public void windowOpened(WindowEvent e) {
-				onWindowOpened();
-			}
-		});
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		setModalityType(ModalityType.APPLICATION_MODAL);
-
-		// Initialize components.
-		initComponents();
-		// Post creation.
-		// $hide>>$
-		postCreation(message);
-		// $hide<<$
+		
+		try {
+			setTitle(title);
+			addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowClosing(WindowEvent e) {
+					onCancel();
+				}
+				@Override
+				public void windowOpened(WindowEvent e) {
+					onWindowOpened();
+				}
+			});
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			setModalityType(ModalityType.APPLICATION_MODAL);
+	
+			// Initialize components.
+			initComponents();
+			// Post creation.
+			// $hide>>$
+			postCreation(message);
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -157,25 +183,30 @@ public class Progress2Dialog<TOutput> extends JDialog {
 	 * On cancel.
 	 */
 	protected void onCancel() {
-		
-		// Cancel worker thread.
-		if (swingWorker != null) {
+		try {
 			
-			// If to kill the thread...
-			if (checkKill.isSelected()) {
-				// Ask user.
-				if (JOptionPane.showConfirmDialog(this,
-						Resources.getString("org.multipage.gui.messageShouldKillThread"))
-						== JOptionPane.YES_OPTION) {
-					
-					// Cancel the thread.
-					swingWorker.cancel(true);
+			// Cancel worker thread.
+			if (swingWorker != null) {
+				
+				// If to kill the thread...
+				if (checkKill.isSelected()) {
+					// Ask user.
+					if (JOptionPane.showConfirmDialog(this,
+							Resources.getString("org.multipage.gui.messageShouldKillThread"))
+							== JOptionPane.YES_OPTION) {
+						
+						// Cancel the thread.
+						swingWorker.cancel(true);
+					}
+				}
+				else {
+					swingWorker.scheduleCancel();
 				}
 			}
-			else {
-				swingWorker.scheduleCancel();
-			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -183,35 +214,50 @@ public class Progress2Dialog<TOutput> extends JDialog {
 	 * @param message 
 	 */
 	private void postCreation(String message) {
-		
-		// Set message.
-		labelMessage.setText(message);
-		// Center dialog.
-		Utility.centerOnScreen(this);
-		// Localize.
-		localize();
-		// Set icons.
-		setIcons();
-		// Initialize progress.
-		onProgressValue(0);
+		try {
+			
+			// Set message.
+			labelMessage.setText(message);
+			// Center dialog.
+			Utility.centerOnScreen(this);
+			// Localize.
+			localize();
+			// Set icons.
+			setIcons();
+			// Initialize progress.
+			onProgressValue(0);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize.
 	 */
 	private void localize() {
-
-		Utility.localize(buttonCancel);
-		Utility.localize(checkKill);
+		try {
+			
+			Utility.localize(buttonCancel);
+			Utility.localize(checkKill);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-
-		setIconImage(Images.getImage("org/multipage/gui/images/progress.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			setIconImage(Images.getImage("org/multipage/gui/images/progress.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -219,12 +265,17 @@ public class Progress2Dialog<TOutput> extends JDialog {
 	 * @param progressValue
 	 */
 	protected void onProgressValue(int progressValue) {
-
-		// Set progress bar.
-		progressBar1.setValue(progressValue);
-		// Set note.
-		labelNote.setText(String.format(
-				Resources.getString("org.multipage.gui.textProgressNote"), progressValue));
+		try {
+			
+			// Set progress bar.
+			progressBar1.setValue(progressValue);
+			// Set note.
+			labelNote.setText(String.format(
+					Resources.getString("org.multipage.gui.textProgressNote"), progressValue));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -232,22 +283,31 @@ public class Progress2Dialog<TOutput> extends JDialog {
 	 * @param progressValue
 	 */
 	protected void onProgress2Value(int progress2Value) {
-
-		// Set progress bar.
-		progressBar2.setValue(progress2Value);
+		try {
+			
+			// Set progress bar.
+			progressBar2.setValue(progress2Value);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Execute the dialog with given thread.
 	 */
 	public ProgressResult execute(SwingWorkerHelper<TOutput> swingWorker) {
-
-		// Set worker thread.
-		this.swingWorker = swingWorker;
 		
-		// Show the dialog.
-		setVisible(true);
-		
+		try {
+			// Set worker thread.
+			this.swingWorker = swingWorker;
+			
+			// Show the dialog.
+			setVisible(true);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		// Return result.
 		return resultState;
 	}
@@ -256,53 +316,71 @@ public class Progress2Dialog<TOutput> extends JDialog {
 	 * On window opened.
 	 */
 	protected void onWindowOpened() {
-		
-		// Execute the worker thread.
-		if (swingWorker != null) {
+		try {
 			
-			// Set property change listener.
-			this.swingWorker.addPropertyChangeListener(new PropertyChangeListener() {
-				// On property change.
-				@Override
-				public void propertyChange(PropertyChangeEvent evt) {
-					// If it is a "progress" property.
-					if (evt.getPropertyName().equals("progress")) {
-						
-						// Get progress value.
-						int progressValue = (Integer) evt.getNewValue();
-						// Set progress bar.
-						onProgressValue(progressValue);
+			// Execute the worker thread.
+			if (swingWorker != null) {
+				
+				// Set property change listener.
+				this.swingWorker.addPropertyChangeListener(new PropertyChangeListener() {
+					// On property change.
+					@Override
+					public void propertyChange(PropertyChangeEvent evt) {
+						try {
+							
+							// If it is a "progress" property.
+							if (evt.getPropertyName().equals("progress")) {
+								
+								// Get progress value.
+								int progressValue = (Integer) evt.getNewValue();
+								// Set progress bar.
+								onProgressValue(progressValue);
+							}
+							else if (evt.getPropertyName().equals("progress2")) {
+								
+								// Get progress value.
+								int progress2Value = (Integer) evt.getNewValue();
+								// Set progress bar.
+								onProgress2Value(progress2Value);
+							}
+						}
+						catch(Throwable expt) {
+							Safe.exception(expt);
+						};
 					}
-					else if (evt.getPropertyName().equals("progress2")) {
-						
-						// Get progress value.
-						int progress2Value = (Integer) evt.getNewValue();
-						// Set progress bar.
-						onProgress2Value(progress2Value);
+				});
+				
+				// Listen for result to close the dialog.
+				swingWorker.addResultChangeListener(new PropertyChangeListener() {
+					// Result changes.
+					@Override
+					public void propertyChange(PropertyChangeEvent evt) {
+						try {
+							
+							// Check property name.
+							if (evt.getPropertyName().equals(SwingWorkerHelper.resultPropertyName)) {
+								// Set result state.
+								resultState = (ProgressResult) evt.getNewValue();
+								// Close dialog.
+								dispose();
+							}
+						}
+						catch(Throwable expt) {
+							Safe.exception(expt);
+						};
 					}
-				}
-			});
+				});
+				swingWorker.execute();
+			}
+			else {
+				resultState = ProgressResult.NONE;
+				return;
+			}
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 			
-			// Listen for result to close the dialog.
-			swingWorker.addResultChangeListener(new PropertyChangeListener() {
-				// Result changes.
-				@Override
-				public void propertyChange(PropertyChangeEvent evt) {
-					// Check property name.
-					if (evt.getPropertyName().equals(SwingWorkerHelper.resultPropertyName)) {
-						// Set result state.
-						resultState = (ProgressResult) evt.getNewValue();
-						// Close dialog.
-						dispose();
-					}
-				}
-			});
-			swingWorker.execute();
-		}
-		else {
-			resultState = ProgressResult.NONE;
-			return;
-		}
 	}
 
 	/**
@@ -310,13 +388,19 @@ public class Progress2Dialog<TOutput> extends JDialog {
 	 * @return
 	 */
 	public TOutput getOutput() {
-
-		if (swingWorker != null) {
-			return swingWorker.getOutput();
+		
+		try {
+			if (swingWorker != null) {
+				return swingWorker.getOutput();
+			}
+			else {
+                return null;
+            }
 		}
-		else {
-			return null;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
+		return null;
 	}
 
 	/**
@@ -324,12 +408,18 @@ public class Progress2Dialog<TOutput> extends JDialog {
 	 * @return
 	 */
 	public Exception getException() {
-
-		if (swingWorker != null) {
-			return swingWorker.getException();
+		
+		try {
+			if (swingWorker != null) {
+				return swingWorker.getException();
+			}
+			else {
+				return null;
+			}
 		}
-		else {
-			return null;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
+		return null;
 	}
 }

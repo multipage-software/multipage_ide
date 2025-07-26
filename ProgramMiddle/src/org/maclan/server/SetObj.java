@@ -1,16 +1,19 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.maclan.server;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 
 /**
- * @author
+ * Helper class for set of objects.
+ * @author vakol
  *
  */
 public class SetObj extends LinkedHashSet {

@@ -1,20 +1,21 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.maclan.server;
 
-import java.util.*;
-import java.util.Map.*;
+import java.util.LinkedList;
+import java.util.Map.Entry;
 
-import org.multipage.util.*;
+import org.multipage.util.Obj;
+import org.multipage.util.Resources;
 
 /**
- * 
- * @author
+ * Block descriptor for procedures.
+ * @author vakol
  *
  */
 public class ProcedureBlockDescriptor extends BlockDescriptor {

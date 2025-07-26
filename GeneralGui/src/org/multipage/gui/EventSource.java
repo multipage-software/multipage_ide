@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2021 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 23-02-2021
+ * Created on : 2021-02-23
  *
  */
 
@@ -24,10 +24,13 @@ public class EventSource {
 	public static final EventSource GENERATOR_MAIN_FRAME = new EventSource("GENERATOR_MAIN_FRAME");
 	public static final EventSource AREA_EDITOR = new EventSource("AREA_EDITOR");
 	public static final EventSource SLOT_EDITOR = new EventSource("SLOT_EDITOR");
+	public static final EventSource AREA_SLOTS_EDITOR = new EventSource("AREA_SLOTS_EDITOR");
 	public static final EventSource LOCAL_POPUP_MENU = new EventSource("LOCAL_POPUP_MENU");
 	public static final EventSource AREA_TRACE = new EventSource("AREA_TRACE");
 	public static final EventSource AREAS_DIAGRAM = new EventSource("AREAS_DIAGRAM");
 	public static final EventSource AREA_LOCAL_MENU = new EventSource("AREA_LOCAL_MENU");
+	public static final EventSource SETTINGS = new EventSource("SETTINGS");
+	public static final EventSource AREA_TREE_EDITOR_FRAME = new EventSource("AREA_TREE_EDITOR_FRAME");
 	
 	/**
 	 * Name of the event source.

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2022 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 25-10-2022
+ * Created on : 2022-10-25
  *
  */
 package org.multipage.gui;
@@ -9,7 +9,7 @@ package org.multipage.gui;
 import java.util.LinkedList;
 
 /**
- * Logging callback methods.
+ * Callback methods for log.
  * @author vakol
  *
  */

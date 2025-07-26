@@ -1,18 +1,20 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.maclan;
 
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.LinkedList;
 import java.util.Map.Entry;
 
 /**
- * Server cache.
- * @author
+ * Area Server cache.
+ * @author vakol
  *
  */
 public class ServerCache {
@@ -404,7 +406,7 @@ public class ServerCache {
 	/**
 	 * Get area start resource
 	 * @param versionId 
-	 * @param area
+	 * @param areaProperty
 	 * @return
 	 */
 	public StartResource getStartResource(long areaId, long versionId) {

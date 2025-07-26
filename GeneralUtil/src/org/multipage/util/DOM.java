@@ -1,16 +1,17 @@
 /**
- * Copyright 2010-2018 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 31-07-2018
+ * Created on : 2018-07-31
  */
 package org.multipage.util;
 
+import org.multipage.util.Safe;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 /**
- * Document object model utilities
- * @author user
+ * Document object model utilities.
+ * @author vakol
  *
  */
 public class DOM {
@@ -27,26 +28,42 @@ public class DOM {
 	 */
 	public static DOM use(Node node) {
 		
-		DOM dom = new DOM();
-		dom.node = node;
-		return dom;
+		try {
+			DOM dom = new DOM();
+			dom.node = node;
+			return dom;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
+	/**
+	 * Get attribute.
+	 * @param name
+	 * @return
+	 */
 	public String attribute(String name) {
 		
-		if (node != null) {
-			NamedNodeMap attributes = node.getAttributes();
-			if (attributes != null) {
-				
-				Node attribute = attributes.getNamedItem(name);
-				if (attribute != null) {
+		try {
+			if (node != null) {
+				NamedNodeMap attributes = node.getAttributes();
+				if (attributes != null) {
 					
-					String value = attribute.getTextContent();
-					if (value != null) {
-						return value;
+					Node attribute = attributes.getNamedItem(name);
+					if (attribute != null) {
+						
+						String value = attribute.getTextContent();
+						if (value != null) {
+							return value;
+						}
 					}
 				}
 			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return "";
 	};

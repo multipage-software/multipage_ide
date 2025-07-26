@@ -1,3 +1,9 @@
+/*
+ * Copyright 2010-2025 (C) vakol
+ * 
+ * Created on : 2024-04-04
+ *
+ */
 package org.multipage.gui;
 
 /**

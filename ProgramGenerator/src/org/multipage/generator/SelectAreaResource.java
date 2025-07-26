@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -29,7 +29,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -41,9 +40,11 @@ import org.multipage.gui.Images;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * @author
+ * Dialog that displays resources that can be selected.
+ * @author vakol
  *
  */
 public class SelectAreaResource extends JDialog {
@@ -113,14 +114,20 @@ public class SelectAreaResource extends JDialog {
 	 */
 	public static Object [] showDialog(Window parent, Area area) {
 		
-		SelectAreaResource dialog = new SelectAreaResource(parent, area);
-		dialog.setVisible(true);
-		
-		if (!dialog.confirm ) {
-			return null;
+		try {
+			SelectAreaResource dialog = new SelectAreaResource(parent, area);
+			dialog.setVisible(true);
+			
+			if (!dialog.confirm ) {
+				return null;
+			}
+			Object [] result = {dialog.areaText, dialog.resourceText};
+			return result;
 		}
-		Object [] result = {dialog.areaText, dialog.resourceText};
-		return result;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -130,14 +137,19 @@ public class SelectAreaResource extends JDialog {
 	 */
 	public SelectAreaResource(Window parent, Area area) {
 		super(parent, ModalityType.DOCUMENT_MODAL);
-
-		// Initialize components.
-		initComponents();
-		// $hide>>$
-		this.area = area;
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		postCreate();
-		// $hide<<$
+		
+		try {
+			// Initialize components.
+			initComponents();
+			// $hide>>$
+			this.area = area;
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -236,22 +248,28 @@ public class SelectAreaResource extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		// Get selected area and resource.
-		areaText = (String) listAreas.getSelectedValue();
-		if (areaText.equals(Resources.getString("org.multipage.generator.textThisArea"))) {
-			areaText = (Integer) 1;
+		try {
+			
+			// Get selected area and resource.
+			areaText = (String) listAreas.getSelectedValue();
+			if (areaText.equals(Resources.getString("org.multipage.generator.textThisArea"))) {
+				areaText = (Integer) 1;
+			}
+			else if (areaText.equals(Resources.getString("org.multipage.generator.textStartArea"))) {
+				areaText = (Integer) 2;
+			}
+			resourceText = (String) listResources.getSelectedValue();
+			if (resourceText == null) {
+				Utility.show(this, "org.multipage.generator.messageSelectAreaAndSlot");
+				return;
+			}
+			
+			confirm = true;
 		}
-		else if (areaText.equals(Resources.getString("org.multipage.generator.textStartArea"))) {
-			areaText = (Integer) 2;
-		}
-		resourceText = (String) listResources.getSelectedValue();
-		if (resourceText == null) {
-			Utility.show(this, "org.multipage.generator.messageSelectAreaAndSlot");
-			return;
-		}
-		
-		confirm = true;
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 	
@@ -259,162 +277,224 @@ public class SelectAreaResource extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		// Center dialog.
-		Utility.centerOnScreen(this);
-		// Localize components.
-		localize();
-		// Set icons.
-		setIcons();
-		// Load start area.
-		loadStartArea();
-		// Create and update listAreas.
-		createAreasList();
-		updateAreasList();
-		// Create resources list.
-		createResourcesList();
-		// Set text listeners.
-		setTextListener();
-		// Set old text.
-		textAreaAlias.setText(oldText);
+		try {
+			
+			// Center dialog.
+			Utility.centerOnScreen(this);
+			// Localize components.
+			localize();
+			// Set icons.
+			setIcons();
+			// Load start area.
+			loadStartArea();
+			// Create and update listAreas.
+			createAreasList();
+			updateAreasList();
+			// Create resources list.
+			createResourcesList();
+			// Set text listeners.
+			setTextListener();
+			// Set old text.
+			textAreaAlias.setText(oldText);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-
-		setIconImage(Images.getImage("org/multipage/basic/images/main_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
-		buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+		try {
+			
+			setIconImage(Images.getImage("org/multipage/basic/images/main_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+			buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonCancel);
-		Utility.localize(buttonOk);
-		Utility.localize(labelAreaAlias);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonCancel);
+			Utility.localize(buttonOk);
+			Utility.localize(labelAreaAlias);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Create listAreas.
 	 */
 	private void createAreasList() {
-		
-		modelAreas = new DefaultListModel();
-		listAreas.setModel(modelAreas);
+		try {
+			
+			modelAreas = new DefaultListModel();
+			listAreas.setModel(modelAreas);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Create resources list.
 	 */
 	private void createResourcesList() {
-		
-		modelResources = new DefaultListModel();
-		listResources.setModel(modelResources);
+		try {
+			
+			modelResources = new DefaultListModel();
+			listResources.setModel(modelResources);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set text listener.
 	 */
 	private void setTextListener() {
-		
-		textAreaAlias.getDocument().addDocumentListener(new DocumentListener() {
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				onTextChanged();
-			}
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				onTextChanged();
-			}
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				onTextChanged();
-			}
-		});
+		try {
+			
+			textAreaAlias.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					try {
+						
+						onTextChanged();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+					
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					try {
+						
+						onTextChanged();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+					
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					try {
+						
+						onTextChanged();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On text changed.
 	 */
 	protected void onTextChanged() {
-
-		if (!doNotUpdateList) {
-			oldText = textAreaAlias.getText();
+		try {
+			
+			if (!doNotUpdateList) {
+				oldText = textAreaAlias.getText();
+			}
+			updateAreasList();
 		}
-		updateAreasList();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Update listAreas.
 	 */
 	private void updateAreasList() {
-		
-		if (doNotUpdateList) {
-			return;
-		}
-		
-		// Reset modelAreas.
-		modelAreas.clear();
-		// Get areas.
-		LinkedList<Area> areas = ProgramGenerator.getAreasModel().getAreas();
-		// Get inserted text.
-		String text = textAreaAlias.getText();
-		
-		// Load area aliases.
-		LinkedList<String> aliases = new LinkedList<String>();
-		for (Area area : areas) {
-			String alias = area.getAlias();
-			if (!alias.isEmpty()) {
-				
-				if (!text.isEmpty() && !alias.startsWith(text)) {
-					continue;
+		try {
+			
+			if (doNotUpdateList) {
+				return;
+			}
+			
+			// Reset modelAreas.
+			modelAreas.clear();
+			// Get areas.
+			LinkedList<Area> areas = ProgramGenerator.getAreasModel().getAreas();
+			// Get inserted text.
+			String text = textAreaAlias.getText();
+			
+			// Load area aliases.
+			LinkedList<String> aliases = new LinkedList<String>();
+			for (Area area : areas) {
+				String alias = area.getAlias();
+				if (!alias.isEmpty()) {
+					
+					if (!text.isEmpty() && !alias.startsWith(text)) {
+						continue;
+					}
+					if (area.getResourceNamesCount() == 0) {
+						continue;
+					}
+					aliases.add(alias);
 				}
-				if (area.getResourceNamesCount() == 0) {
-					continue;
-				}
-				aliases.add(alias);
+			}
+			// Sort aliases.
+			Collections.sort(aliases);
+			
+			// Add to modelAreas.
+			for (String alias : aliases) {
+				modelAreas.addElement(alias);
+			}
+			
+			// Insert start area, if it exists.
+			if (startArea != null) {
+				modelAreas.add(0,  Resources.getString("org.multipage.generator.textStartArea"));
+			}
+			
+			// Insert this area at the begin..
+			if (area != null) {
+				modelAreas.add(0, Resources.getString("org.multipage.generator.textThisArea"));
+				Safe.invokeLater(() -> {
+					listAreas.setSelectedIndex(0);
+				});
 			}
 		}
-		// Sort aliases.
-		Collections.sort(aliases);
-		
-		// Add to modelAreas.
-		for (String alias : aliases) {
-			modelAreas.addElement(alias);
-		}
-		
-		// Insert start area, if it exists.
-		if (startArea != null) {
-			modelAreas.add(0,  Resources.getString("org.multipage.generator.textStartArea"));
-		}
-		
-		// Insert this area at the begin..
-		if (area != null) {
-			modelAreas.add(0, Resources.getString("org.multipage.generator.textThisArea"));
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					listAreas.setSelectedIndex(0);
-				}
-			});
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On select list.
 	 */
 	protected void onSelectList() {
-		
-		// Get area alias.
-		String areaAlias = (String) listAreas.getSelectedValue();
-		// Update resources list.
-		updateResourcesList(areaAlias);
+		try {
+			
+			// Get area alias.
+			String areaAlias = (String) listAreas.getSelectedValue();
+			// Update resources list.
+			updateResourcesList(areaAlias);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -422,50 +502,60 @@ public class SelectAreaResource extends JDialog {
 	 * @param areaAlias 
 	 */
 	private void updateResourcesList(String areaAlias) {
-		
-		// Reset list.
-		modelResources.clear();
-		if (areaAlias == null) {
-			return;
+		try {
+			
+			// Reset list.
+			modelResources.clear();
+			if (areaAlias == null) {
+				return;
+			}
+			Area area;
+			// Get area.
+			if (areaAlias.equals(Resources.getString("org.multipage.generator.textThisArea"))) {
+				area = this.area;
+			}
+			else if (areaAlias.equals(Resources.getString("org.multipage.generator.textStartArea"))) {
+				area = startArea;
+			}
+			else {
+				area = ProgramGenerator.getAreasModel().getAreaFromArea(this.area, areaAlias);
+			}
+			if (area == null) {
+				return;
+			}
+			
+			// Load resource names.
+			LinkedList<String> resourceNames = new LinkedList<String>();
+			resourceNames.addAll(area.getResourceNames());
+			// Sort the list.
+			Collections.sort(resourceNames);
+			
+			// Insert to model.
+			for (String resourceName : resourceNames) {
+				modelResources.addElement(resourceName);
+			}
 		}
-		Area area;
-		// Get area.
-		if (areaAlias.equals(Resources.getString("org.multipage.generator.textThisArea"))) {
-			area = this.area;
-		}
-		else if (areaAlias.equals(Resources.getString("org.multipage.generator.textStartArea"))) {
-			area = startArea;
-		}
-		else {
-			area = ProgramGenerator.getAreasModel().getAreaFromArea(this.area, areaAlias);
-		}
-		if (area == null) {
-			return;
-		}
-		
-		// Load resource names.
-		LinkedList<String> resourceNames = new LinkedList<String>();
-		resourceNames.addAll(area.getResourceNames());
-		// Sort the list.
-		Collections.sort(resourceNames);
-		
-		// Insert to model.
-		for (String resourceName : resourceNames) {
-			modelResources.addElement(resourceName);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load start area.
 	 */
 	private void loadStartArea() {
-		
-		// Select version.
-		Obj<VersionObj> version = new Obj<VersionObj>();
-		if (!SelectVersionDialog.showDialog(null, version)) {
-			return;
+		try {
+			
+			// Select version.
+			Obj<VersionObj> version = new Obj<VersionObj>();
+			if (!SelectVersionDialog.showDialog(null, version)) {
+				return;
+			}
+			
+			startArea = ProgramGenerator.getAreasModel().getStartArea(area, version.ref.getId());
 		}
-		
-		startArea = ProgramGenerator.getAreasModel().getStartArea(area, version.ref.getId());
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2023 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 16-05-2023
+ * Created on : 2023-05-16
  *
  */
 package org.maclan.server;
@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 import org.multipage.gui.Utility;
 
 /**
- * Xdebug commands that sends the IDE.
+ * Xdebug commands sent by IDE.
  * @author vakol
  *
  */
@@ -195,10 +195,7 @@ public class XdebugCommand {
            			}
            		}
            	}
-           	// Check if the transaction ID has been set.
-           	if (command.transactionId == -1) {
-               Utility.throwException("org.maclan.server.messageCannotParseXdebugCommandTransactionId", statementText);
-           	}
+           	
            	command.arguments = argumentList.toArray(new String[argumentList.size()][]);
            	
            	// Get command data.
@@ -287,5 +284,15 @@ public class XdebugCommand {
 	public int getTransactionId() {
 		
 		return transactionId;
+	}
+	
+	/**
+	 * Check if transaction sends response.
+	 * @return
+	 */
+	public boolean awaitingResponse() {
+
+		boolean awaitingResponse = (transactionId >= 0);
+		return awaitingResponse;
 	}
 }

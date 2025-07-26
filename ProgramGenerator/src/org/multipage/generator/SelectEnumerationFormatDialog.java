@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -55,6 +55,7 @@ import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.ToolBarKit;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -64,8 +65,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /**
- * 
- * @author
+ * Dialog that displays enumeration formats that can be selected.
+ * @author vakol
  *
  */
 public class SelectEnumerationFormatDialog extends JDialog {
@@ -172,11 +173,14 @@ public class SelectEnumerationFormatDialog extends JDialog {
 	 * @return
 	 */
 	public static void showDialog(Component parent) {
-		
-		SelectEnumerationFormatDialog dialog = new SelectEnumerationFormatDialog(parent);
-		dialog.setVisible(true);
-		
-		return;
+		try {
+			
+			SelectEnumerationFormatDialog dialog = new SelectEnumerationFormatDialog(parent);
+			dialog.setVisible(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -186,11 +190,16 @@ public class SelectEnumerationFormatDialog extends JDialog {
 	public SelectEnumerationFormatDialog(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
 
-		initComponents();
-		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try{
+			
+			initComponents();
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -261,25 +270,35 @@ public class SelectEnumerationFormatDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		localize();
-		setIcons();
-		
-		createAndLoadTable();
-		createToolBar();
-		
-		loadDialog();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			localize();
+			setIcons();
+			
+			createAndLoadTable();
+			createToolBar();
+			
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Create tool bar.
 	 */
 	private void createToolBar() {
-		
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/insert.png", this, "onAddNewFormat", "org.multipage.generator.tooltipAddNewEnumerationTextFormat");
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/remove_icon.png", this, "onRemoveFormat", "org.multipage.generator.tooltipRemoveEnumerationTextFormat");
+		try {
+			
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/insert.png", this, "onAddNewFormat", "org.multipage.generator.tooltipAddNewEnumerationTextFormat");
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/remove_icon.png", this, "onRemoveFormat", "org.multipage.generator.tooltipRemoveEnumerationTextFormat");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -287,37 +306,42 @@ public class SelectEnumerationFormatDialog extends JDialog {
 	 */
 	@SuppressWarnings("unused")
 	private void onRemoveFormat() {
-		
-		// Get selected index.
-		int selectedIndex = tableFormats.getSelectedRow();
-		if (selectedIndex == -1) {
+		try {
 			
-			Utility.show(this, "org.multipage.generator.messageSelectEnumerationFormat");
-			return;
-		}
-		
-		// Get text format.
-		Object object = tableModel.getValueAt(selectedIndex, 0);
-		if (!(object instanceof EnumerationTextFormat)) {
+			// Get selected index.
+			int selectedIndex = tableFormats.getSelectedRow();
+			if (selectedIndex == -1) {
+				
+				Utility.show(this, "org.multipage.generator.messageSelectEnumerationFormat");
+				return;
+			}
 			
-			Utility.show(this, "org.multipage.generator.messageBadFormatClassType");
-			return;
-		}
-		
-		EnumerationTextFormat format = (EnumerationTextFormat)object;
-		if (format.isDefault) {
+			// Get text format.
+			Object object = tableModel.getValueAt(selectedIndex, 0);
+			if (!(object instanceof EnumerationTextFormat)) {
+				
+				Utility.show(this, "org.multipage.generator.messageBadFormatClassType");
+				return;
+			}
 			
-			Utility.show(this, "org.multipage.generator.messageCannotRemoveDefaultEnumerationTextFormat");
-			return;
+			EnumerationTextFormat format = (EnumerationTextFormat)object;
+			if (format.isDefault) {
+				
+				Utility.show(this, "org.multipage.generator.messageCannotRemoveDefaultEnumerationTextFormat");
+				return;
+			}
+			
+			// Ask user.
+			if (!Utility.ask(this, "org.multipage.generator.messageRemoveSelectedEnumerationTextFormat")) {
+				return;
+			}
+			
+			// Remove it.
+			tableModel.removeRow(selectedIndex);
 		}
-		
-		// Ask user.
-		if (!Utility.ask(this, "org.multipage.generator.messageRemoveSelectedEnumerationTextFormat")) {
-			return;
-		}
-		
-		// Remove it.
-		tableModel.removeRow(selectedIndex);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -325,9 +349,14 @@ public class SelectEnumerationFormatDialog extends JDialog {
 	 */
 	@SuppressWarnings("unused")
 	private void onAddNewFormat() {
-		
-		EnumerationTextFormat format = new EnumerationTextFormat("", "", false);
-		tableModel.addRow(new Object [] {format, format.input});
+		try {
+			
+			EnumerationTextFormat format = new EnumerationTextFormat("", "", false);
+			tableModel.addRow(new Object [] {format, format.input});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -335,156 +364,196 @@ public class SelectEnumerationFormatDialog extends JDialog {
 	 */
 	@SuppressWarnings("serial")
 	private void createAndLoadTable() {
-		
-		final EnumerationTextFormat [] defaultFormats = {new EnumerationTextFormat("%s: %s;", "^([^:]+):([^;]+);?$", true)};
-		
-		// Save cell value on table focus lost.
-		tableFormats.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
-		
-		// Create table model.
-		tableModel = new DefaultTableModel(new String [] {
-				Resources.getString("org.multipage.generator.textEnumerationFormatOutput"),
-				Resources.getString("org.multipage.generator.textEnumerationFormatInput")
-		}, 0) {
-
-			// Disable editing of default formats.
-			@Override
-			public boolean isCellEditable(int row, int column) {
-				
-				// Get value.
-				Object value = tableModel.getValueAt(row, 0);
-				if (value instanceof EnumerationTextFormat) {
+		try {
+			
+			final EnumerationTextFormat [] defaultFormats = {new EnumerationTextFormat("%s: %s;", "^([^:]+):([^;]+);?$", true)};
+			
+			// Save cell value on table focus lost.
+			tableFormats.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+			
+			// Create table model.
+			tableModel = new DefaultTableModel(new String [] {
+					Resources.getString("org.multipage.generator.textEnumerationFormatOutput"),
+					Resources.getString("org.multipage.generator.textEnumerationFormatInput")
+			}, 0) {
+	
+				// Disable editing of default formats.
+				@Override
+				public boolean isCellEditable(int row, int column) {
 					
-					EnumerationTextFormat format = (EnumerationTextFormat) value;
-					
-					if (format.isDefault) {
-						return false;
+					try {
+						// Get value.
+						Object value = tableModel.getValueAt(row, 0);
+						if (value instanceof EnumerationTextFormat) {
+							
+							EnumerationTextFormat format = (EnumerationTextFormat) value;
+							
+							if (format.isDefault) {
+								return false;
+							}
+						}
+						
+						return super.isCellEditable(row, column);
 					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return false;
+				}
+	
+				// Set value.
+				@Override
+				public void setValueAt(Object aValue, int row, int column) {
+					try {
+						
+						Object editedObject = tableModel.getValueAt(row, 0);
+						if (editedObject instanceof EnumerationTextFormat) {
+							
+							EnumerationTextFormat format = (EnumerationTextFormat) editedObject;
+							
+							if (column == 0) {
+								format.output = aValue.toString();
+							}
+							else if (column == 1) {
+								format.input = aValue.toString();
+								super.setValueAt(aValue, row, column);
+							}
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			};
+			tableFormats.setModel(tableModel);
+			
+			// Set cell renderer.
+			tableFormats.setDefaultRenderer(Object.class, new TableCellRenderer() {
+				
+				// Get default cell renderer.
+				DefaultTableCellRenderer renderer = (DefaultTableCellRenderer) tableFormats.getDefaultRenderer(Object.class);
+				Font plainFont;
+				Font boldFont;
+				Color selectionColor;
+				
+				// Constructor.
+				{
+					try {
+						
+						plainFont = renderer.getFont().deriveFont(Font.PLAIN);
+						boldFont = renderer.getFont().deriveFont(Font.BOLD);
+						
+						selectionColor = SystemColor.textHighlight;
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
 				
-				return super.isCellEditable(row, column);
+				// Return changed default renderer.
+				@Override
+				public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+						int row, int column) {
+					
+					try {
+						renderer.setFont( plainFont);
+						renderer.setForeground(isSelected ? Color.WHITE : Color.BLACK);
+						renderer.setBackground(isSelected ? selectionColor : Color.WHITE);
+						
+						// Emphasize default format.
+						Object objectValue = tableModel.getValueAt(row, 0);
+						if (objectValue instanceof EnumerationTextFormat) {
+							EnumerationTextFormat format = (EnumerationTextFormat) objectValue;
+		
+							if (format.isDefault) {
+								renderer.setFont(boldFont);
+							}
+						}
+						
+						renderer.setText(value.toString());
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return renderer;
+				}
+			});
+			
+			// Load default formats.
+			for (EnumerationTextFormat format : defaultFormats) {
+				tableModel.addRow(new Object [] {format, format.input});
 			}
-
-			// Set value.
-			@Override
-			public void setValueAt(Object aValue, int row, int column) {
+			
+			// Try to load data from an XML file.
+			loadFormatsFromXml();
+			
+			// Select item.
+			int indexToSelect = 0;
+			for (int index = 0; index < tableModel.getRowCount(); index++) {
 				
-				Object editedObject = tableModel.getValueAt(row, 0);
-				if (editedObject instanceof EnumerationTextFormat) {
-					
-					EnumerationTextFormat format = (EnumerationTextFormat) editedObject;
-					
-					if (column == 0) {
-						format.output = aValue.toString();
-					}
-					else if (column == 1) {
-						format.input = aValue.toString();
-						super.setValueAt(aValue, row, column);
-					}
+				Object object = tableModel.getValueAt(index, 0);
+				if (!(object instanceof EnumerationTextFormat)) {
+					continue;
+				}
+				
+				EnumerationTextFormat existingFormat = (EnumerationTextFormat) object;
+				
+				if (existingFormat.equals(selectedFormat)) {
+					indexToSelect = index;
 				}
 			}
 			
+			tableFormats.getSelectionModel().setSelectionInterval(indexToSelect, indexToSelect);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
 		};
-		tableFormats.setModel(tableModel);
-		
-		// Set cell renderer.
-		tableFormats.setDefaultRenderer(Object.class, new TableCellRenderer() {
-			
-			// Get default cell renderer.
-			DefaultTableCellRenderer renderer = (DefaultTableCellRenderer) tableFormats.getDefaultRenderer(Object.class);
-			Font plainFont;
-			Font boldFont;
-			Color selectionColor;
-			
-			// Constructor.
-			{
-				plainFont = renderer.getFont().deriveFont(Font.PLAIN);
-				boldFont = renderer.getFont().deriveFont(Font.BOLD);
-				
-				selectionColor = SystemColor.textHighlight;
-			}
-			
-			// Return changed default renderer.
-			@Override
-			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
-					int row, int column) {
-				
-				renderer.setFont( plainFont);
-				renderer.setForeground(isSelected ? Color.WHITE : Color.BLACK);
-				renderer.setBackground(isSelected ? selectionColor : Color.WHITE);
-				
-				// Emphasize default format.
-				Object objectValue = tableModel.getValueAt(row, 0);
-				if (objectValue instanceof EnumerationTextFormat) {
-					EnumerationTextFormat format = (EnumerationTextFormat) objectValue;
-
-					if (format.isDefault) {
-						renderer.setFont(boldFont);
-					}
-				}
-				
-				renderer.setText(value.toString());
-				
-				return renderer;
-			}
-		});
-		
-		// Load default formats.
-		for (EnumerationTextFormat format : defaultFormats) {
-			tableModel.addRow(new Object [] {format, format.input});
-		}
-		
-		// Try to load data from an XML file.
-		loadFormatsFromXml();
-		
-		// Select item.
-		int indexToSelect = 0;
-		for (int index = 0; index < tableModel.getRowCount(); index++) {
-			
-			Object object = tableModel.getValueAt(index, 0);
-			if (!(object instanceof EnumerationTextFormat)) {
-				continue;
-			}
-			
-			EnumerationTextFormat existingFormat = (EnumerationTextFormat) object;
-			
-			if (existingFormat.equals(selectedFormat)) {
-				indexToSelect = index;
-			}
-		}
-		
-		tableFormats.getSelectionModel().setSelectionInterval(indexToSelect, indexToSelect);
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(labelFormatsList);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(labelFormatsList);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
-		
-		// Save formats to XML file.
-		saveFormatsToXml();
-		
-		saveDialog();
+		try {
+			
+			// Save formats to XML file.
+			saveFormatsToXml();
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 	
@@ -492,28 +561,33 @@ public class SelectEnumerationFormatDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		// Save formats to XML file.
-		saveFormatsToXml();
-		
-		// Remember selected format.
-		int selectedIndex = tableFormats.getSelectedRow();
-		if (selectedIndex == -1) {
+		try {
 			
-			Utility.show(this, "org.multipage.generator.messageSelectEnumerationFormat");
-			return;
-		}
-		
-		Object object = tableFormats.getValueAt(selectedIndex, 0);
-		if (!(object instanceof EnumerationTextFormat)) {
+			// Save formats to XML file.
+			saveFormatsToXml();
 			
-			Utility.show(this, "org.multipage.generator.messageBadFormatClassType");
-			return;
+			// Remember selected format.
+			int selectedIndex = tableFormats.getSelectedRow();
+			if (selectedIndex == -1) {
+				
+				Utility.show(this, "org.multipage.generator.messageSelectEnumerationFormat");
+				return;
+			}
+			
+			Object object = tableFormats.getValueAt(selectedIndex, 0);
+			if (!(object instanceof EnumerationTextFormat)) {
+				
+				Utility.show(this, "org.multipage.generator.messageBadFormatClassType");
+				return;
+			}
+			
+			selectedFormat = (EnumerationTextFormat) object;
+			saveDialog();
 		}
-		
-		selectedFormat = (EnumerationTextFormat) object;
-		
-		saveDialog();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -585,7 +659,6 @@ public class SelectEnumerationFormatDialog extends JDialog {
 			}
 	    }
 	    catch (Exception e) {
-	    	
 	    	Utility.show(this, e.getLocalizedMessage());
 	    }
 	}
@@ -625,15 +698,33 @@ public class SelectEnumerationFormatDialog extends JDialog {
 				db.setErrorHandler(new ErrorHandler() {
 					@Override
 					public void warning(SAXParseException exception) throws SAXException {
-						JOptionPane.showMessageDialog(null, exception.getMessage());
+						try {
+							
+							JOptionPane.showMessageDialog(null, exception.getMessage());
+						}
+						catch(Throwable expt) {
+							Safe.exception(expt);
+						};
 					}
 					@Override
-					public void fatalError(SAXParseException exception) throws SAXException {						
-						JOptionPane.showMessageDialog(null, exception.getMessage());
+					public void fatalError(SAXParseException exception) throws SAXException {
+						try {
+							
+							JOptionPane.showMessageDialog(null, exception.getMessage());
+						}
+						catch(Throwable expt) {
+							Safe.exception(expt);
+						};
 					}
 					@Override
-					public void error(SAXParseException exception) throws SAXException {						
-						JOptionPane.showMessageDialog(null, exception.getMessage());
+					public void error(SAXParseException exception) throws SAXException {
+						try {
+							
+							JOptionPane.showMessageDialog(null, exception.getMessage());
+						}
+						catch(Throwable expt) {
+							Safe.exception(expt);
+						};
 					}
 				});
 		        Document document = db.parse(file);
@@ -687,7 +778,8 @@ public class SelectEnumerationFormatDialog extends JDialog {
 		        }
 			}
 			
-		} catch (Exception e) {
+		} 
+		catch (Exception e) {
 			exception = e;
 		}
 		finally {
@@ -701,20 +793,30 @@ public class SelectEnumerationFormatDialog extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setBounds(bounds);
+			}
 		}
-		else {
-			setBounds(bounds);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

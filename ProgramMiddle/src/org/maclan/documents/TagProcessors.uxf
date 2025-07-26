@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1.0">
+  <zoom_level>5</zoom_level>
+  <element>
+    <id>UMLGeneric</id>
+    <coordinates>
+      <x>215</x>
+      <y>375</y>
+      <w>135</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>_processAreaServerTextAndTags_
+bg=orange
+Entry point for tag processing.</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLGeneric</id>
+    <coordinates>
+      <x>415</x>
+      <y>285</y>
+      <w>155</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>_processSimpleSingleTags_
+bg=orange
+Simple single tags.
+[@TAGNAME]</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>345</x>
+      <y>295</y>
+      <w>80</w>
+      <h>105</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;&gt;</panel_attributes>
+    <additional_attributes>10.0;190.0;140.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLGeneric</id>
+    <coordinates>
+      <x>415</x>
+      <y>330</y>
+      <w>155</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>_processComplexSingleTags_
+bg=orange
+Complex single tags.
+[@TAGNAME properties]</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>345</x>
+      <y>340</y>
+      <w>80</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;&gt;</panel_attributes>
+    <additional_attributes>10.0;100.0;140.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLGeneric</id>
+    <coordinates>
+      <x>415</x>
+      <y>375</y>
+      <w>155</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>_processFullTags_
+bg=orange
+Full tags.
+[@TAGNAME properties] text [/@TAGNAME]</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>345</x>
+      <y>385</y>
+      <w>80</w>
+      <h>15</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;140.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLGeneric</id>
+    <coordinates>
+      <x>415</x>
+      <y>420</y>
+      <w>155</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>_processIfThenTags_
+bg=orange
+IF - THEN tags.</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>345</x>
+      <y>385</y>
+      <w>80</w>
+      <h>65</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;140.0;110.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLGeneric</id>
+    <coordinates>
+      <x>415</x>
+      <y>465</y>
+      <w>155</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>_processCallTags_
+bg=orange
+CALL tags.</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLObject</id>
+    <coordinates>
+      <x>590</x>
+      <y>290</y>
+      <w>110</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes>simpleSingleTagProcessors
+bg=green</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>565</x>
+      <y>295</y>
+      <w>35</w>
+      <h>15</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>50.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLObject</id>
+    <coordinates>
+      <x>590</x>
+      <y>335</y>
+      <w>110</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes>complexSingleTagProcessors
+bg=green</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>565</x>
+      <y>340</y>
+      <w>35</w>
+      <h>15</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>50.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLObject</id>
+    <coordinates>
+      <x>590</x>
+      <y>380</y>
+      <w>110</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes>fullTagProcessors
+bg=green</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>565</x>
+      <y>385</y>
+      <w>35</w>
+      <h>15</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>50.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLObject</id>
+    <coordinates>
+      <x>725</x>
+      <y>100</y>
+      <w>140</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>@LANG_FLAG
+@CURRENT_LANG_FLAG
+@LANG_DESCRIPTION
+@CURRENT_LANG_DESCRIPTION
+@LANG_ALIAS
+@CURRENT_LANG_ALIAS
+@LANG_ID
+@CURRENT_LANG_ID
+@POST
+@INNER
+bg=YELLOW</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>695</x>
+      <y>135</y>
+      <w>40</w>
+      <h>175</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>60.0;10.0;10.0;330.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLObject</id>
+    <coordinates>
+      <x>725</x>
+      <y>200</y>
+      <w>140</w>
+      <h>265</h>
+    </coordinates>
+    <panel_attributes>@LAST
+@AREA_NAME
+@AREA_ALIAS
+@AREA_ID
+@RESOURCE_ID
+@RESOURCE_EXT
+@RESOURCE_VALUE
+@RESOURCE
+@TAG
+@INPUT
+@STORE
+@IMAGE
+@VAR
+@SET
+@GET
+@URL
+@USING
+@RENDER_CLASS
+@VERSION_URL
+@VERSION_NAME
+@VERSION_ID
+@TIMEOUT
+@BOOKMARK
+@PRAGMA
+@UNZIP
+@RUN
+@REDIRECT
+@TRAY_MENU
+@SUBAREAS
+@SUPERAREAS
+@TRACE
+@BREAK
+bg=YELLOW</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>695</x>
+      <y>325</y>
+      <w>40</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>60.0;10.0;10.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLObject</id>
+    <coordinates>
+      <x>725</x>
+      <y>475</y>
+      <w>140</w>
+      <h>135</h>
+    </coordinates>
+    <panel_attributes>@LOOP
+@OUTPUT
+@A
+@ANCHOR
+@VERSION_ANCHOR
+@REPLACE_BOOKMARK
+@INCLUDE_ONCE
+@LITERAL
+@JAVASCRIPT
+@INDENT
+@NOINDENT
+@CSS_LOOKUP_TABLE
+@REM
+@PACK
+@BLOCK
+@PPTEXT
+bg=YELLOW</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>695</x>
+      <y>385</y>
+      <w>40</w>
+      <h>165</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>60.0;310.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>345</x>
+      <y>385</y>
+      <w>80</w>
+      <h>105</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;140.0;190.0</additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>465</x>
+      <y>35</y>
+      <w>170</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>_Tag Processors_
+style=wordwrap
+fontsize=40</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLObject</id>
+    <coordinates>
+      <x>590</x>
+      <y>420</y>
+      <w>110</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>@IF-THEN-ELSE
+bg=YELLOW</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>565</x>
+      <y>430</y>
+      <w>35</w>
+      <h>15</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>50.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLObject</id>
+    <coordinates>
+      <x>590</x>
+      <y>465</y>
+      <w>110</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>@CALL
+@PROCEDURE_NAME
+bg=YELLOW</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>565</x>
+      <y>480</y>
+      <w>35</w>
+      <h>15</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>50.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+</diagram>

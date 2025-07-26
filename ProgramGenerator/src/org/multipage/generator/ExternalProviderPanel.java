@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2019 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 10-12-2019
+ * Created on : 2019-12-10
  *
  */
 package org.multipage.generator;
@@ -22,10 +22,11 @@ import org.maclan.Slot;
 import org.maclan.ExternalLinkParser.Type;
 import org.multipage.gui.StringValueEditor;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author user
+ * Panel that displays external provider.
+ * @author vakol
  *
  */
 public class ExternalProviderPanel extends JPanel {
@@ -68,10 +69,15 @@ public class ExternalProviderPanel extends JPanel {
 	 */
 	public ExternalProviderPanel() {
 		
-		// Initialize components
-		initComponents();
-		// Post creation of the panel
-		postCreation(); //$hide$
+		try {
+			// Initialize components
+			initComponents();
+			// Post creation of the panel
+			postCreation(); //$hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -139,68 +145,86 @@ public class ExternalProviderPanel extends JPanel {
 	 * Post creation of the panel
 	 */
 	private void postCreation() {
-		
-		localize();
-		
-		loadDialog();
+		try {
+			
+			localize();
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Localize controls
 	 */
 	private void localize() {
-		
-		Utility.localize(radioFile);
-		Utility.localize(radioUrl);
-		Utility.localize(radioArea);
-		Utility.localize(checkReadsInput);
-		Utility.localize(checkWritesOutput);
+		try {
+			
+			Utility.localize(radioFile);
+			Utility.localize(radioUrl);
+			Utility.localize(radioArea);
+			Utility.localize(checkReadsInput);
+			Utility.localize(checkWritesOutput);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Update panel depending on radio buttons
 	 */
 	private void updatePanel() {
-		
-		container.remove(filePanel);
-		container.remove(urlPanel);
-		container.remove(areaPanel);
-		currentEditor = null;
-		
-		if (radioFile.isSelected()) {
-			container.add(filePanel, BorderLayout.CENTER);
-			currentEditor = filePanel;
+		try {
+			
+			container.remove(filePanel);
+			container.remove(urlPanel);
+			container.remove(areaPanel);
+			currentEditor = null;
+			
+			if (radioFile.isSelected()) {
+				container.add(filePanel, BorderLayout.CENTER);
+				currentEditor = filePanel;
+			}
+			else if (radioUrl.isSelected()) {
+				container.add(urlPanel, BorderLayout.CENTER);
+				currentEditor = urlPanel;
+			}
+			else if (radioArea.isSelected()) {
+				container.add(areaPanel, BorderLayout.CENTER);
+				currentEditor = areaPanel;
+			}
+			
+			container.updateUI();
 		}
-		else if (radioUrl.isSelected()) {
-			container.add(urlPanel, BorderLayout.CENTER);
-			currentEditor = urlPanel;
-		}
-		else if (radioArea.isSelected()) {
-			container.add(areaPanel, BorderLayout.CENTER);
-			currentEditor = areaPanel;
-		}
-		
-		container.updateUI();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Load dialog
 	 */
 	private void loadDialog() {
-		
-		// Create panels.
-		filePanel = new FilePanel("");
-		urlPanel = new UrlPanel("");
-		areaPanel = new AreaPanel("");
-		
-		// Create panel map.
-		panelMap = new Object [][] {{ ExternalLinkParser.Type.FILE, radioFile, filePanel },
-									{ ExternalLinkParser.Type.URL,  radioUrl, urlPanel },
-									{ ExternalLinkParser.Type.AREA, radioArea, areaPanel }};
-		
-		loadEditor(Type.FILE, null, null);
-									
-		updatePanel();
+		try {
+			
+			// Create panels.
+			filePanel = new FilePanel("");
+			urlPanel = new UrlPanel("");
+			areaPanel = new AreaPanel("");
+			
+			// Create panel map.
+			panelMap = new Object [][] {{ ExternalLinkParser.Type.FILE, radioFile, filePanel },
+										{ ExternalLinkParser.Type.URL,  radioUrl, urlPanel },
+										{ ExternalLinkParser.Type.AREA, radioArea, areaPanel }};
+			
+			loadEditor(Type.FILE, null, null);
+			updatePanel();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -209,19 +233,25 @@ public class ExternalProviderPanel extends JPanel {
 	 */
 	String getExternalProviderLink() {
 		
-		if (currentEditor == null) {
-			return "";
+		try {
+			
+			if (currentEditor == null) {
+				return "";
+			}
+			
+			String link = currentEditor.getSpecification();
+			if (link.isEmpty()) {
+				return "";
+			}
+			
+			String valueMeaning = getValueMeaning();
+			link = valueMeaning + ";" + link;
+			return link;
 		}
-		
-		String link = currentEditor.getSpecification();
-		if (link.isEmpty()) {
-			return "";
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		String valueMeaning = getValueMeaning();
-		link = valueMeaning + ";" + link;
-		
-		return link;
+		return "";
 	}
 	
 	/**
@@ -229,7 +259,13 @@ public class ExternalProviderPanel extends JPanel {
 	 */
 	boolean getReadsInput() {
 		
-		return checkReadsInput.isSelected();
+		try {
+			return checkReadsInput.isSelected();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
@@ -237,7 +273,13 @@ public class ExternalProviderPanel extends JPanel {
 	 */
 	boolean getWritesOutput() {
 		
-		return checkWritesOutput.isSelected();
+		try {
+			return checkWritesOutput.isSelected();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
@@ -246,18 +288,22 @@ public class ExternalProviderPanel extends JPanel {
 	 */
 	String getValueMeaning() {
 		
-		if (currentEditor == null) {
-			return "";
-		}
-		
-		for (Object [] item : panelMap) {
-			if (item[2].equals(currentEditor)) {
-				
-				ExternalLinkParser.Type type = (ExternalLinkParser.Type) item[0];
-				return type.alias;
+		try {
+			if (currentEditor == null) {
+				return "";
+			}
+			
+			for (Object [] item : panelMap) {
+				if (item[2].equals(currentEditor)) {
+					
+					ExternalLinkParser.Type type = (ExternalLinkParser.Type) item[0];
+					return type.alias;
+				}
 			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return "";
 	}
 	
@@ -268,24 +314,29 @@ public class ExternalProviderPanel extends JPanel {
 	 * @param area 
 	 */
 	private void loadEditor(Type type, String link, Area area) {
-		
-		// Do loop for all panels.
-		for (Object [] item : panelMap) {
-			if (item[0].equals(type)) {
-				
-				JRadioButton radio = (JRadioButton)  item[1];
-				radio.setSelected(true);
-				
-				if (link != null) {
+		try {
+			
+			// Do loop for all panels.
+			for (Object [] item : panelMap) {
+				if (item[0].equals(type)) {
 					
-					// Set external provider access string.
-					ExternalProviderInterface handler = (ExternalProviderInterface) item[2];
-					handler.setEditor(link, area);
+					JRadioButton radio = (JRadioButton)  item[1];
+					radio.setSelected(true);
+					
+					if (link != null) {
+						
+						// Set external provider access string.
+						ExternalProviderInterface handler = (ExternalProviderInterface) item[2];
+						handler.setEditor(link, area);
+					}
+					
+					break;
 				}
-				
-				break;
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -293,23 +344,28 @@ public class ExternalProviderPanel extends JPanel {
 	 * @param slot
 	 */
 	public void loadFromSlot(Slot slot) {
-		
-		// Set area.
-		Area area = (Area) slot.getHolder();
-		
-		// Get external provider link.
-		String link = slot.getExternalProvider();
-		ExternalLinkParser.Type type = ExternalLinkParser.getType(link);
-		
-		// Load editor depending on type.
-		loadEditor(type, link, area);
-		
-		// Set slot reads flag.
-		boolean readsInput = slot.getReadsInput();
-		checkReadsInput.setSelected(readsInput);
-		
-		// Set slot writes flag.
-		boolean writesOutput = slot.getWritesOutput();
-		checkWritesOutput.setSelected(writesOutput);
+		try {
+			
+			// Set area.
+			Area area = (Area) slot.getHolder();
+			
+			// Get external provider link.
+			String link = slot.getExternalProvider();
+			ExternalLinkParser.Type type = ExternalLinkParser.getType(link);
+			
+			// Load editor depending on type.
+			loadEditor(type, link, area);
+			
+			// Set slot reads flag.
+			boolean readsInput = slot.getReadsInput();
+			checkReadsInput.setSelected(readsInput);
+			
+			// Set slot writes flag.
+			boolean writesOutput = slot.getWritesOutput();
+			checkWritesOutput.setSelected(writesOutput);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

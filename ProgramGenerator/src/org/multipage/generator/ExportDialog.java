@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -28,7 +28,6 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
-import javax.swing.SwingUtilities;
 
 import org.maclan.Area;
 import org.maclan.AreaTreesData;
@@ -39,11 +38,12 @@ import org.multipage.gui.Images;
 import org.multipage.gui.ProgressDialog;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 import org.multipage.util.SwingWorkerHelper;
 
 /**
- * 
- * @author
+ * Dialog that displays parameters for areas export.
+ * @author vakol
  *
  */
 public class ExportDialog extends JDialog {
@@ -95,17 +95,25 @@ public class ExportDialog extends JDialog {
 	private JTextField textFileName;
 
 	/**
-	 * Show dialog.
+	 * Show export dialog.
 	 * @param parent
 	 * @param parentArea 
 	 * @return
 	 */
 	public static boolean showDialog(Component parent, Area area, Area parentArea) {
-
-		ExportDialog dialog = new ExportDialog(Utility.findWindow(parent), area, parentArea);
-		dialog.setVisible(true);
-
-		return dialog.confirm;
+		
+		try {
+			Window parentWindow = Utility.findWindow(parent);
+			
+			ExportDialog dialog = new ExportDialog(parentWindow, area, parentArea);
+			dialog.setVisible(true);
+	
+			return dialog.confirm;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -116,11 +124,16 @@ public class ExportDialog extends JDialog {
 	 */
 	public ExportDialog(Window window, Area area, Area parentArea) {
 		super(window, ModalityType.DOCUMENT_MODAL);
-
-		this.area = area; // $hide$
-		this.parentArea = parentArea; // $hide$
-		initComponents();
-		postCreation(); // $hide$
+		
+		try {
+			this.area = area; // $hide$
+			this.parentArea = parentArea; // $hide$
+			initComponents();
+			postCreation(); // $hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -229,37 +242,53 @@ public class ExportDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreation() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-
-		Utility.centerOnScreen(this);
-		localize();
-		setIcons();
-		loadDialog();
-		loadDataToExport();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			Utility.centerOnScreen(this);
+			
+			localize();
+			setIcons();
+			loadDialog();
+			
+			loadDataToExport();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonCancel);
-		Utility.localize(buttonExport);
-		Utility.localize(labelExportInfo);
-		Utility.localize(labelExportFolder);
-		Utility.localize(labelExportTreeName);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonCancel);
+			Utility.localize(buttonExport);
+			Utility.localize(labelExportInfo);
+			Utility.localize(labelExportFolder);
+			Utility.localize(labelExportTreeName);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonExport.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
-		buttonFolder.setIcon(Images.getIcon("org/multipage/generator/images/open.png"));
+		try {
+			
+			buttonExport.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+			buttonFolder.setIcon(Images.getIcon("org/multipage/generator/images/open.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -269,16 +298,27 @@ public class ExportDialog extends JDialog {
 	 */
 	private boolean existsFolder(String folder) {
 		
-		return new File(folder).exists();
+		try {
+			return new File(folder).exists();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		setFolderField(exportFolder);
-		textFileName.setText(Utility.convertToFileName(area.getDescriptionForced(false)));
+		try {
+			
+			setFolderField(exportFolder);
+			textFileName.setText(Utility.convertToFileName(area.getDescriptionForced(false)));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -287,149 +327,163 @@ public class ExportDialog extends JDialog {
 	 */
 	private void setFolderField(String folder) {
 		
-		if (!existsFolder(folder)) {
-			folder = Resources.getString("org.multipage.generator.textFolderDoesntExist");
-			textFolder.setForeground(Color.RED);
-			exportFolder = "";
+		try {
+			if (!existsFolder(folder)) {
+				folder = Resources.getString("org.multipage.generator.textFolderDoesntExist");
+				textFolder.setForeground(Color.RED);
+				exportFolder = "";
+			}
+			else {
+				textFolder.setForeground(Color.BLACK);
+				exportFolder = folder;
+			}
+			
+			textFolder.setText(folder);
 		}
-		else {
-			textFolder.setForeground(Color.BLACK);
-			exportFolder = folder;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		textFolder.setText(folder);
 	}
 	
 	/**
 	 * On set folder.
 	 */
 	protected void onFolder() {
-		
-		// Get rendering target.
-		String folder = Utility.chooseDirectory(this, Resources.getString("org.multipage.generator.textSelectExportFolder"));
-		if (folder == null) {
-			return;
+		try {
+			
+			// Get rendering target.
+			String folder = Utility.chooseDirectory(this, Resources.getString("org.multipage.generator.textSelectExportFolder"));
+			if (folder == null) {
+				return;
+			}
+			
+			// Set target field.
+			setFolderField(folder);
 		}
-		
-		// Set target field.
-		setFolderField(folder);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load data to export.
 	 */
 	private void loadDataToExport() {
-		
-		// Create and execute progress dialog.
-		ProgressDialog<MiddleResult> progressDlg = new ProgressDialog<MiddleResult>(this,
-				Resources.getString("org.multipage.generator.textExportProgressTitle"),
-				Resources.getString("org.multipage.generator.textExportLoadingData"));
-		
-		// Load area tree data.
-		progressDlg.execute(new SwingWorkerHelper<MiddleResult>() {
-			@Override
-			protected MiddleResult doBackgroundProcess() throws Exception {
-				
-				Middle middle = ProgramBasic.getMiddle();
-				Properties login = ProgramBasic.getLoginProperties();
-				areaTreeData = new AreaTreesData();
-				
-				Long parentAreaId = parentArea != null ? parentArea.getId() : null;
-				
-				MiddleResult result = middle.loadAreaTreeData(login, area.getId(), parentAreaId,
-						areaTreeData, this);
-				return result;
-			}
-		});
-		
-		boolean exitDialog = false;
-		
-		MiddleResult result = progressDlg.getOutput();
-		// On cancel exit.
-		if (result == null) {
-			exitDialog = true;
-		}
-		// On error exit.
-		else if (result.isNotOK()) {
-			result.show(this);
-			exitDialog = true;
-		}
-		if (exitDialog) {
-			SwingUtilities.invokeLater(new Runnable() {
+		try {
+			
+			// Create and execute progress dialog.
+			ProgressDialog<MiddleResult> progressDlg = new ProgressDialog<MiddleResult>(this,
+					Resources.getString("org.multipage.generator.textExportProgressTitle"),
+					Resources.getString("org.multipage.generator.textExportLoadingData"));
+			
+			// Load area tree data.
+			progressDlg.execute(new SwingWorkerHelper<MiddleResult>() {
 				@Override
-				public void run() {
-					dispose();
+				protected MiddleResult doBackgroundProcess() throws Exception {
+					
+					Middle middle = ProgramBasic.getMiddle();
+					Properties login = ProgramBasic.getLoginProperties();
+					areaTreeData = new AreaTreesData();
+					
+					Long parentAreaId = parentArea != null ? parentArea.getId() : null;
+					long areaId = area.getId();
+					
+					MiddleResult result = middle.loadAreaTreeData(login, areaId, parentAreaId, areaTreeData, this);
+					return result;
 				}
 			});
-
-			return;
+			
+			boolean exitDialog = false;
+			
+			MiddleResult result = progressDlg.getOutput();
+			// On cancel exit.
+			if (result == null) {
+				exitDialog = true;
+			}
+			// On error exit.
+			else if (result.isNotOK()) {
+				result.show(this);
+				exitDialog = true;
+			}
+			if (exitDialog) {
+				Safe.invokeLater(() -> {
+					dispose();
+				});
+	
+				return;
+			}
+			// Set message information.
+			String message = areaTreeData.getExportMessage();
+			editorInfo.setText(message);
 		}
-		// Set message information.
-		String message = areaTreeData.getExportMessage();
-		editorInfo.setText(message);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On export.
 	 */
 	protected void onExport() {
-		
-		final String folder = textFolder.getText();
-		final String fileName = Utility.convertToFileName(textFileName.getText());
-		
-		// Check folder.
-		if (!existsFolder(folder)) {
-			Utility.show(this, "org.multipage.generator.messageExportFolderDoesntExist");
-			return;
-		}
-		
-		// Check if files already exist.
-		File datFile = new File(folder + File.separator + fileName + ".dat");
-		File xmlFile = new File(folder + File.separator + fileName + ".xml");
-		
-		if (datFile.exists() || xmlFile.exists()) {
+		try {
 			
-			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-			String lastModified = format.format(xmlFile.lastModified());
+			final String folder = textFolder.getText();
+			final String fileName = Utility.convertToFileName(textFileName.getText());
 			
-			if (!Utility.ask(this, "org.multipage.generator.messageExportFileExistsOverwriteIt", fileName, lastModified)) {
+			// Check folder.
+			if (!existsFolder(folder)) {
+				Utility.show(this, "org.multipage.generator.messageExportFolderDoesntExist");
 				return;
 			}
-		}
-		
-		// Create and execute progress dialog.
-		ProgressDialog<MiddleResult> progressDlg = new ProgressDialog<MiddleResult>(this,
-				Resources.getString("org.multipage.generator.textExportProgressTitle"),
-				Resources.getString("org.multipage.generator.textExportingData"));
-		
-		progressDlg.execute(new SwingWorkerHelper<MiddleResult>() {
-			@Override
-			protected MiddleResult doBackgroundProcess() throws Exception {
+			
+			// Check if files already exist.
+			File datFile = new File(folder + File.separator + fileName + ".dat");
+			File xmlFile = new File(folder + File.separator + fileName + ".xml");
+			
+			if (datFile.exists() || xmlFile.exists()) {
 				
-				Middle middle = ProgramBasic.getMiddle();
-				Properties login = ProgramBasic.getLoginProperties();
+				SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+				String lastModified = format.format(xmlFile.lastModified());
 				
-				// Export data.
-				MiddleResult result = areaTreeData.export(middle, login, folder, fileName, this);
-				if (result == MiddleResult.CANCELLATION) {
-					throw new CancellationException();
+				if (!Utility.ask(this, "org.multipage.generator.messageExportFileExistsOverwriteIt", fileName, lastModified)) {
+					return;
 				}
-
-				return result;
 			}
-		});
-				
-		MiddleResult result = progressDlg.getOutput();
-		// On error inform user.
-		if (result != null && result.isNotOK()) {
-			result.show(this);
-		}
-
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
+			
+			// Create and execute progress dialog.
+			ProgressDialog<MiddleResult> progressDlg = new ProgressDialog<MiddleResult>(this,
+					Resources.getString("org.multipage.generator.textExportProgressTitle"),
+					Resources.getString("org.multipage.generator.textExportingData"));
+			
+			progressDlg.execute(new SwingWorkerHelper<MiddleResult>() {
+				@Override
+				protected MiddleResult doBackgroundProcess() throws Exception {
+					
+					Middle middle = ProgramBasic.getMiddle();
+					Properties login = ProgramBasic.getLoginProperties();
+					
+					// Export data.
+					MiddleResult result = areaTreeData.export(middle, login, folder, fileName, this);
+					if (result == MiddleResult.CANCELLATION) {
+						throw new CancellationException();
+					}
+	
+					return result;
+				}
+			});
+					
+			MiddleResult result = progressDlg.getOutput();
+			// On error inform user.
+			if (result != null && result.isNotOK()) {
+				result.show(this);
+			}
+	
+			Safe.invokeLater(() -> {
 				dispose();
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

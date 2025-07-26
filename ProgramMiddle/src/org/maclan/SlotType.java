@@ -1,14 +1,17 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.maclan;
 
+import java.awt.Color;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import org.maclan.expression.ExpressionSolver;
@@ -16,7 +19,8 @@ import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
 
 /**
- * @author
+ * Enumeration of slot types.
+ * @author vakol
  *
  */
 public enum SlotType {
@@ -32,6 +36,42 @@ public enum SlotType {
 	AREA_REFERENCE("middle.textAreaSlotType", "AreaReference"),
 	EXTERNAL_PROVIDER("middle.textExternalSlotType", "ExternalProvider"),
 	PATH("middle.textPathSlotType", "Path");
+	
+	/**
+	 * Empty value map.
+	 */
+	private static final Map<Class<?>, Object> emptyValueMap = new HashMap<>();
+	
+	/**
+	 * Static constructor.
+	 */
+	static {
+		
+		// Fill the empty value map.
+		emptyValueMap.put(String.class, (String) "");
+		emptyValueMap.put(Character.class, (Character) '\0');
+		emptyValueMap.put(Long.class, (Long) 0L);
+		emptyValueMap.put(Integer.class, (Integer) 0);
+		emptyValueMap.put(Double.class, (Double) 0.0);
+		emptyValueMap.put(Float.class, (Float) 0.0f);
+		emptyValueMap.put(Boolean.class, (Boolean) false);
+		emptyValueMap.put(Color.class, (Color) Color.BLACK);
+	}
+	
+	/**
+	 * Get empty value that has type specified by the valueClass parameter.
+	 * @param valueClass - The value class.
+	 * @return
+	 */
+	public static Object getEmptyValue(Class<?> valueClass) {
+		
+		if (valueClass == null) {
+            return null;
+        }
+		
+		Object emptyValue = emptyValueMap.get(valueClass);
+		return emptyValue;
+	}
 	
 	/**
 	 * Properties.

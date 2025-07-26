@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2021 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 19-02-2021
+ * Created on : 2021-02-19
  *
  */
 package org.multipage.gui;
@@ -18,25 +18,25 @@ import java.util.LinkedList;
 public class Signal implements ApplicationEvent {
 	
 	// Special signal that runs user lambda function placed in a message on the message thread.
-	public static Signal _invokeLater = new Signal();
+	public static final Signal _invokeLater = new Signal();
 	
 	// Enables target signal.
-	public static Signal _enableTargetSignal = new Signal();
+	public static final Signal _enableTargetSignal = new Signal();
 	
 	// TODO: <---MAKE finish the definition of the "terminate" signal
-	public static Signal terminate = new Signal();
+	public static final Signal terminate = new Signal();
 	
 	// Enable or disable debugging.
-	public static Signal debugging = new Signal();
+	public static final Signal debugging = new Signal();
 	
-	public static Signal stepLog = new Signal();
+	public static final Signal stepLog = new Signal();
 	
-	public static Signal runLogging = new Signal();
+	public static final Signal runLogging = new Signal();
 	
-	public static Signal breakLogging = new Signal();
+	public static final Signal breakLogging = new Signal();
 	
 	// Switch database.
-	public static Signal switchDatabase = new Signal();
+	public static final Signal switchDatabase = new Signal();
 	
 	/**
 	 * Helper function for assignment of signal types.

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -18,8 +18,8 @@ import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
 
 /**
- * Graph node.
- * @author
+ * Class for the area objects.
+ * @author vakol
  *
  */
 public class Area extends SlotHolder implements FlagElement, Element, ResContainer, Comparable<Object>, IdentifiedTreeNode {
@@ -552,6 +552,18 @@ public class Area extends SlotHolder implements FlagElement, Element, ResContain
 	 * @return the description
 	 */
 	public String getDescription() {
+		return description;
+	}
+	
+	/**
+	 * Get trimmed description.
+	 * @return the description
+	 */
+	public String getDescriptionText() {
+		
+		if (description == null) {
+			return "";
+		}
 		return description;
 	}
 
@@ -2251,6 +2263,15 @@ public class Area extends SlotHolder implements FlagElement, Element, ResContain
 		
 		this.startResourceId = startResourceId;
 	}
+	
+	/**
+	 * Get start resource ID.
+	 * @return
+	 */
+	public Long getStartResourceId() {
+		
+		return startResourceId;
+	}
 
 	/**
 	 * Gets true value if the area has a start resource.
@@ -2406,14 +2427,10 @@ public class Area extends SlotHolder implements FlagElement, Element, ResContain
 	}
 	
 	/**
-	 * Clear slots.
+	 * Clear slot names.
 	 */
-	@Override
-	public void clearSlots() {
-		
-		// Delegate call to parent object method.
-		super.clearSlots();
-		
+	public void clearSlotNames() {
+
 		// Clear additional slot information.
 		slotAliases.clear();
 		slotNames.clear();

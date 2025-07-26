@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -10,11 +10,11 @@ package org.multipage.gui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.GraphicsEnvironment;
 import java.awt.Menu;
@@ -35,6 +35,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.geom.Rectangle2D;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -47,7 +48,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -135,7 +135,6 @@ import javax.swing.ListCellRenderer;
 import javax.swing.RowSorter;
 import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
-import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
@@ -169,13 +168,15 @@ import org.apache.commons.io.IOUtils;
 import org.multipage.gui.SearchTextDialog.Parameters;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 import org.w3c.dom.Node;
 
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
 
 /**
- * @author
+ * Miscelaneus utility functions.
+ * @author vakol
  *
  */
 public class Utility {
@@ -236,8 +237,8 @@ public class Utility {
 	 */
 	private final static char [][][] keyboard = 
 		{{{ 'Q' }, { 'W' }, { 'E' }, { 'R' }, { 'T' }, { 'Y' }, { 'U' }, { 'I' }, { 'O' }, { 'P' }},
-         {{ 'A' }, { 'S' }, { 'D' }, { 'F' }, { 'G' }, { 'H' }, { 'J' }, { 'K' }, { 'L' }, { '\0'}},
-         {{ '\0'}, { 'Z' }, { 'X' }, { 'C' }, { 'V' }, { 'B' }, { 'N' }, { 'M' }, { '\0'}, { '\0'}}};
+		 {{ 'A' }, { 'S' }, { 'D' }, { 'F' }, { 'G' }, { 'H' }, { 'J' }, { 'K' }, { 'L' }, { '\0'}},
+		 {{ '\0'}, { 'Z' }, { 'X' }, { 'C' }, { 'V' }, { 'B' }, { 'N' }, { 'M' }, { '\0'}, { '\0'}}};
 	
 	private static int keyboardHeight = -1;
 	private static int keyboardWidth = -1;
@@ -248,9 +249,14 @@ public class Utility {
 	 * Initialization.
 	 */
 	static {
-		
-		// Initialize computation of text distances.
-		initTextDistanceComputation();
+		try {
+			
+			// Initialize computation of text distances.
+			initTextDistanceComputation();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -299,10 +305,16 @@ public class Utility {
 	 * @return
 	 */
 	public static Timestamp getCurrentTimestamp() {
-
-		long currentTimeMs = System.currentTimeMillis();
-		Timestamp initialTimestamp = new Timestamp(currentTimeMs);
-		return initialTimestamp;
+		
+		try {
+			long currentTimeMs = System.currentTimeMillis();
+			Timestamp initialTimestamp = new Timestamp(currentTimeMs);
+			return initialTimestamp;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -328,8 +340,13 @@ public class Utility {
 	 * @param component
 	 */
 	public static void setApplicationMainWindow(Component component) {
-		
-		Utility.applicationMainWindow = findWindowRecursively(component);
+		try {
+			
+			Utility.applicationMainWindow = findWindowRecursively(component);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -346,17 +363,23 @@ public class Utility {
 	 */
 	public static Rectangle union(Rectangle rectangle1, Rectangle rectangle2) {
 		
-		// Compute positions;
-		int x1 = Math.min(rectangle1.x, rectangle2.x);
-		int y1 = Math.min(rectangle1.y, rectangle2.y);
-		int x2 = Math.max(rectangle1.x + rectangle1.width,
-				rectangle2.x + rectangle2.width);
-		int y2 = Math.max(rectangle1.y + rectangle1.height,
-				rectangle2.y + rectangle2.height);
-		
-		// Return resulting rectangle.
-		Rectangle resultRectangle = new Rectangle(x1, y1, x2 - x1, y2 - y1);
-		return resultRectangle;
+		try {
+			// Compute positions;
+			int x1 = Math.min(rectangle1.x, rectangle2.x);
+			int y1 = Math.min(rectangle1.y, rectangle2.y);
+			int x2 = Math.max(rectangle1.x + rectangle1.width,
+					rectangle2.x + rectangle2.width);
+			int y2 = Math.max(rectangle1.y + rectangle1.height,
+					rectangle2.y + rectangle2.height);
+			
+			// Return resulting rectangle.
+			Rectangle resultRectangle = new Rectangle(x1, y1, x2 - x1, y2 - y1);
+			return resultRectangle;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return new Rectangle();
 	}
 
 	/**
@@ -367,17 +390,23 @@ public class Utility {
 	 */
 	public static Rectangle2D union(Rectangle2D rectangle1, Rectangle2D rectangle2) {
 		
-		// Compute positions;
-		double x1 = Math.min(rectangle1.getX(), rectangle2.getX());
-		double y1 = Math.min(rectangle1.getY(), rectangle2.getY());
-		double x2 = Math.max(rectangle1.getX() + rectangle1.getWidth(),
-				rectangle2.getX() + rectangle2.getWidth());
-		double y2 = Math.max(rectangle1.getY() + rectangle1.getHeight(),
-				rectangle2.getY() + rectangle2.getHeight());
-		
-		// Return resulting rectangle.
-		Rectangle2D resultRectangle = new Rectangle2D.Double(x1, y1, x2 - x1, y2 - y1);
-		return resultRectangle;
+		try {
+			// Compute positions;
+			double x1 = Math.min(rectangle1.getX(), rectangle2.getX());
+			double y1 = Math.min(rectangle1.getY(), rectangle2.getY());
+			double x2 = Math.max(rectangle1.getX() + rectangle1.getWidth(),
+					rectangle2.getX() + rectangle2.getWidth());
+			double y2 = Math.max(rectangle1.getY() + rectangle1.getHeight(),
+					rectangle2.getY() + rectangle2.getHeight());
+			
+			// Return resulting rectangle.
+			Rectangle2D resultRectangle = new Rectangle2D.Double(x1, y1, x2 - x1, y2 - y1);
+			return resultRectangle;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return new Rectangle2D.Double();
 	}
 
 	/**
@@ -385,11 +414,8 @@ public class Utility {
 	 */
 	public static void repaintLater(final Component comp) {
 		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				comp.repaint();
-			}
+		Safe.invokeLater(() -> {
+			comp.repaint();
 		});
 	}
 
@@ -398,15 +424,20 @@ public class Utility {
 	 * @param window
 	 */
 	public static void centerOnScreen(Window window) {
-
-		// Get window width and height.
-		int width = window.getWidth();
-		int height = window.getHeight();
-
-		// Get screen dimensions and set window location.
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		window.setLocation((screenSize.width - width) / 2,
-				(screenSize.height - height) / 2);
+		try {
+			
+			// Get window width and height.
+			int width = window.getWidth();
+			int height = window.getHeight();
+	
+			// Get screen dimensions and set window location.
+			Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+			window.setLocation((screenSize.width - width) / 2,
+					(screenSize.height - height) / 2);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -414,10 +445,15 @@ public class Utility {
 	 * @param component
 	 */
 	public static void centerOnScreen(Component component) {
-		
-		// Delegate the call.
-		Window window = findWindow(component);
-		centerOnScreen(window);
+		try {
+			
+			// Delegate the call.
+			Window window = findWindow(component);
+			centerOnScreen(window);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -430,9 +466,14 @@ public class Utility {
 			String searchText, boolean caseSensitive, boolean wholeWords,
 			boolean exactMatch) {
 		
-		String text = exactMatch ? title : titleWithIdAndAlias;
-		
-		return matches(text, searchText, caseSensitive, wholeWords, exactMatch);
+		try {
+			String text = exactMatch ? title : titleWithIdAndAlias;
+			return matches(text, searchText, caseSensitive, wholeWords, exactMatch);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
@@ -444,28 +485,32 @@ public class Utility {
 	public static boolean matches(String [] texts, String searchText, boolean caseSensitive,
 			boolean wholeWords, boolean exactMatch) {
 		
-		// Check input texts.
-		if (texts.length <= 0) {
-			return searchText.isEmpty();
-		}
-		
-		String text = null;
-		
-		if (exactMatch) {
-			text = texts[0];
-		}
-		else {
-			text = "";
-			for (String textItem : texts) {
-				
-				if (!text.isEmpty()) {
-					text += ' ';
-				}
-				text += textItem;
+		try {
+			// Check input texts.
+			if (texts.length <= 0) {
+				return searchText.isEmpty();
 			}
+			
+			String text = null;
+			if (exactMatch) {
+				text = texts[0];
+			}
+			else {
+				text = "";
+				for (String textItem : texts) {
+					
+					if (!text.isEmpty()) {
+						text += ' ';
+					}
+					text += textItem;
+				}
+			}
+			return matches(text, searchText, caseSensitive, wholeWords, exactMatch);
 		}
-		
-		return matches(text, searchText, caseSensitive, wholeWords, exactMatch);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
@@ -477,51 +522,55 @@ public class Utility {
 	public static boolean matches(String text, String searchText,
 			boolean caseSensitive, boolean wholeWords, boolean exactMatch) {
 		
-		// If the search text is an asterisk, return true value.
-		if (searchText.compareTo("*") == 0) {
-			return true;
-		}
-		
-		// If the matching is not case sensitive, convert the
-		// strings to upper case.
-		if (!caseSensitive) {
-			text = text.toUpperCase();
-			searchText = searchText.toUpperCase();
-		}
-		
-		// If exact match...
-		if (exactMatch) {
-			return text.compareTo(searchText) == 0;
-		}
-		
-		// Split the text and the search string into words.
-		String [] words = searchText.split(" ");
-		String [] textWords = text.split(" ");
-
-		// Do loop for all not empty words.
-		for (String word : words) {
+		try {
+			// If the search text is an asterisk, return true value.
+			if (searchText.compareTo("*") == 0) {
+				return true;
+			}
 			
-			if (!word.trim().isEmpty()) {
+			// If the matching is not case sensitive, convert the
+			// strings to upper case.
+			if (!caseSensitive) {
+				text = text.toUpperCase();
+				searchText = searchText.toUpperCase();
+			}
+			
+			// If exact match...
+			if (exactMatch) {
+				return text.compareTo(searchText) == 0;
+			}
+			
+			// Split the text and the search string into words.
+			String [] words = searchText.split(" ");
+			String [] textWords = text.split(" ");
+	
+			// Do loop for all not empty words.
+			for (String word : words) {
 				
-				if (!wholeWords) {
-					if (text.contains(word)) {
-						return true;
+				if (!word.trim().isEmpty()) {
+					
+					if (!wholeWords) {
+						if (text.contains(word)) {
+							return true;
+						}
 					}
-				}
-				else {
-					for (String textWord : textWords) {
-						
-						textWord = textWord.trim();
-						if (!textWord.isEmpty()) {
-							if (word.compareTo(textWord) == 0) {
-								return true;
+					else {
+						for (String textWord : textWords) {
+							
+							textWord = textWord.trim();
+							if (!textWord.isEmpty()) {
+								if (word.compareTo(textWord) == 0) {
+									return true;
+								}
 							}
 						}
 					}
 				}
 			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return false;
 	}
 
@@ -531,22 +580,28 @@ public class Utility {
 	 * @param comboBox
 	 */
 	public static JComboBox<ComponentItem> createListeningComboBox(ComponentItem[] items) {
-
-		JComboBox<ComponentItem> comboBox = new JComboBox<ComponentItem>(items);
 		
-		comboBox.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(ItemEvent e) {
-				if (e.getStateChange() == ItemEvent.SELECTED) {
-					Object item = e.getItem();
-					if (item instanceof ComponentItem) {
-						((ComponentItem)item).getMethod().run();
+		try {
+			JComboBox<ComponentItem> comboBox = new JComboBox<ComponentItem>(items);
+			
+			comboBox.addItemListener(new ItemListener() {
+				@Override
+				public void itemStateChanged(ItemEvent e) {
+					if (e.getStateChange() == ItemEvent.SELECTED) {
+						Object item = e.getItem();
+						if (item instanceof ComponentItem) {
+							((ComponentItem)item).getMethod().run();
+						}
 					}
 				}
-			}
-		});
-		
-		return comboBox;
+			});
+			
+			return comboBox;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -554,18 +609,23 @@ public class Utility {
 	 * @param button
 	 */
 	public static void localize(JButton button) {
-		
-		// Localize caption.
-		String caption = button.getText();
-		if (caption != null && !caption.isEmpty()) {
-			button.setText(Resources.getString(caption));
+		try {
+			
+			// Localize caption.
+			String caption = button.getText();
+			if (caption != null && !caption.isEmpty()) {
+				button.setText(Resources.getString(caption));
+			}
+			
+			// Localize tool tip.
+			String tooltip = button.getToolTipText();
+			if (tooltip != null && !tooltip.isEmpty()) {
+				button.setToolTipText(Resources.getString(tooltip));
+			}
 		}
-		
-		// Localize tool tip.
-		String tooltip = button.getToolTipText();
-		if (tooltip != null && !tooltip.isEmpty()) {
-			button.setToolTipText(Resources.getString(tooltip));
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -573,8 +633,13 @@ public class Utility {
 	 * @param label
 	 */
 	public static void localize(JLabel label) {
-		
-		label.setText(Resources.getString(label.getText()));
+		try {
+			
+			label.setText(Resources.getString(label.getText()));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -582,8 +647,13 @@ public class Utility {
 	 * @param checkBox
 	 */
 	public static void localize(JCheckBox checkBox) {
-
-		checkBox.setText(Resources.getString(checkBox.getText()));
+		try {
+			
+			checkBox.setText(Resources.getString(checkBox.getText()));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -591,8 +661,13 @@ public class Utility {
 	 * @param radioButton
 	 */
 	public static void localize(JRadioButton radioButton) {
-
-		radioButton.setText(Resources.getString(radioButton.getText()));
+		try {
+			
+			radioButton.setText(Resources.getString(radioButton.getText()));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -600,8 +675,13 @@ public class Utility {
 	 * @param toggleButton
 	 */
 	public static void localize(JToggleButton toggleButton) {
-		
-		toggleButton.setText(Resources.getString(toggleButton.getText()));
+		try {
+			
+			toggleButton.setText(Resources.getString(toggleButton.getText()));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -609,12 +689,17 @@ public class Utility {
 	 * @param panel
 	 */
 	public static void localize(JPanel panel) {
-		
-		Border border = panel.getBorder();
-		if (border instanceof TitledBorder) {
-			TitledBorder titleBorder = (TitledBorder) border;
-			titleBorder.setTitle(Resources.getString(titleBorder.getTitle()));
+		try {
+			
+			Border border = panel.getBorder();
+			if (border instanceof TitledBorder) {
+				TitledBorder titleBorder = (TitledBorder) border;
+				titleBorder.setTitle(Resources.getString(titleBorder.getTitle()));
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -622,8 +707,13 @@ public class Utility {
 	 * @param dialog
 	 */
 	public static void localize(Dialog dialog) {
-
-		dialog.setTitle(Resources.getString(dialog.getTitle()));
+		try {
+			
+			dialog.setTitle(Resources.getString(dialog.getTitle()));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -632,8 +722,13 @@ public class Utility {
 	 * @param key - Resource bundle key.
 	 */
 	public static void localize(JFrame frame) {
-
-		frame.setTitle(Resources.getString(frame.getTitle()));
+		try {
+			
+			frame.setTitle(Resources.getString(frame.getTitle()));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -641,8 +736,13 @@ public class Utility {
 	 * @param menuArea
 	 */
 	public static void localize(JMenu menu) {
-
-		menu.setText(Resources.getString(menu.getText()));
+		try {
+			
+			menu.setText(Resources.getString(menu.getText()));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -650,8 +750,13 @@ public class Utility {
 	 * @param menuAreaEdit
 	 */
 	public static void localize(JMenuItem menuItem) {
-		
-		menuItem.setText(Resources.getString(menuItem.getText()));
+		try {
+			
+			menuItem.setText(Resources.getString(menuItem.getText()));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -659,12 +764,17 @@ public class Utility {
 	 * @param tabbedPane
 	 */
 	public static void localize(JTabbedPane tabbedPane) {
-
-		// Convert titles.
-		for (int index = 0; index < tabbedPane.getTabCount(); index++) {
+		try {
 			
-			tabbedPane.setTitleAt(index, Resources.getString(tabbedPane.getTitleAt(index)));
+			// Convert titles.
+			for (int index = 0; index < tabbedPane.getTabCount(); index++) {
+				
+				tabbedPane.setTitleAt(index, Resources.getString(tabbedPane.getTitleAt(index)));
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -672,22 +782,27 @@ public class Utility {
 	 * @param toolBar
 	 */
 	public static void localize(JToolBar toolBar) {
-		
-		// Get number of tool bar components.
-		int componentCount = toolBar.getComponentCount();
-		
-		// Traverse all tool bar components.
-		for (int index = 0; index < componentCount; index++) {
+		try {
 			
-			Component component = toolBar.getComponentAtIndex(index);
+			// Get number of tool bar components.
+			int componentCount = toolBar.getComponentCount();
 			
-			// Localize each button on the tool bar.
-			if (component instanceof JButton) {
+			// Traverse all tool bar components.
+			for (int index = 0; index < componentCount; index++) {
 				
-				JButton button = (JButton) component;
-				localize(button);
+				Component component = toolBar.getComponentAtIndex(index);
+				
+				// Localize each button on the tool bar.
+				if (component instanceof JButton) {
+					
+					JButton button = (JButton) component;
+					localize(button);
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -695,9 +810,14 @@ public class Utility {
 	 * @param textPane
 	 */
 	public static void localizeTooltip(JTextPane textPane) {
-	
-		textPane.setToolTipText(
-				Resources.getString(textPane.getToolTipText()));
+		try {
+			
+			textPane.setToolTipText(
+					Resources.getString(textPane.getToolTipText()));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -705,9 +825,29 @@ public class Utility {
 	 * @param button
 	 */
 	public static void localizeTooltip(JButton button) {
-		
-		button.setToolTipText(
-				Resources.getString(button.getToolTipText()));
+		try {
+			
+			button.setToolTipText(
+					Resources.getString(button.getToolTipText()));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+	}
+	
+	/**
+	 * Localize tooltip.
+	 * @param menu
+	 */
+	public static void localizeTooltip(JMenu menu) {
+		try {
+			
+			menu.setToolTipText(
+					Resources.getString(menu.getToolTipText()));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -716,39 +856,49 @@ public class Utility {
 	 * @return
 	 */
 	public static Node getElementNode(Node node) {
-				
-		while (node != null) {
-			// If the node is an element, return it.
-			if (node.getNodeType() == Node.ELEMENT_NODE) {
-				return node;
-			}
-			
-			node = node.getNextSibling();
-		}
 		
+		try {
+			while (node != null) {
+				// If the node is an element, return it.
+				if (node.getNodeType() == Node.ELEMENT_NODE) {
+					return node;
+				}
+				
+				node = node.getNextSibling();
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		// Nothing found.
 		return null;
 	}
 
 	/**
 	 * Gets file name of given resource.
-	 * @param string
+	 * @param object
+	 * @param resource
 	 * @return
 	 */
 	public static String getFileName(Object object, String resource) {
-
-		// Get class loader.
-		ClassLoader classLoader = object.getClass().getClassLoader();
-		if (classLoader != null) {
-			// Get URL.
-			URL url = classLoader.getResource(resource);
-			if (url != null) {
-				// Get file name.
-				String name = url.getFile();
-				if (name != null) {
-					return name;
+		
+		try {
+			// Get class loader.
+			ClassLoader classLoader = object.getClass().getClassLoader();
+			if (classLoader != null) {
+				// Get URL.
+				URL url = classLoader.getResource(resource);
+				if (url != null) {
+					// Get file name.
+					String name = url.getFile();
+					if (name != null) {
+						return name;
+					}
 				}
 			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return "";
 	}
@@ -758,9 +908,14 @@ public class Utility {
 	 * @param message
 	 */
 	public static void show2(String message, Object ... parameters) {
-
-		message = String.format(message, parameters);
-		JOptionPane.showMessageDialog(null, message);
+		try {
+			
+			String finalMessage = String.format(message, parameters);
+			JOptionPane.showMessageDialog(null, finalMessage);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -771,9 +926,14 @@ public class Utility {
 	 */
 	public static void show(Component parent, String message,
 			Object ... parameters) {
-
-		message = String.format(Resources.getString(message), parameters);
-		JOptionPane.showMessageDialog(parent, message);
+		try {
+			
+			String finalMessage = String.format(Resources.getString(message), parameters);
+			JOptionPane.showMessageDialog(parent, finalMessage);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 
@@ -782,9 +942,15 @@ public class Utility {
 	 * @param message
 	 */
 	public static boolean ask2(String message, Object ... parameters) {
-
-		message = String.format(message, parameters);
-		return JOptionPane.showConfirmDialog(null, message) == JOptionPane.YES_OPTION;
+		
+		try {
+			message = String.format(message, parameters);
+			return JOptionPane.showConfirmDialog(null, message) == JOptionPane.YES_OPTION;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
@@ -793,9 +959,15 @@ public class Utility {
 	 * @param message
 	 */
 	public static boolean ask2(Component parent, String message, Object ... parameters) {
-
-		message = String.format(message, parameters);
-		return JOptionPane.showConfirmDialog(parent, message) == JOptionPane.YES_OPTION;
+		
+		try {
+			message = String.format(message, parameters);
+			return JOptionPane.showConfirmDialog(parent, message) == JOptionPane.YES_OPTION;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -808,8 +980,14 @@ public class Utility {
 	public static boolean askParam(Component parent, String message,
 			Object ... parameters) {
 		
-		message = String.format(Resources.getString(message), parameters);
-		return JOptionPane.showConfirmDialog(parent, message) == JOptionPane.YES_OPTION;
+		try {
+			message = String.format(Resources.getString(message), parameters);
+			return JOptionPane.showConfirmDialog(parent, message) == JOptionPane.YES_OPTION;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -818,8 +996,13 @@ public class Utility {
 	 * @param textName
 	 */
 	public static void show(Component parent, String textName) {
-		
-		JOptionPane.showMessageDialog(parent, Resources.getString(textName));
+		try {
+			
+			JOptionPane.showMessageDialog(parent, Resources.getString(textName));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -828,8 +1011,13 @@ public class Utility {
 	 * @param textName
 	 */
 	public static void show(String textName) {
-		
-		JOptionPane.showMessageDialog(null, Resources.getString(textName));
+		try {
+			
+			JOptionPane.showMessageDialog(null, Resources.getString(textName));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -838,9 +1026,14 @@ public class Utility {
 	 * @param parameters
 	 */
 	public static void show(String textName, Object ... parameters) {
-		
-		String message = String.format(Resources.getString(textName), parameters);
-		JOptionPane.showMessageDialog(null, Resources.getString(message));
+		try {
+			
+			String message = String.format(Resources.getString(textName), parameters);
+			JOptionPane.showMessageDialog(null, Resources.getString(message));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -851,9 +1044,15 @@ public class Utility {
 	 */
 	public static boolean showConfirm(Component parent, String textName) {
 		
-		return JOptionPane.showConfirmDialog(parent, 
-				Resources.getString(textName), Resources.getString("org.multipage.gui.textConfirmDialog"),
-				JOptionPane.YES_NO_CANCEL_OPTION) == JOptionPane.YES_OPTION;
+		try {
+			return JOptionPane.showConfirmDialog(parent, 
+					Resources.getString(textName), Resources.getString("org.multipage.gui.textConfirmDialog"),
+					JOptionPane.YES_NO_CANCEL_OPTION) == JOptionPane.YES_OPTION;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -863,8 +1062,14 @@ public class Utility {
 	 */
 	public static boolean ask(Component parent, String textName) {
 		
-		return JOptionPane.showConfirmDialog(parent, Resources.getString(textName))
-				== JOptionPane.YES_OPTION;
+		try {
+			return JOptionPane.showConfirmDialog(parent, Resources.getString(textName))
+					== JOptionPane.YES_OPTION;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -874,10 +1079,16 @@ public class Utility {
 	 */
 	public static boolean ask(Component parent, String textName, Object ... parameters) {
 		
-		String message = String.format(Resources.getString(textName), parameters);
-		
-		return JOptionPane.showConfirmDialog(parent, message)
-				== JOptionPane.YES_OPTION;
+		try {
+			String message = String.format(Resources.getString(textName), parameters);
+			
+			return JOptionPane.showConfirmDialog(parent, message)
+					== JOptionPane.YES_OPTION;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
@@ -887,10 +1098,16 @@ public class Utility {
 	 */
 	public static boolean ask(String textName, Object ... parameters) {
 		
-		String message = String.format(Resources.getString(textName), parameters);
-		
-		return JOptionPane.showConfirmDialog(applicationMainWindow, message)
-				== JOptionPane.YES_OPTION;
+		try {
+			String message = String.format(Resources.getString(textName), parameters);
+			
+			return JOptionPane.showConfirmDialog(applicationMainWindow, message)
+					== JOptionPane.YES_OPTION;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
@@ -901,8 +1118,14 @@ public class Utility {
 	 */
 	public static String input(Component parent, String textName, String defaulString) {
 		
-		return JOptionPane.showInputDialog(parent, Resources.getString(textName),
-				defaulString);
+		try {
+			return JOptionPane.showInputDialog(parent, Resources.getString(textName),
+					defaulString);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -913,8 +1136,14 @@ public class Utility {
 	 */
 	public static String input(String textName, String defaulString) {
 		
-		return JOptionPane.showInputDialog(applicationMainWindow, Resources.getString(textName),
-				defaulString);
+		try {
+			return JOptionPane.showInputDialog(applicationMainWindow, Resources.getString(textName),
+					defaulString);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -924,8 +1153,14 @@ public class Utility {
 	 */
 	public static String input(String textName) {
 		
-		return JOptionPane.showInputDialog(applicationMainWindow, Resources.getString(textName),
-				"");
+		try {
+			return JOptionPane.showInputDialog(applicationMainWindow, Resources.getString(textName),
+					"");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -936,8 +1171,15 @@ public class Utility {
 	 */
 	public static String input2(Component parent, String text, String defaulString) {
 		
-		return JOptionPane.showInputDialog(parent, text, defaulString);
+		try {
+			return JOptionPane.showInputDialog(parent, text, defaulString);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
+	
 	/**
 	 * Input user text.
 	 * @param parent
@@ -946,7 +1188,115 @@ public class Utility {
 	 */
 	public static String input(Component parent, String textName) {
 		
-		return JOptionPane.showInputDialog(parent, Resources.getString(textName));
+		try {
+			return JOptionPane.showInputDialog(parent, Resources.getString(textName));
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
+	}
+	
+	/**
+	 * Input user text. Center dialog on screen.
+	 * @param parent
+	 * @param initialValue
+	 * @param textName
+	 * @param parameters
+	 * @return
+	 */
+	public static String inputCenter(Component parent, String initialValue, String textName, Object ... parameters) {
+		
+		try {
+			// Create panel for input.
+			String messageTemplate = Resources.getString(textName);
+			String message = String.format(messageTemplate, parameters);
+			JOptionPane optionPane = new JOptionPane(message);
+			optionPane.setOptionType(JOptionPane.OK_CANCEL_OPTION);
+			optionPane.setWantsInput(true);
+			optionPane.setInitialSelectionValue(initialValue);
+			
+			// Create dialog from the panel centered on screen.
+			String title = Resources.getString("org.multipage.gui.titleInputDialog");
+			JDialog inputDialog = optionPane.createDialog(parent, title);
+			Utility.centerOnScreen(inputDialog);
+			inputDialog.setVisible(true);
+			inputDialog.dispose();
+
+			// Get output value.
+	        Object value = optionPane.getInputValue();
+	        if (value == JOptionPane.UNINITIALIZED_VALUE) {
+	            return null;
+	        }
+			return value.toString();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
+	}
+	
+	/**
+	 * Show option panel centered on the screen.
+	 * @param parent
+	 * @param textName
+	 * @param parameters
+	 */
+	public static void showCenter(Component parent, String textName, Object ... parameters) {
+		try {
+			
+			// Create panel to display the message.
+			String messageTemplate = Resources.getString(textName);
+			String message = String.format(messageTemplate, parameters);
+			JOptionPane optionPane = new JOptionPane(message);
+			optionPane.setOptionType(JOptionPane.OK_CANCEL_OPTION);
+			
+			// Create dialog from the panel centered on screen.
+			String title = Resources.getString("org.multipage.gui.titleMessageDialog");
+			JDialog messageDialog = optionPane.createDialog(parent, title);
+			Utility.centerOnScreen(messageDialog);
+			messageDialog.setVisible(true);
+			messageDialog.dispose();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+	}
+	
+	/**
+	 * Display dialog centered on screen that asks user.
+	 * @param parent
+	 * @param textName
+	 */
+	public static boolean askCenter(Component parent, String textName, Object ... parameters) {
+		
+		try {
+			// Create panel to display the message.
+			String messageTemplate = Resources.getString(textName);
+			String message = String.format(messageTemplate, parameters);
+			JOptionPane optionPane = new JOptionPane(message);
+			optionPane.setOptionType(JOptionPane.YES_NO_CANCEL_OPTION);
+			optionPane.setMessageType(JOptionPane.QUESTION_MESSAGE);
+			
+			// Create dialog from the panel centered on screen.
+			String title = Resources.getString("org.multipage.gui.titleMessageDialog");
+			JDialog messageDialog = optionPane.createDialog(parent, title);
+			Utility.centerOnScreen(messageDialog);
+			messageDialog.setVisible(true);
+			messageDialog.dispose();
+			
+			// Get selected value.
+			Object selectedValue = optionPane.getValue();
+			if (selectedValue instanceof Integer) {
+				Integer selectedButton = (Integer) selectedValue;
+				boolean success = (JOptionPane.YES_OPTION == selectedButton);
+				return success;
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -955,8 +1305,13 @@ public class Utility {
 	 * @param format
 	 */
 	public static void show2(Component component, String text) {
-
-		JOptionPane.showMessageDialog(component, text);
+		try {
+			
+			JOptionPane.showMessageDialog(component, text);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -964,8 +1319,13 @@ public class Utility {
 	 * @param text
 	 */
 	public static void show2(String text) {
-
-		JOptionPane.showMessageDialog(null, text);
+		try {
+			
+			JOptionPane.showMessageDialog(null, text);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -974,8 +1334,14 @@ public class Utility {
 	 * @param format
 	 */
 	public static boolean ask2(Component component, String text) {
-
-		return JOptionPane.showConfirmDialog(component, text) == JOptionPane.YES_OPTION;
+		
+		try {
+			return JOptionPane.showConfirmDialog(component, text) == JOptionPane.YES_OPTION;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
@@ -985,29 +1351,33 @@ public class Utility {
 	 */
 	public static boolean ask2Top(String text) {
 		
-		// Create and initialize panel.
-		JOptionPane optionPane = new JOptionPane();
-		
-		optionPane.setMessage(text);
-		optionPane.setMessageType(JOptionPane.QUESTION_MESSAGE);
-		optionPane.setOptionType(JOptionPane.YES_NO_CANCEL_OPTION);
-		
-		// Create and show dialog. The dialog displayed is on top of the desktop windows.
-		JDialog dialog = optionPane.createDialog(Resources.getString("org.multipage.gui.titlePleaseConfirm"));
-		dialog.setIconImage(Images.getImage("org/multipage/gui/images/main.png"));
-		dialog.setAlwaysOnTop(true);
-		dialog.setVisible(true);
-		
-		// Try to get selected value.
-		Object value = optionPane.getValue();
-		if (value instanceof Integer) {
+		try {
+			// Create and initialize panel.
+			JOptionPane optionPane = new JOptionPane();
 			
-			Integer answer = (Integer) value;
-			boolean returnedValue = answer == JOptionPane.YES_OPTION;
+			optionPane.setMessage(text);
+			optionPane.setMessageType(JOptionPane.QUESTION_MESSAGE);
+			optionPane.setOptionType(JOptionPane.YES_NO_CANCEL_OPTION);
 			
-			return returnedValue;
+			// Create and show dialog. The dialog displayed is on top of the desktop windows.
+			JDialog dialog = optionPane.createDialog(Resources.getString("org.multipage.gui.titlePleaseConfirm"));
+			dialog.setIconImage(Images.getImage("org/multipage/gui/images/main.png"));
+			dialog.setAlwaysOnTop(true);
+			dialog.setVisible(true);
+			
+			// Try to get selected value.
+			Object value = optionPane.getValue();
+			if (value instanceof Integer) {
+				
+				Integer answer = (Integer) value;
+				boolean returnedValue = answer == JOptionPane.YES_OPTION;
+				
+				return returnedValue;
+			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return false;
 	}
 
@@ -1017,9 +1387,15 @@ public class Utility {
 	 * @return
 	 */
 	public static String getExtension(File file) {
-
-		String fileName = file.getName();
-		return getExtension(fileName);
+		
+		try {
+			String fileName = file.getName();
+			return getExtension(fileName);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -1029,18 +1405,24 @@ public class Utility {
 	 */
 	public static String getExtension(String fileName) {
 		
-		// Get last dot position.
-		int dotPosition = fileName.lastIndexOf('.');
-		if (dotPosition == -1) {
-			return "";
-		}
-		// Get substring after the dot.
 		try {
-			return fileName.substring(dotPosition + 1);
+			// Get last dot position.
+			int dotPosition = fileName.lastIndexOf('.');
+			if (dotPosition == -1) {
+				return "";
+			}
+			// Get substring after the dot.
+			try {
+				return fileName.substring(dotPosition + 1);
+			}
+			catch (IndexOutOfBoundsException e) {
+				return "";
+			}
 		}
-		catch (IndexOutOfBoundsException e) {
-			return "";
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
+		return "";
 	}
 
 	/**
@@ -1050,46 +1432,51 @@ public class Utility {
 	 * @param isViewIndex - true = view index, false = model index
 	 */
 	public static void ensureRecordVisible(JTable table, int recordIndex, boolean isViewIndex) {
-		
-		// Check index.
-		if (recordIndex < 0 || recordIndex >= table.getRowCount()) {
-			return;
-		}
-
-		// Get view index.
-		int viewIndex;
-		
-		if (isViewIndex) {
-			viewIndex = recordIndex;
-		}
-		else {
-			try {
-				viewIndex = table.convertRowIndexToView(recordIndex);
-			}
-			catch (Exception e) {
+		try {
+			
+			// Check index.
+			if (recordIndex < 0 || recordIndex >= table.getRowCount()) {
 				return;
 			}
-		}
-		
-		// Make the row selected.
-		Container container = table.getParent();
-		if (container instanceof JViewport) {
-			JViewport viewport = (JViewport) container;
+	
+			// Get view index.
+			int viewIndex;
 			
-			// Get table row rectangle.
-			Rectangle rowRectangle = table.getCellRect(viewIndex, 0, true);
-			// Get view position.
-			Point viewPosition = viewport.getViewPosition();
-			// Translate the cell location so that it is relative
-		    // to the view, assuming the northwest corner of the
-		    // view is (0,0).
-		    rowRectangle.setLocation(rowRectangle.x - viewPosition.x,
-		    		rowRectangle.y - viewPosition.y);
-		    // Scroll the area into view.
-		    viewport.scrollRectToVisible(rowRectangle);
+			if (isViewIndex) {
+				viewIndex = recordIndex;
+			}
+			else {
+				try {
+					viewIndex = table.convertRowIndexToView(recordIndex);
+				}
+				catch (Exception e) {
+					return;
+				}
+			}
+			
+			// Make the row selected.
+			Container container = table.getParent();
+			if (container instanceof JViewport) {
+				JViewport viewport = (JViewport) container;
+				
+				// Get table row rectangle.
+				Rectangle rowRectangle = table.getCellRect(viewIndex, 0, true);
+				// Get view position.
+				Point viewPosition = viewport.getViewPosition();
+				// Translate the cell location so that it is relative
+			    // to the view, assuming the northwest corner of the
+			    // view is (0,0).
+			    rowRectangle.setLocation(rowRectangle.x - viewPosition.x,
+			    		rowRectangle.y - viewPosition.y);
+			    // Scroll the area into view.
+			    viewport.scrollRectToVisible(rowRectangle);
+			}
+			
+			table.repaint();
 		}
-		
-		table.repaint();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -1097,8 +1484,13 @@ public class Utility {
 	 * @param list
 	 */
 	public static void ensureSelectedItemVisible(JList list) {
-		
-		list.ensureIndexIsVisible(list.getSelectedIndex());
+		try {
+			
+			list.ensureIndexIsVisible(list.getSelectedIndex());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1108,20 +1500,24 @@ public class Utility {
 	 */
 	public static boolean isTextFileExtension(File file) {
 		
-		// Possible text file extensions.
-		String [] textExtensions = {"css", "htm", "html", "htmls", "js", "shtml", "text", "txt", "xml"};
-
-		// Get file extension.
-		String extension = getExtension(file);
-		
-		// Find extension match.
-		for (String textExtension : textExtensions) {
-			if (extension.equalsIgnoreCase(textExtension)) {
-				
-				return true;
+		try {
+			// Possible text file extensions.
+			String [] textExtensions = {"css", "htm", "html", "htmls", "js", "shtml", "text", "txt", "xml"};
+	
+			// Get file extension.
+			String extension = getExtension(file);
+			
+			// Find extension match.
+			for (String textExtension : textExtensions) {
+				if (extension.equalsIgnoreCase(textExtension)) {
+					
+					return true;
+				}
 			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return false;
 	}
 
@@ -1132,28 +1528,33 @@ public class Utility {
 	 */
 	public static void loadEncodings(JComboBox comboBox,
 			String defaultEncoding) {
-		
-		// Get character sets map.
-		SortedMap<String, Charset> map = Charset.availableCharsets();
-		
-		int index = 0;
-		int utf8Index = 0;
-		
-		// Load combobox.
-		for (String key : map.keySet()) {
+		try {
 			
-			comboBox.addItem(key);
+			// Get character sets map.
+			SortedMap<String, Charset> map = Charset.availableCharsets();
 			
-			// Select character set.
-			if (key.compareToIgnoreCase(defaultEncoding) == 0) {
+			int index = 0;
+			int utf8Index = 0;
+			
+			// Load combobox.
+			for (String key : map.keySet()) {
 				
-				utf8Index = index;
+				comboBox.addItem(key);
+				
+				// Select character set.
+				if (key.compareToIgnoreCase(defaultEncoding) == 0) {
+					
+					utf8Index = index;
+				}
+				
+				index++;
 			}
 			
-			index++;
+			comboBox.setSelectedIndex(utf8Index);
 		}
-		
-		comboBox.setSelectedIndex(utf8Index);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1162,16 +1563,21 @@ public class Utility {
 	 * @param text
 	 */
 	public static boolean selectComboItem(JComboBox comboBox, String text) {
-
-		// Do loop for all combobox items.
-		for (int index = 0; index < comboBox.getItemCount(); index++) {
-			
-			String itemText = (String) comboBox.getItemAt(index);
-			if (itemText.equals(text)) {
+		
+		try {
+			// Do loop for all combobox items.
+			for (int index = 0; index < comboBox.getItemCount(); index++) {
 				
-				comboBox.setSelectedIndex(index);
-				return true;
+				String itemText = (String) comboBox.getItemAt(index);
+				if (itemText.equals(text)) {
+					
+					comboBox.setSelectedIndex(index);
+					return true;
+				}
 			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return false;
 	}
@@ -1182,16 +1588,21 @@ public class Utility {
 	 * @param n
 	 */
 	public static boolean selectComboItem(JComboBox comboBox, Integer n) {
-
-		// Do loop for all combobox items.
-		for (int index = 0; index < comboBox.getItemCount(); index++) {
-			
-			Integer itemValue = (Integer) comboBox.getItemAt(index);
-			if (itemValue == n) {
+		
+		try {
+			// Do loop for all combobox items.
+			for (int index = 0; index < comboBox.getItemCount(); index++) {
 				
-				comboBox.setSelectedIndex(index);
-				return true;
+				Integer itemValue = (Integer) comboBox.getItemAt(index);
+				if (itemValue == n) {
+					
+					comboBox.setSelectedIndex(index);
+					return true;
+				}
 			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return false;
 	}
@@ -1205,9 +1616,14 @@ public class Utility {
 	 */
 	public static void addFileChooserFilters(JFileChooser dialog,
 			String pathName, String[][] filters, boolean firstSelected) {
-		
-		// Delegate the call
-		addFileChooserFilters(dialog, pathName, filters, firstSelected, true);
+		try {
+			
+			// Delegate the call
+			addFileChooserFilters(dialog, pathName, filters, firstSelected, true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -1219,55 +1635,60 @@ public class Utility {
 	 */
 	public static void addFileChooserFilters(JFileChooser dialog,
 			String pathName, String[][] filters, boolean firstSelected, boolean useStringResources) {
-
-		// Get default file chooser.
-		FileFilter defaultFilter = dialog.getFileFilter();
-		
-		FileNameExtensionFilter firstFilter = null;
-		FileNameExtensionFilter selectedFilter = null;
-		
-		String fileExtension = pathName != null ?
-				Utility.getExtension(pathName)
-				: null;
-		
-		// Do loop for all filters.
-		if (filters != null) {
-			for (String [] filter : filters) {
-				
-				// Get filter text.
-				String filterText = useStringResources ? Resources.getString(filter[0]) : filter[0];
-				// Extension found flag.
-				boolean extensionFound = false;
-				// Get extensions.
-				String [] extensions = new String [filter.length - 1];
-				for (int index = 0; index < extensions.length; index++) {
+		try {
+			
+			// Get default file chooser.
+			FileFilter defaultFilter = dialog.getFileFilter();
+			
+			FileNameExtensionFilter firstFilter = null;
+			FileNameExtensionFilter selectedFilter = null;
+			
+			String fileExtension = pathName != null ?
+					Utility.getExtension(pathName)
+					: null;
+			
+			// Do loop for all filters.
+			if (filters != null) {
+				for (String [] filter : filters) {
 					
-					extensions[index] = filter[index + 1];
-					// If the extension matches, set the flag.
-					if (fileExtension != null
-							&& fileExtension.equalsIgnoreCase(extensions[index])) {
-						extensionFound = true;
+					// Get filter text.
+					String filterText = useStringResources ? Resources.getString(filter[0]) : filter[0];
+					// Extension found flag.
+					boolean extensionFound = false;
+					// Get extensions.
+					String [] extensions = new String [filter.length - 1];
+					for (int index = 0; index < extensions.length; index++) {
+						
+						extensions[index] = filter[index + 1];
+						// If the extension matches, set the flag.
+						if (fileExtension != null
+								&& fileExtension.equalsIgnoreCase(extensions[index])) {
+							extensionFound = true;
+						}
 					}
+					// Create file filter object.
+					FileNameExtensionFilter fileFilter = new FileNameExtensionFilter(
+					        filterText, extensions);
+					// Set first filter.
+					if (firstFilter == null) {
+						firstFilter = fileFilter;
+					}
+					// Set first found filter with given extension.
+					if (extensionFound && selectedFilter == null) {
+						selectedFilter = fileFilter;
+					}
+					// Add it to the dialog.
+					dialog.addChoosableFileFilter(fileFilter);
 				}
-				// Create file filter object.
-				FileNameExtensionFilter fileFilter = new FileNameExtensionFilter(
-				        filterText, extensions);
-				// Set first filter.
-				if (firstFilter == null) {
-					firstFilter = fileFilter;
-				}
-				// Set first found filter with given extension.
-				if (extensionFound && selectedFilter == null) {
-					selectedFilter = fileFilter;
-				}
-				// Add it to the dialog.
-				dialog.addChoosableFileFilter(fileFilter);
 			}
+			
+			// Set actual filter.
+			dialog.setFileFilter(selectedFilter != null ? selectedFilter
+					: (firstSelected ? firstFilter : defaultFilter));
 		}
-		
-		// Set actual filter.
-		dialog.setFileFilter(selectedFilter != null ? selectedFilter
-				: (firstSelected ? firstFilter : defaultFilter));
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1275,9 +1696,15 @@ public class Utility {
 	 * @param scrollPane
 	 */
 	public static Point getScrollPosition(JScrollPane scrollPane) {
-
-		JViewport viewport = scrollPane.getViewport();
-		return viewport.getViewPosition();
+		
+		try {
+			JViewport viewport = scrollPane.getViewport();
+			return viewport.getViewPosition();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -1288,14 +1715,12 @@ public class Utility {
 	public static void scrollToPosition(final JScrollPane scrollPane,
 			final Point position) {
 
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				// Scroll to the start.
-				JViewport viewport = scrollPane.getViewport();
-				if (viewport != null) {
-					viewport.setViewPosition(position);
-				}
+		Safe.invokeLater(() -> {
+
+			// Scroll to the start.
+			JViewport viewport = scrollPane.getViewport();
+			if (viewport != null) {
+				viewport.setViewPosition(position);
 			}
 		});
 	}
@@ -1307,47 +1732,25 @@ public class Utility {
 	 */
 	public static TreePath getTreePath(TreeNode node) {
 		
-	    List list = new ArrayList();
-
-	    // Add all nodes to list
-	    while (node != null) {
-	        list.add(node);
-	        node = node.getParent();
-	    }
-	    Collections.reverse(list);
-
-	    // Convert array of nodes to TreePath
-	    return new TreePath(list.toArray());
+		try {
+		    List list = new ArrayList();
+	
+		    // Add all nodes to list
+		    while (node != null) {
+		        list.add(node);
+		        node = node.getParent();
+		    }
+		    Collections.reverse(list);
+	
+		    // Convert array of nodes to TreePath
+		    return new TreePath(list.toArray());
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
-	/**
-	 * Get selected values.
-	 * @param tableSlots
-	 * @return
-	 */
-	public static Object [][] getTableSelection(JTable table) {
-		
-		// Get selected rows.
-		int [] selectedRowIndices = table.getSelectedRows();
-		
-		// Get the number of table columns.
-		int columnCount = table.getColumnCount();
-		
-		// Create array of cell values.
-		Object [][] selectedCellValues = new Object [selectedRowIndices.length][columnCount];
-//		
-//		// Get all selected table items.
-//		int index = 0;
-//		for (int selectedRow : selectedRowIndices) {
-//			for (int column = 0; column < columnCount; column++) {
-//				
-//				selectedCellValues[index][column] = table.getValueAt(selectedRow, column);
-//				index++;
-//			}
-//		}
-		return selectedCellValues;
-	}
-
 	/**
 	 * Choose file name to save.
 	 * @return
@@ -1355,26 +1758,32 @@ public class Utility {
 	public static File chooseFileNameToSave(Component parentComponent,
 			String [][] filters) {
 		
-		// Select resource file.
-		JFileChooser dialog = new JFileChooser(currentPathName);
+		try {
+			// Select resource file.
+			JFileChooser dialog = new JFileChooser(currentPathName);
+			
+			// Add filters.
+			addFileChooserFilters(dialog, null, filters, true);
+							
+			// Save dialog.
+		    if(dialog.showSaveDialog(parentComponent) != JFileChooser.APPROVE_OPTION) {
+		       return null;
+		    }
+		    
+		    // Get selected file.
+		    File file = dialog.getSelectedFile();
+		    
+		    // Set current path name.
+		    if (file != null) {
+		    	currentPathName = file.getParent();
+		    }
 		
-		// Add filters.
-		addFileChooserFilters(dialog, null, filters, true);
-						
-		// Save dialog.
-	    if(dialog.showSaveDialog(parentComponent) != JFileChooser.APPROVE_OPTION) {
-	       return null;
-	    }
-	    
-	    // Get selected file.
-	    File file = dialog.getSelectedFile();
-	    
-	    // Set current path name.
-	    if (file != null) {
-	    	currentPathName = file.getParent();
-	    }
-	
-	    return file;
+		    return file;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -1385,8 +1794,14 @@ public class Utility {
 	 */
 	public static File chooseFileToOpen(Component parentComponent, String[][] filters) {
 		
-		// Delegate the call
-		return chooseFileToOpen(parentComponent, filters, true);
+		try {
+			// Delegate the call
+			return chooseFileToOpen(parentComponent, filters, true);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -1399,30 +1814,36 @@ public class Utility {
 	public static File chooseFileToOpen(Component parentComponent,
 			String[][] filters, boolean useStringResources) {
 		
-		// Select resource file.
-		JFileChooser dialog = new JFileChooser();
-		if (currentPathName.isEmpty()) {
-			currentPathName = dialog.getFileSystemView().getDefaultDirectory().toString() + File.separatorChar + "Multipage";
-		}
-		dialog.setCurrentDirectory(new File(currentPathName));
+		try {
+			// Select resource file.
+			JFileChooser dialog = new JFileChooser();
+			if (currentPathName.isEmpty()) {
+				currentPathName = dialog.getFileSystemView().getDefaultDirectory().toString() + File.separatorChar + "Multipage";
+			}
+			dialog.setCurrentDirectory(new File(currentPathName));
+			
+			// Add filters.
+			addFileChooserFilters(dialog, null, filters, true);
+							
+			// Save dialog.
+		    if(dialog.showOpenDialog(parentComponent) != JFileChooser.APPROVE_OPTION) {
+		       return null;
+		    }
+		    
+		    // Get selected file.
+		    File file = dialog.getSelectedFile();
+		    
+		    // Set current path name.
+		    if (file != null) {
+		    	currentPathName = file.getParent();
+		    }
 		
-		// Add filters.
-		addFileChooserFilters(dialog, null, filters, true);
-						
-		// Save dialog.
-	    if(dialog.showOpenDialog(parentComponent) != JFileChooser.APPROVE_OPTION) {
-	       return null;
-	    }
-	    
-	    // Get selected file.
-	    File file = dialog.getSelectedFile();
-	    
-	    // Set current path name.
-	    if (file != null) {
-	    	currentPathName = file.getParent();
-	    }
-	
-	    return file;
+		    return file;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -1432,14 +1853,19 @@ public class Utility {
 	 */
 	public static void ensureTextVisible(JTextComponent textComponent,
 			int textPosition) {
-		
-		TextUI textUI = textComponent.getUI();
 		try {
-			Rectangle rectangle = textUI.modelToView(textComponent, textPosition);
-			textComponent.scrollRectToVisible(rectangle);
+			
+			TextUI textUI = textComponent.getUI();
+			try {
+				Rectangle rectangle = textUI.modelToView(textComponent, textPosition);
+				textComponent.scrollRectToVisible(rectangle);
+			}
+			catch (BadLocationException e) {
+			}
 		}
-		catch (BadLocationException e) {
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1448,27 +1874,31 @@ public class Utility {
 	 */
 	public static String getClipboardString() {
 		
-		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-		Transferable clipData = clipboard.getContents(clipboard);
-		if (clipData != null) {
-			
-			try {
-				if (clipData.isDataFlavorSupported(DataFlavor.stringFlavor)) {
-					String text = (String)(clipData.getTransferData(
-							DataFlavor.stringFlavor));
-					return text;
+		try {
+			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+			Transferable clipData = clipboard.getContents(clipboard);
+			if (clipData != null) {
+				
+				try {
+					if (clipData.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+						String text = (String)(clipData.getTransferData(
+								DataFlavor.stringFlavor));
+						return text;
+					}
+				}
+				catch (UnsupportedFlavorException e) {
+					
+					Utility.show(null, "org.multipage.gui.messageFlavorUnsupported");
+				}
+				catch (IOException e) {
+					
+					Utility.show(null, "org.multipage.gui.messageDataNotAvailable");
 				}
 			}
-			catch (UnsupportedFlavorException e) {
-				
-				Utility.show(null, "org.multipage.gui.messageFlavorUnsupported");
-			}
-			catch (IOException e) {
-				
-				Utility.show(null, "org.multipage.gui.messageDataNotAvailable");
-			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return "";
 	}
 	
@@ -1478,39 +1908,109 @@ public class Utility {
 	 * @return
 	 */
 	public static void putClipboardString(String text) {
-		
-		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-		StringSelection stringSelection = new StringSelection(text);
-		clipboard.setContents(stringSelection, null);
+		try {
+			
+			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+			StringSelection stringSelection = new StringSelection(text);
+			clipboard.setContents(stringSelection, null);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Choose directory.
+	 * @param parent
+	 * @param titleText
+	 * @param defaultPath
+	 * @return
+	 */
+	public static String chooseDirectory(Component parent, String titleText, String defaultPath) {
+		
+		try {
+			// Set current path name.
+			java.io.File currentDirectory = null;
+			if (defaultPath != null && !defaultPath.isEmpty()) {
+				currentDirectory = new java.io.File(defaultPath);
+			}
+			else {
+				currentDirectory = new java.io.File(currentPathName);
+			}
+			
+			JFileChooser chooser = new JFileChooser(); 
+			chooser.setCurrentDirectory(currentDirectory);
+			chooser.setDialogTitle(titleText);
+			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			
+			// Disable the "All files" option.
+			chooser.setAcceptAllFileFilterUsed(false);
+	 
+		    if (chooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) { 
+		      currentPathName = chooser.getSelectedFile().toString();
+		      return currentPathName;
+		    }
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
+	}
+	
+	/**
+	 * Choose directory.
+	 * @param parent
+	 * @param titleText
+	 * @return
 	 */
 	public static String chooseDirectory(Component parent, String titleText) {
 		
-		JFileChooser chooser = new JFileChooser(); 
-		chooser.setCurrentDirectory(new java.io.File(currentPathName));
-		chooser.setDialogTitle(titleText);
-		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		
-		// Disable the "All files" option.
-		chooser.setAcceptAllFileFilterUsed(false);
- 
-	    if (chooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) { 
-	      currentPathName = chooser.getSelectedFile().toString();
-	      return currentPathName;
-	    }
-	    return null;
+		try {
+			// Delegate this call.
+			String selectedPath = chooseDirectory(parent, titleText, null);
+			return selectedPath;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
 	 * Choose directory.
+	 * @param parent
+	 * @param title
+	 * @return
 	 */
 	public static String chooseDirectory2(Component parent, String title) {
 		
-		String titleText = Resources.getString(title);
-		return chooseDirectory(parent, titleText);
+		try {
+			String titleText = Resources.getString(title);
+			return chooseDirectory(parent, titleText, null);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
+	}
+	
+	/**
+	 * Choose directory.
+	 * @param parent
+	 * @param title
+	 * @param defaultPath
+	 * @return
+	 */
+	public static String chooseDirectory2(Component parent, String title, String defaultPath) {
+		
+		try {
+			String titleText = Resources.getString(title);
+			return chooseDirectory(parent, titleText, defaultPath);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -1521,19 +2021,24 @@ public class Utility {
 	 */
 	public static void setCharacterAttributes(JEditorPane htmlTextPane,
 			SimpleAttributeSet attributes, boolean replace) {
-
-	    int p0 = htmlTextPane.getSelectionStart();
-	    int p1 = htmlTextPane.getSelectionEnd();
-	    if (p0 != p1) {
-			StyledDocument doc = getStyledDocument(htmlTextPane);
-			doc.setCharacterAttributes(p0, p1 - p0, attributes, replace);
-	    }
-	    StyledEditorKit k = getStyledEditorKit(htmlTextPane);
-	    MutableAttributeSet inputAttributes = k.getInputAttributes();
-	    if (replace) {
-	    	inputAttributes.removeAttributes(inputAttributes);
-	    }
-	    inputAttributes.addAttributes(attributes);
+		try {
+			
+			int p0 = htmlTextPane.getSelectionStart();
+		    int p1 = htmlTextPane.getSelectionEnd();
+		    if (p0 != p1) {
+				StyledDocument doc = getStyledDocument(htmlTextPane);
+				doc.setCharacterAttributes(p0, p1 - p0, attributes, replace);
+		    }
+		    StyledEditorKit k = getStyledEditorKit(htmlTextPane);
+		    MutableAttributeSet inputAttributes = k.getInputAttributes();
+		    if (replace) {
+		    	inputAttributes.removeAttributes(inputAttributes);
+		    }
+		    inputAttributes.addAttributes(attributes);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1543,11 +2048,16 @@ public class Utility {
 	 */
 	public static StyledDocument getStyledDocument(JEditorPane htmlTextPane) {
 		
-		Document d = htmlTextPane.getDocument();
-	    if (d instanceof StyledDocument) {
-	    	return (StyledDocument) d;
-	    }
-	    return null;
+		try {
+			Document d = htmlTextPane.getDocument();
+		    if (d instanceof StyledDocument) {
+		    	return (StyledDocument) d;
+		    }
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -1557,11 +2067,16 @@ public class Utility {
 	 */
     public static StyledEditorKit getStyledEditorKit(JEditorPane htmlTextPane) {
     	
-	    EditorKit k = htmlTextPane.getEditorKit();
-	    if (k instanceof StyledEditorKit) {
-	    	return (StyledEditorKit) k;
-	    }
-	    return null;
+    	try {
+		    EditorKit k = htmlTextPane.getEditorKit();
+		    if (k instanceof StyledEditorKit) {
+		    	return (StyledEditorKit) k;
+		    }
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -1571,8 +2086,14 @@ public class Utility {
 	 */
 	public static AttributeSet getInputAttributes(JEditorPane htmlTextPane) {
 		
-		StyledEditorKit kit = Utility.getStyledEditorKit(htmlTextPane);
-		return kit.getInputAttributes();
+		try {
+			StyledEditorKit kit = Utility.getStyledEditorKit(htmlTextPane);
+			return kit.getInputAttributes();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -1581,21 +2102,26 @@ public class Utility {
 	 * @param select 
 	 */
 	public static void loadFontFamilies(JComboBox combo, String select) {
-
-	   String[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment()
-	            .getAvailableFontFamilyNames();
-	   
-	   combo.removeAllItems();
-	   int index = 0;
-	   int selectIndex = 0;
-	   for (String name : fonts) {
-		   combo.addItem(name);
-		   if (name.equals(select)) {
-			   selectIndex = index;
-		   }
-		   index++;
-	   }
-	   combo.setSelectedIndex(selectIndex);
+		try {
+			
+			String[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment()
+			            		.getAvailableFontFamilyNames();
+			   
+			combo.removeAllItems();
+			int index = 0;
+			int selectIndex = 0;
+			for (String name : fonts) {
+				combo.addItem(name);
+				if (name.equals(select)) {
+					selectIndex = index;
+				}
+				index++;
+			}
+			combo.setSelectedIndex(selectIndex);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1603,21 +2129,28 @@ public class Utility {
 	 * @param combo
 	 */
 	public static void loadFontSizes(JComboBox combo, int select) {
-
-		int [] sizes =
-        	{8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 26, 28, 32, 36, 40, 48, 56, 64, 72};
-		
-		combo.removeAllItems();
-	   int index = 0;
-	   int selectIndex = 0;
-	   for (int size : sizes) {
-		   combo.addItem(size);
-		   if (size == select) {
-			   selectIndex = index;
-		   }
-		   index++;
-	   }
-	   combo.setSelectedIndex(selectIndex);
+		try {
+			
+			int [] sizes =
+	        	{8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 26, 28, 32, 36, 40, 48, 56, 64, 72};
+			
+			combo.removeAllItems();
+			int index = 0;
+			int selectIndex = 0;
+			
+			for (int size : sizes) {
+				
+				combo.addItem(size);
+				if (size == select) {
+					selectIndex = index;
+				}
+				index++;
+			}
+			combo.setSelectedIndex(selectIndex);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1625,59 +2158,77 @@ public class Utility {
 	 * @param combo
 	 * @param select
 	 */
+	@SuppressWarnings("unchecked")
 	public static void setParagraphAlignments(JComboBox combo, int select) {
-
-		final Object [][] items = {
-				{Images.getIcon("org/multipage/gui/images/align_center.png"), StyleConstants.ALIGN_CENTER},
-				{Images.getIcon("org/multipage/gui/images/align_justified.png"), StyleConstants.ALIGN_JUSTIFIED},
-				{Images.getIcon("org/multipage/gui/images/align_left.png"), StyleConstants.ALIGN_LEFT},
-				{Images.getIcon("org/multipage/gui/images/align_right.png"), StyleConstants.ALIGN_RIGHT}};
-		
-		combo.removeAllItems();
-		// Load combo.
-		int index = 0;
-		int selectedIndex = 0;
-		
-		for (Object [] item : items) {
-			combo.addItem(item);
-			if (item[1].equals(select)) {
-				selectedIndex = index;
-			}
-			index++;
-		}
-		
-		// Set renderer.
-		@SuppressWarnings("serial")
-		class Renderer extends JLabel {
-			// Flags.
-			boolean isSelected;
-			boolean hasFocus;
-			// Paint renderer.
-			@Override
-			public void paint(Graphics g) {
-				super.paint(g);
-				GraphUtility.drawSelection(g, this, isSelected, hasFocus);
-			}
-		}
-		
-		combo.setRenderer(new ListCellRenderer() {
-			Renderer renderer = new Renderer();
-			@Override
-			public Component getListCellRendererComponent(JList list, Object value,
-					int index, boolean isSelected, boolean cellHasFocus) {
-				
-				if (value != null && value instanceof Object[]) {
-					Object [] item = (Object []) value;
-					renderer.setIcon((Icon) item[0]);
-					renderer.isSelected = isSelected;
-					renderer.hasFocus = cellHasFocus;
-					return renderer;
+		try {
+			
+			final Object [][] items = {
+					{Images.getIcon("org/multipage/gui/images/align_center.png"), StyleConstants.ALIGN_CENTER},
+					{Images.getIcon("org/multipage/gui/images/align_justified.png"), StyleConstants.ALIGN_JUSTIFIED},
+					{Images.getIcon("org/multipage/gui/images/align_left.png"), StyleConstants.ALIGN_LEFT},
+					{Images.getIcon("org/multipage/gui/images/align_right.png"), StyleConstants.ALIGN_RIGHT}};
+			
+			combo.removeAllItems();
+			// Load combo.
+			int index = 0;
+			int selectedIndex = 0;
+			
+			for (Object [] item : items) {
+				combo.addItem(item);
+				if (item[1].equals(select)) {
+					selectedIndex = index;
 				}
-				return null;
+				index++;
 			}
-		});
-		
-		combo.setSelectedIndex(selectedIndex);
+			
+			// Set renderer.
+			@SuppressWarnings("serial")
+			class Renderer extends JLabel {
+				// Flags.
+				boolean isSelected;
+				boolean hasFocus;
+				// Paint renderer.
+				@Override
+				public void paint(Graphics g) {
+					try {
+						
+						super.paint(g);
+						GraphUtility.drawSelection(g, this, isSelected, hasFocus);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			}
+			
+			combo.setRenderer(new ListCellRenderer() {
+				Renderer renderer = new Renderer();
+				@Override
+				public Component getListCellRendererComponent(JList list, Object value,
+						int index, boolean isSelected, boolean cellHasFocus) {
+					
+					try {
+						if (value != null && value instanceof Object[]) {
+							Object [] item = (Object []) value;
+							renderer.setIcon((Icon) item[0]);
+							renderer.isSelected = isSelected;
+							renderer.hasFocus = cellHasFocus;
+							return renderer;
+						}
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return null;
+				}
+			});
+			
+			combo.setSelectedIndex(selectedIndex);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 	}
 
 	/**
@@ -1686,26 +2237,31 @@ public class Utility {
 	 * @param align
 	 */
 	public static void selectComboAlign(JComboBox comboBox, int align) {
-
-		// Do loop for all combobox items.
-		for (int index = 0; index < comboBox.getItemCount(); index++) {
+		try {
 			
-			Object object = comboBox.getItemAt(index);
-			if (!(object instanceof Object[])) {
-				continue;
-			}
-			Object [] itemValue = (Object []) object;
-			object = itemValue[1];;
-			if (!(object instanceof Integer)) {
-				continue;
-			}
-			int itemAlign = (Integer) object;
-			if (itemAlign == align) {
+			// Do loop for all combobox items.
+			for (int index = 0; index < comboBox.getItemCount(); index++) {
 				
-				comboBox.setSelectedIndex(index);
-				break;
+				Object object = comboBox.getItemAt(index);
+				if (!(object instanceof Object[])) {
+					continue;
+				}
+				Object [] itemValue = (Object []) object;
+				object = itemValue[1];;
+				if (!(object instanceof Integer)) {
+					continue;
+				}
+				int itemAlign = (Integer) object;
+				if (itemAlign == align) {
+					
+					comboBox.setSelectedIndex(index);
+					break;
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1713,25 +2269,31 @@ public class Utility {
 	 */
 	public static Color chooseColor(Component parent, Color initialColor) {
 		
-		final JColorChooser colorChooser = new JColorChooser(initialColor);
-		final Obj<Color> currentColor = new Obj<Color>(initialColor);
-		
-		// Create color dialog.
-		JDialog colorDialog = JColorChooser.createDialog(
-				parent,
-				Resources.getString("org.multipage.gui.textColorChooserDialog"),
-				true,
-				colorChooser,
-				new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						// Set current color.
-						currentColor.ref = colorChooser.getColor();
-					}
-				},
-				null);
-		colorDialog.setVisible(true);
-		return currentColor.ref;
+		try {
+			final JColorChooser colorChooser = new JColorChooser(initialColor);
+			final Obj<Color> currentColor = new Obj<Color>(initialColor);
+			
+			// Create color dialog.
+			JDialog colorDialog = JColorChooser.createDialog(
+					parent,
+					Resources.getString("org.multipage.gui.textColorChooserDialog"),
+					true,
+					colorChooser,
+					new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							// Set current color.
+							currentColor.ref = colorChooser.getColor();
+						}
+					},
+					null);
+			colorDialog.setVisible(true);
+			return currentColor.ref;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return Color.BLACK;
 	}
 	
 	/**
@@ -1742,23 +2304,29 @@ public class Utility {
 	 */
 	public static int adjustColorIntesity(int rgbColor, double intensity) {
 		
-		// Check input intesity.
-		if (intensity >= 1.0) {
-			return rgbColor;
+		try {
+			// Check input intesity.
+			if (intensity >= 1.0) {
+				return rgbColor;
+			}
+			if (intensity <= 0.0) {
+				return 0;
+			}
+			
+			// Compute components of the input color.
+			int newRed = (int) (((rgbColor >>> 16) & 0x0000FF) * intensity);
+			int newGreen = (int) (((rgbColor >>> 8) & 0x0000FF) * intensity);
+			int newBlue = (int) ((rgbColor & 0x0000FF) * intensity);
+			
+			
+			// Compute output color value and return it.
+			int outputColor = (newRed << 16) | (newGreen << 8) | newBlue;
+			return outputColor;
 		}
-		if (intensity <= 0.0) {
-			return 0;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		// Compute components of the input color.
-		int newRed = (int) (((rgbColor >>> 16) & 0x0000FF) * intensity);
-		int newGreen = (int) (((rgbColor >>> 8) & 0x0000FF) * intensity);
-		int newBlue = (int) ((rgbColor & 0x0000FF) * intensity);
-		
-		
-		// Compute output color value and return it.
-		int outputColor = (newRed << 16) | (newGreen << 8) | newBlue;
-		return outputColor;
+		return 0;
 	}
 	
 	/**
@@ -1770,24 +2338,30 @@ public class Utility {
 	 */
 	private static void expandAll(JTree tree, TreeModel model, TreePath parent,
 			boolean expand) {
-		
-		// Traverse children
-		Object node = parent.getLastPathComponent();
-		int count = model.getChildCount(node);
-		
-		for (int index = 0; index < count; index++) {
-
-			Object child = model.getChild(node, index);
-			TreePath path = parent.pathByAddingChild(child);
-			expandAll(tree, model, path, expand);
-	    }
-
-	    // Expansion or collapse must be done bottom-up
-	    if (expand) {
-	        tree.expandPath(parent);
-	    } else {
-	        tree.collapsePath(parent);
-	    }
+		try {
+			
+			// Traverse children
+			Object node = parent.getLastPathComponent();
+			int count = model.getChildCount(node);
+			
+			for (int index = 0; index < count; index++) {
+	
+				Object child = model.getChild(node, index);
+				TreePath path = parent.pathByAddingChild(child);
+				expandAll(tree, model, path, expand);
+		    }
+	
+		    // Expansion or collapse must be done bottom-up
+		    if (expand) {
+		        tree.expandPath(parent);
+		    }
+		    else {
+		        tree.collapsePath(parent);
+		    }
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1821,12 +2395,17 @@ public class Utility {
 	 * @param expand
 	 */
 	public static void expandAll(JTree tree, boolean expand) {
-		
-		TreeModel model = tree.getModel();
-		if (model != null) {
-			TreePath parent = new TreePath(model.getRoot());
-			expandAll(tree, model, parent, expand);
+		try {
+			
+			TreeModel model = tree.getModel();
+			if (model != null) {
+				TreePath parent = new TreePath(model.getRoot());
+				expandAll(tree, model, parent, expand);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -1835,13 +2414,18 @@ public class Utility {
 	 * @param expand
 	 */
 	public static void expandSelected(JTree tree, boolean expand) {
-		
-	    if (expand) {
-	        expandSelected(tree);
-	    } 
-	    else {
-	        collapseSelected(tree);
-	    }
+		try {
+			
+			if (expand) {
+		        expandSelected(tree);
+		    } 
+		    else {
+		        collapseSelected(tree);
+		    }
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -1850,26 +2434,31 @@ public class Utility {
 	 * @param expand
 	 */
 	public static void expandSelected(JTree tree) {
-		
-		// Get selected paths.
-		TreePath [] selectedPaths = tree.getSelectionPaths();
-		if (selectedPaths == null) {
-			return;
-		}
-		
-		LinkedList<TreePath> queuedPaths = new LinkedList<TreePath>();
-		queuedPaths.addAll(Arrays.asList(selectedPaths));
-	    
-		while (!queuedPaths.isEmpty()) {
+		try {
 			
-			// Expand/collapse current path.
-			TreePath path = queuedPaths.removeFirst();
-		    tree.expandPath(path);
+			// Get selected paths.
+			TreePath [] selectedPaths = tree.getSelectionPaths();
+			if (selectedPaths == null) {
+				return;
+			}
+			
+			LinkedList<TreePath> queuedPaths = new LinkedList<TreePath>();
+			queuedPaths.addAll(Arrays.asList(selectedPaths));
 		    
-		    // Get child paths.
-		    LinkedList<TreePath> childPaths = getTreeChildPaths(tree, path);
-		    queuedPaths.addAll(childPaths);
+			while (!queuedPaths.isEmpty()) {
+				
+				// Expand/collapse current path.
+				TreePath path = queuedPaths.removeFirst();
+			    tree.expandPath(path);
+			    
+			    // Get child paths.
+			    LinkedList<TreePath> childPaths = getTreeChildPaths(tree, path);
+			    queuedPaths.addAll(childPaths);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -1878,35 +2467,40 @@ public class Utility {
 	 * @param expand
 	 */
 	public static void collapseSelected(JTree tree) {
-		
-		// Get selected paths.
-		TreePath [] selectedPaths = tree.getSelectionPaths();
-		if (selectedPaths == null) {
-			return;
-		}
-		
-		LinkedList<TreePath> pathsToCollapse = new LinkedList<TreePath>();
-		pathsToCollapse.addAll(Arrays.asList(selectedPaths));
-		
-		LinkedList<TreePath> queue = new LinkedList<TreePath>();
-		queue.addAll(Arrays.asList(selectedPaths));
-	    
-		while (!queue.isEmpty()) {
+		try {
 			
-		    // Get child paths.
-			TreePath path = queue.removeFirst();
-		    LinkedList<TreePath> childPaths = getTreeChildPaths(tree, path);
+			// Get selected paths.
+			TreePath [] selectedPaths = tree.getSelectionPaths();
+			if (selectedPaths == null) {
+				return;
+			}
+			
+			LinkedList<TreePath> pathsToCollapse = new LinkedList<TreePath>();
+			pathsToCollapse.addAll(Arrays.asList(selectedPaths));
+			
+			LinkedList<TreePath> queue = new LinkedList<TreePath>();
+			queue.addAll(Arrays.asList(selectedPaths));
 		    
-		    queue.addAll(childPaths);
-		    pathsToCollapse.addAll(childPaths);
+			while (!queue.isEmpty()) {
+				
+			    // Get child paths.
+				TreePath path = queue.removeFirst();
+			    LinkedList<TreePath> childPaths = getTreeChildPaths(tree, path);
+			    
+			    queue.addAll(childPaths);
+			    pathsToCollapse.addAll(childPaths);
+			}
+			
+		    while (!pathsToCollapse.isEmpty()) {
+			    
+				// Collapse current path.
+				TreePath path = pathsToCollapse.removeLast();
+			    tree.collapsePath(path);
+		    }
 		}
-		
-	    while (!pathsToCollapse.isEmpty()) {
-		    
-			// Collapse current path.
-			TreePath path = pathsToCollapse.removeLast();
-		    tree.collapsePath(path);
-	    }
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -1916,11 +2510,16 @@ public class Utility {
 	 * @return
 	 */
 	public static boolean contains(LinkedList list, Object item) {
-
-		for (Object included : list) {
-			if (included.equals(item)) {
-				return true;
+		
+		try {
+			for (Object included : list) {
+				if (included.equals(item)) {
+					return true;
+				}
 			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return false;
 	}
@@ -1933,19 +2532,25 @@ public class Utility {
 	 */
 	private static LinkedList<TreePath> getTreeChildPaths(JTree tree, TreePath path) {
 		
-		LinkedList<TreePath> childPaths = new LinkedList<TreePath>();
-		TreeModel model = tree.getModel();
-		
-		Object node = path.getLastPathComponent();
-	    for (int index = 0; index < model.getChildCount(node); index++) {
-	    	
-	    	Object childNode = model.getChild(node, index);
-	    	
-	    	TreePath childPath = path.pathByAddingChild(childNode);
-	    	childPaths.addLast(childPath);
-	    }
-		
-		return childPaths;
+		try {
+			LinkedList<TreePath> childPaths = new LinkedList<TreePath>();
+			TreeModel model = tree.getModel();
+			
+			Object node = path.getLastPathComponent();
+		    for (int index = 0; index < model.getChildCount(node); index++) {
+		    	
+		    	Object childNode = model.getChild(node, index);
+		    	
+		    	TreePath childPath = path.pathByAddingChild(childNode);
+		    	childPaths.addLast(childPath);
+		    }
+			
+			return childPaths;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -1957,22 +2562,28 @@ public class Utility {
 	public static boolean isIntersection(Rectangle2D r1,
 			Rectangle2D r2) {
 		
-		double x1 = r1.getX();
-		double x2 = r2.getX();
-		double y1 = r1.getY();
-		double y2 = r2.getY();
-		double w1 = r1.getWidth();
-		double w2 = r2.getWidth();
-		double h1 = r1.getHeight();
-		double h2 = r2.getHeight();
-		
-		// Intersection of rectangle1 and strip1.
-		boolean interR1S1 = !(x2 > x1 + w1 || x1 > x2 + w2);
-		// Intersection of rectangle1 and strip2.
-		boolean interR1S2 = !(y2 > y1 + h1 || y1 > y2 + h2);
-		
-		// Intersection exists if rectangle1 intersects with strips 1 and 2.
-		return interR1S1 && interR1S2;
+		try {
+			double x1 = r1.getX();
+			double x2 = r2.getX();
+			double y1 = r1.getY();
+			double y2 = r2.getY();
+			double w1 = r1.getWidth();
+			double w2 = r2.getWidth();
+			double h1 = r1.getHeight();
+			double h2 = r2.getHeight();
+			
+			// Intersection of rectangle1 and strip1.
+			boolean interR1S1 = !(x2 > x1 + w1 || x1 > x2 + w2);
+			// Intersection of rectangle1 and strip2.
+			boolean interR1S2 = !(y2 > y1 + h1 || y1 > y2 + h2);
+			
+			// Intersection exists if rectangle1 intersects with strips 1 and 2.
+			return interR1S1 && interR1S2;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -1984,24 +2595,30 @@ public class Utility {
 	public static boolean isBoundaryIntersection(Rectangle2D r,
 			Rectangle2D b) {
 		
-		// If there is not an intersection, return false value.
-		if (!isIntersection(r, b)) {
-			return false;
+		try {
+			// If there is not an intersection, return false value.
+			if (!isIntersection(r, b)) {
+				return false;
+			}
+			
+			double x1 = r.getX();
+			double x2 = b.getX();
+			double y1 = r.getY();
+			double y2 = b.getY();
+			double w1 = r.getWidth();
+			double w2 = b.getWidth();
+			double h1 = r.getHeight();
+			double h2 = b.getHeight();
+			
+			boolean isRinB = (x2 < x1) && (x2 + w2 > x1 + w1) &&
+							(y2 < y1) && (y2 + h2 > y1 + h1);
+			// Rectangle must not be inside the boundary.
+			return !isRinB;
 		}
-		
-		double x1 = r.getX();
-		double x2 = b.getX();
-		double y1 = r.getY();
-		double y2 = b.getY();
-		double w1 = r.getWidth();
-		double w2 = b.getWidth();
-		double h1 = r.getHeight();
-		double h2 = b.getHeight();
-		
-		boolean isRinB = (x2 < x1) && (x2 + w2 > x1 + w1) &&
-						(y2 < y1) && (y2 + h2 > y1 + h1);
-		// Rectangle must not be inside the boundary.
-		return !isRinB;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -2011,7 +2628,13 @@ public class Utility {
 	 */
 	public static Color itemColor(int index) {
 		
-		return (index % 2 == 0) ? colorLight : colorDark;
+		try {
+			return (index % 2 == 0) ? colorLight : colorDark;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return Color.BLACK;
 	}
 	
 	/**
@@ -2022,14 +2645,20 @@ public class Utility {
 	 */
 	public static Window findWindow(Component component) {
 		
-		// Check the component.
-		if (component == null) {
-			return getApplicationMainWindow();
+		try {
+			// Check the component.
+			if (component == null) {
+				return getApplicationMainWindow();
+			}
+			
+			// Find window recursively.
+			Window window = findWindowRecursively(component);
+			return window;
 		}
-		
-		// Find window recursively.
-		Window window = findWindowRecursively(component);
-		return window;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	  
 	/**
@@ -2037,17 +2666,23 @@ public class Utility {
 	 * @param component
 	 * @return
 	 */
-	 private static Window findWindowRecursively(Component component) {
-		  
-		if (component == null) {
-		    return JOptionPane.getRootFrame();
+	private static Window findWindowRecursively(Component component) {
+		
+		try {
+			if (component == null) {
+			    return JOptionPane.getRootFrame();
+			}
+			else if (component instanceof Window) {
+			    return (Window) component;
+			}
+			else {
+			    return findWindowRecursively(component.getParent());
+			}
 		}
-		else if (component instanceof Window) {
-		    return (Window) component;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		else {
-		    return findWindowRecursively(component.getParent());
-		}
+		return JOptionPane.getRootFrame();
 	}
 
 	/**
@@ -2055,15 +2690,20 @@ public class Utility {
 	 * @param textComponent
 	 */
 	public static void removeFindHighlights(JTextComponent textComponent) {
-		
-	    Highlighter hilite = textComponent.getHighlighter();
-	    Highlighter.Highlight[] hilites = hilite.getHighlights();
-
-	    for (int i=0; i < hilites.length; i++) {
-	        if (hilites[i].getPainter() instanceof FindHighlightPainter) {
-	            hilite.removeHighlight(hilites[i]);
-	        }
-	    }
+		try {
+			
+			Highlighter hilite = textComponent.getHighlighter();
+		    Highlighter.Highlight[] hilites = hilite.getHighlights();
+	
+		    for (int i=0; i < hilites.length; i++) {
+		        if (hilites[i].getPainter() instanceof FindHighlightPainter) {
+		            hilite.removeHighlight(hilites[i]);
+		        }
+		    }
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -2073,20 +2713,24 @@ public class Utility {
 	 * @return
 	 */
 	public static boolean isWordStart(String text, int start) {
-
-		int textLength = text.length();
 		
-		if (textLength <= 0) {
-			return false;
+		try {
+			int textLength = text.length();
+			if (textLength <= 0) {
+				return false;
+			}
+			if (start <= 0) {
+				return true;
+			}
+			
+			// Get previous character.
+			char previousCharacter = text.charAt(start - 1);
+			return isNotWordCharacter(previousCharacter);
 		}
-		if (start <= 0) {
-			return true;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		// Get previous character.
-		char previousCharacter = text.charAt(start - 1);
-		
-		return isNotWordCharacter(previousCharacter);
+		return false;
 	}
 
 	/**
@@ -2096,14 +2740,20 @@ public class Utility {
 	 */
 	public static boolean isNotWordCharacter(char character) {
 		
-		char [] interpunctions = {',', '.', ';', '\'', '\"', ':', '!', '?'};
-		
-		for (char interpuction : interpunctions) {
-			if (character == interpuction) {
-				return true;
+		try {
+			char [] interpunctions = {',', '.', ';', '\'', '\"', ':', '!', '?'};
+			
+			for (char interpuction : interpunctions) {
+				if (character == interpuction) {
+					return true;
+				}
 			}
+			return Character.isSpaceChar(character);
 		}
-		return Character.isSpaceChar(character);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -2113,20 +2763,24 @@ public class Utility {
 	 * @return
 	 */
 	public static boolean isWordEnd(String text, int end) {
-
-		int textLength = text.length();
 		
-		if (textLength <= 0) {
-			return false;
+		try {
+			int textLength = text.length();
+			if (textLength <= 0) {
+				return false;
+			}
+			if (end >= textLength) {
+				return true;
+			}
+			
+			// Get next character.
+			char nextCharacter = text.charAt(end);
+			return isNotWordCharacter(nextCharacter);
 		}
-		if (end >= textLength) {
-			return true;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		// Get next character.
-		char nextCharacter = text.charAt(end);
-		
-		return isNotWordCharacter(nextCharacter);
+		return false;
 	}
 
 	/**
@@ -2136,91 +2790,101 @@ public class Utility {
 	 */
 	public static void highlight(JTextComponent textComponent, FoundAttr foundAttr,
 			Highlighter.HighlightPainter myHighlightPainter) {
-
-	    // First remove all old highlights
-	    removeFindHighlights(textComponent);
-	    // Find texts.
-	    find(null, foundAttr, textComponent, myHighlightPainter);
+		try {
+			
+			// First remove all old highlights
+		    removeFindHighlights(textComponent);
+		    // Find texts.
+		    find(null, foundAttr, textComponent, myHighlightPainter);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
-	 /**
-	  * Returns true value if the text is found.
-	  * @param pattern
-	  * @param foundAttr
-	  * @param textComponent
-	  * @param hilite
-	  * @param myHighlightPainter
-	  * @return
-	  */
+	
+	/**
+	 * Returns true value if the text is found.
+	 * @param pattern
+	 * @param foundAttr
+	 * @param textComponent
+	 * @param hilite
+	 * @param myHighlightPainter
+	 * @return
+	 */
 	private static boolean find(String text, FoundAttr foundAttr, JTextComponent textComponent,
 			Highlighter.HighlightPainter myHighlightPainter) {
 	    
-	    // If nothing found exit the method.
-	    if (foundAttr == null) {
-	    	return false;
-	    }
-	    
-	    String pattern = foundAttr.searchText;
-	    boolean caseSensitive = foundAttr.isCaseSensitive;
-	    boolean wholeWord = foundAttr.isWholeWords;
-	    
-		// If the pattern is empty, exit the method.
-		if (pattern.isEmpty()) {
-			return false;
-		}
-
-		boolean result = false;
-		
-	    try {
-	        Highlighter hilite = null;
-	        
-	        if (textComponent != null) {
-	        	hilite = textComponent.getHighlighter();
-	        }
-	        
-	        if (text == null) {
-	        	if (textComponent != null) {
-		        	Document document = textComponent.getDocument();
-		        	int length = document.getLength();
-		        	text = document.getText(0, length);
-	        	}
-	        }
-	        
-	        if (text == null) {
-	        	return false;
-	        }
-	        
-	        int position = 0;
-			
-			// If not case sensitive, covert texts to upper case.
-			if (!caseSensitive) {
-				text = text.toUpperCase();
-				pattern = pattern.toUpperCase();
+		try {
+		    // If nothing found exit the method.
+		    if (foundAttr == null) {
+		    	return false;
+		    }
+		    
+		    String pattern = foundAttr.searchText;
+		    boolean caseSensitive = foundAttr.isCaseSensitive;
+		    boolean wholeWord = foundAttr.isWholeWords;
+		    
+			// If the pattern is empty, exit the method.
+			if (pattern.isEmpty()) {
+				return false;
 			}
-
-	        // Search for pattern
-	        while ((position = text.indexOf(pattern, position)) >= 0) {
-	        	
-	            // Create highlighter using private painter and apply around pattern
-	        	int start = position;
-	        	int end = position + pattern.length();
-	            boolean isWholeWord = isWordStart(text, start) && isWordEnd(text, end);
-	            
-	            if (!wholeWord || (wholeWord && isWholeWord)) {
-	            	result = true;
-	            	if (hilite != null && myHighlightPainter != null) {
-	            		hilite.addHighlight(start, end, myHighlightPainter);
-	            		
-	            	}
-	            }
-	            
-	            position += pattern.length();
-	        }
-	    }
-	    catch (BadLocationException e) {
-	    	
-	    }
-
-		return result;
+	
+			boolean result = false;
+			
+		    try {
+		        Highlighter hilite = null;
+		        
+		        if (textComponent != null) {
+		        	hilite = textComponent.getHighlighter();
+		        }
+		        
+		        if (text == null) {
+		        	if (textComponent != null) {
+			        	Document document = textComponent.getDocument();
+			        	int length = document.getLength();
+			        	text = document.getText(0, length);
+		        	}
+		        }
+		        
+		        if (text == null) {
+		        	return false;
+		        }
+		        
+		        int position = 0;
+				
+				// If not case sensitive, covert texts to upper case.
+				if (!caseSensitive) {
+					text = text.toUpperCase();
+					pattern = pattern.toUpperCase();
+				}
+	
+		        // Search for pattern
+		        while ((position = text.indexOf(pattern, position)) >= 0) {
+		        	
+		            // Create highlighter using private painter and apply around pattern
+		        	int start = position;
+		        	int end = position + pattern.length();
+		            boolean isWholeWord = isWordStart(text, start) && isWordEnd(text, end);
+		            
+		            if (!wholeWord || (wholeWord && isWholeWord)) {
+		            	result = true;
+		            	if (hilite != null && myHighlightPainter != null) {
+		            		hilite.addHighlight(start, end, myHighlightPainter);
+		            		
+		            	}
+		            }
+		            
+		            position += pattern.length();
+		        }
+		    }
+		    catch (BadLocationException e) {
+		    }
+		    return result;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -2231,7 +2895,13 @@ public class Utility {
 	 */
 	public static boolean find(String text, FoundAttr foundAttr) {
 		
-		return find(text, foundAttr, null, null);
+		try {
+			return find(text, foundAttr, null, null);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -2242,11 +2912,17 @@ public class Utility {
 	 */
 	public static boolean find(String text, Parameters parameters) {
 		
-		FoundAttr foundAttr = new FoundAttr(parameters.getSearchedText(),
-				parameters.isCaseSensitive(),
-				parameters.isWholeWords());
-		
-		return find(text, foundAttr, null, null);
+		try {
+			FoundAttr foundAttr = new FoundAttr(parameters.getSearchedText(),
+					parameters.isCaseSensitive(),
+					parameters.isWholeWords());
+			
+			return find(text, foundAttr, null, null);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -2256,26 +2932,32 @@ public class Utility {
 	 */
 	public static String convertToFileName(String text) {
 		
-		if (text.isEmpty()) {
-			return "default";
-		}
-		
-		text = text.trim();
-		
-		String newText = "";
-		final String notAllowed = "\\/:*?\"<>";
-		
-		for (int index = 0; index < text.length(); index++) {
-			char character = text.charAt(index);
-			if (notAllowed.indexOf(character) == -1) {
-				newText += character;
+		try {
+			if (text.isEmpty()) {
+				return "default";
 			}
-			else {
-				newText += '_';
+			
+			text = text.trim();
+			
+			String newText = "";
+			final String notAllowed = "\\/:*?\"<>";
+			
+			for (int index = 0; index < text.length(); index++) {
+				char character = text.charAt(index);
+				if (notAllowed.indexOf(character) == -1) {
+					newText += character;
+				}
+				else {
+					newText += '_';
+				}
 			}
+			
+			return newText;
 		}
-		
-		return newText;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -2286,29 +2968,33 @@ public class Utility {
 	 */
 	public static String readTextFromInputStream(final InputStream is, final int bufferSize)
 	{
-	  final char[] buffer = new char[bufferSize];
-	  final StringBuilder out = new StringBuilder();
-	  try {
-	    final Reader in = new InputStreamReader(is, "UTF-8");
-	    try {
-	      for (;;) {
-	        int rsz = in.read(buffer, 0, buffer.length);
-	        if (rsz < 0)
-	          break;
-	        out.append(buffer, 0, rsz);
-	      }
-	    }
-	    finally {
-	      in.close();
-	    }
-	  }
-	  catch (UnsupportedEncodingException ex) {
-	    /* ... */
-	  }
-	  catch (IOException ex) {
-	      /* ... */
-	  }
-	  return out.toString();
+		try {
+			final char[] buffer = new char[bufferSize];
+			final StringBuilder out = new StringBuilder();
+			
+			try {
+				final Reader in = new InputStreamReader(is, "UTF-8");
+				try {
+					for (;;) {
+						int rsz = in.read(buffer, 0, buffer.length);
+						if (rsz < 0) {
+							break;
+						}
+						out.append(buffer, 0, rsz);
+					}
+				}
+				finally {
+					in.close();
+				}
+			}
+			catch (Exception ex) {
+			}
+			return out.toString();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -2318,44 +3004,54 @@ public class Utility {
 	 */
 	public static String getSQLExceptionChainedMessage(SQLException exception) {
 		
-		String message = "";
-		int exceptionNumber = 1;
-		
-		while (exception != null) {
+		try {
+			String message = "";
+			int exceptionNumber = 1;
 			
-			if (exceptionNumber > 1) {
-				message += "\r\n";
+			while (exception != null) {
+				
+				if (exceptionNumber > 1) {
+					message += "\r\n";
+				}
+				message += exceptionNumber + ".)  " + exception.getMessage();
+				
+				exceptionNumber++;
+				
+				exception = exception.getNextException();
 			}
-			message += exceptionNumber + ".)  " + exception.getMessage();
 			
-			exceptionNumber++;
-			
-			exception = exception.getNextException();
+			return message;
 		}
-		
-		return message;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
 	 * Remove folder content.
 	 * @param folderName
 	 */
-	public static void deleteFolderContent(File folder)
-		throws SecurityException {
-		
-	    File[] files = folder.listFiles();
-	    
-	    // Some JVMs return null for empty directories.
-	    if (files != null) {
-	    	
-	        for(File file : files) {
-	        	
-	            if(file.isDirectory()) {
-	                deleteFolderContent(file);
-	            }
-	            file.delete();
-	        }
-	    }
+	public static void deleteFolderContent(File folder) {
+		try {
+			
+			File[] files = folder.listFiles();
+		    
+		    // Some JVMs return null for empty directories.
+		    if (files != null) {
+		    	
+		        for(File file : files) {
+		        	
+		            if(file.isDirectory()) {
+		                deleteFolderContent(file);
+		            }
+		            file.delete();
+		        }
+		    }
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -2364,15 +3060,21 @@ public class Utility {
 	 */
 	public static boolean deleteFolderContent(String folderName) {
 		
-		// Ask user.
-		if (!ask2(null, String.format(Resources.getString("org.multipage.gui.messageDeleteFolder"), folderName))) {
-			return false;
+		try {
+			// Ask user.
+			if (!ask2(null, String.format(Resources.getString("org.multipage.gui.messageDeleteFolder"), folderName))) {
+				return false;
+			}
+			
+			File folder = new File(folderName);
+			deleteFolderContent(folder);
+			
+			return true;
 		}
-		
-		File folder = new File(folderName);
-		deleteFolderContent(folder);
-		
-		return true;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -2383,11 +3085,16 @@ public class Utility {
 	 */
 	public static boolean findRegExp(String text, String regExpText, boolean isCaseInsensitive) {
 		
-		Pattern pattern = Pattern.compile(regExpText, isCaseInsensitive ? Pattern.CASE_INSENSITIVE : 0);
-		
-		Matcher matcher = pattern.matcher(text);
-		
-		return matcher.find();
+		try {
+			Pattern pattern = Pattern.compile(regExpText, isCaseInsensitive ? Pattern.CASE_INSENSITIVE : 0);
+			
+			Matcher matcher = pattern.matcher(text);
+			return matcher.find();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -2401,21 +3108,27 @@ public class Utility {
 	public static double getIntersectionLength(double A1, double length1,
 			double A2, double length2) {
 		
-		if (length1 <= 0.0 || length2 <= 0.0) {
-			return 0.0;
+		try {
+			if (length1 <= 0.0 || length2 <= 0.0) {
+				return 0.0;
+			}
+			
+			double B1 = A1 + length1;
+			double B2 = A2 + length2;
+			
+			if (A2 > B1 || B2 < A1) {
+				return 0.0;
+			}
+			
+			double A = Math.max(A1, A2);
+			double B = Math.min(B1, B2);
+			
+			return B - A;
 		}
-		
-		double B1 = A1 + length1;
-		double B2 = A2 + length2;
-		
-		if (A2 > B1 || B2 < A1) {
-			return 0.0;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		double A = Math.max(A1, A2);
-		double B = Math.min(B1, B2);
-		
-		return B - A;
+		return 0.0;
 	}
 
 	/**
@@ -2425,64 +3138,70 @@ public class Utility {
 	 */
 	public static String trimFolder(String folder) throws Exception {
 		
-		if (folder == null) {
-			return null;
-		}
-		
-		// Trim folder name.
-		String output = "";
-		boolean previousIsSeparator = false;
-		
-		for (int index = 0; index < folder.length(); index++) {
-			
-			char character = folder.charAt(index);
-			boolean isSeparator = character == '\\' || character == '/';
-			
-			if (isSeparator) {
-				character = pathSeparatorCharacter;
+		try {
+			if (folder == null) {
+				return null;
 			}
-			else {
-				if (!(Character.isJavaIdentifierPart(character)
-						|| character == '-'
-						|| character == '_')) {
-					throw new Exception(Resources.getString("org.multipage.gui.messageBadFolderName"));
+			
+			// Trim folder name.
+			String output = "";
+			boolean previousIsSeparator = false;
+			
+			for (int index = 0; index < folder.length(); index++) {
+				
+				char character = folder.charAt(index);
+				boolean isSeparator = character == '\\' || character == '/';
+				
+				if (isSeparator) {
+					character = pathSeparatorCharacter;
 				}
+				else {
+					if (!(Character.isJavaIdentifierPart(character)
+							|| character == '-'
+							|| character == '_')) {
+						throw new Exception(Resources.getString("org.multipage.gui.messageBadFolderName"));
+					}
+				}
+				
+				if (!(isSeparator && previousIsSeparator)) {
+					output += character;
+				}
+				
+				previousIsSeparator = isSeparator;
 			}
 			
-			if (!(isSeparator && previousIsSeparator)) {
-				output += character;
+			if (output.equals(pathSeparator)) {
+				return output;
 			}
 			
-			previousIsSeparator = isSeparator;
-		}
-		
-		if (output.equals(pathSeparator)) {
+			folder = output;
+			
+			int length = folder.length();
+					
+			// Remove possible starting separator.
+			if (folder.startsWith(pathSeparator)) {
+				output = folder.substring(1, length);
+			}
+			
+			folder = output;
+			
+			length = folder.length();
+			
+			// Remove possible trailing separator.
+			if (length > 0 && folder.lastIndexOf(pathSeparator) == length - 1) {
+				output = folder.substring(0, length - 1);
+			}
+	
+			if (output.isEmpty()) {
+				return null;
+			}
+			
 			return output;
 		}
-		
-		folder = output;
-		
-		int length = folder.length();
-				
-		// Remove possible starting separator.
-		if (folder.startsWith(pathSeparator)) {
-			output = folder.substring(1, length);
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		folder = output;
-		
-		length = folder.length();
-		
-		// Remove possible trailing separator.
-		if (length > 0 && folder.lastIndexOf(pathSeparator) == length - 1) {
-			output = folder.substring(0, length - 1);
-		}
-
-		if (output.isEmpty()) {
-			return null;
-		}
-		
-		return output;
+		return null;
 	}
 
 	/**
@@ -2492,25 +3211,31 @@ public class Utility {
 	 */
 	public static String getFolderOSDependent(String folder) {
 		
-		if (folder == null) {
-			return null;
-		}
-		
-		String output = "";
-		
-		// Replace separators.
-		for (int index = 0; index < folder.length(); index++) {
-			
-			char character = folder.charAt(index);
-			
-			if (character == pathSeparatorCharacter) {
-				character = File.separatorChar;
+		try {
+			if (folder == null) {
+				return null;
 			}
 			
-			output += character;
+			String output = "";
+			
+			// Replace separators.
+			for (int index = 0; index < folder.length(); index++) {
+				
+				char character = folder.charAt(index);
+				
+				if (character == pathSeparatorCharacter) {
+					character = File.separatorChar;
+				}
+				
+				output += character;
+			}
+			
+			return output;
 		}
-		
-		return output;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -2522,13 +3247,19 @@ public class Utility {
 	public static String getRelativePath(String basePathText,
 			String referencedPathText) {
 		
-		Path basePath = Paths.get(basePathText);
-		Path referencedPath = Paths.get(referencedPathText);
-		
-		Path relativePath = basePath.relativize(referencedPath);
-		String relativePathText = relativePath.toString();
-		
-		return relativePathText;
+		try {
+			Path basePath = Paths.get(basePathText);
+			Path referencedPath = Paths.get(referencedPathText);
+			
+			Path relativePath = basePath.relativize(referencedPath);
+			String relativePathText = relativePath.toString();
+			
+			return relativePathText;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -2540,13 +3271,17 @@ public class Utility {
 	public static boolean isStringInList(String text,
 			LinkedList<String> texts) {
 		
-		for (String item : texts) {
-			
-			if (item.equalsIgnoreCase(text)) {
-				return true;
+		try {
+			for (String item : texts) {
+				
+				if (item.equalsIgnoreCase(text)) {
+					return true;
+				}
 			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return false;
 	}
 
@@ -2558,23 +3293,28 @@ public class Utility {
 	 * @param component
 	 * @param bottomSpace 
 	 */
-	public static void forceDoLayout (JComponent component, int bottomSpace) {
-		
-		component.doLayout();
-		
-		int maxX = 0;
-		int maxY = 0;
-		
-		Component[] components = component.getComponents();
-		
-		for (int i = 0; i < components.length; i++) {
+	public static void forceDoLayout(JComponent component, int bottomSpace) {
+		try {
 			
-			Rectangle bounds = components[i].getBounds();
-			maxX = Math.max(maxX, (int) bounds.getMaxX());
-			maxY = Math.max(maxY, (int) bounds.getMaxY());
+			component.doLayout();
+			
+			int maxX = 0;
+			int maxY = 0;
+			
+			Component[] components = component.getComponents();
+			
+			for (int i = 0; i < components.length; i++) {
+				
+				Rectangle bounds = components[i].getBounds();
+				maxX = Math.max(maxX, (int) bounds.getMaxX());
+				maxY = Math.max(maxY, (int) bounds.getMaxY());
+			}
+			
+			component.setPreferredSize(new Dimension(maxX, maxY + bottomSpace));
 		}
-		
-		component.setPreferredSize(new Dimension(maxX, maxY + bottomSpace));
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -2583,25 +3323,31 @@ public class Utility {
 	 */
 	public static TreePath [] getExpandedPaths(JTree tree) {
 		
-		// Get expanded objects.
-		LinkedList<TreePath> outputExpandedPaths = new LinkedList<TreePath>();
-		TreePath rootPath = tree.getPathForRow(0);
-		if (rootPath != null) {
-			Enumeration<TreePath> expandedPaths = tree.getExpandedDescendants(rootPath);
-			if (expandedPaths != null) {
-				
-				// Do loop for all expanded paths.
-				while (expandedPaths.hasMoreElements()) {
-					// Get path.
-					TreePath path = expandedPaths.nextElement();
-					if (tree.isExpanded(path)) {
-						outputExpandedPaths.add(path);
+		try {
+			// Get expanded objects.
+			LinkedList<TreePath> outputExpandedPaths = new LinkedList<TreePath>();
+			TreePath rootPath = tree.getPathForRow(0);
+			if (rootPath != null) {
+				Enumeration<TreePath> expandedPaths = tree.getExpandedDescendants(rootPath);
+				if (expandedPaths != null) {
+					
+					// Do loop for all expanded paths.
+					while (expandedPaths.hasMoreElements()) {
+						// Get path.
+						TreePath path = expandedPaths.nextElement();
+						if (tree.isExpanded(path)) {
+							outputExpandedPaths.add(path);
+						}
 					}
 				}
 			}
+			
+			return outputExpandedPaths.toArray(new TreePath[0]);
 		}
-		
-		return outputExpandedPaths.toArray(new TreePath[0]);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -2610,27 +3356,33 @@ public class Utility {
 	 * @return
 	 */
 	public static <T> void traverseExpandedElements(JTree tree, Consumer<Object> consumer) {
-		
-		// Get list of expanded elements
-		int displayedRowCount = tree.getRowCount();
-		for (int displayedRow = 0; displayedRow < displayedRowCount; displayedRow++) {
+		try {
 			
-			// Retrieve leaf component of the path
-			TreePath displayedPath = tree.getPathForRow(displayedRow);
-			Object leafComponent = displayedPath.getLastPathComponent();
-			
-			// Get corresponding element
-			if (leafComponent instanceof DefaultMutableTreeNode) {
-				DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) leafComponent;
+			// Get list of expanded elements
+			int displayedRowCount = tree.getRowCount();
+			for (int displayedRow = 0; displayedRow < displayedRowCount; displayedRow++) {
 				
-				Object nodeUserObject = treeNode.getUserObject();
-				if (nodeUserObject != null) {
+				// Retrieve leaf component of the path
+				TreePath displayedPath = tree.getPathForRow(displayedRow);
+				Object leafComponent = displayedPath.getLastPathComponent();
+				
+				// Get corresponding element
+				if (leafComponent instanceof DefaultMutableTreeNode) {
+					DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) leafComponent;
 					
-					// Use callback for user object of the node
-					consumer.accept(nodeUserObject);
+					Object nodeUserObject = treeNode.getUserObject();
+					if (nodeUserObject != null) {
+						
+						// Use callback for user object of the node
+						consumer.accept(nodeUserObject);
+					}
 				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 	}
 	
 	/**
@@ -2639,27 +3391,32 @@ public class Utility {
 	 * @return
 	 */
 	public static <T> void traverseExpandedElements(JTree tree, BiConsumer<DefaultMutableTreeNode, Object> consumer) {
-		
-		// Get list of expanded elements
-		int displayedRowCount = tree.getRowCount();
-		for (int displayedRow = 0; displayedRow < displayedRowCount; displayedRow++) {
+		try {
 			
-			// Retrieve leaf component of the path
-			TreePath displayedPath = tree.getPathForRow(displayedRow);
-			Object leafComponent = displayedPath.getLastPathComponent();
-			
-			// Get corresponding element
-			if (leafComponent instanceof DefaultMutableTreeNode) {
-				DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) leafComponent;
+			// Get list of expanded elements
+			int displayedRowCount = tree.getRowCount();
+			for (int displayedRow = 0; displayedRow < displayedRowCount; displayedRow++) {
 				
-				Object nodeUserObject = treeNode.getUserObject();
-				if (nodeUserObject != null) {
+				// Retrieve leaf component of the path
+				TreePath displayedPath = tree.getPathForRow(displayedRow);
+				Object leafComponent = displayedPath.getLastPathComponent();
+				
+				// Get corresponding element
+				if (leafComponent instanceof DefaultMutableTreeNode) {
+					DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) leafComponent;
 					
-					// Use callback for user object of the node
-					consumer.accept(treeNode, nodeUserObject);
+					Object nodeUserObject = treeNode.getUserObject();
+					if (nodeUserObject != null) {
+						
+						// Use callback for user object of the node
+						consumer.accept(treeNode, nodeUserObject);
+					}
 				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -2668,13 +3425,18 @@ public class Utility {
 	 * @param expandedPaths
 	 */
 	public static void setExpandedPaths(JTree tree, TreePath[] expandedPaths) {
-		
-		// Expand tree paths.
-		for (TreePath treePath : expandedPaths) {
-			if (treePath != null) {
-				tree.expandPath(treePath);
+		try {
+			
+			// Expand tree paths.
+			for (TreePath treePath : expandedPaths) {
+				if (treePath != null) {
+					tree.expandPath(treePath);
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -2685,33 +3447,57 @@ public class Utility {
 	public static DocumentListener setTextChangeListener(JTextField textField,
 			final Runnable onTextChange) {
 		
-		DocumentListener listener = new DocumentListener() {
-			@Override
-			public void removeUpdate(DocumentEvent arg0) {
-				// On remove text.
-				if (onTextChange != null) {
-					onTextChange.run();
+		try {
+			DocumentListener listener = new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent arg0) {
+					try {
+						
+						// On remove text.
+						if (onTextChange != null) {
+							onTextChange.run();
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-			@Override
-			public void insertUpdate(DocumentEvent arg0) {
-				// On insert text.
-				if (onTextChange != null) {
-					onTextChange.run();
+				@Override
+				public void insertUpdate(DocumentEvent arg0) {
+					try {
+						
+						// On insert text.
+						if (onTextChange != null) {
+							onTextChange.run();
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
+				
+				@Override
+				public void changedUpdate(DocumentEvent arg0) {
+					try {
+						
+						// On change text.
+						if (onTextChange != null) {
+							onTextChange.run();
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			};
 			
-			@Override
-			public void changedUpdate(DocumentEvent arg0) {
-				// On change text.
-				if (onTextChange != null) {
-					onTextChange.run();
-				}
-			}
-		};
-		
-		textField.getDocument().addDocumentListener(listener);
-		return listener;
+			textField.getDocument().addDocumentListener(listener);
+			return listener;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -2724,12 +3510,16 @@ public class Utility {
 	public static boolean patternMatches(String text, int index,
 			Pattern pattern) {
 		
-		Matcher matcher = pattern.matcher(text);
-		
-		if (matcher.find(index)) {
-			return matcher.start() == index;
+		try {
+			Matcher matcher = pattern.matcher(text);
+			
+			if (matcher.find(index)) {
+				return matcher.start() == index;
+			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return false;
 	}
 
@@ -2743,10 +3533,15 @@ public class Utility {
 	public static Integer findPattarnEnd(String text, int index,
 			Pattern pattern) {
 		
-		Matcher matcher = pattern.matcher(text);
-		
-		if (matcher.find(index)) {
-			return matcher.end();
+		try {
+			Matcher matcher = pattern.matcher(text);
+			
+			if (matcher.find(index)) {
+				return matcher.end();
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -2758,9 +3553,13 @@ public class Utility {
 	 */
 	public static String removeDiacritics(String text) {
 		
-		text = Normalizer.normalize(text, Normalizer.Form.NFD);
-	    text = text.replaceAll("[^\\p{ASCII}]", "");
-		
+		try {
+			text = Normalizer.normalize(text, Normalizer.Form.NFD);
+		    text = text.replaceAll("[^\\p{ASCII}]", "");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return text;
 	}
 
@@ -2771,16 +3570,21 @@ public class Utility {
 	 */
 	public static void enableComponentTree(Container container,
 			boolean enable) {
-		
-		container.setEnabled(enable);
-		
-		for (Component component : container.getComponents()) {
+		try {
 			
-			// Call the method recursively.
-			if (component instanceof Container) {
-				enableComponentTree((Container) component, enable);
+			container.setEnabled(enable);
+			
+			for (Component component : container.getComponents()) {
+				
+				// Call the method recursively.
+				if (component instanceof Container) {
+					enableComponentTree((Container) component, enable);
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -2822,11 +3626,16 @@ public class Utility {
 	 * @param scrollPane 
 	 */
 	public static void resetScrollBarPosition(JScrollPane scrollPane) {
-		
-	    JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
-	    JScrollBar horizontalScrollBar = scrollPane.getHorizontalScrollBar();
-	    verticalScrollBar.setValue(verticalScrollBar.getMinimum());
-	    horizontalScrollBar.setValue(horizontalScrollBar.getMinimum());
+		try {
+			
+			JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
+		    JScrollBar horizontalScrollBar = scrollPane.getHorizontalScrollBar();
+		    verticalScrollBar.setValue(verticalScrollBar.getMinimum());
+		    horizontalScrollBar.setValue(horizontalScrollBar.getMinimum());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -2836,12 +3645,16 @@ public class Utility {
 	 */
 	public static void setExpandedPaths(JTree tree,
 			IdentifierTreePath[] treePaths) {
-	
-		// Do loop for all tree paths.
-		for (IdentifierTreePath treePath : treePaths) {
+		try {
 			
-			treePath.expandTreePath(tree);
+			// Do loop for all tree paths.
+			for (IdentifierTreePath treePath : treePaths) {
+				treePath.expandTreePath(tree);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -2851,61 +3664,46 @@ public class Utility {
 	 */
 	public static IdentifierTreePath[] getExpandedPaths2(JTree tree) {
 		
-		// Get expanded objects.
-		LinkedList<IdentifierTreePath> outputExpandedPaths = new LinkedList<IdentifierTreePath>();
-		TreePath rootPath = tree.getPathForRow(0);
-		if (rootPath != null) {
-			Enumeration<TreePath> expandedPaths = tree.getExpandedDescendants(rootPath);
-			if (expandedPaths != null) {
-				
-				// Do loop for all expanded paths.
-				while (expandedPaths.hasMoreElements()) {
-					// Get path.
-					TreePath path = expandedPaths.nextElement();
-					if (tree.isExpanded(path)) {
-						
-						outputExpandedPaths.add(new IdentifierTreePath(path));
+		try {
+			// Get expanded objects.
+			LinkedList<IdentifierTreePath> outputExpandedPaths = new LinkedList<IdentifierTreePath>();
+			TreePath rootPath = tree.getPathForRow(0);
+			if (rootPath != null) {
+				Enumeration<TreePath> expandedPaths = tree.getExpandedDescendants(rootPath);
+				if (expandedPaths != null) {
+					
+					// Do loop for all expanded paths.
+					while (expandedPaths.hasMoreElements()) {
+						// Get path.
+						TreePath path = expandedPaths.nextElement();
+						if (tree.isExpanded(path)) {
+							
+							outputExpandedPaths.add(new IdentifierTreePath(path));
+						}
 					}
 				}
 			}
+			
+			return outputExpandedPaths.toArray(new IdentifierTreePath[0]);
 		}
-		
-		return outputExpandedPaths.toArray(new IdentifierTreePath[0]);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
-
-	/**
-	 * Set wait cursor.
-	 * @param component
-	 */
-	public static Object [] starWaitCursor(Component component) {
-		
-		Object [] cursorInfo = new Object [1];
-		
-		cursorInfo[0] = component.isEnabled();
-		component.setEnabled(false);
-		component.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-		
-		return cursorInfo;
-	}
-
-	/**
-	 * Stop wait cursor.
-	 * @param component
-	 * @param cursorInfo 
-	 */
-	public static void stopWaitCursor(Component component, Object[] cursorInfo) {
-		
-		component.setEnabled((Boolean) cursorInfo[0]);
-		component.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-	}
-
+	
 	/**
 	 * Load units.
 	 * @param comboBox
 	 */
 	public static void loadCssUnits(JComboBox comboBox) {
-		
-		loadCssUnits(comboBox, Utility.cssUnits);
+		try {
+			
+			loadCssUnits(comboBox, Utility.cssUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -2914,10 +3712,15 @@ public class Utility {
 	 * @param units 
 	 */
 	public static void loadCssUnits(JComboBox comboBox, String[] units) {
-		
-		for (String unit : units) {
-			comboBox.addItem(unit);
+		try {
+			
+			for (String unit : units) {
+				comboBox.addItem(unit);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -2927,16 +3730,22 @@ public class Utility {
 	 */
 	public static String getCssColor(Color color) {
 		
-		if (color == null) {
-			return "#000000";
+		try {
+			if (color == null) {
+				return "#000000";
+			}
+			
+			int red = color.getRed();
+			int green = color.getGreen();
+			int blue = color.getBlue();
+			
+			String cssColor = String.format("#%02X%02X%02X", red, green, blue);
+			return cssColor;
 		}
-		
-		int red = color.getRed();
-		int green = color.getGreen();
-		int blue = color.getBlue();
-		
-		String cssColor = String.format("#%02X%02X%02X", red, green, blue);
-		return cssColor;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -2947,46 +3756,52 @@ public class Utility {
 	 */
 	public static boolean convertCssStringToNumberUnit(String string,
 			Obj<String> number, Obj<String> unit) {
-
-		number.ref = "";
-		unit.ref = "";
 		
-		boolean numberExpected = true;
-		
-		for (int index = 0; index < string.length(); index++) {
-			
-			char character = string.charAt(index);
-			
-			if (numberExpected) {
-				boolean isNumber = Character.isDigit(character) || character == '-' || character == '.';
-				
-				if (isNumber) {
-					number.ref += character;
-				}
-				else {
-					numberExpected = false;
-				}
-			}
-			
-			// Unit character expected.
-			if (!numberExpected) {
-				unit.ref += character;
-			}
-		}
-		
-		boolean success = true;
-		
-		// Trim values.
 		try {
-			number.ref = String.valueOf(Double.parseDouble(number.ref));
-		}
-		catch (Exception e) {
-			
-			success = false;
 			number.ref = "";
+			unit.ref = "";
+			
+			boolean numberExpected = true;
+			
+			for (int index = 0; index < string.length(); index++) {
+				
+				char character = string.charAt(index);
+				
+				if (numberExpected) {
+					boolean isNumber = Character.isDigit(character) || character == '-' || character == '.';
+					
+					if (isNumber) {
+						number.ref += character;
+					}
+					else {
+						numberExpected = false;
+					}
+				}
+				
+				// Unit character expected.
+				if (!numberExpected) {
+					unit.ref += character;
+				}
+			}
+			
+			boolean success = true;
+			
+			// Trim values.
+			try {
+				number.ref = String.valueOf(Double.parseDouble(number.ref));
+			}
+			catch (Exception e) {
+				
+				success = false;
+				number.ref = "";
+			}
+			
+			return success;
 		}
-		
-		return success;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -2996,28 +3811,33 @@ public class Utility {
 	 */
 	public static boolean selectComboNamedItem(JComboBox comboBox, String value) {
 		
-		for (int index = 0; index < comboBox.getItemCount(); index++) {
-			
-			Object object = comboBox.getItemAt(index);
-			if (object instanceof NamedItem) {
+		try {
+			for (int index = 0; index < comboBox.getItemCount(); index++) {
 				
-				String valueCombo = ((NamedItem) object).value;
-				if (valueCombo.equals(value)) {
+				Object object = comboBox.getItemAt(index);
+				if (object instanceof NamedItem) {
 					
-					comboBox.setSelectedIndex(index);
-					return true;
+					String valueCombo = ((NamedItem) object).value;
+					if (valueCombo.equals(value)) {
+						
+						comboBox.setSelectedIndex(index);
+						return true;
+					}
+				}
+				else if (object instanceof String) {
+					String textValue = (String) object;
+					
+					if (textValue.equals(value)) {
+						return true;
+					}
 				}
 			}
-			else if (object instanceof String) {
-				String textValue = (String) object;
-				
-				if (textValue.equals(value)) {
-					return true;
-				}
-			}
+			
+			comboBox.setSelectedIndex(0);
 		}
-		
-		comboBox.setSelectedIndex(0);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return false;
 	}
 
@@ -3030,7 +3850,13 @@ public class Utility {
 	public static String getCssValueAndUnits(JTextField textField,
 			JComboBox comboUnits) {
 		
-		return getCssValueAndUnits(textField, comboUnits, null, "0px");
+		try {
+			return getCssValueAndUnits(textField, comboUnits, null, "0px");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 	
 	/**
@@ -3044,7 +3870,13 @@ public class Utility {
 			JComboBox comboUnits,
 			JComboBox comboValues) {
 		
-		return getCssValueAndUnits(textField, comboUnits, comboValues, "0px");
+		try {
+			return getCssValueAndUnits(textField, comboUnits, comboValues, "0px");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 	
 	/**
@@ -3058,7 +3890,13 @@ public class Utility {
 			JComboBox comboUnits,
 			String defaultValue) {
 		
-		return getCssValueAndUnits(textField, comboUnits, null, defaultValue);
+		try {
+			return getCssValueAndUnits(textField, comboUnits, null, defaultValue);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 	
 	/**
@@ -3074,33 +3912,37 @@ public class Utility {
 			JComboBox comboValues,
 			String defaultValue) {
 		
-		// Try to get combo value.
-		if (comboValues != null && textField.getText().isEmpty()) {
-			
-			String text =  getSelectedNamedItem(comboValues);
-			if (text.isEmpty()) {
-				return defaultValue;
-			}
-			return text;
-		}
-
-		// Try to get number and units.
 		try {
-			
-			String numberText = textField.getText();
-			if (!numberText.isEmpty()) {
+			// Try to get combo value.
+			if (comboValues != null && textField.getText().isEmpty()) {
 				
-				double number = Double.parseDouble(numberText);
+				String text =  getSelectedNamedItem(comboValues);
+				if (text.isEmpty()) {
+					return defaultValue;
+				}
+				return text;
+			}
+	
+			// Try to get number and units.
+			try {
 				
-				// Get units.
-				String units = (String) comboUnits.getSelectedItem();
-				
-				return String.valueOf(number) + units;
+				String numberText = textField.getText();
+				if (!numberText.isEmpty()) {
+					
+					double number = Double.parseDouble(numberText);
+					
+					// Get units.
+					String units = (String) comboUnits.getSelectedItem();
+					
+					return String.valueOf(number) + units;
+				}
+			}
+			catch (Exception e) {
 			}
 		}
-		catch (Exception e) {
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
 		return defaultValue;
 	}
 
@@ -3134,8 +3976,13 @@ public class Utility {
 	 * @param textField
 	 */
 	public static void setCssNumberValue(String string, JTextField textField) {
-	
-		setCssNumberValue(string, textField, null);
+		try {
+			
+			setCssNumberValue(string, textField, null);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -3157,9 +4004,15 @@ public class Utility {
 		catch (Exception e) {
 		}
 		
-		if (defaultValue != null) {
-			textField.setText(defaultValue);
+		try {
+			
+			if (defaultValue != null) {
+				textField.setText(defaultValue);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -3170,7 +4023,6 @@ public class Utility {
 	public static boolean isTextFieldNumber(JTextField textField) {
 		
 		try {
-			
 			String numberText = textField.getText();
 			if (!numberText.isEmpty()) {
 				
@@ -3192,8 +4044,13 @@ public class Utility {
 	 */
 	public static void setCssValueAndUnits(String string,
 			JTextField textField, JComboBox comboUnits) {
-		
-		setCssValueAndUnits(string, textField, comboUnits, null, null);
+		try {
+			
+			setCssValueAndUnits(string, textField, comboUnits, null, null);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -3205,8 +4062,13 @@ public class Utility {
 	 */
 	public static void setCssValueAndUnits(String string,
 			JTextField textField, JComboBox comboUnits, String defaultValue) {
-		
-		setCssValueAndUnits(string, textField, comboUnits, defaultValue, null);
+		try {
+			
+			setCssValueAndUnits(string, textField, comboUnits, defaultValue, null);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -3219,21 +4081,26 @@ public class Utility {
 	 */
 	public static void setCssValueAndUnits(String string,
 			JTextField textField, JComboBox comboUnits, String defaultValue, String defaultUnits) {
-
-		Obj<String> number = new Obj<String>();
-		Obj<String> unit = new Obj<String>();
-		Utility.convertCssStringToNumberUnit(string, number, unit);
-		
-		if (number.ref.isEmpty() && defaultValue != null) {
-			number.ref = defaultValue;
+		try {
+			
+			Obj<String> number = new Obj<String>();
+			Obj<String> unit = new Obj<String>();
+			Utility.convertCssStringToNumberUnit(string, number, unit);
+			
+			if (number.ref.isEmpty() && defaultValue != null) {
+				number.ref = defaultValue;
+			}
+			
+			textField.setText(number.ref);
+			
+			// Select unit.
+			if (!Utility.selectComboItem(comboUnits, unit.ref) && defaultUnits != null) {
+				Utility.selectComboItem(comboUnits, defaultUnits);
+			}
 		}
-		
-		textField.setText(number.ref);
-		
-		// Select unit.
-		if (!Utility.selectComboItem(comboUnits, unit.ref) && defaultUnits != null) {
-			Utility.selectComboItem(comboUnits, defaultUnits);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -3243,16 +4110,22 @@ public class Utility {
 	 */
 	public static Color getColorFromCss(String string) {
 		
-		if (string.length() != 7 && string.charAt(0) != '#') {
-			return Color.BLACK;
+		try {
+			if (string.length() != 7 && string.charAt(0) != '#') {
+				return Color.BLACK;
+			}
+			
+			int red = Integer.parseInt(string.substring(1, 3), 16);
+			int green = Integer.parseInt(string.substring(3, 5), 16);
+			int blue = Integer.parseInt(string.substring(5, 7), 16);
+			
+			Color color = new Color(red, green, blue);
+			return color;
 		}
-		
-		int red = Integer.parseInt(string.substring(1, 3), 16);
-		int green = Integer.parseInt(string.substring(3, 5), 16);
-		int blue = Integer.parseInt(string.substring(5, 7), 16);
-		
-		Color color = new Color(red, green, blue);
-		return color;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return Color.BLACK;
 	}
 
 	/**
@@ -3262,16 +4135,21 @@ public class Utility {
 	 */
 	public static void loadNamedItems(JComboBox comboBox,
 			String[][] strings) {
-		
-		for (String [] items : strings) {
+		try {
 			
-			if (items.length == 1) {
-				comboBox.addItem(items[0]);
-			}
-			else if (items.length >= 2) {
-				comboBox.addItem(new NamedItem(items[1], items[0]));
+			for (String [] items : strings) {
+				
+				if (items.length == 1) {
+					comboBox.addItem(items[0]);
+				}
+				else if (items.length >= 2) {
+					comboBox.addItem(new NamedItem(items[1], items[0]));
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -3279,8 +4157,13 @@ public class Utility {
 	 * @param comboBox
 	 */
 	public static void loadEmptyItem(JComboBox comboBox) {
-		
-		comboBox.addItem(new NamedItem(""));
+		try {
+			
+			comboBox.addItem(new NamedItem(""));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -3290,15 +4173,19 @@ public class Utility {
 	 */
 	public static String getSelectedNamedItem(JComboBox comboBox) {
 		
-		Object object = comboBox.getSelectedItem();
-		
-		if (object instanceof NamedItem) {
-			return ((NamedItem) object).value;
+		try {
+			Object object = comboBox.getSelectedItem();
+			
+			if (object instanceof NamedItem) {
+				return ((NamedItem) object).value;
+			}
+			if (object instanceof String) {
+				return (String) object;
+			}
 		}
-		if (object instanceof String) {
-			return (String) object;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
 		return "";
 	}
 	
@@ -3312,7 +4199,13 @@ public class Utility {
 	public static String getNextMatch(String string,
 			Obj<Integer> position, String regex) {
 		
-		return getNextMatch(string, position, regex, null);
+		try {
+			return getNextMatch(string, position, regex, null);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 	
 	/**
@@ -3325,36 +4218,40 @@ public class Utility {
 	public static String getNextMatch(String string,
 			Obj<Integer> position, String regex, Obj<Matcher> outputMatcher) {
 		
-		if (outputMatcher != null) {
-			outputMatcher.ref = null;
-		}
-		
-		if (position.ref == null) {
-			position.ref = 0;
-		}
-		
-		if (position.ref < 0 || position.ref >= string.length()) {
-			return null;
-		}
-		
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(string);
-		
-		if (outputMatcher != null) {
-			outputMatcher.ref = matcher;
-		}
-		
-		if (matcher.find(position.ref)) {
+		try {
+			if (outputMatcher != null) {
+				outputMatcher.ref = null;
+			}
 			
-			int start = matcher.start();
-			int end = matcher.end();
+			if (position.ref == null) {
+				position.ref = 0;
+			}
 			
-			String matchedString = string.substring(start, end);
-			position.ref = end;
+			if (position.ref < 0 || position.ref >= string.length()) {
+				return null;
+			}
 			
-			return matchedString;
+			Pattern pattern = Pattern.compile(regex);
+			Matcher matcher = pattern.matcher(string);
+			
+			if (outputMatcher != null) {
+				outputMatcher.ref = matcher;
+			}
+			
+			if (matcher.find(position.ref)) {
+				
+				int start = matcher.start();
+				int end = matcher.end();
+				
+				String matchedString = string.substring(start, end);
+				position.ref = end;
+				
+				return matchedString;
+			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return null;
 	}
 
@@ -3365,10 +4262,16 @@ public class Utility {
 	 */
 	public static boolean isCssStringNumberUnit(String string) {
 		
-		Obj<String> number = new Obj<String>();
-		Obj<String> unit = new Obj<String>();
-		
-		return convertCssStringToNumberUnit(string, number, unit);
+		try {
+			Obj<String> number = new Obj<String>();
+			Obj<String> unit = new Obj<String>();
+			
+			return convertCssStringToNumberUnit(string, number, unit);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -3378,22 +4281,28 @@ public class Utility {
 	 */
 	public static IdentifierTreePath[] getSelectedPaths(JTree tree) {
 		
-		// Get selected objects.
-		LinkedList<IdentifierTreePath> outputSelectedPaths = new LinkedList<IdentifierTreePath>();
-		TreePath rootPath = tree.getPathForRow(0);
-		if (rootPath != null) {
-			TreePath [] selectedPaths = tree.getSelectionPaths();
-			if (selectedPaths != null) {
-				
-				// Do loop for all selected paths.
-				for (TreePath path : selectedPaths) {
-					// Add path.
-					outputSelectedPaths.add(new IdentifierTreePath(path));
+		try {
+			// Get selected objects.
+			LinkedList<IdentifierTreePath> outputSelectedPaths = new LinkedList<IdentifierTreePath>();
+			TreePath rootPath = tree.getPathForRow(0);
+			if (rootPath != null) {
+				TreePath [] selectedPaths = tree.getSelectionPaths();
+				if (selectedPaths != null) {
+					
+					// Do loop for all selected paths.
+					for (TreePath path : selectedPaths) {
+						// Add path.
+						outputSelectedPaths.add(new IdentifierTreePath(path));
+					}
 				}
 			}
+			
+			return outputSelectedPaths.toArray(new IdentifierTreePath[0]);
 		}
-		
-		return outputSelectedPaths.toArray(new IdentifierTreePath[0]);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -3403,28 +4312,39 @@ public class Utility {
 	 */
 	public static void setSelectedPaths(JTree tree,
 			IdentifierTreePath[] treePaths) {
-		
-		// Do loop for all tree paths.
-		for (IdentifierTreePath treePath : treePaths) {
+		try {
 			
-			treePath.addSelection(tree);
+			// Do loop for all tree paths.
+			for (IdentifierTreePath treePath : treePaths) {
+				treePath.addSelection(tree);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Close splash screen.
 	 */
 	public static void closeSplash() {
-		
-		SplashScreen splash = SplashScreen.getSplashScreen();
-		if (splash != null) {
-			try {
-				Thread.sleep(1500);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+		try {
+			
+			SplashScreen splash = SplashScreen.getSplashScreen();
+			if (splash != null) {
+				try {
+					Thread.sleep(1500);
+				} 
+				catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				splash.close();
 			}
-			splash.close();
+			
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -3434,19 +4354,25 @@ public class Utility {
 	 */
 	public static HashSet<String> splitAliases(String aliases) {
 		
-		String [] aliasesArray = aliases.split(",");
-		HashSet<String> aliasesSet = new HashSet<String>();
-		
-		for (String alias : aliasesArray) {
+		try {
+			String [] aliasesArray = aliases.split(",");
+			HashSet<String> aliasesSet = new HashSet<String>();
 			
-			alias = alias.trim();
-			
-			if (!alias.isEmpty()) {
-				aliasesSet.add(alias);
+			for (String alias : aliasesArray) {
+				
+				alias = alias.trim();
+				
+				if (!alias.isEmpty()) {
+					aliasesSet.add(alias);
+				}
 			}
+			
+			return aliasesSet;
 		}
-		
-		return aliasesSet;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -3454,10 +4380,15 @@ public class Utility {
 	 * @param comboBox
 	 */
 	public static void selectFirst(JComboBox comboBox) {
-		
-		if (comboBox.getItemCount() > 0) {
-			comboBox.setSelectedIndex(0);
+		try {
+			
+			if (comboBox.getItemCount() > 0) {
+				comboBox.setSelectedIndex(0);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -3467,10 +4398,16 @@ public class Utility {
 	 */
 	public static String removeFloatNulls(String floatInput) {
 		
-		float floatNumber = Float.parseFloat(floatInput);
-        String outputFloat = String.format("%s", floatNumber);
-        
-        return outputFloat;
+		try {
+			float floatNumber = Float.parseFloat(floatInput);
+	        String outputFloat = String.format("%s", floatNumber);
+	        
+	        return outputFloat;
+	    }
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -3495,8 +4432,13 @@ public class Utility {
 	 * @param comboBox
 	 */
 	public static void loadCssAngleUnits(JComboBox comboBox) {
-		
-		loadCssUnits(comboBox, Utility.cssAngleUnits);
+		try {
+			
+			loadCssUnits(comboBox, Utility.cssAngleUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -3508,15 +4450,20 @@ public class Utility {
 	 */
 	public static Float getNextNumber(String text, Obj<Integer> position, String terminalRegex) {
 		
-		String textFloat = getNextMatch(text, position, "\\G\\s*[0-9\\.\\-\\+]+\\s*" + (terminalRegex != null ? terminalRegex : ""));
-		if (textFloat == null) {
-			return null;
-		}
 		try {
-			float number = Float.parseFloat(textFloat.trim());
-			return number;
+			String textFloat = getNextMatch(text, position, "\\G\\s*[0-9\\.\\-\\+]+\\s*" + (terminalRegex != null ? terminalRegex : ""));
+			if (textFloat == null) {
+				return null;
+			}
+			try {
+				float number = Float.parseFloat(textFloat.trim());
+				return number;
+			}
+			catch (Exception e) {
+			}
 		}
-		catch (Exception e) {
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -3527,12 +4474,17 @@ public class Utility {
 	 * @param strings
 	 */
 	public static void loadItems(JComboBox comboBox, String[] strings) {
-		
-		comboBox.removeAllItems();
-		
-		for (String string : strings) {
-			comboBox.addItem(string);
+		try {
+			
+			comboBox.removeAllItems();
+			
+			for (String string : strings) {
+				comboBox.addItem(string);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -3542,8 +4494,13 @@ public class Utility {
 	 */
 	public static void showHtml(Component parentComponent,
 			String htmlText) {
-		
-		ShowHtmlMessageDialog.showDialog(parentComponent, htmlText);
+		try {
+			
+			ShowHtmlMessageDialog.showDialog(parentComponent, htmlText);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -3553,11 +4510,16 @@ public class Utility {
 	 */
 	public static void showHtml(Component parentComponent,
 			String htmlTextName, Object ... parameters) {
-		
-		String htmlTextTemplate = Resources.getString(htmlTextName);
-		String htmlText = String.format(htmlTextTemplate, parameters);
-		
-		ShowHtmlMessageDialog.showDialog(parentComponent, htmlText);
+		try {
+			
+			String htmlTextTemplate = Resources.getString(htmlTextName);
+			String htmlText = String.format(htmlTextTemplate, parameters);
+			
+			ShowHtmlMessageDialog.showDialog(parentComponent, htmlText);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -3567,10 +4529,15 @@ public class Utility {
 	 */
 	public static <T> void addArrayItems(LinkedList<T> queue,
 			T[] array) {
-		
-		for (T item : array) {
-			queue.add(item);
+		try {
+			
+			for (T item : array) {
+				queue.add(item);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -3578,48 +4545,64 @@ public class Utility {
 	 * @param update
 	 */
 	public static void traverseUI(ComponentUpdate update) {
-		
-		// Get windows and traverse UI components.
-		Window [] windows = Window.getWindows();
+		try {
 			
-		LinkedList<Component> queue = new LinkedList<Component>();
-		Utility.addArrayItems(queue, windows);
-		
-		while (!queue.isEmpty()) {
-
-			Component component = queue.removeFirst();
-			if (!update.run(component)) {
-
-				if (component instanceof Container) {
-					
-					Container container = (Container) component;
-					Utility.addArrayItems(queue, container.getComponents());
+			// Get windows and traverse UI components.
+			Window [] windows = Window.getWindows();
+				
+			LinkedList<Component> queue = new LinkedList<Component>();
+			Utility.addArrayItems(queue, windows);
+			
+			while (!queue.isEmpty()) {
+	
+				Component component = queue.removeFirst();
+				if (!update.run(component)) {
+	
+					if (component instanceof Container) {
+						
+						Container container = (Container) component;
+						Utility.addArrayItems(queue, container.getComponents());
+					}
 				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Enable web links.
 	 */
 	public static void enableWebLinks(Component parent, JEditorPane editor) {
-		
-		editor.addHyperlinkListener((HyperlinkEvent event) -> {
-	        if(event.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-	        	
-	        	// Open bowser with given URL.
-	        	if(Desktop.isDesktopSupported()) {
-	        	    try {
-						Desktop.getDesktop().browse(event.getURL().toURI());
-					}
-	        	    catch (Exception e) {
-	        	    	
-						// Report error.
-						Utility.show2(parent, e.getLocalizedMessage());
-					}
-	        	}
-	        }
-		});
+		try {
+			
+			editor.addHyperlinkListener((HyperlinkEvent event) -> {
+				try {
+					
+					if(event.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+			        	
+			        	// Open bowser with given URL.
+			        	if(Desktop.isDesktopSupported()) {
+			        	    try {
+								Desktop.getDesktop().browse(event.getURL().toURI());
+							}
+			        	    catch (Exception e) {
+			        	    	
+								// Report error.
+								Utility.show2(parent, e.getLocalizedMessage());
+							}
+			        	}
+			        }
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -3629,7 +4612,12 @@ public class Utility {
 	 */
 	public static String normalizeNewLines(String text) {
 		
-		text = text.replaceAll("\r(?!\n)|\r\n", "\n");
+		try {
+			text = text.replaceAll("\r(?!\n)|\r\n", "\n");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return text;
 	}
 
@@ -3640,9 +4628,15 @@ public class Utility {
 	 */
 	public static String replaceNonAsciiChars(String text) {
 		
-		String nfdNormalizedString = Normalizer.normalize(text, Normalizer.Form.NFD); 
-	    Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
-	    return pattern.matcher(nfdNormalizedString).replaceAll("");
+		try {
+			String nfdNormalizedString = Normalizer.normalize(text, Normalizer.Form.NFD); 
+		    Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+		    return pattern.matcher(nfdNormalizedString).replaceAll("");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return text;
 	}
 
 	/**
@@ -3665,13 +4659,19 @@ public class Utility {
 	 */
 	public static <T> LinkedList<T> getList(JComboBox<T> comboBox) {
 		
-		LinkedList<T> list = new LinkedList<T>();
-		
-		for (int index = 0; index < comboBox.getItemCount(); index++) {
-			list.add(comboBox.getItemAt(index));
+		try {
+			LinkedList<T> list = new LinkedList<T>();
+			
+			for (int index = 0; index < comboBox.getItemCount(); index++) {
+				list.add(comboBox.getItemAt(index));
+			}
+			
+			return list;
 		}
-		
-		return list;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -3680,12 +4680,17 @@ public class Utility {
 	 * @param items
 	 */
 	public static<T> void setList(JComboBox<T> comboBox, LinkedList<T> items) {
-		
-		comboBox.removeAllItems();
-		
-		for (T item : items) {
-			comboBox.addItem(item);
+		try {
+			
+			comboBox.removeAllItems();
+			
+			for (T item : items) {
+				comboBox.addItem(item);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -3696,18 +4701,21 @@ public class Utility {
 	public static int getSelected(ButtonGroup buttonGroup) {
 		
 		int index = -1;
-		
-		Enumeration<AbstractButton> buttons = buttonGroup.getElements();
-		while (buttons.hasMoreElements()) {
-			
-			AbstractButton button = buttons.nextElement();
-			
-			index++;
-			if (button.isSelected()) {
-				break;
+		try {
+			Enumeration<AbstractButton> buttons = buttonGroup.getElements();
+			while (buttons.hasMoreElements()) {
+				
+				AbstractButton button = buttons.nextElement();
+				
+				index++;
+				if (button.isSelected()) {
+					break;
+				}
 			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return index;
 	}
 
@@ -3717,23 +4725,28 @@ public class Utility {
 	 * @param index
 	 */
 	public static void setSelected(ButtonGroup buttonGroup, int index) {
-		
-		if (index < 0 || index >= buttonGroup.getButtonCount()) {
-			return;
-		}
-		
-		Enumeration<AbstractButton> buttons = buttonGroup.getElements();
-		
-		int buttonIndex = 0;
-		while (buttons.hasMoreElements()) {
+		try {
 			
-			AbstractButton button = buttons.nextElement();
-			if (buttonIndex++ == index) {
+			if (index < 0 || index >= buttonGroup.getButtonCount()) {
+				return;
+			}
+			
+			Enumeration<AbstractButton> buttons = buttonGroup.getElements();
+			
+			int buttonIndex = 0;
+			while (buttons.hasMoreElements()) {
 				
-				button.setSelected(true);
-				break;
+				AbstractButton button = buttons.nextElement();
+				if (buttonIndex++ == index) {
+					
+					button.setSelected(true);
+					break;
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -3887,22 +4900,28 @@ public class Utility {
      */
 	public static TreeSet<Long> loadLongsFromFile(Path path) {
 		
-		String content = "";
 		try {
-			content = new String(Files.readAllBytes(path));
-		}
-		catch (Exception e) {
-		}
-		TreeSet<Long> resourceIds = new TreeSet<Long>();
-		for (String item : content.split(" ")) {
+			String content = "";
 			try {
-				resourceIds.add(Long.parseLong(item.trim()));
+				content = new String(Files.readAllBytes(path));
 			}
 			catch (Exception e) {
 			}
+			TreeSet<Long> resourceIds = new TreeSet<Long>();
+			for (String item : content.split(" ")) {
+				try {
+					resourceIds.add(Long.parseLong(item.trim()));
+				}
+				catch (Exception e) {
+				}
+			}
+			
+			return resourceIds;
 		}
-		
-		return resourceIds;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -3913,20 +4932,26 @@ public class Utility {
 	public static StringBuilder readAllLines(InputStream inputStream)
 			throws Exception {
 		
-		StringBuilder text = new StringBuilder("");
-		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-		
-		while (true) {
+		try {
+			StringBuilder text = new StringBuilder("");
+			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 			
-			String line = reader.readLine();
-			if (line == null) {
-				break;
+			while (true) {
+				
+				String line = reader.readLine();
+				if (line == null) {
+					break;
+				}
+				
+				text.append(line);
+				text.append("\n");
 			}
-			
-			text.append(line);
-			text.append("\n");
+			return text;
 		}
-		return text;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -4029,8 +5054,14 @@ public class Utility {
 	 */
 	public static String getJavaRuntimeFolder() {
 		
-		String javaRuntimePath = System.getProperty("java.home") + File.separatorChar + "bin";
-		return javaRuntimePath;
+		try {
+			String javaRuntimePath = System.getProperty("java.home") + File.separatorChar + "bin";
+			return javaRuntimePath;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -4159,7 +5190,13 @@ public class Utility {
 	 */
 	public static boolean isFormatString(String text) {
 		
-		return text.matches(formatSpecifier);
+		try {
+			return text.matches(formatSpecifier);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
@@ -4169,7 +5206,6 @@ public class Utility {
 	public static void openEditor(File file) {
 		
 		try {
-			
 			Desktop.getDesktop().open(file);
 		} 
 		catch (IOException e) {
@@ -4184,16 +5220,20 @@ public class Utility {
 	 */
 	public static String extractFirstLine(String text) {
 		
-		Pattern pattern = Pattern.compile("^(.*)$", Pattern.MULTILINE);
-		Matcher matcher = pattern.matcher(text);
-		boolean matches = matcher.find();
-		int groups = matcher.groupCount();
-				
-		if (matches && groups == 1) {
-			String firstLine = matcher.group(1);
-			return firstLine;
+		try {
+			Pattern pattern = Pattern.compile("^(.*)$", Pattern.MULTILINE);
+			Matcher matcher = pattern.matcher(text);
+			boolean matches = matcher.find();
+			int groups = matcher.groupCount();
+					
+			if (matches && groups == 1) {
+				String firstLine = matcher.group(1);
+				return firstLine;
+			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return "";
 	}
 	
@@ -4204,11 +5244,15 @@ public class Utility {
 	 */
 	public static String htmlSpecialChars(String standardOutput) {
 		
-		standardOutput = standardOutput.replace("&", "&amp;");
-		standardOutput = standardOutput.replace("<", "&lt;");
-		standardOutput = standardOutput.replace(">", "&gt;");
-		standardOutput = standardOutput.replace("\"", "&quot;");
-		
+		try {
+			standardOutput = standardOutput.replace("&", "&amp;");
+			standardOutput = standardOutput.replace("<", "&lt;");
+			standardOutput = standardOutput.replace(">", "&gt;");
+			standardOutput = standardOutput.replace("\"", "&quot;");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return standardOutput;
 	}
 
@@ -4218,38 +5262,42 @@ public class Utility {
 	 */
 	public static boolean log(String message) {
 		
-		final long maximumFileSize = 65000;
-		final String folder = "C:\\logs\\Multipage";
-		final File logFilePath = new File(folder);
-		final File logFile = new File(folder, "logfile.txt");
-		
-		// Check path
-		if (!logFilePath.exists()) {
-			//logFilePath.mkdirs();
-			return false;
-		}
-		
 		try {
-			RandomAccessFile file = new RandomAccessFile(logFile, "rws");
-			long length = file.length();
-			byte [] content = new byte [(int) length];
-			file.readFully(content);
+			final long maximumFileSize = 65000;
+			final String folder = "C:\\logs\\Multipage";
+			final File logFilePath = new File(folder);
+			final File logFile = new File(folder, "logfile.txt");
 			
-			file.seek(0);
-			LocalDateTime timePoint = LocalDateTime.now();
-			file.writeBytes(timePoint.format(DateTimeFormatter.ofPattern("'['yyyy'/'MM'/'dd' 'HH':'mm':'ss'] '")));
-			file.writeBytes(message);
-			file.writeBytes("\r\n");
-			file.write(content);
+			// Check path
+			if (!logFilePath.exists()) {
+				//logFilePath.mkdirs();
+				return false;
+			}
 			
-			file.getChannel().truncate(maximumFileSize);
-			file.close();
-			
-			return true;
+			try {
+				RandomAccessFile file = new RandomAccessFile(logFile, "rws");
+				long length = file.length();
+				byte [] content = new byte [(int) length];
+				file.readFully(content);
+				
+				file.seek(0);
+				LocalDateTime timePoint = LocalDateTime.now();
+				file.writeBytes(timePoint.format(DateTimeFormatter.ofPattern("'['yyyy'/'MM'/'dd' 'HH':'mm':'ss'] '")));
+				file.writeBytes(message);
+				file.writeBytes("\r\n");
+				file.write(content);
+				
+				file.getChannel().truncate(maximumFileSize);
+				file.close();
+				
+				return true;
+			}
+			catch (Exception e) {
+			}
 		}
-		catch (Exception e) {
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
 		return false;
 	}
 	
@@ -4259,12 +5307,17 @@ public class Utility {
 	 * @param parameters
 	 */
 	public static void err(String textName, Object ... parameters) {
-		
-		String message = Resources.getString(textName);
-		if (parameters.length > 0) {
-			message = String.format(message, parameters);
+		try {
+			
+			String message = Resources.getString(textName);
+			if (parameters.length > 0) {
+				message = String.format(message, parameters);
+			}
+			System.err.println(message);
 		}
-		System.err.println(message);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -4272,8 +5325,13 @@ public class Utility {
 	 * @param input
 	 */
 	public static void out(Object input) {
-		
-		System.err.println(input.toString());
+		try {
+			
+			System.err.println(input.toString());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -4283,9 +5341,15 @@ public class Utility {
 	 */
 	public static String formatTime(long time) {
 		
-		Timestamp timeStamp = new Timestamp(time);
-		String timeString = timeStamp.toString();
-		return timeString;
+		try {
+			Timestamp timeStamp = new Timestamp(time);
+			String timeString = timeStamp.toString();
+			return timeString;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -4294,13 +5358,19 @@ public class Utility {
 	 */
 	public static byte [] toPrimitives(Byte[] bytes) {
 		
-		byte [] returned = new byte [bytes.length];
-		
-		for (int index = 0; index < bytes.length; index++) {
-			returned[index] = bytes[index];
+		try {
+			byte [] returned = new byte [bytes.length];
+			
+			for (int index = 0; index < bytes.length; index++) {
+				returned[index] = bytes[index];
+			}
+			
+			return returned;
 		}
-		
-		return returned;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -4320,9 +5390,15 @@ public class Utility {
 	 */
 	public static Exception newException(String messageResourceId, Object ... parameters) {
 		
-		String message = Resources.getString(messageResourceId);
-		message = String.format(message, parameters);
-		return new Exception(message);
+		try {
+			String message = Resources.getString(messageResourceId);
+			message = String.format(message, parameters);
+			return new Exception(message);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -4372,24 +5448,28 @@ public class Utility {
 	 */
 	public static boolean isFileExtension(File file, String[] enabledExtensions) {
 		
-		String fileName = file.getName();
-		int dotPosition = fileName.lastIndexOf('.');
-		if (dotPosition == -1) {
-			return false;
-		}
-		
 		try {
-			String extension = fileName.substring(dotPosition + 1, fileName.length());
-			for (String enabledExtension : enabledExtensions) {
-				
-				if (extension.equals(enabledExtension)) {
-					return true;
+			String fileName = file.getName();
+			int dotPosition = fileName.lastIndexOf('.');
+			if (dotPosition == -1) {
+				return false;
+			}
+			
+			try {
+				String extension = fileName.substring(dotPosition + 1, fileName.length());
+				for (String enabledExtension : enabledExtensions) {
+					
+					if (extension.equals(enabledExtension)) {
+						return true;
+					}
 				}
 			}
+			catch (Exception e) {
+			}
 		}
-		catch (Exception e) {
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
 		return false;
 	}
 	
@@ -4399,42 +5479,48 @@ public class Utility {
 	 */
 	public static CharsetMatch [] getAvailableEncodingsFor(File textFile) {
 		
-		// Check file.
-		if (!textFile.exists()) {
-			return null;
-		}
-		
-		CharsetMatch [] possibleEncodings = null;
-		
-		BufferedInputStream inputStream = null;
-		
 		try {
-			// Create file input stream
-			inputStream = new BufferedInputStream(new FileInputStream(textFile));
+			// Check file.
+			if (!textFile.exists()) {
+				return null;
+			}
 			
-			// Detect encoding
-			CharsetDetector detector = new CharsetDetector();
-			detector.setText(inputStream);
-			possibleEncodings = detector.detectAll();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		finally {
-			if (inputStream != null) {
-				try {
-					inputStream.close();
-				}
-				catch (IOException e) {
+			CharsetMatch [] possibleEncodings = null;
+			
+			BufferedInputStream inputStream = null;
+			
+			try {
+				// Create file input stream
+				inputStream = new BufferedInputStream(new FileInputStream(textFile));
+				
+				// Detect encoding
+				CharsetDetector detector = new CharsetDetector();
+				detector.setText(inputStream);
+				possibleEncodings = detector.detectAll();
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
+			finally {
+				if (inputStream != null) {
+					try {
+						inputStream.close();
+					}
+					catch (IOException e) {
+					}
 				}
 			}
+			
+			if (possibleEncodings == null) {
+				possibleEncodings = new CharsetMatch [] {};
+			}
+			
+			return possibleEncodings;
 		}
-		
-		if (possibleEncodings == null) {
-			possibleEncodings = new CharsetMatch [] {};
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		return possibleEncodings;
+		return null;
 	}
 	
 	
@@ -4444,33 +5530,39 @@ public class Utility {
 	 */
 	public static String getTextEncoding(File textFile) {
 		
-		String encoding = "";
-		BufferedInputStream inputStream = null;
-		
 		try {
-			// Create file input stream
-			inputStream = new BufferedInputStream(new FileInputStream(textFile));
+			String encoding = "";
+			BufferedInputStream inputStream = null;
 			
-			// Detect encoding
-			CharsetDetector detector = new CharsetDetector();
-			detector.setText(inputStream);
-			CharsetMatch charset = detector.detect();
-			
-			encoding = charset.getName();
-		}
-		catch (Exception e) {
-		}
-		finally {
-			if (inputStream != null) {
-				try {
-					inputStream.close();
-				}
-				catch (IOException e) {
+			try {
+				// Create file input stream
+				inputStream = new BufferedInputStream(new FileInputStream(textFile));
+				
+				// Detect encoding
+				CharsetDetector detector = new CharsetDetector();
+				detector.setText(inputStream);
+				CharsetMatch charset = detector.detect();
+				
+				encoding = charset.getName();
+			}
+			catch (Exception e) {
+			}
+			finally {
+				if (inputStream != null) {
+					try {
+						inputStream.close();
+					}
+					catch (IOException e) {
+					}
 				}
 			}
+			
+			return encoding;
 		}
-		
-		return encoding;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 	
 	/**
@@ -4481,32 +5573,38 @@ public class Utility {
 	 * @param listener
 	 */
 	public static void addMenuItem(JMenu menu, String textResource, String iconResource, ActionListener listener) {
-		
-		// Load text.
-		String text = "";
-		if (textResource != null && !textResource.isEmpty()) {
-			text = Resources.getString(textResource);
-			if (text == null) {
-				text = "";
+		try {
+			
+			// Load text.
+			String text = "";
+			if (textResource != null && !textResource.isEmpty()) {
+				text = Resources.getString(textResource);
+				if (text == null) {
+					text = "";
+				}
 			}
-		}
-		
-		// Create menu item.
-		JMenuItem item = new JMenuItem(text);
-		
-		// Load icon.
-		if (iconResource != null && !iconResource.isEmpty()) {
-			Icon icon = Images.getIcon(iconResource);
-			if (icon != null) {
-				item.setIcon(icon);
+			
+			// Create menu item.
+			JMenuItem item = new JMenuItem(text);
+			
+			// Load icon.
+			if (iconResource != null && !iconResource.isEmpty()) {
+				Icon icon = Images.getIcon(iconResource);
+				if (icon != null) {
+					item.setIcon(icon);
+				}
 			}
+			
+			// Add action.
+			item.addActionListener(listener);
+			
+			// Attach item to menu.
+			menu.add(item);
 		}
-		
-		// Add action.
-		item.addActionListener(listener);
-		
-		// Attach item to menu.
-		menu.add(item);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 	}
 	
 
@@ -4518,24 +5616,29 @@ public class Utility {
 	 * @param listener
 	 */
 	public static void addPopupMenuItem(PopupMenu menu, String textResource, ActionListener listener) {
-		
-		// Load text.
-		String text = "";
-		if (textResource != null && !textResource.isEmpty()) {
-			text = Resources.getString(textResource);
-			if (text == null) {
-				text = "";
+		try {
+			
+			// Load text.
+			String text = "";
+			if (textResource != null && !textResource.isEmpty()) {
+				text = Resources.getString(textResource);
+				if (text == null) {
+					text = "";
+				}
 			}
+			
+			// Create menu item.
+			MenuItem item = new MenuItem(text);
+			
+			// Add action.
+			item.addActionListener(listener);
+			
+			// Attach item to menu.
+			menu.add(item);
 		}
-		
-		// Create menu item.
-		MenuItem item = new MenuItem(text);
-		
-		// Add action.
-		item.addActionListener(listener);
-		
-		// Attach item to menu.
-		menu.add(item);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -4545,24 +5648,29 @@ public class Utility {
 	 * @param listener
 	 */
 	public static void addSubMenu(Menu subMenu, String textResource, ActionListener listener) {
-		
-		// Load text.
-		String text = "";
-		if (textResource != null && !textResource.isEmpty()) {
-			text = Resources.getString(textResource);
-			if (text == null) {
-				text = "";
+		try {
+			
+			// Load text.
+			String text = "";
+			if (textResource != null && !textResource.isEmpty()) {
+				text = Resources.getString(textResource);
+				if (text == null) {
+					text = "";
+				}
 			}
+			
+			// Create menu item.
+			MenuItem item = new MenuItem(text);
+			
+			// Add action.
+			item.addActionListener(listener);
+			
+			// Attach item to menu.
+			subMenu.add(item);
 		}
-		
-		// Create menu item.
-		MenuItem item = new MenuItem(text);
-		
-		// Add action.
-		item.addActionListener(listener);
-		
-		// Attach item to menu.
-		subMenu.add(item);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -4571,12 +5679,18 @@ public class Utility {
 	 */
 	public static String getUserFolder() {
 		
-		// Get user directory
-		String userProfile = System.getenv("LOCALAPPDATA");
-		if (userProfile.isEmpty()) {
-			userProfile = System.getProperty("user.home", "");
+		try {
+			// Get user directory
+			String userProfile = System.getenv("LOCALAPPDATA");
+			if (userProfile.isEmpty()) {
+				userProfile = System.getProperty("user.home", "");
+			}
+			return userProfile;
 		}
-		return userProfile;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -4585,14 +5699,19 @@ public class Utility {
 	 * @param item
 	 */
 	public static void putComboBoxItem(JComboBox comboBox, Object item) {
-		
-		for (int index = 0; index < comboBox.getItemCount(); index++) {
-			Object listItem = comboBox.getItemAt(index);
-			if (listItem.equals(item)) {
-				return;
+		try {
+			
+			for (int index = 0; index < comboBox.getItemCount(); index++) {
+				Object listItem = comboBox.getItemAt(index);
+				if (listItem.equals(item)) {
+					return;
+				}
 			}
+			comboBox.addItem(item);
 		}
-		comboBox.addItem(item);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -4603,23 +5722,29 @@ public class Utility {
 	 */
 	public static boolean contentEquals(LinkedList list1, LinkedList list2) {
 		
-		if (list1 == null || list2 == null) {
-			return false;
-		}
-		
-		int length = list1.size();
-		
-		if (length != list2.size()) {
-			return false;
-		}
-		
-		for (int index = 0; index < length; index++) {
-			if (list1.get(index) != list2.get(index)) {
+		try {
+			if (list1 == null || list2 == null) {
 				return false;
 			}
+			
+			int length = list1.size();
+			
+			if (length != list2.size()) {
+				return false;
+			}
+			
+			for (int index = 0; index < length; index++) {
+				if (list1.get(index) != list2.get(index)) {
+					return false;
+				}
+			}
+			
+			return true;
 		}
-		
-		return true;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
@@ -4688,13 +5813,18 @@ public class Utility {
 	 */
 	public static String getComboBoxText(JComboBox comboBox) {
 		
-		Component component = comboBox.getEditor().getEditorComponent();
-		if (component instanceof JTextComponent) {
-			
-			JTextComponent textComponent = (JTextComponent) component;
-			String text = textComponent.getText();
-			
-			return text;
+		try {
+			Component component = comboBox.getEditor().getEditorComponent();
+			if (component instanceof JTextComponent) {
+				
+				JTextComponent textComponent = (JTextComponent) component;
+				String text = textComponent.getText();
+				
+				return text;
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return "";
 	}
@@ -4707,13 +5837,18 @@ public class Utility {
 	 * @return
 	 */
 	public static void setComboBoxText(JComboBox comboBox, String text) {
-		
-		Component component = comboBox.getEditor().getEditorComponent();
-		if (component instanceof JTextComponent) {
+		try {
 			
-			JTextComponent textComponent = (JTextComponent) component;
-			textComponent.setText(text);
+			Component component = comboBox.getEditor().getEditorComponent();
+			if (component instanceof JTextComponent) {
+				
+				JTextComponent textComponent = (JTextComponent) component;
+				textComponent.setText(text);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -4723,17 +5858,23 @@ public class Utility {
 	 */
 	public static Object [] getComboBoxItemsArray(JComboBox comboBox) {
 		
-		final int count = comboBox.getItemCount();
-		Object items[]  = new String[count];
-		Object item;
-		
-		for (int index = 0; index < count ; index++) {
+		try {
+			final int count = comboBox.getItemCount();
+			Object items[]  = new String[count];
+			Object item;
 			
-			item = comboBox.getItemAt(index);
-			items[index] = item;
+			for (int index = 0; index < count ; index++) {
+				
+				item = comboBox.getItemAt(index);
+				items[index] = item;
+			}
+			
+			return items;
 		}
-		
-		return items;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -4743,18 +5884,23 @@ public class Utility {
 	 * @param enableEmptyItem
 	 */
 	public static void loadComboBoxItemsArray(JComboBox comboBox, Object[] items, boolean enableEmptyItem) {
-		
-		for (Object item : items) {
+		try {
 			
-			if (item == null || item.toString().isEmpty()) {
-				if (enableEmptyItem) {
-					putComboBoxItem(comboBox, "");
+			for (Object item : items) {
+				
+				if (item == null || item.toString().isEmpty()) {
+					if (enableEmptyItem) {
+						putComboBoxItem(comboBox, "");
+					}
+					continue;
 				}
-				continue;
+				
+				putComboBoxItem(comboBox, item);
 			}
-			
-			putComboBoxItem(comboBox, item);
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -4820,9 +5966,13 @@ public class Utility {
 	 */
 	public static String replaceEmptyLines(String text, String replacement) {
 		
-		Matcher matcher = emptyLineRegexPattern.matcher(text);
-		text = matcher.replaceAll(replacement);
-		
+		try {
+			Matcher matcher = emptyLineRegexPattern.matcher(text);
+			text = matcher.replaceAll(replacement);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return text;
 	}
 
@@ -4905,7 +6055,12 @@ public class Utility {
 	 */
 	public static String removeLastPunctuation(String line) {
 		
-		line = line.replaceAll("[\\.\\!\\?]$", "");
+		try {
+			line = line.replaceAll("[\\.\\!\\?]$", "");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return line;
 	}
 	
@@ -4918,89 +6073,114 @@ public class Utility {
 	 */
 	public static String colorHtmlTexts(String text, Pattern textRegex, String groupName, Color color) {
 		
-		// Get HTML color
-		final String cssColor = Utility.getCssColor(color);
-		
-		// Do loop for all matches and create output string with replacements
-		Matcher matcher = textRegex.matcher(text);
-		StringBuffer output = new StringBuffer();
-		
-		while (matcher.find()) {
+		try {
+			// Get HTML color
+			final String cssColor = Utility.getCssColor(color);
 			
-			try {
-				// Get text part
-				String textPart = matcher.group(groupName);
-				if (textPart != null) {
-					
-					// Replace the text part with colored one
-					String coloredTextPart = String.format("<font color=\"%s\">%s</font>", cssColor, textPart);
-					matcher.appendReplacement(output, coloredTextPart);
+			// Do loop for all matches and create output string with replacements
+			Matcher matcher = textRegex.matcher(text);
+			StringBuffer output = new StringBuffer();
+			
+			while (matcher.find()) {
+				
+				try {
+					// Get text part
+					String textPart = matcher.group(groupName);
+					if (textPart != null) {
+						
+						// Replace the text part with colored one
+						String coloredTextPart = String.format("<font color=\"%s\">%s</font>", cssColor, textPart);
+						matcher.appendReplacement(output, coloredTextPart);
+					}
+				}
+				catch (Exception e) {
 				}
 			}
-			catch (Exception e) {
-			}
+			
+			// Finalize the output
+			matcher.appendTail(output);
+			
+			return output.toString();
 		}
-		
-		// Finalize the output
-		matcher.appendTail(output);
-		
-		return output.toString();
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return text;
 	}
 	
 	/**
 	 * Traverse tree elements
-	 * @param tree
-	 * @param object
+	 * @param tree - input tree
+	 * @param callbackFunction - callback lambda function
 	 */
-	public static void traverseElements(JTree tree, Function<Object, Function<DefaultMutableTreeNode, Consumer<DefaultMutableTreeNode>>> callbackFunctions) {
-		
-		// Recursive function
-		class Helper {
+	public static void traverseElements(JTree tree, Function<Object, Function<DefaultMutableTreeNode, Function<DefaultMutableTreeNode, Boolean>>> callbackFunctions) {
+		try {
 			
-			void consume(TreeNode node, TreeNode parent) {
+			// Recursive function
+			class Helper {
 				
-				// Check the node type
-				if (node instanceof DefaultMutableTreeNode) {
+				boolean consume(TreeNode node, TreeNode parent) {
 					
-					// Call input consumer for the userObject and its parent node
-					DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) node;
-					DefaultMutableTreeNode parentNode = null;
-					
-					if (parent instanceof DefaultMutableTreeNode) {
-						parentNode = (DefaultMutableTreeNode) parent;
+					try {
+						// Check the node type
+						if (node instanceof DefaultMutableTreeNode) {
+							
+							// Call input consumer for the userObject and its parent node
+							DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) node;
+							DefaultMutableTreeNode parentNode = null;
+							
+							if (parent instanceof DefaultMutableTreeNode) {
+								parentNode = (DefaultMutableTreeNode) parent;
+							}
+							
+							Object userObject = treeNode.getUserObject();
+							boolean stop = callbackFunctions.apply(userObject).apply(treeNode).apply(parentNode);
+							return stop;
+						}
 					}
-					
-					Object userObject = treeNode.getUserObject();
-					callbackFunctions.apply(userObject).apply(treeNode).accept(parentNode);
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return false;
 				}
-			}
-			
-			void traverseRecursively(TreeNode parentNode) {
 				
-				// Enumerate children
-				Enumeration<? extends TreeNode> childrenEnumerator = parentNode.children();
-				while (childrenEnumerator.hasMoreElements()) {
-					
-					// Consume the child node
-					TreeNode child = childrenEnumerator.nextElement();
-					consume(child, parentNode);
-					
-					// Do recursion for the child node
-					traverseRecursively(child);
-				}
+				void traverseRecursively(TreeNode parentNode) {
+					try {
+						
+						// Enumerate children
+						Enumeration<? extends TreeNode> childrenEnumerator = parentNode.children();
+						while (childrenEnumerator.hasMoreElements()) {
+							
+							// Consume the child node
+							TreeNode child = childrenEnumerator.nextElement();
+							boolean stop = consume(child, parentNode);
+							
+							// Do recursion for the child node
+							if (!stop) {
+								traverseRecursively(child);
+							}
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				};
 			};
-		};
-		
-		// Get the root node
-		Object rootObject = tree.getModel().getRoot();
-		if (rootObject instanceof TreeNode) {
-			Helper helper = new Helper();
 			
-			// Consume the root node and traverse the tree recursively from the root node
-			TreeNode rootNode = (TreeNode) rootObject;
-			helper.consume(rootNode, null);
-			helper.traverseRecursively(rootNode);
+			// Get the root node
+			Object rootObject = tree.getModel().getRoot();
+			if (rootObject instanceof TreeNode) {
+				Helper helper = new Helper();
+				
+				// Consume the root node and traverse the tree recursively from the root node
+				TreeNode rootNode = (TreeNode) rootObject;
+				helper.consume(rootNode, null);
+				helper.traverseRecursively(rootNode);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -5010,8 +6190,14 @@ public class Utility {
 	 */
 	public static byte[] decodeBase64(String base64String) {
 		
-		byte[] decodedBytes = Base64.getDecoder().decode(base64String);
-		return decodedBytes;
+		try {
+			byte[] decodedBytes = Base64.getDecoder().decode(base64String);
+			return decodedBytes;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -5021,8 +6207,14 @@ public class Utility {
 	 */
 	public static String encodeBase64(String string) {
 		
-		String base64String = Base64.getEncoder().encodeToString(string.getBytes());
-		return base64String;
+		try {
+			String base64String = Base64.getEncoder().encodeToString(string.getBytes());
+			return base64String;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 	
 	/**
@@ -5032,14 +6224,20 @@ public class Utility {
 	 */
 	public static<T> HashSet<T> makeSet(T ... setItems) {
 		
-		HashSet<T> theSet = new HashSet<T>();
-		
-		// Fill the set with input items.
-		for (T item : setItems) {
-			theSet.add(item);
+		try {
+			HashSet<T> theSet = new HashSet<T>();
+			
+			// Fill the set with input items.
+			for (T item : setItems) {
+				theSet.add(item);
+			}
+			
+			return theSet;
 		}
-		
-		return theSet;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -5049,11 +6247,17 @@ public class Utility {
 	 */
 	public static String getNowText(String format) {
 		
-		DateFormat dateFormat = new SimpleDateFormat(format);
-		Calendar calendar = Calendar.getInstance();
-		
-		String nowText = dateFormat.format(calendar.getTimeInMillis());
-		return nowText;
+		try {
+			DateFormat dateFormat = new SimpleDateFormat(format);
+			Calendar calendar = Calendar.getInstance();
+			
+			String nowText = dateFormat.format(calendar.getTimeInMillis());
+			return nowText;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -5063,10 +6267,16 @@ public class Utility {
 	 */
 	public static long getNow() {
 		
-		Calendar calendar = Calendar.getInstance();
-		
-		long now = calendar.getTimeInMillis();
-		return now;
+		try {
+			Calendar calendar = Calendar.getInstance();
+			
+			long now = calendar.getTimeInMillis();
+			return now;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return 0L;
 	}
 	
 	/**
@@ -5077,17 +6287,23 @@ public class Utility {
 	 */
 	public static boolean equalsShallow(Object value1, Object value2) {
 		
-		if (value1 == null && value2 == null) {
-			return true;
+		try {
+			if (value1 == null && value2 == null) {
+				return true;
+			}
+			boolean success = false;
+			if (value1 != null) {
+				success = value1.equals(value2);
+			}
+			else if (value2 != null) {
+				success = value2.equals(value1);
+			}
+			return success;
 		}
-		boolean success = false;
-		if (value1 != null) {
-			success = value1.equals(value2);
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		else if (value2 != null) {
-			success = value2.equals(value1);
-		}
-		return success;
+		return false;
 	}
 
 	/**
@@ -5124,9 +6340,14 @@ public class Utility {
 	 * @param table
 	 */
 	public static void clearTable(JTable table) {
-		
-		DefaultTableModel model = (DefaultTableModel) table.getModel();
-		model.setRowCount(0);
+		try {
+			
+			DefaultTableModel model = (DefaultTableModel) table.getModel();
+			model.setRowCount(0);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -5135,38 +6356,43 @@ public class Utility {
 	 * @param columnIndex
 	 */
 	public static void sortTable(JTable table, int columnIndex) {
-		
-		// Get column count.
-		javax.swing.table.TableModel tableModel = table.getModel();
-		int columnCount = tableModel.getColumnCount();
-		
-		// Get table sorter.
-		RowSorter<? extends TableModel> sorter = table.getRowSorter();
-		
-		// Check column index.
-		if (columnIndex < 0 && columnIndex >= columnCount) {
-			sorter.setSortKeys(null);
-			return;
-		}
-		
-		// Switch sorter.
 		try {
 			
-			// Get current sort order for the column
-			List<? extends SortKey> sortKeys = sorter.getSortKeys();
-			SortKey sortKey = sortKeys.get(columnIndex);
-			SortOrder sortOrder = sortKey.getSortOrder();
+			// Get column count.
+			javax.swing.table.TableModel tableModel = table.getModel();
+			int columnCount = tableModel.getColumnCount();
 			
-			// Switch the sort order.
-			SortOrder newSortOrder = sortOrder == SortOrder.ASCENDING ? SortOrder.DESCENDING : SortOrder.ASCENDING;
+			// Get table sorter.
+			RowSorter<? extends TableModel> sorter = table.getRowSorter();
 			
-			// Create sort keys and set new sort order for the column.
-			LinkedList<SortKey> newSortKeys = new LinkedList<SortKey>();
-			newSortKeys.add(new RowSorter.SortKey(columnIndex, newSortOrder));
-			sorter.setSortKeys(sortKeys);
+			// Check column index.
+			if (columnIndex < 0 && columnIndex >= columnCount) {
+				sorter.setSortKeys(null);
+				return;
+			}
+			
+			// Switch sorter.
+			try {
+				
+				// Get current sort order for the column
+				List<? extends SortKey> sortKeys = sorter.getSortKeys();
+				SortKey sortKey = sortKeys.get(columnIndex);
+				SortOrder sortOrder = sortKey.getSortOrder();
+				
+				// Switch the sort order.
+				SortOrder newSortOrder = sortOrder == SortOrder.ASCENDING ? SortOrder.DESCENDING : SortOrder.ASCENDING;
+				
+				// Create sort keys and set new sort order for the column.
+				LinkedList<SortKey> newSortKeys = new LinkedList<SortKey>();
+				newSortKeys.add(new RowSorter.SortKey(columnIndex, newSortOrder));
+				sorter.setSortKeys(sortKeys);
+			}
+			catch (Exception e) {
+			}
 		}
-		catch (Exception e) {
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -5176,39 +6402,54 @@ public class Utility {
 	 * @param parametersLambda
 	 */
 	public static void setTableCellRenderer(JTable table, int columnIndex, Function<Object, Function<Boolean, Function<Boolean, Function<Integer, Object>>>> parametersLambda) {
-		
-		// Get table column.
-		TableColumnModel columnModel = table.getColumnModel();
-		TableColumn column = columnModel.getColumn(columnIndex);
-		
-		// Set cell renderer.
-		TableCellRenderer cellRenderer = new TableCellRenderer() {
+		try {
 			
-			private RendererJTextPane renderer = new RendererJTextPane();
+			// Get table column.
+			TableColumnModel columnModel = table.getColumnModel();
+			TableColumn column = columnModel.getColumn(columnIndex);
 			
-			{
-				renderer.setContentType("text/html");
-				renderer.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true);
-			}
-			
-			@Override
-			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
-					boolean hasFocus, int row, int column) {
+			// Set cell renderer.
+			TableCellRenderer cellRenderer = new TableCellRenderer() {
 				
-				value = parametersLambda.apply(value)
-						.apply(isSelected)
-						.apply(hasFocus)
-						.apply(row);
+				private RendererJTextPane renderer = new RendererJTextPane();
 				
-				renderer.set(isSelected, hasFocus, row);
-				renderer.setText(value.toString());
+				{
+					try {
+						
+						renderer.setContentType("text/html");
+						renderer.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
 				
-				return renderer;
-			}
+				@Override
+				public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+						boolean hasFocus, int row, int column) {
+					
+					try {
+						value = parametersLambda.apply(value)
+								.apply(isSelected)
+								.apply(hasFocus)
+								.apply(row);
+						
+						renderer.set(isSelected, hasFocus, row);
+						renderer.setText(value.toString());
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return renderer;
+				}
+				
+			};
 			
+			column.setCellRenderer(cellRenderer);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
 		};
-		
-		column.setCellRenderer(cellRenderer);
 	}
 	
 	/**
@@ -5218,68 +6459,79 @@ public class Utility {
 	 */
     public static int min(int... numbers) {
     	
-        return Arrays.stream(numbers).min().orElse(Integer.MAX_VALUE);
+    	try {
+    		return Arrays.stream(numbers).min().orElse(Integer.MAX_VALUE);
+    	}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return -1;
     }
     
     /**
      * Initialize computation of text and pattern distances.
      */
     public static void initTextDistanceComputation() {
-    	
-		// Create map of neighbours of a keyboard key.
-		mapKeyNeighbours = new Hashtable<Character, List<Character>>();
-		
-		// Set keyboard width and height.
-		keyboardHeight = keyboard.length;
-		keyboardWidth = keyboard[0].length;
-		
-		// Go throug the keyboard.
-		for (int i = 0; i < keyboardHeight; i++) {
-			for (int j = 0; j < keyboardWidth; j++) {
-				
-				// Get text key.
-				char textKey = keyboard[i][j][0];
-				
-				if (textKey == 0) {
-					continue;
-				}
-				
-				// Create empty neighbour list.
-				LinkedList<Character> neighbours = new LinkedList<Character>();
-				
-				// Compute distances for neigbhour keys.
-				for (int deltaI = -1; deltaI <= 1; deltaI++) {
-					for (int deltaJ = -1; deltaJ <= 1; deltaJ++) {
-						
-						// Compute neighbour indices.
-						Integer iNeigbourhood = i + deltaI;
-						Integer jNeighbourhood = j + deltaJ;
-						
-						// Apply keyboard constraints.
-						if (iNeigbourhood < 0 || iNeigbourhood >= keyboardHeight) {
-							continue;
-						}
-						
-						if (jNeighbourhood < 0 || jNeighbourhood >= keyboardWidth) {
-							continue;
-						}
-						
-						// Get pattern key.
-						char patternKey = (char) keyboard[iNeigbourhood][jNeighbourhood][0];
-						
-						if (patternKey == 0) {
-							continue;
-						}
-						
-						// Add new neighbour key.
-						neighbours.add(patternKey);
+    	try {
+			
+			// Create map of neighbours of a keyboard key.
+			mapKeyNeighbours = new Hashtable<Character, List<Character>>();
+			
+			// Set keyboard width and height.
+			keyboardHeight = keyboard.length;
+			keyboardWidth = keyboard[0].length;
+			
+			// Go throug the keyboard.
+			for (int i = 0; i < keyboardHeight; i++) {
+				for (int j = 0; j < keyboardWidth; j++) {
+					
+					// Get text key.
+					char textKey = keyboard[i][j][0];
+					
+					if (textKey == 0) {
+						continue;
 					}
+					
+					// Create empty neighbour list.
+					LinkedList<Character> neighbours = new LinkedList<Character>();
+					
+					// Compute distances for neigbhour keys.
+					for (int deltaI = -1; deltaI <= 1; deltaI++) {
+						for (int deltaJ = -1; deltaJ <= 1; deltaJ++) {
+							
+							// Compute neighbour indices.
+							Integer iNeigbourhood = i + deltaI;
+							Integer jNeighbourhood = j + deltaJ;
+							
+							// Apply keyboard constraints.
+							if (iNeigbourhood < 0 || iNeigbourhood >= keyboardHeight) {
+								continue;
+							}
+							
+							if (jNeighbourhood < 0 || jNeighbourhood >= keyboardWidth) {
+								continue;
+							}
+							
+							// Get pattern key.
+							char patternKey = (char) keyboard[iNeigbourhood][jNeighbourhood][0];
+							
+							if (patternKey == 0) {
+								continue;
+							}
+							
+							// Add new neighbour key.
+							neighbours.add(patternKey);
+						}
+					}
+					
+					// Map key to its neighbours.
+					mapKeyNeighbours.put(textKey, neighbours);
 				}
-				
-				// Map key to its neighbours.
-				mapKeyNeighbours.put(textKey, neighbours);
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
     }
 	
 	/**
@@ -5291,66 +6543,72 @@ public class Utility {
 	 */
 	public static int getLevenshteinDistance(String text, String pattern) {
 		
-		// Cost of substitution of character when typing an error on keyboard.
-		BiFunction<Character, Character, Integer> costOfSubstitutionLambda = (textCharacter, patternCharacter) -> {
-			
-			// Check equality.
-			if (textCharacter == patternCharacter) {
-				return 0;
-			}
-			
-			// Get neighbour characters.
-			List<Character> neighbourCharacters = mapKeyNeighbours.get(textCharacter);
-			if (neighbourCharacters == null) {
-				return 2;
-			}
-			
-			// Neighbour character distance.
-			Integer neigbourDistance = neighbourCharacters.contains(patternCharacter) ? 1 : 2;
-			return neigbourDistance;
-		};
-		
-		// Main algorithm.
-		int M = text.length();
-		int N = pattern.length();
-		int D[][] = new int[M + 1][N + 1];
-		
-		// Initialiation.
-        for(int i = 1;i <= M; i++)
-        {
-            D[i][0] = i;        
-        }
-        for(int j = 1; j <= N; j++)
-        {
-            D[0][j] = j;
-        }
-        
-		// Recurrence relations.
-		for (int j = 1; j <= N; j++) {
-			for (int i = 1; i <= M; i++) {
+		try {
+			// Cost of substitution of character when typing an error on keyboard.
+			BiFunction<Character, Character, Integer> costOfSubstitutionLambda = (textCharacter, patternCharacter) -> {
 				
-				char Xi = text.charAt(i - 1);
-				char Yj =  pattern.charAt(j - 1);
+				// Check equality.
+				if (textCharacter == patternCharacter) {
+					return 0;
+				}
 				
-				// Base conditions.
-				if (Xi == Yj) {
-					D[i][j] = D[i - 1][j - 1];
-				} 
+				// Get neighbour characters.
+				List<Character> neighbourCharacters = mapKeyNeighbours.get(textCharacter);
+				if (neighbourCharacters == null) {
+					return 2;
+				}
 				
-				else {
-					// Compute cost of substitution.
-					int costOfSubstitution = costOfSubstitutionLambda.apply(Xi, Yj);
+				// Neighbour character distance.
+				Integer neigbourDistance = neighbourCharacters.contains(patternCharacter) ? 1 : 2;
+				return neigbourDistance;
+			};
+			
+			// Main algorithm.
+			int M = text.length();
+			int N = pattern.length();
+			int D[][] = new int[M + 1][N + 1];
+			
+			// Initialiation.
+	        for(int i = 1;i <= M; i++)
+	        {
+	            D[i][0] = i;        
+	        }
+	        for(int j = 1; j <= N; j++)
+	        {
+	            D[0][j] = j;
+	        }
+	        
+			// Recurrence relations.
+			for (int j = 1; j <= N; j++) {
+				for (int i = 1; i <= M; i++) {
 					
-					// Compute subsequence distance.
-					D[i][j] = min(
-								D[i - 1][j] + 1,							// Deletion.
-								D[i][j - 1] + 1,							// Insertion.
-								D[i - 1][j - 1] + costOfSubstitution);		// Substitution.
+					char Xi = text.charAt(i - 1);
+					char Yj =  pattern.charAt(j - 1);
+					
+					// Base conditions.
+					if (Xi == Yj) {
+						D[i][j] = D[i - 1][j - 1];
+					} 
+					
+					else {
+						// Compute cost of substitution.
+						int costOfSubstitution = costOfSubstitutionLambda.apply(Xi, Yj);
+						
+						// Compute subsequence distance.
+						D[i][j] = min(
+									D[i - 1][j] + 1,							// Deletion.
+									D[i][j - 1] + 1,							// Insertion.
+									D[i - 1][j - 1] + costOfSubstitution);		// Substitution.
+					}
 				}
 			}
+	
+			return D[M][N];
 		}
-
-		return D[M][N];
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return -1;
 	}
 	
 	/**
@@ -5360,14 +6618,20 @@ public class Utility {
 	 * @return
 	 */
 	public static String repeat(char c, int length) {
-
-		StringBuilder string = new StringBuilder();
 		
-		while (length-- >= 0) {
-			string.append(c);
+		try {
+			StringBuilder string = new StringBuilder();
+			
+			while (length-- >= 0) {
+				string.append(c);
+			}
+			
+			return string.toString();
 		}
-		
-		return string.toString();
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 	
 	/**
@@ -5380,8 +6644,14 @@ public class Utility {
 	 */
 	public static double sigmoid(double L, double x0, double k, double x) {
 		
-		double y = L / ( 1 + Math.exp( -k * ( x - x0 ) ) );
-		return y;
+		try {
+			double y = L / ( 1 + Math.exp( -k * ( x - x0 ) ) );
+			return y;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return 0.0;
 	}
 	
 	/**
@@ -5394,12 +6664,18 @@ public class Utility {
 	 */
 	public static double invereseSigmoid(double L, double x0, double k, double x) {
 		
-		if ( x < 0.0 ) {
-			return Double.NaN;
+		try {
+			if ( x < 0.0 ) {
+				return Double.NaN;
+			}
+			
+			double y = - Math.log( L / x - 1 ) / k + x0;
+			return y;
 		}
-		
-		double y = - Math.log( L / x - 1 ) / k + x0;
-		return y;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return 0.0;
 	}
 	
 	/**
@@ -5411,10 +6687,16 @@ public class Utility {
 	 */
 	public static double normalize(double value, double minimumValue, double maximumValue) {
 		
-		double deltaValue = maximumValue - minimumValue;
-		double normalValue = value - minimumValue / deltaValue;
-		
-		return normalValue;
+		try {
+			double deltaValue = maximumValue - minimumValue;
+			double normalValue = value - minimumValue / deltaValue;
+			
+			return normalValue;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return 0.0;
 	}
 	
 	/**
@@ -5480,17 +6762,23 @@ public class Utility {
 	 */
     public static String dump(ByteBuffer buffer) {
     	
-    	if (buffer == null) {
-    		return "null";
-    	}
-    	
-        ByteBuffer protectedBuffer = buffer.asReadOnlyBuffer();
-        byte[] bytes = new byte[protectedBuffer.capacity()];
-        protectedBuffer.rewind();
-        protectedBuffer.get(bytes);
-        
-        String text = Arrays.toString(bytes);
-        return text;
+    	try {
+	    	if (buffer == null) {
+	    		return "null";
+	    	}
+	    	
+	        ByteBuffer protectedBuffer = buffer.asReadOnlyBuffer();
+	        byte[] bytes = new byte[protectedBuffer.capacity()];
+	        protectedBuffer.rewind();
+	        protectedBuffer.get(bytes);
+	        
+	        String text = Arrays.toString(bytes);
+	        return text;
+	    }
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
     }
 	
 	/**
@@ -5758,16 +7046,20 @@ public class Utility {
 	 */
 	public static boolean isApplicationZipped() {
 		
-		// Get application path.
-		URL applicationUrl = Utility.class.getProtectionDomain().getCodeSource().getLocation();
-		String applicationPathName = applicationUrl.getPath();
-		File fileOrFolder = new File(applicationPathName);
-
-		// If the path is a file return true.
-		if (fileOrFolder.exists() && fileOrFolder.isFile()) {
-			return true;
+		try {
+			// Get application path.
+			URL applicationUrl = Utility.class.getProtectionDomain().getCodeSource().getLocation();
+			String applicationPathName = applicationUrl.getPath();
+			File fileOrFolder = new File(applicationPathName);
+	
+			// If the path is a file return true.
+			if (fileOrFolder.exists() && fileOrFolder.isFile()) {
+				return true;
+			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		// Otherwise return false.
 		return false;
 	}
@@ -5778,14 +7070,20 @@ public class Utility {
 	 */
 	public static File getApplicationFile(Class<?> mainClass) {
 		
-		// Get application file.
-		URL applicationUrl = mainClass.getProtectionDomain().getCodeSource().getLocation();
-		String applicationPathName = applicationUrl.getPath();
-		
-		File applicationFile = new File(applicationPathName);
-		
-		// Otherwise return false.
-		return applicationFile;
+		try {
+			// Get application file.
+			URL applicationUrl = mainClass.getProtectionDomain().getCodeSource().getLocation();
+			String applicationPathName = applicationUrl.getPath();
+			
+			File applicationFile = new File(applicationPathName);
+			
+			// Otherwise return false.
+			return applicationFile;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -5796,10 +7094,16 @@ public class Utility {
 	public static String getApplicationPath(Class<?> mainClass)
 			throws Exception {
 		
-		// Get application file.
-		URL applicationUrl = mainClass.getProtectionDomain().getCodeSource().getLocation();
-		String applicationPath = new File(applicationUrl.getPath()).getCanonicalPath();
-		return applicationPath;
+		try {
+			// Get application file.
+			URL applicationUrl = mainClass.getProtectionDomain().getCodeSource().getLocation();
+			String applicationPath = new File(applicationUrl.getPath()).getCanonicalPath();
+			return applicationPath;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -5822,15 +7126,58 @@ public class Utility {
 	 */
 	public static byte [] getApplicationFileContent(String filePath) {
 		
-		byte [] content = null;
+		try {
+			byte [] content = null;
+			
+			URL fileUrl = ClassLoader.getSystemResource(filePath);
+			if (fileUrl != null) {
+				
+				InputStream inputStream = null;
+				try {
+					inputStream = fileUrl.openStream();
+					content = inputStream.readAllBytes();
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
+				finally {
+					if (inputStream != null	) {
+						try {
+							inputStream.close();
+						}
+						catch (Exception e) {
+						}
+					}
+				}
+			}
+			
+			return content;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
+	}
+	
+	/**
+	 * Get content of a disk file.
+	 * @param filePath
+	 * @return
+	 */
+	public static byte[] getFileContent(String filePath) {
 		
-		URL fileUrl = ClassLoader.getSystemResource(filePath);
-		if (fileUrl != null) {
+		try {
+			byte [] content = null;
 			
 			InputStream inputStream = null;
 			try {
-				inputStream = fileUrl.openStream();
-				content = inputStream.readAllBytes();
+				filePath = filePath.replace('\\', '/');
+				
+				URL fileUrl = new URL("file://" + filePath);
+				if (fileUrl != null) {
+					inputStream = fileUrl.openStream();
+					content = inputStream.readAllBytes();
+				}
 			}
 			catch (Exception e) {
 				e.printStackTrace();
@@ -5844,44 +7191,13 @@ public class Utility {
 					}
 				}
 			}
-		}
-		
-		return content;
-	}
-	
-	/**
-	 * Get content of a disk file.
-	 * @param filePath
-	 * @return
-	 */
-	public static byte[] getFileContent(String filePath) {
-		
-		byte [] content = null;
-		
-		InputStream inputStream = null;
-		try {
-			filePath = filePath.replace('\\', '/');
 			
-			URL fileUrl = new URL("file://" + filePath);
-			if (fileUrl != null) {
-				inputStream = fileUrl.openStream();
-				content = inputStream.readAllBytes();
-			}
+			return content;
 		}
-		catch (Exception e) {
-			e.printStackTrace();
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		finally {
-			if (inputStream != null	) {
-				try {
-					inputStream.close();
-				}
-				catch (Exception e) {
-				}
-			}
-		}
-		
-		return content;
+		return null;
 	}
 	
 	/**
@@ -6007,33 +7323,39 @@ public class Utility {
 	 */
 	public static X509Certificate getApplicationCertificate(String certificatePath) {
 		
-		X509Certificate certificate = null;
-		
-		URL certificateUrl = ClassLoader.getSystemResource(certificatePath);
-		if (certificateUrl != null) {
+		try {
+			X509Certificate certificate = null;
 			
-			InputStream inputStream = null;
-			try {
-				inputStream = certificateUrl.openStream();
+			URL certificateUrl = ClassLoader.getSystemResource(certificatePath);
+			if (certificateUrl != null) {
 				
-				CertificateFactory factory = CertificateFactory.getInstance("X.509");
-				certificate = (X509Certificate)factory.generateCertificate(inputStream);
-			}
-			catch (Exception e) {
-				e.printStackTrace();
-			}
-			finally {
-				if (inputStream != null	) {
-					try {
-						inputStream.close();
-					}
-					catch (Exception e) {
+				InputStream inputStream = null;
+				try {
+					inputStream = certificateUrl.openStream();
+					
+					CertificateFactory factory = CertificateFactory.getInstance("X.509");
+					certificate = (X509Certificate)factory.generateCertificate(inputStream);
+				}
+				catch (Exception e) {
+					Safe.exception(e);
+				}
+				finally {
+					if (inputStream != null	) {
+						try {
+							inputStream.close();
+						}
+						catch (Exception e) {
+						}
 					}
 				}
 			}
+			
+			return certificate;
 		}
-		
-		return certificate;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -6044,8 +7366,8 @@ public class Utility {
 	public static X509Certificate getFileCertificate(String certificatePath) {
 		
 		X509Certificate certificate = null;
-		
 		InputStream inputStream = null;
+		
 		try {
 			certificatePath = certificatePath.replace('\\', '/');
 			
@@ -6058,7 +7380,7 @@ public class Utility {
 			}
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			Safe.exception(e);
 		}
 		finally {
 			if (inputStream != null) {
@@ -6080,18 +7402,24 @@ public class Utility {
 	 */
 	public static String getCommonName(X509Certificate certificate) {
 		
-		String textLine = certificate.getSubjectX500Principal().getName();
-		Matcher matcher = x509CommonNameRegex.matcher(textLine);
-		
-		boolean found = matcher.find();
-		int count = matcher.groupCount();
-		
-		// Use group count count.
-		if (!found || count != 1) {
-			return "";
+		try {
+			String textLine = certificate.getSubjectX500Principal().getName();
+			Matcher matcher = x509CommonNameRegex.matcher(textLine);
+			
+			boolean found = matcher.find();
+			int count = matcher.groupCount();
+			
+			// Use group count count.
+			if (!found || count != 1) {
+				return "";
+			}
+			String commonName = "CN=" + matcher.group("commonName");
+			return commonName;
 		}
-		String commonName = "CN=" + matcher.group("commonName");
-		return commonName;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -6100,35 +7428,40 @@ public class Utility {
 	 * @param callbackLambda
 	 */
 	public static void onChangeText(JTextField textField, Consumer<String> callbackLambda) {
-		
-		final String alreadySet = "set";
-		
-		// If the component is already set, exit the method.
-		String componentFlag = textField.getName();
-		if (alreadySet.equals(componentFlag)) {
-			return;
+		try {
+			
+			final String alreadySet = "set";
+			
+			// If the component is already set, exit the method.
+			String componentFlag = textField.getName();
+			if (alreadySet.equals(componentFlag)) {
+				return;
+			}
+			
+			// Get text field document and create new document listener.
+			Document document = textField.getDocument();
+			DocumentListener listener = new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					callbackLambda.accept(textField.getText());
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					callbackLambda.accept(textField.getText());
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					callbackLambda.accept(textField.getText());
+				}
+			};
+			
+			// Add listener and set component flag.
+			document.addDocumentListener(listener);
+			textField.setName(alreadySet);
 		}
-		
-		// Get text field document and create new document listener.
-		Document document = textField.getDocument();
-		DocumentListener listener = new DocumentListener() {
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				callbackLambda.accept(textField.getText());
-			}
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				callbackLambda.accept(textField.getText());
-			}
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				callbackLambda.accept(textField.getText());
-			}
+		catch(Throwable expt) {
+			Safe.exception(expt);
 		};
-		
-		// Add listener and set component flag.
-		document.addDocumentListener(listener);
-		textField.setName(alreadySet);
 	}
 	
 	/**
@@ -6137,15 +7470,20 @@ public class Utility {
 	 * @param font
 	 */
     public static void setCellEditorFont(JTable table, Font font) {
-    	
-    	DefaultCellEditor editor = (DefaultCellEditor) table.getDefaultEditor(Object.class);
-    	Component component = editor.getComponent();
-    	component.setFont(font);
+    	try {
+			
+			DefaultCellEditor editor = (DefaultCellEditor) table.getDefaultEditor(Object.class);
+	    	Component component = editor.getComponent();
+	    	component.setFont(font);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
     }
 	
 	/**
 	 * Read bytes from input array until the terminal symbol is found. If the terminal is not found set
-     * the "terimnated" flag to false.
+     * the "terminated" flag to false.
 	 * @param inputBytes
 	 * @param outputBuffer
 	 * @param bufferIncrease
@@ -6155,69 +7493,75 @@ public class Utility {
 	public static ByteBuffer readUntil(byte [] inputBytes, Obj<ByteBuffer> outputBuffer, int bufferIncrease, byte[] terminalSymbol,
 			Obj<Boolean> successfullyTerminated) {
 		
-		// Initialization.
-		int terminalLength = terminalSymbol.length;
-		int terminalIndex = 0;
-		int inputLength = inputBytes.length;
-
-		// Do loop.
-		boolean terminateIt = false;
-		for (int index = 0; index < inputLength; index++) {
-			
-			// Read current byte from the buffer.
-			byte theByte = inputBytes[index];
-			
-			// TODO: <---TEST Display input byte.
-			String className = Thread.currentThread().getStackTrace()[2].getClassName();
-			if ("org.maclan.server.XdebugListenerSession".equals(className)) {
-				if (theByte != 0) {
-					System.out.format("|%c", (char) theByte);
+		try {
+			// Initialization.
+			int terminalLength = terminalSymbol.length;
+			int terminalIndex = 0;
+			int inputLength = inputBytes.length;
+	
+			// Do loop.
+			boolean terminateIt = false;
+			for (int index = 0; index < inputLength; index++) {
+				
+				// Read current byte from the buffer.
+				byte theByte = inputBytes[index];
+				
+				// TODO: <---TEST Display input byte.
+				String className = Thread.currentThread().getStackTrace()[2].getClassName();
+				if ("org.maclan.server.XdebugListenerSession".equals(className)) {
+					if (theByte != 0) {
+						System.out.format("|%c", (char) theByte);
+					}
+					else {
+						System.out.format("|%c\n", (char) 0x2588);
+					}
+				}
+				
+				// Try to match bytes with the terminal symbol.
+				if (theByte == terminalSymbol[terminalIndex]) {
+					terminalIndex++;
+					if (terminalIndex >= terminalLength) {
+						terminateIt = true;
+					}
 				}
 				else {
-					System.out.format("|%c\n", (char) 0x2588);
+					terminalIndex = 0;
+				}
+				
+				// Check buffer capacity.
+				int limit = outputBuffer.ref.limit();
+				int capacity = outputBuffer.ref.capacity();
+				if (!outputBuffer.ref.hasRemaining() && limit >= capacity) {
+					
+					// Increase buffer capacity.
+					int increasedCapacity = outputBuffer.ref.capacity() + bufferIncrease;
+					ByteBuffer increasedOutputBuffer = ByteBuffer.allocate(increasedCapacity);
+					
+					outputBuffer.ref.flip();
+					
+					increasedOutputBuffer.put(outputBuffer.ref);
+					outputBuffer.ref = increasedOutputBuffer;
+				}
+				
+				// Output current byte.
+				outputBuffer.ref.put(theByte);
+				
+				// Terminate the loop.
+				if (terminateIt) {
+					break;
 				}
 			}
 			
-			// Try to match bytes with the terminal symbol.
-			if (theByte == terminalSymbol[terminalIndex]) {
-				terminalIndex++;
-				if (terminalIndex >= terminalLength) {
-					terminateIt = true;
-				}
-			}
-			else {
-				terminalIndex = 0;
-			}
+			// If the termnal symbol was not found, set the output flag to false value.
+			successfullyTerminated.ref = terminalIndex >= terminalLength;
 			
-			// Check buffer capacity.
-			int limit = outputBuffer.ref.limit();
-			int capacity = outputBuffer.ref.capacity();
-			if (!outputBuffer.ref.hasRemaining() && limit >= capacity) {
-				
-				// Increase buffer capacity.
-				int increasedCapacity = outputBuffer.ref.capacity() + bufferIncrease;
-				ByteBuffer increasedOutputBuffer = ByteBuffer.allocate(increasedCapacity);
-				
-				outputBuffer.ref.flip();
-				
-				increasedOutputBuffer.put(outputBuffer.ref);
-				outputBuffer.ref = increasedOutputBuffer;
-			}
-			
-			// Output current byte.
-			outputBuffer.ref.put(theByte);
-			
-			// Terminate the loop.
-			if (terminateIt) {
-				break;
-			}
+			// Return the output buffer.
+			return outputBuffer.ref;
 		}
-		
-		// If the termnal symbol was not found, set the output flag to false value.
-		successfullyTerminated.ref = terminalIndex >= terminalLength;
-		
-		// Return the output buffer.
-		return outputBuffer.ref;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -6308,14 +7652,20 @@ public class Utility {
 	 */
 	public static String prettyPrint(byte [] bytes) {
 		
-		String bytesString = "[";
-		String divider = "";
-		for (int index = 0; index < bytes.length; index++) {
-			bytesString += String.format("%s%02X", divider, bytes[index]);
-			divider = ",";
+		try {
+			String bytesString = "[";
+			String divider = "";
+			for (int index = 0; index < bytes.length; index++) {
+				bytesString += String.format("%s%02X", divider, bytes[index]);
+				divider = ",";
+			}
+			bytesString += ']';
+			return bytesString;
 		}
-		bytesString += ']';
-		return bytesString;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 	
 	/**
@@ -6327,12 +7677,17 @@ public class Utility {
 	 */
 	public static String insertCharacter(String text, int position, char character) {
 		
-		int length = text.length();
-		if (position < 0 || position > length) {
-			return text;
+		try {
+			int length = text.length();
+			if (position < 0 || position > length) {
+				return text;
+			}
+			
+			text = text.substring(0, position) + character + text.substring(position, length);
 		}
-		
-		text = text.substring(0, position) + character + text.substring(position, length);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return text;
 	}
 	
@@ -6345,25 +7700,198 @@ public class Utility {
 	 */
 	public static void getProcessAndThread(Obj<Long> processId, Obj<String> processName, Obj<Long> threadId,
 			Obj<String> threadName) {
-		
-		// Get current process information.
-		ProcessHandle currentProcess = ProcessHandle.current();
-		
-		if (processId != null) {
-			processId.ref = currentProcess.pid();
+		try {
+			
+			// Get current process information.
+			ProcessHandle currentProcess = ProcessHandle.current();
+			
+			if (processId != null) {
+				processId.ref = currentProcess.pid();
+			}
+			if (processName != null) {
+				processName.ref = currentProcess.info().toString();
+			}
+			
+			// Get current thread information.
+			Thread currentThread = Thread.currentThread();
+			
+			if (threadId != null) {
+				threadId.ref = currentThread.getId();
+			}
+			if (threadName != null) {
+				threadName.ref = currentThread.getName();
+			}
 		}
-		if (processName != null) {
-			processName.ref = currentProcess.info().toString();
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+	}
+	
+	/**
+	 * Disable GUI events on tree view.
+	 * @param tree
+	 */
+	public static Object disableGuiEvents(JTree tree) {
 		
-		// Get current thread information.
-		Thread currentThread = Thread.currentThread();
+		try {
+			PropertyChangeListener [] listeners = tree.getPropertyChangeListeners();
+			
+			for (PropertyChangeListener listener : listeners) {
+				tree.removePropertyChangeListener(listener);
+			}
+			return listeners;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
+	}
+	
+	/**
+	 * Enable GUI events on tree view.
+	 * @param tree
+	 * @param listenersObject
+	 */
+	public static void enableGuiEvents(JTree tree, Object listenersObject) {
+		try {
+			
+			if (!(listenersObject instanceof PropertyChangeListener [])) {
+				return;
+			}
+			
+			Safe.invokeLater(() -> {
+				PropertyChangeListener [] listeners = (PropertyChangeListener []) listenersObject;
+				
+				for (PropertyChangeListener listener : listeners) {
+					tree.addPropertyChangeListener(listener);
+				}			
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+	}
+	
+	/**
+	 * Wrap text input event.
+	 * @return
+	 */
+	public static DocumentListener createTextListener(Runnable textInputEvent) {
 		
-		if (threadId != null) {
-			threadId.ref = currentThread.getId();
+		try {
+			DocumentListener listener = new DocumentListener() {
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					try {
+						
+						textInputEvent.run();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					try {
+						
+						textInputEvent.run();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					try {
+						
+						textInputEvent.run();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+	        };
+	        return listener;
+	    }
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		if (threadName != null) {
-			threadName.ref = currentThread.getName();
+		return null;
+	}
+	
+	/**
+	 * Enable text box input events.
+	 * @param textField
+	 * @param listener
+	 */
+	public static void setTextInputEvents(JTextField textField, DocumentListener listener) {
+		try {
+			
+			// Listen for changes in the text field.
+			Document document = textField.getDocument();
+			document.removeDocumentListener(listener);
+			document.addDocumentListener(listener);
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+	}
+	
+	/**
+	 * Get current screen height.
+	 * @return
+	 */
+	public static Dimension getScreenSize()
+			throws Exception {
+
+		try {
+			Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+			return screenSize;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+			throw e;
+		}
+	}
+	
+	/**
+	 * Display or hide frame.
+	 * @param frame
+	 * @param visible
+	 */
+	public static void displayFrame(JFrame frame, boolean visible) {
+		try {
+			
+			if (frame == null) {
+				return;
+			}
+			if (visible) {
+				frame.setState(Frame.NORMAL);
+				frame.toFront();
+			}
+			else {
+				frame.setState(Frame.ICONIFIED);
+			}
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+	}
+	
+	/**
+	 * Toggle frame visibility.
+	 * @param frame
+	 */
+	public static void toggleFrame(JFrame frame) {
+		try {
+			
+			int frameState = frame.getState();
+			boolean isActive = frame.isActive();
+			boolean isDiplayed = (frameState != Frame.ICONIFIED && isActive);
+			displayFrame(frame, !isDiplayed);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

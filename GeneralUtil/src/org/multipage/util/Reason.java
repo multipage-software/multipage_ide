@@ -1,20 +1,22 @@
 /*
- * Copyright 2010-2018 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 20-11-2018
+ * Created on : 2018-11-20
  *
  */
 package org.multipage.util;
 
+import org.multipage.util.Safe;
+
 /**
- * A reasons for thread unlock
- * @author user
+ * A reasons for thread unlock.
+ * @author vakol
  *
  */
 public enum Reason {
 	
 	/**
-	 * Unlock reasons
+	 * Unlock reasons.
 	 */
 	UNLOCKED("UNLOCKED", 0),
 	TIMEOUT("TIMEOUT", 1),
@@ -22,17 +24,17 @@ public enum Reason {
 	INTERRUPTED("INTERRUPTED", -3);
 	
 	/**
-	 * Code
+	 * Code.
 	 */
 	private int code;
 	
 	/**
-	 * Description
+	 * Description.
 	 */
 	private String description;
 	
 	/**
-	 * Constructor
+	 * Constructor.
 	 */
 	Reason(String description, int code) {
 		
@@ -41,7 +43,7 @@ public enum Reason {
 	}
 	
 	/**
-	 * Check value
+	 * Check value.
 	 */
 	public boolean is(Reason value) {
 		
@@ -49,24 +51,28 @@ public enum Reason {
 	}
 	
 	/**
-	 * Get exception
+	 * Get exception.
 	 * @return
 	 */
 	public Exception exception() {
 		
 		Exception e = null;
-		
-		if (this == TIMEOUT) {
-			e = new Exception("Lock timeout ellapsed");
+		try {
+			if (this == TIMEOUT) {
+				e = new Exception("Lock timeout ellapsed");
+			}
+			else if (this == UNKNOWN) {
+				e = new Exception("Unknown lock error");
+			}
 		}
-		else if (this == UNKNOWN) {
-			e = new Exception("Unknown lock error");
+		catch (Throwable exc) {
+			Safe.exception(exc);
 		}
 		return e;
 	}
 	
 	/**
-	 * Get description
+	 * Get description.
 	 * @return
 	 */
 	public String getDescription() {
@@ -75,7 +81,7 @@ public enum Reason {
 	}
 	
 	/**
-	 * Get code
+	 * Get code.
 	 * @return
 	 */
 	public int getCode() {

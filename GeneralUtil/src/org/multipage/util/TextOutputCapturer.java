@@ -1,14 +1,17 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.util;
 
+import org.multipage.util.Safe;
+
 /**
- * @author
+ * Class for text output.
+ * @author vakol
  *
  */
 public class TextOutputCapturer {
@@ -32,9 +35,15 @@ public class TextOutputCapturer {
 	 */
     public String stop() {
         
-    	String capturedValue = stringBuilder.toString();
-    	stringBuilder.setLength(0);
-        return capturedValue;
+    	try {
+	    	String capturedValue = stringBuilder.toString();
+	    	stringBuilder.setLength(0);
+	        return capturedValue;
+	    }
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
     }
     
     /**
@@ -42,8 +51,13 @@ public class TextOutputCapturer {
      * @param text
      */
 	public void print(String text) {
-		
-		stringBuilder.append(text);
+		try {
+			
+			stringBuilder.append(text);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -51,8 +65,13 @@ public class TextOutputCapturer {
 	 * @param text
 	 */
 	public void println(String text) {
-		
-		stringBuilder.append(text);
-		stringBuilder.append('\n');
+		try {
+			
+			stringBuilder.append(text);
+			stringBuilder.append('\n');
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

@@ -1,15 +1,15 @@
 /*
  * Copyright 2010-2017 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-06-24
  *
  */
 
 package org.multipage.util;
 
 /**
- * 
- * @author
+ * Result of the progress dialog.
+ * @author vakol
  *
  */
 public enum ProgressResult {

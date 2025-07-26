@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -18,9 +18,11 @@ import javax.swing.JPanel;
 import org.maclan.Resource;
 import org.multipage.gui.GraphUtility;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * @author
+ * Base panel class that displays resource within a namespace.
+ * @author vakol
  *
  */
 public class NamespaceResourceRendererBase extends JPanel {
@@ -84,28 +86,33 @@ public class NamespaceResourceRendererBase extends JPanel {
 	 */
 	public void setProperties(Resource resource, String mimeType, int index,
 			boolean isSelected, boolean hasFocus) {
-		
-		this.isSelected = isSelected;
-		this.hasFocus = hasFocus;
-		
-		// Get background color.
-		Color backGroundColor = Utility.itemColor(index);
-		// Set color.
-		setBackground(backGroundColor);
-		
-		// Set values.
-		labelTitle.setText(resource.getDescription());
-		labelMimeType.setText(mimeType);
-		labelResourceId.setText(String.valueOf(resource.getId()));
-		checkBoxSaveAsText.setSelected(resource.isSavedAsText());
-		checkVisible.setSelected(resource.isVisible());
-		
-		if (resource.getImage() != null) {
-			labelImage.setIcon(new ImageIcon(resource.getImage()));
+		try {
+			
+			this.isSelected = isSelected;
+			this.hasFocus = hasFocus;
+			
+			// Get background color.
+			Color backGroundColor = Utility.itemColor(index);
+			// Set color.
+			setBackground(backGroundColor);
+			
+			// Set values.
+			labelTitle.setText(resource.getDescription());
+			labelMimeType.setText(mimeType);
+			labelResourceId.setText(String.valueOf(resource.getId()));
+			checkBoxSaveAsText.setSelected(resource.isSavedAsText());
+			checkVisible.setSelected(resource.isVisible());
+			
+			if (resource.getImage() != null) {
+				labelImage.setIcon(new ImageIcon(resource.getImage()));
+			}
+			else {
+				labelImage.setIcon(null);
+			}
 		}
-		else {
-			labelImage.setIcon(null);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -114,20 +121,30 @@ public class NamespaceResourceRendererBase extends JPanel {
 	@Override
 	public void paint(Graphics g) {
 		
-		// Paint component.
-		super.paint(g);
-		// Draw selection.
-		GraphUtility.drawSelection(g, this, isSelected, hasFocus);
+		try {
+			// Paint component.
+			super.paint(g);
+			// Draw selection.
+			GraphUtility.drawSelection(g, this, isSelected, hasFocus);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
 	 * Localize components.
 	 */
 	protected void localize() {
-
-		Utility.localize(labelMimeTypeLabel);
-		Utility.localize(labelResourceIdLabel);
-		Utility.localize(checkBoxSaveAsText);
-		Utility.localize(checkVisible);
+		try {
+			
+			Utility.localize(labelMimeTypeLabel);
+			Utility.localize(labelResourceIdLabel);
+			Utility.localize(checkBoxSaveAsText);
+			Utility.localize(checkVisible);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

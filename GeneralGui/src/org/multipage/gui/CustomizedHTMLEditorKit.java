@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -12,8 +12,11 @@ import java.io.*;
 import javax.swing.text.*;
 import javax.swing.text.html.*;
 
+import org.multipage.util.Safe;
+
 /**
- * @author
+ * Customized HTML editor kit.
+ * @author vakol
  *
  */
 public class CustomizedHTMLEditorKit extends HTMLEditorKit {
@@ -30,13 +33,18 @@ public class CustomizedHTMLEditorKit extends HTMLEditorKit {
 	public void write(Writer out, Document doc, int pos, int len)
 			throws IOException, BadLocationException {
 		
-		if (!(doc instanceof HTMLDocument)) {
-			return;
+		try {
+			if (!(doc instanceof HTMLDocument)) {
+				return;
+			}
+			HTMLDocument document = (HTMLDocument) doc;
+			
+			// Write document content.
+	        HTMLWriter w = new HTMLWriter(out, document, pos, len);
+	        w.write();
+	    }
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		HTMLDocument document = (HTMLDocument) doc;
-		
-		// Write document content.
-        HTMLWriter w = new HTMLWriter(out, document, pos, len);
-        w.write();
 	}
 }

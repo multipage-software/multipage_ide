@@ -1,23 +1,32 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import javax.swing.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
 
-import org.multipage.util.*;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.SpringLayout;
 
-import java.awt.*;
-import java.io.*;
-import java.awt.event.*;
+import org.multipage.util.Obj;
+import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays CSS resource editor.
+ * @author vakol
  *
  */
 public class CssResourcePanel extends InsertPanel implements StringValueEditor {
@@ -97,14 +106,19 @@ public class CssResourcePanel extends InsertPanel implements StringValueEditor {
 	 * @param parentWindow 
 	 */
 	public CssResourcePanel(String initialString, boolean produceUrl) {
-
-		initComponents();
 		
-		// $hide>>$
-		this.initialString = initialString;
-		this.produceUrl = produceUrl;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			this.initialString = initialString;
+			this.produceUrl = produceUrl;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -166,10 +180,15 @@ public class CssResourcePanel extends InsertPanel implements StringValueEditor {
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		localize();
-		setIcons();
-		setToolTips();
+		try {
+			
+			localize();
+			setIcons();
+			setToolTips();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -179,39 +198,50 @@ public class CssResourcePanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getSpecification() {
 		
-		String resourceName = textField.getText();
-		String specification = produceUrl ? String.format("[@URL thisArea, res=\"#%s\"]", resourceName) : resourceName;
-		
-		return specification;
+		try {
+			String resourceName = textField.getText();
+			String specification = produceUrl ? String.format("[@URL thisArea, res=\"#%s\"]", resourceName) : resourceName;
+			
+			return specification;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
 	 * Set from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		if (initialString != null) {
+		try {
 			
-			if (produceUrl) {
-				try {
-					Obj<Integer> position = new Obj<Integer>(0);
-		
-					// Get resource name.
-					String resourceName = getResourceName(position);
-					if (resourceName == null) {
-						return;
+			if (initialString != null) {
+				
+				if (produceUrl) {
+					try {
+						Obj<Integer> position = new Obj<Integer>(0);
+			
+						// Get resource name.
+						String resourceName = getResourceName(position);
+						if (resourceName == null) {
+							return;
+						}
+						
+						textField.setText(resourceName);
 					}
-					
-					textField.setText(resourceName);
+					catch (Exception e) {
+						
+					}
 				}
-				catch (Exception e) {
-					
+				else {
+					textField.setText(initialString);
 				}
-			}
-			else {
-				textField.setText(initialString);
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -221,43 +251,64 @@ public class CssResourcePanel extends InsertPanel implements StringValueEditor {
 	 */
 	private String getResourceName(Obj<Integer> position) {
 		
-		String resourceName = null;
-		
-		// Get name start.
-		String nameStart = Utility.getNextMatch(initialString, position, "res=\"#");
-		if (nameStart != null) {
+		try {
+			String resourceName = null;
 			
-			// Get image name.
-			resourceName = Utility.getNextMatch(initialString, position, "[^\\\"]*");
+			// Get name start.
+			String nameStart = Utility.getNextMatch(initialString, position, "res=\"#");
+			if (nameStart != null) {
+				
+				// Get image name.
+				resourceName = Utility.getNextMatch(initialString, position, "[^\\\"]*");
+			}
+			
+			return resourceName;
 		}
-		
-		return resourceName;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(labelResourceName);
+		try {
+			
+			Utility.localize(labelResourceName);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonGetResource.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
-		buttonReset.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			buttonGetResource.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
+			buttonReset.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set tool tips.
 	 */
 	private void setToolTips() {
-		
-		buttonGetResource.setToolTipText(Resources.getString("org.multipage.gui.tooltipFindAreaResource"));
-		buttonReset.setToolTipText(Resources.getString("org.multipage.gui.tooltipResetResourceName"));
+		try {
+			
+			buttonGetResource.setToolTipText(Resources.getString("org.multipage.gui.tooltipFindAreaResource"));
+			buttonReset.setToolTipText(Resources.getString("org.multipage.gui.tooltipResetResourceName"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -273,31 +324,41 @@ public class CssResourcePanel extends InsertPanel implements StringValueEditor {
 	 * On find resource.
 	 */
 	protected void onFindResource() {
-		
-		if (getResourceName == null) {
+		try {
 			
-			Utility.show(this, "org.multipage.gui.messageNoResourcesAssociated");
-			return;
+			if (getResourceName == null) {
+				
+				Utility.show(this, "org.multipage.gui.messageNoResourcesAssociated");
+				return;
+			}
+			
+			// Use callback to obtain resource name.
+			Object outputValue = getResourceName.run(null);
+			if (!(outputValue instanceof String)) {
+				return;
+			}
+			
+			String imageName = (String) outputValue;
+			
+			// Set image name text control.
+			textField.setText(imageName);
 		}
-		
-		// Use callback to obtain resource name.
-		Object outputValue = getResourceName.run(null);
-		if (!(outputValue instanceof String)) {
-			return;
-		}
-		
-		String imageName = (String) outputValue;
-		
-		// Set image name text control.
-		textField.setText(imageName);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On reset.
 	 */
 	protected void onReset() {
-		
-		textField.setText("");
+		try {
+			
+			textField.setText("");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -306,7 +367,13 @@ public class CssResourcePanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.gui.textCssResourceUrlBuilder");
+		try {
+			return Resources.getString("org.multipage.gui.textCssResourceUrlBuilder");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -315,7 +382,13 @@ public class CssResourcePanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getResultText() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -369,7 +442,13 @@ public class CssResourcePanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getStringValue() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -377,9 +456,14 @@ public class CssResourcePanel extends InsertPanel implements StringValueEditor {
 	 */
 	@Override
 	public void setStringValue(String string) {
-		
-		initialString = string;
-		setFromInitialString();
+		try {
+			
+			initialString = string;
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -388,7 +472,13 @@ public class CssResourcePanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getValueMeaning() {
 		
-		return produceUrl ? meansCssUrlResource : meansCssResource;
+		try {
+			return produceUrl ? meansCssUrlResource : meansCssResource;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 	
 	/**

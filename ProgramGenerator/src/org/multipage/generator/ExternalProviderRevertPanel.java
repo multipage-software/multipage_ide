@@ -1,3 +1,9 @@
+/*
+ * Copyright 2010-2025 (C) vakol
+ * 
+ * Created on : 2019-12-10
+ *
+ */
 package org.multipage.generator;
 
 import java.awt.Color;
@@ -12,7 +18,13 @@ import javax.swing.SpringLayout;
 import org.multipage.generator.RevertExternalProvidersDialog.ListEntry;
 import org.multipage.gui.GraphUtility;
 import org.multipage.gui.Images;
+import org.multipage.util.Safe;
 
+/**
+ * Panel that displays external provider for content revert.
+ * @author vakol
+ * 
+ */
 public class ExternalProviderRevertPanel extends JPanel {
 	
 	/**
@@ -60,8 +72,13 @@ public class ExternalProviderRevertPanel extends JPanel {
 	 */
 	public ExternalProviderRevertPanel() {
 		
-		// Initialization of components.
-		initComponents();
+		try {
+			// Initialization of components.
+			initComponents();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -98,26 +115,31 @@ public class ExternalProviderRevertPanel extends JPanel {
 	 * @param isSelecte2 
 	 */
 	public void setContent(ListEntry item, boolean isSelected) {
-		
-		// Display provider name.
-		labelProviderName.setText(item.path);
-		
-		// Set state icon.
-		ImageIcon icon = iconOk;
-		// On error.
-		if (item.result != null) {
-			icon = iconError;
+		try {
+			
+			// Display provider name.
+			labelProviderName.setText(item.path);
+			
+			// Set state icon.
+			ImageIcon icon = iconOk;
+			// On error.
+			if (item.result != null) {
+				icon = iconError;
+			}
+			// On different texts, set attention icon.
+			else if (!item.externalEqualsSource && !item.externalEqualsProcessed) {
+				icon = iconAttention;
+			}
+			
+			// Set icon.
+			labelIcon.setIcon(icon);
+			
+			// Set states.
+			this.isSelected = isSelected;
 		}
-		// On different texts, set attention icon.
-		else if (!item.externalEqualsSource && !item.externalEqualsProcessed) {
-			icon = iconAttention;
-		}
-		
-		// Set icon.
-		labelIcon.setIcon(icon);
-		
-		// Set states.
-		this.isSelected = isSelected;
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -126,16 +148,21 @@ public class ExternalProviderRevertPanel extends JPanel {
 	@Override
 	public void paint(Graphics g) {
 		
-		super.paint(g);
-		
-		// Draw selection highlight.
-		GraphUtility.drawSelection(g, this, isSelected, false);
-		
-		// Draw dividing line.
-		g.setColor(Color.LIGHT_GRAY);
-		Dimension dimension = this.getSize();
-		int right = dimension.width - 1;
-		int bottom = dimension.height - 1;
-		g.drawLine(0, bottom, right, bottom);
+		try {
+			super.paint(g);
+			
+			// Draw selection highlight.
+			GraphUtility.drawSelection(g, this, isSelected, false);
+			
+			// Draw dividing line.
+			g.setColor(Color.LIGHT_GRAY);
+			Dimension dimension = this.getSize();
+			int right = dimension.width - 1;
+			int bottom = dimension.height - 1;
+			g.drawLine(0, bottom, right, bottom);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 }

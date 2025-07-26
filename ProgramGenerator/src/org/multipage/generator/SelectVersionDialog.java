@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -40,10 +40,11 @@ import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays selection of version.
+ * @author vakol
  *
  */
 public class SelectVersionDialog extends JDialog {
@@ -121,22 +122,28 @@ public class SelectVersionDialog extends JDialog {
 	 */
 	public static boolean showDialog(Component parent, Obj<VersionObj> version) {
 		
-		// Check versions.
-		LinkedList<VersionObj> versions = ProgramGenerator.getAreasModel().getVersions();
-		if (versions.size() == 1) {
-			version.ref = versions.getFirst();
-			return true;
+		try {
+			// Check versions.
+			LinkedList<VersionObj> versions = ProgramGenerator.getAreasModel().getVersions();
+			if (versions.size() == 1) {
+				version.ref = versions.getFirst();
+				return true;
+			}
+			
+			SelectVersionDialog dialog = new SelectVersionDialog(Utility.findWindow(parent));
+			
+			dialog.setVisible(true);
+			
+			if (dialog.confirm) {
+				version.ref = dialog.getSelectedVersion();
+			}
+			
+			return dialog.confirm;
 		}
-		
-		SelectVersionDialog dialog = new SelectVersionDialog(Utility.findWindow(parent));
-		
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
-			version.ref = dialog.getSelectedVersion();
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		return dialog.confirm;
+		return false;
 	}
 	
 	/**
@@ -145,12 +152,16 @@ public class SelectVersionDialog extends JDialog {
 	 */
 	public SelectVersionDialog(Window parentWindow) {
 		super(parentWindow, ModalityType.DOCUMENT_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -222,10 +233,15 @@ public class SelectVersionDialog extends JDialog {
 	 * On cancel.
 	 */
 	protected void onCancel() {
-				
-		saveDialog();
-		
-		confirm = false;
+		try {
+			
+			saveDialog();
+			confirm = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};	
+			
 		dispose();
 	}
 
@@ -233,16 +249,21 @@ public class SelectVersionDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		// Check selection.
-		if (getSelectedVersion() == null) {
-			Utility.show(this, "org.multipage.generator.messagePleaseSelectVersion");
-			return;
+		try {
+			
+			// Check selection.
+			if (getSelectedVersion() == null) {
+				Utility.show(this, "org.multipage.generator.messagePleaseSelectVersion");
+				return;
+			}
+			
+			saveDialog();
+			confirm = true;
 		}
-		
-		saveDialog();
-		
-		confirm = true;
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -250,121 +271,162 @@ public class SelectVersionDialog extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.width == 0) {
-			Utility.centerOnScreen(this);
-			bounds = getBounds();
+		try {
+			
+			if (bounds.width == 0) {
+				Utility.centerOnScreen(this);
+				bounds = getBounds();
+			}
+			else {
+				setBounds(bounds);
+			}
 		}
-		else {
-			setBounds(bounds);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		loadDialog();
-		
-		localize();
-		setIcons();
-		
-		initializeList();
-		loadVersions();
-		
-		select(0);
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			loadDialog();
+			
+			localize();
+			setIcons();
+			
+			initializeList();
+			loadVersions();
+			
+			select(0);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(labelSelectVersion);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(labelSelectVersion);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 
 	/**
 	 * Initialize list.
 	 */
+	@SuppressWarnings("unchecked")
 	private void initializeList() {
-		
-		// Create and set list model.
-		listModel = new DefaultListModel<VersionObj>();
-		list.setModel(listModel);
-		
-		// Create and set renderer.
-		list.setCellRenderer(new ListCellRenderer<VersionObj>() {
-
-			// Label object.
-			VersionRenderer renderer = new VersionRenderer();
-
-			// Renderer method.
-			@Override
-			public Component getListCellRendererComponent(
-					JList<? extends VersionObj> list, VersionObj value,
-					int index, boolean isSelected, boolean cellHasFocus) {
-				
-				if (value == null) {
-					renderer.reset();
+		try {
+			
+			// Create and set list model.
+			listModel = new DefaultListModel<VersionObj>();
+			list.setModel(listModel);
+			
+			// Create and set renderer.
+			list.setCellRenderer(new ListCellRenderer<VersionObj>() {
+	
+				// Label object.
+				VersionRenderer renderer = new VersionRenderer();
+	
+				// Renderer method.
+				@Override
+				public Component getListCellRendererComponent(
+						JList<? extends VersionObj> list, VersionObj value,
+						int index, boolean isSelected, boolean cellHasFocus) {
+					
+					try {
+						if (value == null) {
+							renderer.reset();
+						}
+						else {
+							renderer.set(value, index, isSelected, cellHasFocus);
+						}
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return renderer;
 				}
-				else {
-					renderer.set(value, index, isSelected, cellHasFocus);
-				}
-				return renderer;
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Load versions.
 	 */
 	private void loadVersions() {
-		
-		listModel.clear();
-		
-		// Prepare prerequisites.
-		Properties login = ProgramBasic.getLoginProperties();
-		Middle middle = ProgramBasic.getMiddle();
-		
-		LinkedList<VersionObj> versions = new LinkedList<VersionObj>();
-		
-		// Load data from the database.
-		MiddleResult result = middle.loadVersions(login, 0L, versions);
-		
-		// On error inform user.
-		if (result.isNotOK()) {
-			result.show(this);
-			return;
+		try {
+			
+			listModel.clear();
+			
+			// Prepare prerequisites.
+			Properties login = ProgramBasic.getLoginProperties();
+			Middle middle = ProgramBasic.getMiddle();
+			
+			LinkedList<VersionObj> versions = new LinkedList<VersionObj>();
+			
+			// Load data from the database.
+			MiddleResult result = middle.loadVersions(login, 0L, versions);
+			
+			// On error inform user.
+			if (result.isNotOK()) {
+				result.show(this);
+				return;
+			}
+			
+			// Populate list.
+			for (VersionObj version : versions) {
+				listModel.addElement(version);
+			}
 		}
-		
-		// Populate list.
-		for (VersionObj version : versions) {
-			listModel.addElement(version);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -373,12 +435,18 @@ public class SelectVersionDialog extends JDialog {
 	 */
 	private VersionObj getSelectedVersion() {
 		
-		if (list.getSelectedIndices().length != 1) {
-			Utility.show(this, "org.multipage.generator.messageSelectSingleVersion");
-			return null;
+		try {
+			if (list.getSelectedIndices().length != 1) {
+				Utility.show(this, "org.multipage.generator.messageSelectSingleVersion");
+				return null;
+			}
+			
+			return (VersionObj) list.getSelectedValue();
 		}
-		
-		return (VersionObj) list.getSelectedValue();
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -386,15 +454,20 @@ public class SelectVersionDialog extends JDialog {
 	 * @param versionId
 	 */
 	private void select(long versionId) {
-		
-		for (int index = 0; index < listModel.getSize(); index++) {
+		try {
 			
-			VersionObj version = listModel.get(index);
-			if (version.getId() == versionId) {
+			for (int index = 0; index < listModel.getSize(); index++) {
 				
-				list.setSelectedIndex(index);
-				break;
+				VersionObj version = listModel.get(index);
+				if (version.getId() == versionId) {
+					
+					list.setSelectedIndex(index);
+					break;
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

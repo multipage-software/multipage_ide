@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -17,7 +17,8 @@ import javax.swing.UIManager;
 import org.multipage.util.Resources;
 
 /**
- * @author
+ * Main class for general GUI package.
+ * @author vakol
  *
  */
 public class GeneralGui {
@@ -166,7 +167,7 @@ public class GeneralGui {
 		CssResourcePanel.setDefaultData();
 		AnchorDialog.setDefaultData();
 		HelpDialog.setDefaultData();
-		CssResourcesUrlsPanel.setDefaultData();
+		CssResourceUrlsPanel.setDefaultData();
 		LogConsoles.setDefaultData();
 	}
 
@@ -216,7 +217,7 @@ public class GeneralGui {
 		CssResourcePanel.serializeData(inputStream);
 		AnchorDialog.serializeData(inputStream);
 		HelpDialog.serializeData(inputStream);
-		CssResourcesUrlsPanel.serializeData(inputStream);
+		CssResourceUrlsPanel.serializeData(inputStream);
 		LogConsoles.serializeData(inputStream);
 	}
 
@@ -265,7 +266,7 @@ public class GeneralGui {
 		CssResourcePanel.serializeData(outputStream);
 		AnchorDialog.serializeData(outputStream);
 		HelpDialog.serializeData(outputStream);
-		CssResourcesUrlsPanel.serializeData(outputStream);
+		CssResourceUrlsPanel.serializeData(outputStream);
 		LogConsoles.serializeData(outputStream);
 	}
 	

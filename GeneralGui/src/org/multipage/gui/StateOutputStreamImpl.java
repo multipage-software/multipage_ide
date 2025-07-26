@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2021 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 29-12-2021
+ * Created on : 2021-12-29
  *
  */
 package org.multipage.gui;
@@ -18,8 +18,8 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 
 /**
- * Output stream that can store application states in an output file.
- * The XStream implementation uses the XML format to store objects with application settings.
+ * Output stream that can store application states in output file.
+ * The XStream implementation uses the XML format to store application setting objects.
  * @author vakol
  */
 public class StateOutputStreamImpl implements StateOutputStream {

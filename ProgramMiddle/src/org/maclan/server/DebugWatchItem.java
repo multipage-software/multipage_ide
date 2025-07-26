@@ -1,13 +1,13 @@
 /*
- * Copyright 2010-2024 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 01-06-2024
+ * Created on : 2024-06-01
  *
  */
 package org.maclan.server;
 
 /**
- * Item of debug watch list.
+ * Item of debugger watch list.
  * @author vakol
  */
 public class DebugWatchItem {
@@ -18,9 +18,9 @@ public class DebugWatchItem {
 	private String name = null;
 	
 	/**
-	 * Item type.
+	 * Item group.
 	 */
-	private DebugWatchItemType type = null;
+	private DebugWatchGroup group = null;
 	
 	/**
 	 * Item full name.
@@ -42,10 +42,10 @@ public class DebugWatchItem {
 	 * @param name
 	 * @param type
 	 */
-	public DebugWatchItem(String name, DebugWatchItemType type) {
+	public DebugWatchItem(String name, DebugWatchGroup type) {
 		
 		this.name = name;
-		this.type = type;
+		this.group = type;
 	}
 
 	/**
@@ -56,10 +56,10 @@ public class DebugWatchItem {
 	 * @param value
 	 * @param valueType
 	 */
-	public DebugWatchItem(DebugWatchItemType type, String name, String fullName, String value, String valueType) {
+	public DebugWatchItem(DebugWatchGroup type, String name, String fullName, String value, String valueType) {
 		
 		this.name = name;
-		this.type = type;
+		this.group = type;
 		this.fullName = fullName;
 		this.value = value;
 		this.valueType = valueType;
@@ -84,34 +84,47 @@ public class DebugWatchItem {
 	}
 	
 	/**
-	 * Get watch item type.
+	 * Get watch item group.
 	 * @return
 	 */
-	public DebugWatchItemType getType() {
+	public DebugWatchGroup getGroup() {
 		
-		return type;
+		return group;
 	}
 	
 	/**
-	 * Get type name.
+	 * Get group name.
 	 * @return
 	 */
-	public String getTypeName() {
+	public String getGroupName() {
 		
-		if (type == null) {
+		if (group == null) {
 			return "unknown";
 		}
-		String typeName = type.name();
+		String typeName = group.name();
 		return typeName;
 	}
 	
 	/**
-	 * Get watch item value.
+	 * Get item value.
 	 * @return
 	 */
 	public String getValue() {
 		
 		return value;
+	}
+	
+	/**
+	 * Get watched value.
+	 * @return
+	 */
+	public String getWatchedValue() {
+		
+		// Remove whitespaces.
+		String watchedValue = value.trim();
+		watchedValue = watchedValue.replaceAll("\\s+", " ");
+		
+		return watchedValue;
 	}
 	
 	/**
@@ -129,13 +142,13 @@ public class DebugWatchItem {
 	 * @param type
 	 * @return
 	 */
-	public boolean matches(String name, DebugWatchItemType type) {
+	public boolean matches(String name, DebugWatchGroup type) {
 		
 		if (name == null || type == null) {
 			return false;
 		}
 		
-		boolean matches = name.equals(this.name) && type.equals(this.type);
+		boolean matches = name.equals(this.name) && type.equals(this.group);
 		return matches;
 	}
 	
@@ -145,9 +158,13 @@ public class DebugWatchItem {
 	@Override
 	public String toString() {
 		
+		String watchItemName;
 		if (fullName != null && !fullName.isEmpty()) {
-			return fullName;
+			watchItemName = fullName;
 		}
-		return name;
+		else {
+			watchItemName = name;
+		}
+		return watchItemName;
 	}
 }

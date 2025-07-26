@@ -1,26 +1,30 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-36
  *
  */
 
 package org.multipage.gui;
 
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.util.function.BiConsumer;
 
-import java.awt.*;
-import java.util.function.*;
-
-import javax.swing.table.*;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTable;
+import javax.swing.SpringLayout;
+import javax.swing.border.LineBorder;
+import javax.swing.table.DefaultTableModel;
 
 import org.multipage.util.Resources;
-
-import javax.swing.border.LineBorder;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Renderer that displays CSS keyframe.
+ * @author vakol
  *
  */
 public class RendererCssKeyframeItem extends JPanel {
@@ -42,11 +46,16 @@ public class RendererCssKeyframeItem extends JPanel {
 	 * Create the panel.
 	 */
 	public RendererCssKeyframeItem() {
-
-		initComponents();
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		
+		try {
+			initComponents();
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -91,9 +100,14 @@ public class RendererCssKeyframeItem extends JPanel {
 	 * Post create.
 	 */
 	private void postCreate() {
-		
-		setOpaque(true);
-		initTable();
+		try {
+			
+			setOpaque(true);
+			initTable();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -122,29 +136,33 @@ public class RendererCssKeyframeItem extends JPanel {
 	 * Set properties.
 	 * @param value 
 	 */
-	public RendererCssKeyframeItem set(CssKeyframe value, boolean isSelected, boolean hasFocus, int index) {
+	public RendererCssKeyframeItem set(CssKeyFrame value, boolean isSelected, boolean hasFocus, int index) {
 		
-		this.isSelected = isSelected;
-		this.hasFocus = hasFocus;
-		
-		Color background = Utility.itemColor(index);
-		setBackground(background);
-		table.setBackground(background);
-		
-		// Set time points and properties.
-		labelTimePoints.setText(value.getTimePointsText());
-		
-		tableModel.getDataVector().removeAllElements();
-		
-		value.forEachProperty(new BiConsumer<String, String>() {
-			@Override
-			public void accept(String namesText, String value) {
-				
-				// Add table row
-				tableModel.addRow(new String [] { namesText, value });
-			}
-		});
-		
+		try {
+			this.isSelected = isSelected;
+			this.hasFocus = hasFocus;
+			
+			Color background = Utility.itemColor(index);
+			setBackground(background);
+			table.setBackground(background);
+			
+			// Set time points and properties.
+			labelTimePoints.setText(value.getTimePointsText());
+			
+			tableModel.getDataVector().removeAllElements();
+			
+			value.forEachProperty(new BiConsumer<String, String>() {
+				@Override
+				public void accept(String namesText, String value) {
+					
+					// Add table row
+					tableModel.addRow(new String [] { namesText, value });
+				}
+			});
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return this;
 	}
 
@@ -153,10 +171,14 @@ public class RendererCssKeyframeItem extends JPanel {
 	 */
 	@Override
 	public void paint(Graphics g) {
-		
-		super.paint(g);
-		
-		GraphUtility.drawSelection(g, this, isSelected, hasFocus);
+		try {
+			
+			super.paint(g);
+			GraphUtility.drawSelection(g, this, isSelected, hasFocus);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -165,6 +187,12 @@ public class RendererCssKeyframeItem extends JPanel {
 	@Override
 	public Dimension preferredSize() {
 		
-		return new Dimension(200, 100);
+		try {
+			return new Dimension(200, 100);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return new Dimension();
 	}
 }

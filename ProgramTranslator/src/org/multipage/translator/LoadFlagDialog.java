@@ -1,30 +1,56 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.translator;
 
-import java.awt.image.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Insets;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.LinkedList;
 
-import javax.swing.*;
+import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
+import javax.swing.SpringLayout;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.apache.commons.imaging.Imaging;
-import org.multipage.gui.*;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.net.URL;
-import java.util.LinkedList;
+import org.multipage.gui.GraphUtility;
+import org.multipage.gui.Images;
+import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * This dialog enables to load language flag.
+ * @author vakol
  *
  */
 public class LoadFlagDialog extends JDialog {
@@ -61,11 +87,17 @@ public class LoadFlagDialog extends JDialog {
 	 * Launch the dialog.
 	 */
 	public static BufferedImage showDialog(Window parentWindow) {
-
-		LoadFlagDialog dialog = new LoadFlagDialog(parentWindow);
-		dialog.setVisible(true);
 		
-		return dialog.image;
+		try {
+			LoadFlagDialog dialog = new LoadFlagDialog(parentWindow);
+			dialog.setVisible(true);
+			
+			return dialog.image;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -74,17 +106,23 @@ public class LoadFlagDialog extends JDialog {
 	 */
 	public LoadFlagDialog(Window parentWindow) {
 		super(parentWindow, ModalityType.APPLICATION_MODAL);
-		addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				onCancel();
-			}
-		});
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		// Initialize components.
-		initComponents();
-		// Post creation.
-		postCreate();
+		
+		try {
+			addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowClosing(WindowEvent e) {
+					onCancel();
+				}
+			});
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			// Initialize components.
+			initComponents();
+			// Post creation.
+			postCreate();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -162,79 +200,126 @@ public class LoadFlagDialog extends JDialog {
 	 * @param e
 	 */
 	protected void onMouseClick(MouseEvent e) {
-		
-		if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
+		try {
 			
-			onSelect();
+			if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
+				onSelect();
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		// Localize components.
-		localize();
-		// Center dialog.
-		Utility.centerOnScreen(this);
-		// Set icons.
-		setIcons();
-		// Initialize list.
-		initializeList();
-		// Initialize filter.
-		initializeFilter();
+		try {
+			
+			// Localize components.
+			localize();
+			// Center dialog.
+			Utility.centerOnScreen(this);
+			// Set icons.
+			setIcons();
+			// Initialize list.
+			initializeList();
+			// Initialize filter.
+			initializeFilter();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Initialize filter.
 	 */
 	private void initializeFilter() {
-		
-		textFilter.getDocument().addDocumentListener(new DocumentListener() {
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				onChangeFilter();
-			}
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				onChangeFilter();
-			}
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				onChangeFilter();
-			}
-		});
+		try {
+			
+			textFilter.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					try {
+						
+						onChangeFilter();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					try {
+						
+						onChangeFilter();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					try {
+						
+						onChangeFilter();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On change filter.
 	 */
 	protected void onChangeFilter() {
-		
-		String filterText = textFilter.getText();
-		loadList(filterText);
+		try {
+			
+			String filterText = textFilter.getText();
+			loadList(filterText);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components
 	 */
 	private void localize() {
-
-		Utility.localize(this);
-		Utility.localize(buttonSelect);
-		Utility.localize(buttonCancel);
-		Utility.localize(labelFilter);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonSelect);
+			Utility.localize(buttonCancel);
+			Utility.localize(labelFilter);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-
-		setIconImage(Images.getImage("org/multipage/translator/images/main_icon.png"));
-		buttonSelect.setIcon(Images.getIcon("org/multipage/translator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/translator/images/cancel_icon.png"));
+		try {
+			
+			setIconImage(Images.getImage("org/multipage/translator/images/main_icon.png"));
+			buttonSelect.setIcon(Images.getIcon("org/multipage/translator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/translator/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -250,16 +335,21 @@ public class LoadFlagDialog extends JDialog {
 	 * On select.
 	 */
 	protected void onSelect() {
-
-		// Get selected image.
-		Object selected = list.getSelectedValue();
-		if (!(selected instanceof CountryFlag)) {
-			Utility.show(this, "org.multipage.translator.messageSelectFlag");
-			return;
+		try {
+			
+			// Get selected image.
+			Object selected = list.getSelectedValue();
+			if (!(selected instanceof CountryFlag)) {
+				Utility.show(this, "org.multipage.translator.messageSelectFlag");
+				return;
+			}
+			
+			CountryFlag flag = (CountryFlag) selected;
+			image = flag.image;
 		}
-		
-		CountryFlag flag = (CountryFlag) selected;
-		image = flag.image;
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
 		dispose();
 	}
@@ -267,32 +357,43 @@ public class LoadFlagDialog extends JDialog {
 	/**
 	 * Initialize list.
 	 */
+	@SuppressWarnings("unchecked")
 	private void initializeList() {
-		
-		// Set renderer.
-		list.setCellRenderer(new ListCellRenderer() {
-			// Renderer.
-			private JFlagLabel renderer = new JFlagLabel();
-			// Return renderer.
-			@Override
-			public Component getListCellRendererComponent(JList list, Object value,
-					int index, boolean isSelected, boolean cellHasFocus) {
-				// Check value.
-				if (!(value instanceof CountryFlag)) {
-					return null;
+		try {
+			
+			// Set renderer.
+			list.setCellRenderer(new ListCellRenderer() {
+				// Renderer.
+				private JFlagLabel renderer = new JFlagLabel();
+				// Return renderer.
+				@Override
+				public Component getListCellRendererComponent(JList list, Object value,
+						int index, boolean isSelected, boolean cellHasFocus) {
+					
+					try {
+						// Check value.
+						if (!(value instanceof CountryFlag)) {
+							return null;
+						}
+						// Get flag object.
+						CountryFlag flag = (CountryFlag) value;
+						// Set renderer properties.
+						renderer.setProperties(flag.label, flag.image, index,
+								isSelected, cellHasFocus);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return renderer;
 				}
-				// Get flag object.
-				CountryFlag flag = (CountryFlag) value;
-				// Set renderer properties.
-				renderer.setProperties(flag.label, flag.image, index,
-						isSelected, cellHasFocus);
-				
-				return renderer;
-			}
-		});
-		
-		// Load list.
-		loadList("");
+			});
+			
+			// Load list.
+			loadList("");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -300,73 +401,78 @@ public class LoadFlagDialog extends JDialog {
 	 * @param filterText
 	 */
 	private void loadList(String filterText) {
-		
-		// Create default list model.
-		listModel = new DefaultListModel();
-	
-		// Get directory listing.
-		LinkedList<String> flagFiles = new LinkedList<String>();
-		
 		try {
-			// Get flags directory.
-			URL urlListing = ClassLoader.getSystemResource(flagsDirectory + "list.txt");
-			// Read all the text returned by the serverText.
-		    BufferedReader reader = new BufferedReader(new InputStreamReader(urlListing.openStream()));
-	
-			String imageFile;
-			while ((imageFile = reader.readLine()) != null) {
-			    
-				flagFiles.add(imageFile);
+			
+			// Create default list model.
+			listModel = new DefaultListModel();
+		
+			// Get directory listing.
+			LinkedList<String> flagFiles = new LinkedList<String>();
+			
+			try {
+				// Get flags directory.
+				URL urlListing = ClassLoader.getSystemResource(flagsDirectory + "list.txt");
+				// Read all the text returned by the serverText.
+			    BufferedReader reader = new BufferedReader(new InputStreamReader(urlListing.openStream()));
+		
+				String imageFile;
+				while ((imageFile = reader.readLine()) != null) {
+				    
+					flagFiles.add(imageFile);
+				}
+					
+				reader.close();	
 			}
-				
-			reader.close();	
-		}
-		catch (IOException e) {
-			// Report error and exit.
-			Utility.show(this, "org.multipage.translator.messageErrorLoadingFlagsList");
-			return;
-		}
-	
-		// Do loop for all flag files.
-		for (String flagFile : flagFiles) {
-	
-			if (!filterText.isEmpty()) {
-				if (!Utility.matches(flagFile, filterText, false, false, false)) {
+			catch (IOException e) {
+				// Report error and exit.
+				Utility.show(this, "org.multipage.translator.messageErrorLoadingFlagsList");
+				return;
+			}
+		
+			// Do loop for all flag files.
+			for (String flagFile : flagFiles) {
+		
+				if (!filterText.isEmpty()) {
+					if (!Utility.matches(flagFile, filterText, false, false, false)) {
+						continue;
+					}
+				}
+				// Try to load the file.
+				URL urlFile = ClassLoader.getSystemResource(flagsDirectory + flagFile);
+				if (urlFile == null) {
+					System.out.println("Error: cannot load flag file.");
 					continue;
 				}
-			}
-			// Try to load the file.
-			URL urlFile = ClassLoader.getSystemResource(flagsDirectory + flagFile);
-			if (urlFile == null) {
-				System.out.println("Error: cannot load flag file.");
-				continue;
-			}
-			
-			InputStream inputStream = null;
-			try {
-				inputStream = urlFile.openStream();
-				BufferedImage image = Imaging.getBufferedImage(inputStream);
 				
-				// Create flag object and add it to the list.
-				CountryFlag countryFlag = new CountryFlag(flagFile, image);
-				listModel.addElement(countryFlag);
-				
-				// Set list model.
-				list.setModel(listModel);
-			}
-			catch (Exception e) {
-				e.printStackTrace();
-			}
-			finally {
-				if (inputStream != null	) {
-					try {
-						inputStream.close();
-					}
-					catch (Exception e) {
+				InputStream inputStream = null;
+				try {
+					inputStream = urlFile.openStream();
+					BufferedImage image = Imaging.getBufferedImage(inputStream);
+					
+					// Create flag object and add it to the list.
+					CountryFlag countryFlag = new CountryFlag(flagFile, image);
+					listModel.addElement(countryFlag);
+					
+					// Set list model.
+					list.setModel(listModel);
+				}
+				catch (Exception e) {
+					Safe.exception(e);
+				}
+				finally {
+					if (inputStream != null	) {
+						try {
+							inputStream.close();
+						}
+						catch (Exception e) {
+						}
 					}
 				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }
 
@@ -423,9 +529,14 @@ class JFlagLabel extends JLabel {
 	 * Constructor.
 	 */
 	public JFlagLabel () {
-		
-		setOpaque(true);
-		setIconTextGap(20);
+		try {
+			
+			setOpaque(true);
+			setIconTextGap(20);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -433,10 +544,16 @@ class JFlagLabel extends JLabel {
 	 */
 	@Override
 	public void paint(Graphics g) {
-		// Call parent.
-		super.paint(g);
-		// Draw selection.
-		GraphUtility.drawSelection(g, this, isSelected, hasFocus);
+		
+		try {
+			// Call parent.
+			super.paint(g);
+			// Draw selection.
+			GraphUtility.drawSelection(g, this, isSelected, hasFocus);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -449,22 +566,27 @@ class JFlagLabel extends JLabel {
 	 */
 	public void setProperties(String text, BufferedImage image,
 			int index, boolean isSelected, boolean hasFocus) {
-		
-		setText(text);
-
-		this.isSelected = isSelected;
-		this.hasFocus = hasFocus;
-		
-		if (image != null) {
-			setIcon(new ImageIcon(image));
+		try {
+			
+			setText(text);
+	
+			this.isSelected = isSelected;
+			this.hasFocus = hasFocus;
+			
+			if (image != null) {
+				setIcon(new ImageIcon(image));
+			}
+			else {
+				setIcon(null);
+			}
+			
+			// Get background color.
+			Color backGroundColor = Utility.itemColor(index);
+			// Set color.
+			setBackground(backGroundColor);
 		}
-		else {
-			setIcon(null);
-		}
-		
-		// Get background color.
-		Color backGroundColor = Utility.itemColor(index);
-		// Set color.
-		setBackground(backGroundColor);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

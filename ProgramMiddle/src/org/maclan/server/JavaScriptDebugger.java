@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 14-04-2020
+ * Created on : 2020-04-14
  *
  */
 package org.maclan.server;
@@ -14,11 +14,12 @@ import javax.swing.SwingUtilities;
 
 import org.maclan.server.JavaScriptDebuggerObjectDump.Action;
 import org.multipage.util.Lock;
+import org.multipage.util.Safe;
 import org.openjdk.nashorn.internal.runtime.Debug;
 
 /**
- * 
- * @author user
+ * JavaScript debugger.
+ * @author vakol
  *
  */
 public class JavaScriptDebugger {
@@ -77,7 +78,7 @@ public class JavaScriptDebugger {
 		
 		
 		Thread thread = new Thread(() -> {
-			SwingUtilities.invokeLater(() -> {
+			Safe.invokeLater(() -> {
 				dialog = JavaScriptDebuggerObjectDump.showDialog(nameText, debuggedObject, loop);
 			});
 			loop.enter();

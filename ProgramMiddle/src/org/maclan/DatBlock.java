@@ -1,15 +1,15 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 15-05-2020
+ * Created on : 2020-05-15
  *
  */
 
 package org.maclan;
 
 /**
- * 
- * @author user
+ * DAT file blocks.
+ * @author vakol
  *
  */
 public class DatBlock {

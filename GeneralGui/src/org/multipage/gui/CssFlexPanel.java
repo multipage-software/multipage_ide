@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -16,8 +16,8 @@ import java.io.*;
 import java.util.*;
 
 /**
- * 
- * @author
+ * Panel that displays editor for flexbox layout.
+ * @author vakol
  *
  */
 public class CssFlexPanel extends InsertPanel implements StringValueEditor {
@@ -90,13 +90,18 @@ public class CssFlexPanel extends InsertPanel implements StringValueEditor {
 	 * @param parentWindow 
 	 */
 	public CssFlexPanel(String initialString) {
-
-		initComponents();
 		
-		// $hide>>$
-		this.initialString = initialString;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			this.initialString = initialString;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -152,8 +157,13 @@ public class CssFlexPanel extends InsertPanel implements StringValueEditor {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-
-		setFromInitialString();
+		try {
+			
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -168,20 +178,28 @@ public class CssFlexPanel extends InsertPanel implements StringValueEditor {
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		localize();
-		
-		loadUnits();
-		
-		loadDialog();
+		try {
+			
+			localize();
+			loadUnits();
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load units.
 	 */
 	private void loadUnits() {
-		
-		Utility.loadCssUnits(comboBasisUnits);
+		try {
+			
+			Utility.loadCssUnits(comboBasisUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -191,7 +209,13 @@ public class CssFlexPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getSpecification() {
 		
-		return getGrow() + " " + getShrink() + " " + getBasis();
+		try {
+			return getGrow() + " " + getShrink() + " " + getBasis();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -200,7 +224,13 @@ public class CssFlexPanel extends InsertPanel implements StringValueEditor {
 	 */
 	private String getGrow() {
 		
-		return Utility.getCssNumberValue(textGrow, "0");
+		try {
+			return Utility.getCssNumberValue(textGrow, "0");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "0";
 	}
 
 	/**
@@ -209,7 +239,13 @@ public class CssFlexPanel extends InsertPanel implements StringValueEditor {
 	 */
 	private String getShrink() {
 		
-		return Utility.getCssNumberValue(textShrink, "1");
+		try {
+			return Utility.getCssNumberValue(textShrink, "1");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "1";
 	}
 
 	/**
@@ -218,34 +254,45 @@ public class CssFlexPanel extends InsertPanel implements StringValueEditor {
 	 */
 	private String getBasis() {
 		
-		return Utility.getCssValueAndUnits(textBasis, comboBasisUnits, "auto");
+		try {
+			return Utility.getCssValueAndUnits(textBasis, comboBasisUnits, "auto");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "auto";
 	}
 	
 	/**
 	 * Set from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		// Initialize controls.
-		setGrow("0");
-		setShrink("1");
-		setBasis("auto");
-
-		if (initialString != null) {
+		try {
 			
-			Scanner scanner = new Scanner(initialString.trim());
-			
-			try {
-				// Set values.
-				setGrow(scanner.next().trim());
-				setShrink(scanner.next().trim());
-				setBasis(scanner.next().trim());
+			// Initialize controls.
+			setGrow("0");
+			setShrink("1");
+			setBasis("auto");
+	
+			if (initialString != null) {
+				
+				Scanner scanner = new Scanner(initialString.trim());
+				
+				try {
+					// Set values.
+					setGrow(scanner.next().trim());
+					setShrink(scanner.next().trim());
+					setBasis(scanner.next().trim());
+				}
+				catch (Exception e) {
+				}
+				
+			    scanner.close();
 			}
-			catch (Exception e) {
-			}
-			
-		    scanner.close();
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -253,8 +300,13 @@ public class CssFlexPanel extends InsertPanel implements StringValueEditor {
 	 * @param string
 	 */
 	private void setGrow(String string) {
-		
-		Utility.setCssNumberValue(string, textGrow);
+		try {
+			
+			Utility.setCssNumberValue(string, textGrow);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -262,8 +314,13 @@ public class CssFlexPanel extends InsertPanel implements StringValueEditor {
 	 * @param string
 	 */
 	private void setShrink(String string) {
-		
-		Utility.setCssNumberValue(string, textShrink);
+		try {
+			
+			Utility.setCssNumberValue(string, textShrink);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -271,23 +328,33 @@ public class CssFlexPanel extends InsertPanel implements StringValueEditor {
 	 * @param string
 	 */
 	private void setBasis(String string) {
-		
-		if (string.equals("auto")) {
-			textBasis.setText("");
-			return;
+		try {
+			
+			if (string.equals("auto")) {
+				textBasis.setText("");
+				return;
+			}
+			
+			Utility.setCssValueAndUnits(string, textBasis, comboBasisUnits);
 		}
-		
-		Utility.setCssValueAndUnits(string, textBasis, comboBasisUnits);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(labelGrow);
-		Utility.localize(labelShrink);
-		Utility.localize(labelBasis);
+		try {
+			
+			Utility.localize(labelGrow);
+			Utility.localize(labelShrink);
+			Utility.localize(labelBasis);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -296,7 +363,13 @@ public class CssFlexPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.gui.textCssFlexBuilder");
+		try {
+			return Resources.getString("org.multipage.gui.textCssFlexBuilder");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -305,7 +378,13 @@ public class CssFlexPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getResultText() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -361,7 +440,13 @@ public class CssFlexPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getStringValue() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -371,8 +456,14 @@ public class CssFlexPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public void setStringValue(String string) {
 		
-		initialString = string;
-		setFromInitialString();
+		try {
+			
+			initialString = string;
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

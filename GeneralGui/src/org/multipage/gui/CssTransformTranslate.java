@@ -1,14 +1,17 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
+import org.multipage.util.Safe;
+
 /**
- * @author
+ * Calss for translation object.
+ * @author vakol
  *
  */
 public class CssTransformTranslate extends CssTransform {
@@ -35,13 +38,19 @@ public class CssTransformTranslate extends CssTransform {
 	 */
 	@Override
 	public String toString() {
-				
-		return String.format("translate(%s%s, %s%s)",
-				Utility.removeFloatNulls(String.valueOf(tx)),
-				txUnits,
-				Utility.removeFloatNulls(String.valueOf(ty)),
-				tyUnits
-				);
+		
+		try {
+			return String.format("translate(%s%s, %s%s)",
+					Utility.removeFloatNulls(String.valueOf(tx)),
+					txUnits,
+					Utility.removeFloatNulls(String.valueOf(ty)),
+					tyUnits
+					);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -49,10 +58,15 @@ public class CssTransformTranslate extends CssTransform {
 	 * @param translate
 	 */
 	public void setFrom(CssTransformTranslate translate) {
-
-		this.tx = translate.tx;
-		this.ty = translate.ty;
-		this.txUnits = translate.txUnits;
-		this.tyUnits = translate.tyUnits;
+		try {
+			
+			this.tx = translate.tx;
+			this.ty = translate.ty;
+			this.txUnits = translate.txUnits;
+			this.tyUnits = translate.tyUnits;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

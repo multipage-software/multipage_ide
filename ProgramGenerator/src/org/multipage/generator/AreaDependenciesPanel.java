@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -33,13 +33,12 @@ import org.maclan.AreasModel;
 import org.maclan.Middle;
 import org.maclan.MiddleResult;
 import org.multipage.basic.ProgramBasic;
-import org.multipage.gui.ApplicationEvents;
-import org.multipage.gui.GuiSignal;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays area dependencies.
+ * @author vakol
  *
  */
 public class AreaDependenciesPanel extends AreaDependenciesPanelBase {
@@ -62,30 +61,34 @@ public class AreaDependenciesPanel extends AreaDependenciesPanelBase {
 	private JRadioButton buttonSuperAreas;
 	private final ButtonGroup buttonGroup = new ButtonGroup();
 	private JPopupMenu popupMenu;
-	private RelatedAreaPanel panelRelatedArea;
 
 	/**
 	 * Create the panel.
 	 */
 	public AreaDependenciesPanel() {
-
-		// Initialize components.
-		initComponents();
-		// Post creation.
-		// $hide>>$
-		setComponentsReferences(
-				labelAreaDependencies,
-				tableAreas,
-				buttonUp,
-				buttonDown,
-				buttonDefault,
-				buttonSubAreas,
-				buttonSuperAreas,
-				popupMenu,
-				panelRelatedArea
-				);
-		postCreate();
-		// $hide<<$
+		
+		try {
+			// Initialize components.
+			initComponents();
+			// Post creation.
+			// $hide>>$
+			setComponentsReferences(
+					labelAreaDependencies,
+					tableAreas,
+					buttonUp,
+					buttonDown,
+					buttonDefault,
+					buttonSubAreas,
+					buttonSuperAreas,
+					popupMenu,
+					panelRelatedArea
+					);
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -189,207 +192,257 @@ public class AreaDependenciesPanel extends AreaDependenciesPanelBase {
 	 * @param currentArea
 	 */
 	@SuppressWarnings("serial")
-	@Override
-	protected void loadAreas() {
-		
-		// Reload area object.
-		currentArea = ProgramGenerator.getArea(currentArea.getId());
-		
-		
-		final boolean useSubAreas = buttonSubAreas.isSelected();
-
-		LinkedList<Long> areasIds = new LinkedList<Long>();
-		
-		final Middle middle = ProgramBasic.getMiddle();
-		final Properties login = ProgramBasic.getLoginProperties();
-		
-		// Login to the database.
-		MiddleResult result = middle.login(login);
-		if (result.isOK()) {
+	private void loadAreas() {
+		try {
 			
-			if (useSubAreas) {
-				// Load subareas IDs.
-				result = middle.loadAreaSubAreas(currentArea, areasIds);
-				if (result.isOK()) {
-					// Initialize currentArea subareas priorities.
-					result = middle.initAreaSubareasPriorities(currentArea.getId(),
-							areasIds);
-				}
-			}
-			else {
-				// Load superareas IDs.
-				result = middle.loadAreaSuperAreas(currentArea, areasIds);
-				if (result.isOK()) {
-					// Initialize currentArea superarea priorities.
-					result = middle.initAreaSuperareasPriorities(currentArea.getId(),
-							areasIds);
-				}
-			}
-				
-			// Logout from the database.
-			MiddleResult logoutResult = middle.logout(result);
+			// Reload area object.
+			currentArea = ProgramGenerator.getArea(currentArea.getId());
+			
+			final boolean useSubAreas = buttonSubAreas.isSelected();
+	
+			LinkedList<Long> areasIds = new LinkedList<Long>();
+			
+			final Middle middle = ProgramBasic.getMiddle();
+			final Properties login = ProgramBasic.getLoginProperties();
+			
+			// Login to the database.
+			MiddleResult result = middle.login(login);
 			if (result.isOK()) {
-				result = logoutResult;
+				
+				if (useSubAreas) {
+					// Load subareas IDs.
+					result = middle.loadAreaSubAreas(currentArea, areasIds);
+					if (result.isOK()) {
+						// Initialize currentArea subareas priorities.
+						result = middle.initAreaSubareasPriorities(currentArea.getId(),
+								areasIds);
+					}
+				}
+				else {
+					// Load superareas IDs.
+					result = middle.loadAreaSuperAreas(currentArea, areasIds);
+					if (result.isOK()) {
+						// Initialize currentArea superarea priorities.
+						result = middle.initAreaSuperareasPriorities(currentArea.getId(),
+								areasIds);
+					}
+				}
+					
+				// Logout from the database.
+				MiddleResult logoutResult = middle.logout(result);
+				if (result.isOK()) {
+					result = logoutResult;
+				}
 			}
-		}
-		
-		// On error exit.
-		if (result.isNotOK()) {
-			result.show(this);
-			return;
-		}
-		
-		AreasModel model = ProgramGenerator.getAreasModel();
-		
-		// Get areas.
-		final ArrayList<Area> areas = new ArrayList<Area>();
-		
-		int areasCount = areasIds.size();
-		for (int index = 0; index < areasCount; index++) {
-			// Get area.
-			Area area = model.getArea(areasIds.get(index));
-			areas.add(area);
-		}
-		
-		// Table model.
-		class LocalTableModel extends AbstractTableModel {
-			// Get row count.
-			@Override
-			public int getRowCount() {
-				// Return row count.
-				return areas.size();
+			
+			// On error exit.
+			if (result.isNotOK()) {
+				result.show(this);
+				return;
 			}
-			// Get column count.
-			@Override
-			public int getColumnCount() {
-				// Return column count.
-				return 2;
-			}
-			// Get value.
-			@SuppressWarnings("deprecation")
-			@Override
-			public Object getValueAt(int rowIndex, int columnIndex) {
+			
+			AreasModel model = ProgramGenerator.getAreasModel();
+			
+			// Get areas.
+			final ArrayList<Area> areas = new ArrayList<Area>();
+			
+			int areasCount = areasIds.size();
+			for (int index = 0; index < areasCount; index++) {
 				// Get area.
-				Area area = areas.get(rowIndex);
-				// Return value.
-				if (columnIndex == 0) {
-					return area;
-				}
-				else if (columnIndex == 1) {
-					if (useSubAreas) {
-						return currentArea.getSubRelationName(area.getId());
-					}
-				}
-				return null;
+				Area area = model.getArea(areasIds.get(index));
+				areas.add(area);
 			}
-			// Get column name.
 			
-			@Override
-			public String getColumnName(int column) {
-				// Return value.
-				if (column == 0) {
-					return Resources.getString("org.multipage.generator.textAreaDescription");
+			// Table model.
+			class LocalTableModel extends AbstractTableModel {
+				// Get row count.
+				@Override
+				public int getRowCount() {
+					try {
+						// Return row count.
+						return areas.size();
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return 0;
 				}
-				else if (column == 1 && useSubAreas) {
-					return Resources.getString("org.multipage.generator.textRelationNameSub");
+				// Get column count.
+				@Override
+				public int getColumnCount() {
+					// Return column count.
+					return 2;
 				}
-				return "";
-			}
-			// Get column class.
-			@Override
-			public Class<?> getColumnClass(int columnIndex) {
-				if (columnIndex == 0) {
-					return String.class;
-				}
-				else if (columnIndex == 1) {
-					return String.class;
-				}
-				
-				return super.getColumnClass(columnIndex);
-			}
-			// Get cell editable.
-			@Override
-			public boolean isCellEditable(int rowIndex, int columnIndex) {
-				
-				return columnIndex == 1 && useSubAreas;
-			}
-			// Set value.
-			@Override
-			public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-				
-				if (columnIndex == 1 && aValue instanceof String) {
-					
-					// Update relation name.
-					String relationName = (String) aValue;
-					Area relatedArea = (Area) getValueAt(rowIndex, 0);
-					long currentAreaId = currentArea.getId();
-					long relatedAreaId = relatedArea.getId();
-					
-					MiddleResult result;
-					Properties login = ProgramBasic.getLoginProperties();
-					
-					if (useSubAreas) {
-						result = middle.updateIsSubareaNameSub(login, currentAreaId,
-								relatedAreaId, relationName);
-						if (result.isOK()) {
-							currentArea.setSubRelationNameLight(relatedAreaId, relationName);
+				// Get value.
+				@Override
+				public Object getValueAt(int rowIndex, int columnIndex) {
+					try {
+						// Get area.
+						Area area = areas.get(rowIndex);
+						// Return value.
+						if (columnIndex == 0) {
+							return area;
 						}
-						else {
-							// Report error.
-							result.show(tableAreas);
+						else if (columnIndex == 1) {
+							if (useSubAreas) {
+								return currentArea.getSubRelationName(area.getId());
+							}
 						}
 					}
-				}
-			}
-		}
-		
-		// Get possible old selection.
-		Long oldSelectedAreaId = null;
-		int oldSelectedRow = tableAreas.getSelectedRow();
-		if (oldSelectedRow != -1) {
-			
-			Area oldSelectedArea = (Area) tableAreas.getModel()
-				.getValueAt(oldSelectedRow, 0);
-			// Set old selected currentArea ID.
-			oldSelectedAreaId = oldSelectedArea.getId();
-		}
-		
-		// Create table model.
-		LocalTableModel tableModel = new LocalTableModel();
-		
-		// Set table model.
-		tableAreas.setModel(tableModel);
-		
-		// Set column width.
-		tableAreas.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-		
-		if (oldSelectedAreaId != null) {
-			// Select currentArea.
-			for (int index = 0; index < tableModel.getRowCount(); index++) {
-				// Get currentArea.
-				Area area = (Area) tableModel.getValueAt(index, 0);
-				if (area.getId() == oldSelectedAreaId) {
-					// Select the row.
-					ListSelectionModel selectionModel = tableAreas.getSelectionModel();
-					if (selectionModel != null) {
-						selectionModel.setSelectionInterval(index, index);
+					catch (Throwable e) {
+						Safe.exception(e);
 					}
-					break;
+					return null;
 				}
-			}
-		}
-		
-		// Set area name column cell renderer.
-		tableAreas.getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
-			@Override
-			protected void setValue(Object value) {
+				// Get column name.
 				
-				if (value instanceof Area) {
-					super.setValue(((Area) value).getDescriptionForDiagram());
-					return;
+				@Override
+				public String getColumnName(int column) {
+					try {
+						// Return value.
+						if (column == 0) {
+							return Resources.getString("org.multipage.generator.textAreaDescription");
+						}
+						else if (column == 1 && useSubAreas) {
+							return Resources.getString("org.multipage.generator.textRelationNameSub");
+						}
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return "";
 				}
-				super.setValue(value);
+				// Get column class.
+				@Override
+				public Class<?> getColumnClass(int columnIndex) {
+					try {
+						if (columnIndex == 0) {
+							return String.class;
+						}
+						else if (columnIndex == 1) {
+							return String.class;
+						}
+						
+						return super.getColumnClass(columnIndex);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return null;
+				}
+				// Get cell editable.
+				@Override
+				public boolean isCellEditable(int rowIndex, int columnIndex) {
+					
+					return columnIndex == 1 && useSubAreas;
+				}
+				// Set value.
+				@Override
+				public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+					try {
+						
+						if (columnIndex == 1 && aValue instanceof String) {
+							
+							// Update relation name.
+							String relationName = (String) aValue;
+							Area relatedArea = (Area) getValueAt(rowIndex, 0);
+							long currentAreaId = currentArea.getId();
+							long relatedAreaId = relatedArea.getId();
+							
+							MiddleResult result;
+							Properties login = ProgramBasic.getLoginProperties();
+							
+							if (useSubAreas) {
+								result = middle.updateIsSubareaNameSub(login, currentAreaId,
+										relatedAreaId, relationName);
+								if (result.isOK()) {
+									currentArea.setSubRelationNameLight(relatedAreaId, relationName);
+								}
+								else {
+									// Report error.
+									result.show(tableAreas);
+								}
+							}
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
 			}
-		});
+			
+			// Get possible old selection.
+			Long oldSelectedAreaId = null;
+			int oldSelectedRow = tableAreas.getSelectedRow();
+			if (oldSelectedRow != -1) {
+				
+				Area oldSelectedArea = (Area) tableAreas.getModel()
+					.getValueAt(oldSelectedRow, 0);
+				// Set old selected currentArea ID.
+				oldSelectedAreaId = oldSelectedArea.getId();
+			}
+			
+			// Create table model.
+			LocalTableModel tableModel = new LocalTableModel();
+			
+			// Set table model.
+			tableAreas.setModel(tableModel);
+			
+			// Set column width.
+			tableAreas.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+			
+			if (oldSelectedAreaId != null) {
+				// Select currentArea.
+				for (int index = 0; index < tableModel.getRowCount(); index++) {
+					// Get currentArea.
+					Area area = (Area) tableModel.getValueAt(index, 0);
+					if (area.getId() == oldSelectedAreaId) {
+						// Select the row.
+						ListSelectionModel selectionModel = tableAreas.getSelectionModel();
+						if (selectionModel != null) {
+							selectionModel.setSelectionInterval(index, index);
+						}
+						break;
+					}
+				}
+			}
+			
+			// Set area name column cell renderer.
+			tableAreas.getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
+				@Override
+				protected void setValue(Object value) {
+					try {
+						
+						if (value instanceof Area) {
+							super.setValue(((Area) value).getDescriptionForDiagram());
+							return;
+						}
+						super.setValue(value);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+	}
+	
+	/**
+	 * Method for updating of dialog components.
+	 */
+	@Override
+	public void updateComponents() {
+		try {
+			
+			super.updateComponents();
+			// Reload area list.
+			loadAreas();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 }

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -16,10 +16,11 @@ import java.nio.charset.StandardCharsets;
 import javax.servlet.http.HttpServletResponse;
 
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Class for response object.
+ * @author vakol
  *
  */
 public class Response {
@@ -367,8 +368,13 @@ public class Response {
 	 */
 	public void finalizeHeaders() {
 		
-		if (this.error != null) {
-			response.addHeader("AreaServer-Exception", this.error);
+		try {
+			if (this.error != null && response != null) {
+				response.addHeader("AreaServer-Exception", this.error);
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 	}
 }

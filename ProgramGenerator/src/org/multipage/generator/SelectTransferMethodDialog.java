@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -28,10 +28,11 @@ import org.multipage.gui.Images;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays selection of drag and drop operation. 
+ * @author vakol
  *
  */
 public class SelectTransferMethodDialog extends JDialog {
@@ -117,13 +118,18 @@ public class SelectTransferMethodDialog extends JDialog {
 	 */
 	public static int showDialog(Component parent, int action, boolean onlyAsSubarea) {
 		
-		SelectTransferMethodDialog dialog = new SelectTransferMethodDialog(parent, action, onlyAsSubarea);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			SelectTransferMethodDialog dialog = new SelectTransferMethodDialog(parent, action, onlyAsSubarea);
+			dialog.setVisible(true);
 			
-			// Get selected method.
-			return dialog.getSelectedMethod();
+			if (dialog.confirm) {
+				
+				// Get selected method.
+				return dialog.getSelectedMethod();
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return CANCELLED;
 	}
@@ -134,11 +140,16 @@ public class SelectTransferMethodDialog extends JDialog {
 	 */
 	private int getSelectedMethod() {
 		
-		if (radioBefore.isSelected()) {
-			return BEFORE;
+		try {
+			if (radioBefore.isSelected()) {
+				return BEFORE;
+			}
+			if (radioAfter.isSelected()) {
+				return AFTER;
+			}
 		}
-		if (radioAfter.isSelected()) {
-			return AFTER;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return SUBAREA;
 	}
@@ -151,15 +162,21 @@ public class SelectTransferMethodDialog extends JDialog {
 	 */
 	public SelectTransferMethodDialog(Component parent, int action, boolean onlyAsSubarea) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
-		setTitle("title");
-		setResizable(false);
-
-		initComponents();
 		
-		// $hide>>$
-		setAction(action, onlyAsSubarea);
-		postCreate();
-		// $hide<<$
+		try {
+			setTitle("title");
+			setResizable(false);
+	
+			initComponents();
+			
+			// $hide>>$
+			setAction(action, onlyAsSubarea);
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -232,73 +249,98 @@ public class SelectTransferMethodDialog extends JDialog {
 	 * @param onlyAsSubarea 
 	 */
 	private void setAction(int action, boolean onlyAsSubarea) {
-		
-		// Check action.
-		if (!(action == 1 || action == 2)) {
-			Utility.show(this, "org.multipage.generator.messageUnknownTransferAreaAction");
+		try {
 			
-			onCancel();
-			return;
-		}
-		
-		// Set component texts.
-		setTitle(action == 1 ? "org.multipage.generator.textSelectAreaLinkMethod" : "org.multipage.generator.textSelectAreaMoveMethod");
-		labelQuestion.setText(action == 1 ? "org.multipage.generator.textWhereToLinkArea" : "org.multipage.generator.textWhereToMoveArea");
-		
-		this.onlyAsSubarea = onlyAsSubarea;
-		
-		// Leave only sub area option.
-		if (onlyAsSubarea) {
+			// Check action.
+			if (!(action == 1 || action == 2)) {
+				Utility.show(this, "org.multipage.generator.messageUnknownTransferAreaAction");
+				
+				onCancel();
+				return;
+			}
 			
-			radioBefore.setEnabled(false);
-			radioAfter.setEnabled(false);
+			// Set component texts.
+			setTitle(action == 1 ? "org.multipage.generator.textSelectAreaLinkMethod" : "org.multipage.generator.textSelectAreaMoveMethod");
+			labelQuestion.setText(action == 1 ? "org.multipage.generator.textWhereToLinkArea" : "org.multipage.generator.textWhereToMoveArea");
+			
+			this.onlyAsSubarea = onlyAsSubarea;
+			
+			// Leave only sub area option.
+			if (onlyAsSubarea) {
+				
+				radioBefore.setEnabled(false);
+				radioAfter.setEnabled(false);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		localize();
-		setIcons();
-		
-		loadDialog();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			localize();
+			setIcons();
+			
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(labelQuestion);
-		Utility.localize(radioBefore);
-		Utility.localize(radioAfter);
-		Utility.localize(radioSubarea);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(labelQuestion);
+			Utility.localize(radioBefore);
+			Utility.localize(radioAfter);
+			Utility.localize(radioSubarea);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
-		
-		saveDialog();
-		
-		confirm = false;
+		try {
+			
+			saveDialog();
+			confirm = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -306,10 +348,15 @@ public class SelectTransferMethodDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		saveDialog();
-		
-		confirm = true;
+		try {
+			
+			saveDialog();
+			confirm = true;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -317,28 +364,38 @@ public class SelectTransferMethodDialog extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (location.x == 0 && location.y == 0) {
-			Utility.centerOnScreen(this);
+		try {
+			
+			if (location.x == 0 && location.y == 0) {
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setLocation(location);
+			}
+			
+			// Initialize radio buttons.
+			if (!onlyAsSubarea) {
+				radioBefore.setSelected(true);
+			}
+			else {
+				radioSubarea.setSelected(true);
+			}
 		}
-		else {
-			setLocation(location);
-		}
-		
-		// Initialize radio buttons.
-		if (!onlyAsSubarea) {
-			radioBefore.setSelected(true);
-		}
-		else {
-			radioSubarea.setSelected(true);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		location = getLocation();
+		try {
+			
+			location = getLocation();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

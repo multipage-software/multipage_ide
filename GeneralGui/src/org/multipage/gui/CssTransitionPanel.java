@@ -1,28 +1,46 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import javax.swing.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.util.Locale;
 
-import java.awt.*;
-import java.io.*;
-import java.util.*;
-import java.awt.event.*;
-
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.SpringLayout;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.multipage.util.*;
-
-import javax.swing.event.ListSelectionEvent;
+import org.multipage.util.Obj;
+import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays transitioneditor.
+ * @author vakol
  *
  */
 public class CssTransitionPanel extends InsertPanel implements StringValueEditor {
@@ -122,7 +140,14 @@ public class CssTransitionPanel extends InsertPanel implements StringValueEditor
 		 */
 		@Override
 		public String toString() {
-			return property.getHtmlText();
+			
+			try {
+				return property.getHtmlText();
+			}
+			catch (Throwable e) {
+				Safe.exception(e);
+			}
+			return "";
 		}
 	}
 
@@ -171,16 +196,21 @@ public class CssTransitionPanel extends InsertPanel implements StringValueEditor
 	 */
 	public CssTransitionPanel(String initialString) {
 		
-		startSettingControls();
-
-		initComponents();
-		
-		// $hide>>$
-		this.initialString = initialString;
-		postCreate();
-		// $hide<<$
-		
-		stopSettingControls();
+		try {
+			startSettingControls();
+	
+			initComponents();
+			
+			// $hide>>$
+			this.initialString = initialString;
+			postCreate();
+			// $hide<<$
+			
+			stopSettingControls();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -396,79 +426,105 @@ public class CssTransitionPanel extends InsertPanel implements StringValueEditor
 	 * On all properties flag changed.
 	 */
 	protected void onAllProperties() {
-		
-		boolean isAllSelected = checkAll.isSelected();
-		
-		listTransitions.setEnabled(!isAllSelected);
-		labelProperty.setEnabled(!isAllSelected);
-		buttonAddTransition.setEnabled(!isAllSelected);
-		buttonSaveTransitionProperties.setEnabled(!isAllSelected);
+		try {
+			
+			boolean isAllSelected = checkAll.isSelected();
+			
+			listTransitions.setEnabled(!isAllSelected);
+			labelProperty.setEnabled(!isAllSelected);
+			buttonAddTransition.setEnabled(!isAllSelected);
+			buttonSaveTransitionProperties.setEnabled(!isAllSelected);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 	}
 
 	/**
 	 * On save transition properties.
 	 */
 	protected void onSaveTransitionProperties() {
-		
-		CssTransition transition = listTransitions.getSelectedValue();
-		if (transition == null) {
+		try {
 			
-			Utility.show(this, "org.multipage.gui.messageSelectSingleTransition");
-			return;
+			CssTransition transition = listTransitions.getSelectedValue();
+			if (transition == null) {
+				
+				Utility.show(this, "org.multipage.gui.messageSelectSingleTransition");
+				return;
+			}
+			
+			// Save properties.
+			transition.delay = getDelay();
+			transition.duration = getDuration();
+			transition.timingFunction = getTimingFunction();
 		}
-		
-		// Save properties.
-		transition.delay = getDelay();
-		transition.duration = getDuration();
-		transition.timingFunction = getTimingFunction();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On remove transition.
 	 */
 	protected void onRemoveTransition() {
-		
-		CssTransition transition = listTransitions.getSelectedValue();
-		if (transition == null) {
+		try {
 			
-			Utility.show(this, "org.multipage.gui.messageSelectSingleTransition");
-			return;
+			CssTransition transition = listTransitions.getSelectedValue();
+			if (transition == null) {
+				
+				Utility.show(this, "org.multipage.gui.messageSelectSingleTransition");
+				return;
+			}
+			
+			// Ask user.
+			if (!Utility.ask(this, "org.multipage.gui.messageRemoveSelectedTransition")) {
+				return;
+			}
+			
+			listTransitionsModel.removeElement(transition);
 		}
-		
-		// Ask user.
-		if (!Utility.ask(this, "org.multipage.gui.messageRemoveSelectedTransition")) {
-			return;
-		}
-		
-		listTransitionsModel.removeElement(transition);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On list selection.
 	 */
 	protected void onListSelection() {
-		
-		CssTransition transition = listTransitions.getSelectedValue();
-		if (transition == null) {
+		try {
 			
-			resetControls();
-			return;
+			CssTransition transition = listTransitions.getSelectedValue();
+			if (transition == null) {
+				
+				resetControls();
+				return;
+			}
+			
+			// Set controls.
+			setDelay(transition.delay);
+			setDuration(transition.duration);
+			setTimingFunction(transition.timingFunction);
 		}
-		
-		// Set controls.
-		setDelay(transition.delay);
-		setDuration(transition.duration);
-		setTimingFunction(transition.timingFunction);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Reset controls.
 	 */
 	private void resetControls() {
-		
-		setDelay("0.0s");
-		setDuration("0.0s");
-		setTimingFunction("ease");
+		try {
+			
+			setDelay("0.0s");
+			setDuration("0.0s");
+			setTimingFunction("ease");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -476,8 +532,13 @@ public class CssTransitionPanel extends InsertPanel implements StringValueEditor
 	 * @param delay
 	 */
 	private void setDelay(String delay) {
-		
-		Utility.setCssValueAndUnits(delay, textDelay, comboDelayUnits, "0.0", "s");
+		try {
+			
+			Utility.setCssValueAndUnits(delay, textDelay, comboDelayUnits, "0.0", "s");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -485,8 +546,13 @@ public class CssTransitionPanel extends InsertPanel implements StringValueEditor
 	 * @param duration
 	 */
 	private void setDuration(String duration) {
-		
-		Utility.setCssValueAndUnits(duration, textDuration, comboDurationUnits, "0.0", "s");
+		try {
+			
+			Utility.setCssValueAndUnits(duration, textDuration, comboDurationUnits, "0.0", "s");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -494,66 +560,82 @@ public class CssTransitionPanel extends InsertPanel implements StringValueEditor
 	 * @param timingFunction
 	 */
 	private void setTimingFunction(String timingFunction) {
-		
-		Obj<Integer> position = new Obj<Integer>(0);
-		
-		// Get timing function.
-		String text = Utility.getNextMatch(timingFunction, position, "\\G\\s*(linear|ease-in-out|ease-in|ease-out|ease|step-start|step-end)");
-		if (text != null) {
-			Utility.selectComboNamedItem(comboTimingFunction, text.trim());
+		try {
 			
-			// Reset other components.
-			resetBezierFunction();
-			resetStepFunction();
-		}
-		else {
-			position.ref = 0;
-			if (!processNextBezierFunction(timingFunction, position)) {
-
+			Obj<Integer> position = new Obj<Integer>(0);
+			
+			// Get timing function.
+			String text = Utility.getNextMatch(timingFunction, position, "\\G\\s*(linear|ease-in-out|ease-in|ease-out|ease|step-start|step-end)");
+			if (text != null) {
+				Utility.selectComboNamedItem(comboTimingFunction, text.trim());
+				
+				// Reset other components.
+				resetBezierFunction();
+				resetStepFunction();
+			}
+			else {
 				position.ref = 0;
-				if (!processNextStepFunction(timingFunction, position)) {
-					return;
+				if (!processNextBezierFunction(timingFunction, position)) {
+	
+					position.ref = 0;
+					if (!processNextStepFunction(timingFunction, position)) {
+						return;
+					}
 				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On add transition.
 	 */
 	protected void onAddTransition() {
-		
-		CssProperty property = CssFindPropertyDialog.showDialog(this, 'a');
-		if (property == null) {
-			return;
+		try {
+			
+			CssProperty property = CssFindPropertyDialog.showDialog(this, 'a');
+			if (property == null) {
+				return;
+			}
+			
+			CssTransition transition = new CssTransition(property, getDelay(), getDuration(), getTimingFunction());
+			listTransitionsModel.addElement(transition);
 		}
-		
-		CssTransition transition = new CssTransition(property, getDelay(), getDuration(), getTimingFunction());
-		listTransitionsModel.addElement(transition);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On timing function combo.
 	 */
 	protected void onTimingFunctionCombo() {
-		
-		if (comboTimingFunction.getSelectedIndex() <= 0) {
-			return;
+		try {
+			
+			if (comboTimingFunction.getSelectedIndex() <= 0) {
+				return;
+			}
+			
+			if (settingControls) {
+				return;
+			}
+			startSettingControls();
+			
+			textX1.setText("");
+			textY1.setText("");
+			textX2.setText("");
+			textY2.setText("");
+			textSteps.setText("");
+			comboStepsDirection.setSelectedIndex(0);
+			
+			stopSettingControls();
 		}
-		
-		if (settingControls) {
-			return;
-		}
-		startSettingControls();
-		
-		textX1.setText("");
-		textY1.setText("");
-		textX2.setText("");
-		textY2.setText("");
-		textSteps.setText("");
-		comboStepsDirection.setSelectedIndex(0);
-		
-		stopSettingControls();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 	}
 
 	/**
@@ -569,12 +651,9 @@ public class CssTransitionPanel extends InsertPanel implements StringValueEditor
 	 */
 	public void stopSettingControls() {
 		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				
-				settingControls = false;
-			}
+		Safe.invokeLater(() -> {
+
+			settingControls = false;
 		});
 	}
 
@@ -582,8 +661,13 @@ public class CssTransitionPanel extends InsertPanel implements StringValueEditor
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-
-		setFromInitialString();
+		try {
+			
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -598,144 +682,196 @@ public class CssTransitionPanel extends InsertPanel implements StringValueEditor
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		localize();
-		setToolTips();
-		setIcons();
-		
-		loadUnits();
-		loadComboBoxes();
-		
-		initList();
-		
-		loadDialog();
-		
-		resetControls();
-		setListeners();
+		try {
+			
+			localize();
+			setToolTips();
+			setIcons();
+			
+			loadUnits();
+			loadComboBoxes();
+			
+			initList();
+			
+			loadDialog();
+			
+			resetControls();
+			setListeners();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Initialize list.
 	 */
 	private void initList() {
-		
-		listTransitionsModel = new DefaultListModel<CssTransition>();
-		listTransitions.setModel(listTransitionsModel);
+		try {
+			
+			listTransitionsModel = new DefaultListModel<CssTransition>();
+			listTransitions.setModel(listTransitionsModel);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonAddTransition.setIcon(Images.getIcon("org/multipage/gui/images/insert.png"));
-		menuAddTransition.setIcon(Images.getIcon("org/multipage/gui/images/insert.png"));
-		menuRemoveTransition.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
-		buttonSaveTransitionProperties.setIcon(Images.getIcon("org/multipage/gui/images/save_icon.png"));
+		try {
+			
+			buttonAddTransition.setIcon(Images.getIcon("org/multipage/gui/images/insert.png"));
+			menuAddTransition.setIcon(Images.getIcon("org/multipage/gui/images/insert.png"));
+			menuRemoveTransition.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+			buttonSaveTransitionProperties.setIcon(Images.getIcon("org/multipage/gui/images/save_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set tool tips.
 	 */
 	private void setToolTips() {
-		
-		buttonAddTransition.setToolTipText(Resources.getString("org.multipage.gui.tooltipAddTransition"));
-		buttonSaveTransitionProperties.setToolTipText(Resources.getString("org.multipage.gui.tooltipSaveTransition"));
+		try {
+			
+			buttonAddTransition.setToolTipText(Resources.getString("org.multipage.gui.tooltipAddTransition"));
+			buttonSaveTransitionProperties.setToolTipText(Resources.getString("org.multipage.gui.tooltipSaveTransition"));	
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set listeners.
 	 */
 	private void setListeners() {
-		
-		// On Bezier change.
-		Runnable onBezierChange = new Runnable() {
-			@Override
-			public void run() {
-				onBezierChange();
-			}
+		try {
+			
+			// On Bezier change.
+			Runnable onBezierChange = () -> {
+				try {
+					
+					onBezierChange();
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			};
+			
+			Utility.setTextChangeListener(textX1, onBezierChange);
+			Utility.setTextChangeListener(textY1, onBezierChange);
+			Utility.setTextChangeListener(textX2, onBezierChange);
+			Utility.setTextChangeListener(textY2, onBezierChange);
+			
+			// On step function change.
+			Utility.setTextChangeListener(textSteps, () -> {
+				try {
+					
+					onStepFunctionChange();
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
 		};
-		Utility.setTextChangeListener(textX1, onBezierChange);
-		Utility.setTextChangeListener(textY1, onBezierChange);
-		Utility.setTextChangeListener(textX2, onBezierChange);
-		Utility.setTextChangeListener(textY2, onBezierChange);
-		
-		// On step function change.
-		Utility.setTextChangeListener(textSteps, new Runnable() {
-			@Override
-			public void run() {
-				onStepFunctionChange();
-			}
-		});
 	}
 
 	/**
 	 * On step function change.
 	 */
 	protected void onStepFunctionChange() {
-		
-		if (settingControls) {
-			return;
+		try {
+			
+			if (settingControls) {
+				return;
+			}
+			startSettingControls();
+			
+			comboTimingFunction.setSelectedIndex(0);
+			textX1.setText("");
+			textY1.setText("");
+			textX2.setText("");
+			textY2.setText("");
+			
+			stopSettingControls();
 		}
-		startSettingControls();
-		
-		comboTimingFunction.setSelectedIndex(0);
-		textX1.setText("");
-		textY1.setText("");
-		textX2.setText("");
-		textY2.setText("");
-		
-		stopSettingControls();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On Bezier change.
 	 */
 	protected void onBezierChange() {
-		
-		if (settingControls) {
-			return;
+		try {
+			
+			if (settingControls) {
+				return;
+			}
+			startSettingControls();
+			
+			comboTimingFunction.setSelectedIndex(0);
+			textSteps.setText("");
+			comboStepsDirection.setSelectedIndex(0);
+			
+			stopSettingControls();
 		}
-		startSettingControls();
-		
-		comboTimingFunction.setSelectedIndex(0);
-		textSteps.setText("");
-		comboStepsDirection.setSelectedIndex(0);
-		
-		stopSettingControls();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load combo boxes values.
 	 */
 	private void loadComboBoxes() {
-		
-		Utility.loadEmptyItem(comboTimingFunction);
-		Utility.loadNamedItems(comboTimingFunction, new String [][] {
-				{"linear", "org.multipage.gui.textStepsTimingLinear"},
-				{"ease", "org.multipage.gui.textStepsTimingEase"},
-				{"ease-in", "org.multipage.gui.textStepsTimingEaseIn"},
-				{"ease-in-out", "org.multipage.gui.textStepsTimingEaseInOut"},
-				{"ease-out", "org.multipage.gui.textStepsTimingEaseOut"},
-				{"step-start", "org.multipage.gui.textStepsTimingStepStart"},
-				{"step-end", "org.multipage.gui.textStepsTimingStepEnd"}
-		});
-		
-		Utility.loadNamedItems(comboStepsDirection, new String [][] {
-				{"start", "org.multipage.gui.textStepsDirectionStart"},
-				{"end", "org.multipage.gui.textStepsDirectionEnd"}
-		});
+		try {
+			
+			Utility.loadEmptyItem(comboTimingFunction);
+			Utility.loadNamedItems(comboTimingFunction, new String [][] {
+					{"linear", "org.multipage.gui.textStepsTimingLinear"},
+					{"ease", "org.multipage.gui.textStepsTimingEase"},
+					{"ease-in", "org.multipage.gui.textStepsTimingEaseIn"},
+					{"ease-in-out", "org.multipage.gui.textStepsTimingEaseInOut"},
+					{"ease-out", "org.multipage.gui.textStepsTimingEaseOut"},
+					{"step-start", "org.multipage.gui.textStepsTimingStepStart"},
+					{"step-end", "org.multipage.gui.textStepsTimingStepEnd"}
+			});
+			
+			Utility.loadNamedItems(comboStepsDirection, new String [][] {
+					{"start", "org.multipage.gui.textStepsDirectionStart"},
+					{"end", "org.multipage.gui.textStepsDirectionEnd"}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load units.
 	 */
 	private void loadUnits() {
-		
-		final String [] timeUnits = new String [] { "s", "ms" };
-		
-		Utility.loadCssUnits(comboDurationUnits, timeUnits);
-		Utility.loadCssUnits(comboDelayUnits, timeUnits);
+		try {
+			
+			final String [] timeUnits = new String [] { "s", "ms" };
+			
+			Utility.loadCssUnits(comboDurationUnits, timeUnits);
+			Utility.loadCssUnits(comboDelayUnits, timeUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -745,47 +881,54 @@ public class CssTransitionPanel extends InsertPanel implements StringValueEditor
 	@Override
 	public String getSpecification() {
 		
-		String specification = "";
-		
-		if (checkAll.isSelected()) {
+		try {
 			
-			specification += getDuration();
-			specification += " " + getDelay();
-			specification += " all";
-			specification += " " + getTimingFunction();
+			String specification = "";
+			
+			if (checkAll.isSelected()) {
+				
+				specification += getDuration();
+				specification += " " + getDelay();
+				specification += " all";
+				specification += " " + getTimingFunction();
+				
+				return specification;
+			}
+			
+			// Compile specification.
+			boolean isFirst = true;
+			int size = listTransitionsModel.getSize();
+			
+			if (size == 0) {
+				return "none";
+			}
+			
+			for (int index = 0; index < size; index++) {
+				
+				CssTransition transition = listTransitionsModel.get(index);
+				CssProperty property = transition.property;
+				
+				for (String propertyName : property.getNames()) {
+					
+					if (!isFirst) {
+						specification += ", ";
+					}
+					
+					specification += transition.duration;
+					specification += " " + transition.delay;
+					specification += " " + propertyName;
+					specification += " " + transition.timingFunction;
+					
+					isFirst = false;
+				}
+			}
 			
 			return specification;
 		}
-		
-		// Compile specification.
-		boolean isFirst = true;
-		int size = listTransitionsModel.getSize();
-		
-		if (size == 0) {
-			return "none";
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		for (int index = 0; index < size; index++) {
-			
-			CssTransition transition = listTransitionsModel.get(index);
-			CssProperty property = transition.property;
-			
-			for (String propertyName : property.getNames()) {
-				
-				if (!isFirst) {
-					specification += ", ";
-				}
-				
-				specification += transition.duration;
-				specification += " " + transition.delay;
-				specification += " " + propertyName;
-				specification += " " + transition.timingFunction;
-				
-				isFirst = false;
-			}
-		}
-		
-		return specification;
+		return "";
 	}
 
 	/**
@@ -794,22 +937,28 @@ public class CssTransitionPanel extends InsertPanel implements StringValueEditor
 	 */
 	private String getDelay() {
 		
-		String delay = textDelay.getText();
-		if (delay.isEmpty()) {
-			return "0s";
-		}
-		
-		String units = (String) comboDelayUnits.getSelectedItem();
-		if (units == null) {
-			units = "s";
-		}
 		try {
-			Float.parseFloat(delay);
+			String delay = textDelay.getText();
+			if (delay.isEmpty()) {
+				return "0s";
+			}
+			
+			String units = (String) comboDelayUnits.getSelectedItem();
+			if (units == null) {
+				units = "s";
+			}
+			try {
+				Float.parseFloat(delay);
+			}
+			catch (Exception e) {
+				delay = "0";
+			}
+			return delay + units;
 		}
-		catch (Exception e) {
-			delay = "0";
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		return delay + units;
+		return "";
 	}
 
 	/**
@@ -818,71 +967,77 @@ public class CssTransitionPanel extends InsertPanel implements StringValueEditor
 	 */
 	private String getTimingFunction() {
 		
-		// Get named function.
-		String functionName = Utility.getSelectedNamedItem(comboTimingFunction);
-		if (!functionName.isEmpty()) {
-			return functionName;
-		}
-		
-		// Get Bezier function.
-		String x1Text = textX1.getText();
-		String y1Text = textY1.getText();
-		String x2Text = textX2.getText();
-		String y2Text = textY2.getText();
-		
-		if (!x1Text.isEmpty() || !y1Text.isEmpty() || !x2Text.isEmpty() || !y2Text.isEmpty()) {
-			
-			try {
-				float x1 = Float.parseFloat(x1Text);
-				x1Text = Utility.removeFloatNulls(String.valueOf(x1));
-			}
-			catch (Exception e) {
-				x1Text = "0";
-			}
-			try {
-				float y1 = Float.parseFloat(y1Text);
-				y1Text = Utility.removeFloatNulls(String.valueOf(y1));
-			}
-			catch (Exception e) {
-				y1Text = "0";
-			}
-			try {
-				float x2 = Float.parseFloat(x2Text);
-				x2Text = Utility.removeFloatNulls(String.valueOf(x2));
-			}
-			catch (Exception e) {
-				x2Text = "0";
-			}
-			try {
-				float y2 = Float.parseFloat(y2Text);
-				y2Text = Utility.removeFloatNulls(String.valueOf(y2));
-			}
-			catch (Exception e) {
-				y2Text = "0";
-			}
-			return String.format(Locale.ENGLISH, "cubic-bezier(%s, %s, %s, %s)", x1Text, y1Text, x2Text, y2Text);
-		}
-		
-		// Get step function.
-		String stepsText = textSteps.getText();
-		String stepsDirection = Utility.getSelectedNamedItem(comboStepsDirection);
-		
-		if (stepsText.isEmpty()) {
-			return "ease";
-		}
-
-		if (stepsDirection.isEmpty()) {
-			stepsDirection = "start";
-		}
-
 		try {
-			Float.parseFloat(stepsText);
+			// Get named function.
+			String functionName = Utility.getSelectedNamedItem(comboTimingFunction);
+			if (!functionName.isEmpty()) {
+				return functionName;
+			}
+			
+			// Get Bezier function.
+			String x1Text = textX1.getText();
+			String y1Text = textY1.getText();
+			String x2Text = textX2.getText();
+			String y2Text = textY2.getText();
+			
+			if (!x1Text.isEmpty() || !y1Text.isEmpty() || !x2Text.isEmpty() || !y2Text.isEmpty()) {
+				
+				try {
+					float x1 = Float.parseFloat(x1Text);
+					x1Text = Utility.removeFloatNulls(String.valueOf(x1));
+				}
+				catch (Exception e) {
+					x1Text = "0";
+				}
+				try {
+					float y1 = Float.parseFloat(y1Text);
+					y1Text = Utility.removeFloatNulls(String.valueOf(y1));
+				}
+				catch (Exception e) {
+					y1Text = "0";
+				}
+				try {
+					float x2 = Float.parseFloat(x2Text);
+					x2Text = Utility.removeFloatNulls(String.valueOf(x2));
+				}
+				catch (Exception e) {
+					x2Text = "0";
+				}
+				try {
+					float y2 = Float.parseFloat(y2Text);
+					y2Text = Utility.removeFloatNulls(String.valueOf(y2));
+				}
+				catch (Exception e) {
+					y2Text = "0";
+				}
+				return String.format(Locale.ENGLISH, "cubic-bezier(%s, %s, %s, %s)", x1Text, y1Text, x2Text, y2Text);
+			}
+			
+			// Get step function.
+			String stepsText = textSteps.getText();
+			String stepsDirection = Utility.getSelectedNamedItem(comboStepsDirection);
+			
+			if (stepsText.isEmpty()) {
+				return "ease";
+			}
+	
+			if (stepsDirection.isEmpty()) {
+				stepsDirection = "start";
+			}
+	
+			try {
+				Float.parseFloat(stepsText);
+			}
+			catch (Exception e) {
+				stepsText = "1";
+			}
+			
+			return String.format("steps(%s, %s)", stepsText, stepsDirection);
 		}
-		catch (Exception e) {
-			stepsText = "1";
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		return String.format("steps(%s, %s)", stepsText, stepsDirection);
+		return "";
 	}
 
 	/**
@@ -891,127 +1046,151 @@ public class CssTransitionPanel extends InsertPanel implements StringValueEditor
 	 */
 	private String getDuration() {
 		
-		String duration = textDuration.getText();
-		if (duration.isEmpty()) {
-			return "0s";
-		}
-		
-		String units = (String) comboDurationUnits.getSelectedItem();
-		if (units == null) {
-			units = "s";
-		}
 		try {
-			Float.parseFloat(duration);
+			String duration = textDuration.getText();
+			if (duration.isEmpty()) {
+				return "0s";
+			}
+			
+			String units = (String) comboDurationUnits.getSelectedItem();
+			if (units == null) {
+				units = "s";
+			}
+			try {
+				Float.parseFloat(duration);
+			}
+			catch (Exception e) {
+				duration = "0";
+			}
+			return duration + units;
 		}
-		catch (Exception e) {
-			duration = "0";
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		return duration + units;
+		return "";
 	}
 
 	/**
 	 * Set from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		// Initialize controls.
-		resetControls();
-		listTransitionsModel.clear();
-
-		if (initialString != null) {
+		try {
 			
-			initialString = initialString.trim();
-			
-			if (initialString.equals("none")) {
-				return;
-			}
-			
-			Obj<Integer> position = new Obj<Integer>(0);
-			
-			try {
-				while (true) {
-					
-					CssTransition transition = new CssTransition();
-
-					// Get duration.
-					String text = Utility.getNextMatch(initialString, position, "\\G\\s*[0-9\\.]+(s|ms)");
-					if (text == null) {
-						break;
-					}
-					transition.duration = text.trim();
-					
-					// Get transition delay.
-					text = Utility.getNextMatch(initialString, position, "\\G\\s*[0-9\\.\\-\\+]+(s|ms)");
-					if (text == null) {
-						break;
-					}
-					transition.delay = text.trim();
-					
-					// Get property name.
-					text = Utility.getNextMatch(initialString, position, "\\G\\s*[A-Za-z0-9\\-_]+");
-					if (text == null) {
-						break;
-					}
-					String propertyName = text.trim();
-					boolean isAll = propertyName.equals("all");
-					
-					if (!isAll) {
-						transition.property = new CssProperty(propertyName);
-					}
-										
-					// Get timing function.
-					text = Utility.getNextMatch(initialString, position, "\\G\\s*(linear|ease-in-out|ease-in|ease-out|ease|step-start|step-end|cubic-bezier[^\\)]+\\)|steps[^\\)]+\\))");
-					if (text == null) {
-						break;
-					}
-					transition.timingFunction = text.trim();
-					
-					if (isAll) {
+			// Initialize controls.
+			resetControls();
+			listTransitionsModel.clear();
+	
+			if (initialString != null) {
+				
+				initialString = initialString.trim();
+				
+				if (initialString.equals("none")) {
+					return;
+				}
+				
+				Obj<Integer> position = new Obj<Integer>(0);
+				
+				try {
+					while (true) {
 						
-						setDuration(transition.duration);
-						setDelay(transition.delay);
-						setTimingFunction(transition.timingFunction);
+						CssTransition transition = new CssTransition();
+	
+						// Get duration.
+						String text = Utility.getNextMatch(initialString, position, "\\G\\s*[0-9\\.]+(s|ms)");
+						if (text == null) {
+							break;
+						}
+						transition.duration = text.trim();
 						
-						listTransitionsModel.clear();
+						// Get transition delay.
+						text = Utility.getNextMatch(initialString, position, "\\G\\s*[0-9\\.\\-\\+]+(s|ms)");
+						if (text == null) {
+							break;
+						}
+						transition.delay = text.trim();
 						
-						checkAll.setSelected(true);
-						SwingUtilities.invokeLater(() -> { onAllProperties(); });
+						// Get property name.
+						text = Utility.getNextMatch(initialString, position, "\\G\\s*[A-Za-z0-9\\-_]+");
+						if (text == null) {
+							break;
+						}
+						String propertyName = text.trim();
+						boolean isAll = propertyName.equals("all");
 						
-						break;
-					}
-					
-					listTransitionsModel.addElement(transition);
-					
-					// Get next comma.
-					text = Utility.getNextMatch(initialString, position, "\\G\\s*,");
-					if (text == null) {
-						break;
+						if (!isAll) {
+							transition.property = new CssProperty(propertyName);
+						}
+											
+						// Get timing function.
+						text = Utility.getNextMatch(initialString, position, "\\G\\s*(linear|ease-in-out|ease-in|ease-out|ease|step-start|step-end|cubic-bezier[^\\)]+\\)|steps[^\\)]+\\))");
+						if (text == null) {
+							break;
+						}
+						transition.timingFunction = text.trim();
+						
+						if (isAll) {
+							
+							setDuration(transition.duration);
+							setDelay(transition.delay);
+							setTimingFunction(transition.timingFunction);
+							
+							listTransitionsModel.clear();
+							
+							checkAll.setSelected(true);
+							Safe.invokeLater(() -> {
+								onAllProperties();
+							});
+							
+							break;
+						}
+						
+						listTransitionsModel.addElement(transition);
+						
+						// Get next comma.
+						text = Utility.getNextMatch(initialString, position, "\\G\\s*,");
+						if (text == null) {
+							break;
+						}
 					}
 				}
-			}
-			catch (Exception e) {
+				catch (Exception e) {
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 	}
 
 	/**
 	 * Reset step function.
 	 */
 	private void resetStepFunction() {
-		
-		textSteps.setText("");
-		comboStepsDirection.setSelectedIndex(0);
+		try {
+			
+			textSteps.setText("");
+			comboStepsDirection.setSelectedIndex(0);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Reset Bezier function input components.
 	 */
 	private void resetBezierFunction() {
-		
-		textX1.setText("");
-		textY1.setText("");
-		textX2.setText("");
-		textY2.setText("");
+		try {
+			
+			textX1.setText("");
+			textY1.setText("");
+			textX2.setText("");
+			textY2.setText("");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1023,50 +1202,56 @@ public class CssTransitionPanel extends InsertPanel implements StringValueEditor
 	private boolean processNextStepFunction(String initialString,
 			Obj<Integer> position) {
 		
-		String text = Utility.getNextMatch(initialString, position, "\\G\\s*steps\\s*\\(");
-		if (text == null) {
-			return false;
-		}
-		
-		// Reset other components.
-		comboTimingFunction.setSelectedIndex(0);
-		resetBezierFunction();
-		
-		// Load number of steps.
-		text = Utility.getNextMatch(initialString, position, "\\G\\s*[0-9]+");
-		if (text == null) {
-			return false;
-		}
-		text = text.trim();
 		try {
-			Integer.parseInt(text);
+			String text = Utility.getNextMatch(initialString, position, "\\G\\s*steps\\s*\\(");
+			if (text == null) {
+				return false;
+			}
+			
+			// Reset other components.
+			comboTimingFunction.setSelectedIndex(0);
+			resetBezierFunction();
+			
+			// Load number of steps.
+			text = Utility.getNextMatch(initialString, position, "\\G\\s*[0-9]+");
+			if (text == null) {
+				return false;
+			}
+			text = text.trim();
+			try {
+				Integer.parseInt(text);
+			}
+			catch (Exception e) {
+				text = "1";
+			}
+			textSteps.setText(text);
+			
+			// Skip comma.
+			text = Utility.getNextMatch(initialString, position, "\\G\\s*\\,");
+			if (text == null) {
+				return false;
+			}
+			
+			// Get direction.
+			text = Utility.getNextMatch(initialString, position, "\\G\\s*(start|end)");
+			if (text == null) {
+				return false;
+			}
+			text = text.trim();
+			Utility.selectComboNamedItem(comboStepsDirection, text);
+			
+			// Find closing bracket.
+			text = Utility.getNextMatch(initialString, position, "\\G\\s*\\)");
+			if (text == null) {
+				return false;
+			}
+			
+			return true;
 		}
-		catch (Exception e) {
-			text = "1";
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		textSteps.setText(text);
-		
-		// Skip comma.
-		text = Utility.getNextMatch(initialString, position, "\\G\\s*\\,");
-		if (text == null) {
-			return false;
-		}
-		
-		// Get direction.
-		text = Utility.getNextMatch(initialString, position, "\\G\\s*(start|end)");
-		if (text == null) {
-			return false;
-		}
-		text = text.trim();
-		Utility.selectComboNamedItem(comboStepsDirection, text);
-		
-		// Find closing bracket.
-		text = Utility.getNextMatch(initialString, position, "\\G\\s*\\)");
-		if (text == null) {
-			return false;
-		}
-		
-		return true;
+		return false;
 	}
 
 	/**
@@ -1078,55 +1263,61 @@ public class CssTransitionPanel extends InsertPanel implements StringValueEditor
 	private boolean processNextBezierFunction(String initialString,
 			Obj<Integer> position) {
 		
-		String text = Utility.getNextMatch(initialString, position, "\\G\\s*cubic-bezier\\s*\\(");
-		if (text == null) {
-			return false;
-		}
+		try {
+			String text = Utility.getNextMatch(initialString, position, "\\G\\s*cubic-bezier\\s*\\(");
+			if (text == null) {
+				return false;
+			}
+				
+			// Reset other time function components.
+			comboTimingFunction.setSelectedIndex(0);
+			resetStepFunction();
 			
-		// Reset other time function components.
-		comboTimingFunction.setSelectedIndex(0);
-		resetStepFunction();
-		
-		text = getNextFloat(initialString, position);
-		if (text == null) {
-			return false;
+			text = getNextFloat(initialString, position);
+			if (text == null) {
+				return false;
+			}
+			textX1.setText(text);
+			text = Utility.getNextMatch(initialString, position, "\\G\\s*\\,");
+			if (text == null) {
+				return false;
+			}
+			text = getNextFloat(initialString, position);
+			if (text == null) {
+				return false;
+			}
+			textY1.setText(text);
+			text = Utility.getNextMatch(initialString, position, "\\G\\s*\\,");
+			if (text == null) {
+				return false;
+			}
+			text = getNextFloat(initialString, position);
+			if (text == null) {
+				return false;
+			}
+			textX2.setText(text);
+			text = Utility.getNextMatch(initialString, position, "\\G\\s*\\,");
+			if (text == null) {
+				return false;
+			}
+			text = getNextFloat(initialString, position);
+			if (text == null) {
+				return false;
+			}
+			textY2.setText(text);
+			
+			// Find closing bracket.
+			text = Utility.getNextMatch(initialString, position, "\\G\\s*\\)");
+			if (text == null) {
+				return false;
+			}
+			
+			return true;
 		}
-		textX1.setText(text);
-		text = Utility.getNextMatch(initialString, position, "\\G\\s*\\,");
-		if (text == null) {
-			return false;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		text = getNextFloat(initialString, position);
-		if (text == null) {
-			return false;
-		}
-		textY1.setText(text);
-		text = Utility.getNextMatch(initialString, position, "\\G\\s*\\,");
-		if (text == null) {
-			return false;
-		}
-		text = getNextFloat(initialString, position);
-		if (text == null) {
-			return false;
-		}
-		textX2.setText(text);
-		text = Utility.getNextMatch(initialString, position, "\\G\\s*\\,");
-		if (text == null) {
-			return false;
-		}
-		text = getNextFloat(initialString, position);
-		if (text == null) {
-			return false;
-		}
-		textY2.setText(text);
-		
-		// Find closing bracket.
-		text = Utility.getNextMatch(initialString, position, "\\G\\s*\\)");
-		if (text == null) {
-			return false;
-		}
-		
-		return true;
+		return false;
 	}
 
 	/**
@@ -1137,18 +1328,23 @@ public class CssTransitionPanel extends InsertPanel implements StringValueEditor
 	 */
 	private String getNextFloat(String text, Obj<Integer> position) {
 		
-		String floatNumber = Utility.getNextMatch(text, position, "\\G\\s*[0-9\\.\\-\\+]+");
-		if (floatNumber == null) {
-			return null;
-		}
-		
 		try {
-			Float.parseFloat(floatNumber.trim());
+			String floatNumber = Utility.getNextMatch(text, position, "\\G\\s*[0-9\\.\\-\\+]+");
+			if (floatNumber == null) {
+				return null;
+			}
 			
-			floatNumber = Utility.removeFloatNulls(floatNumber);
-			return floatNumber;
+			try {
+				Float.parseFloat(floatNumber.trim());
+				
+				floatNumber = Utility.removeFloatNulls(floatNumber);
+				return floatNumber;
+			}
+			catch (Exception e) {
+			}
 		}
-		catch (Exception e) {
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -1157,16 +1353,21 @@ public class CssTransitionPanel extends InsertPanel implements StringValueEditor
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(labelProperty);
-		Utility.localize(labelDuration);
-		Utility.localize(labelTimingFunction);
-		Utility.localize(labelBezier);
-		Utility.localize(labelSteps);
-		Utility.localize(labelDelay);
-		Utility.localize(menuAddTransition);
-		Utility.localize(menuRemoveTransition);
-		Utility.localize(checkAll);
+		try {
+			
+			Utility.localize(labelProperty);
+			Utility.localize(labelDuration);
+			Utility.localize(labelTimingFunction);
+			Utility.localize(labelBezier);
+			Utility.localize(labelSteps);
+			Utility.localize(labelDelay);
+			Utility.localize(menuAddTransition);
+			Utility.localize(menuRemoveTransition);
+			Utility.localize(checkAll);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -1175,7 +1376,13 @@ public class CssTransitionPanel extends InsertPanel implements StringValueEditor
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.gui.textCssTransitionBuilder");
+		try {
+			return Resources.getString("org.multipage.gui.textCssTransitionBuilder");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -1184,7 +1391,13 @@ public class CssTransitionPanel extends InsertPanel implements StringValueEditor
 	@Override
 	public String getResultText() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -1240,7 +1453,13 @@ public class CssTransitionPanel extends InsertPanel implements StringValueEditor
 	@Override
 	public String getStringValue() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -1249,9 +1468,14 @@ public class CssTransitionPanel extends InsertPanel implements StringValueEditor
 	 */
 	@Override
 	public void setStringValue(String string) {
-		
-		initialString = string;
-		setFromInitialString();
+		try {
+			
+			initialString = string;
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1271,7 +1495,9 @@ public class CssTransitionPanel extends InsertPanel implements StringValueEditor
 	public boolean setControlsGrayed(boolean isDefault) {
 		
 		if (!isDefault) {
-			SwingUtilities.invokeLater(() -> { onAllProperties(); });
+			Safe.invokeLater(() -> {
+				onAllProperties();
+			});
 		}
 		return false;
 	}
@@ -1282,23 +1508,46 @@ public class CssTransitionPanel extends InsertPanel implements StringValueEditor
 	 * @param popup
 	 */
 	private void addPopup(Component component, final JPopupMenu popup) {
-		component.addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e);
+		try {
+			
+			component.addMouseListener(new MouseAdapter() {
+				public void mousePressed(MouseEvent e) {
+					try {
+						
+						if (e.isPopupTrigger()) {
+							showMenu(e);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-			public void mouseReleased(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e);
+				public void mouseReleased(MouseEvent e) {
+					try {
+						
+						if (e.isPopupTrigger()) {
+							showMenu(e);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-			private void showMenu(MouseEvent e) {
-				
-				if (!checkAll.isSelected()) {
-					popup.show(e.getComponent(), e.getX(), e.getY());
+				private void showMenu(MouseEvent e) {
+					try {
+						
+						if (!checkAll.isSelected()) {
+							popup.show(e.getComponent(), e.getX(), e.getY());
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

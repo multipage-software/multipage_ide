@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -32,10 +32,11 @@ import org.multipage.gui.StringValueEditor;
 import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.TextPaneEx;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays color editor.
+ * @author vakol
  *
  */
 public class ColorEditorPanel extends JPanel implements SlotValueEditorPanelInterface {
@@ -76,10 +77,16 @@ public class ColorEditorPanel extends JPanel implements SlotValueEditorPanelInte
 	 * Constructor.
 	 */
 	public ColorEditorPanel() {
-		initComponents();
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		
+		try {
+			initComponents();
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -181,54 +188,78 @@ public class ColorEditorPanel extends JPanel implements SlotValueEditorPanelInte
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		localize();
-		setIcons();
-		
-		setListeners();
+		try {
+			
+			localize();
+			setIcons();
+			
+			setListeners();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize.
 	 */
 	private void localize() {
-		
-		Utility.localize(labelSelectColor);
-		Utility.localize(menuCopyColor);
-		Utility.localize(menuPasteColor);
-		Utility.localize(labelHexaValue);
-		Utility.localize(labelRgbDecimal);
-		Utility.localize(menuReset);
+		try {
+			
+			Utility.localize(labelSelectColor);
+			Utility.localize(menuCopyColor);
+			Utility.localize(menuPasteColor);
+			Utility.localize(labelHexaValue);
+			Utility.localize(labelRgbDecimal);
+			Utility.localize(menuReset);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		menuCopyColor.setIcon(Images.getIcon("org/multipage/gui/images/copy_icon.png"));
-		menuPasteColor.setIcon(Images.getIcon("org/multipage/gui/images/paste_icon.png"));
+		try {
+			
+			menuCopyColor.setIcon(Images.getIcon("org/multipage/gui/images/copy_icon.png"));
+			menuPasteColor.setIcon(Images.getIcon("org/multipage/gui/images/paste_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set listeners.
 	 */
 	private void setListeners() {
-
-		Utility.setTextChangeListener(textHexaValue, new Runnable() {
+		try {
 			
-			@Override
-			public void run() {
-				onChangeHexaInputValue();
-			}
-		});
-		Utility.setTextChangeListener(textRGBValue, new Runnable() {
-			
-			@Override
-			public void run() {
-				onChangeRgbInputValue();
-			}
-		});
+			Utility.setTextChangeListener(textHexaValue, () -> {
+				try {
+					
+					onChangeHexaInputValue();
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+			Utility.setTextChangeListener(textRGBValue, () -> {
+				try {
+					
+					onChangeRgbInputValue();
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -245,30 +276,40 @@ public class ColorEditorPanel extends JPanel implements SlotValueEditorPanelInte
 	 */
 	@Override
 	public void setValue(Object value) {
-		
-		// Set controls.
-		if (value instanceof ColorObj) {
-			setShowColor((ColorObj) value);
+		try {
+			
+			// Set controls.
+			if (value instanceof ColorObj) {
+				setShowColor((ColorObj) value);
+			}
+			else {
+				setShowColor(Color.BLACK);
+			}
+			
+			setHexaTextValue(this.color);
+			setRgbTextValue(this.color);
 		}
-		else {
-			setShowColor(Color.BLACK);
-		}
-		
-		setHexaTextValue(this.color);
-		setRgbTextValue(this.color);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set value.
 	 */
 	public void setValueInner(Object value) {
-		
-		if (value instanceof ColorObj) {
-			setShowColor((ColorObj) value);
-			return;
+		try {
+			
+			if (value instanceof ColorObj) {
+				setShowColor((ColorObj) value);
+				return;
+			}
+			
+			setShowColor(Color.BLACK);
 		}
-		
-		setShowColor(Color.BLACK);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -276,10 +317,15 @@ public class ColorEditorPanel extends JPanel implements SlotValueEditorPanelInte
 	 * @param color
 	 */
 	private void setHexaTextValue(ColorObj color) {
-					
-		disableChangeEvents = true;
-		textHexaValue.setText(this.color.getText());
-		disableChangeEvents = false;
+		try {
+			
+			disableChangeEvents = true;
+			textHexaValue.setText(this.color.getText());
+			disableChangeEvents = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -287,10 +333,15 @@ public class ColorEditorPanel extends JPanel implements SlotValueEditorPanelInte
 	 * @param color
 	 */
 	private void setRgbTextValue(ColorObj color) {
-		
-		disableChangeEvents = true;
-		textRGBValue.setText(this.color.getTextRgbDecimal());
-		disableChangeEvents = false;
+		try {
+			
+			disableChangeEvents = true;
+			textRGBValue.setText(this.color.getTextRgbDecimal());
+			disableChangeEvents = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -298,25 +349,30 @@ public class ColorEditorPanel extends JPanel implements SlotValueEditorPanelInte
 	 * @param e 
 	 */
 	protected void onSelectColor(MouseEvent e) {
-		
-		if (e.getButton() != MouseEvent.BUTTON1) {
-			return;
+		try {
+			
+			if (e.getButton() != MouseEvent.BUTTON1) {
+				return;
+			}
+			
+			if (!labelColor.isEnabled()) {
+				return;
+			}
+			
+			// Select color.
+			Color newColor = Utility.chooseColor(this, labelColor.getBackground());
+			if (newColor == null) {
+				return;
+			}
+			
+			setShowColor(newColor);
+			
+			setHexaTextValue(this.color);
+			setRgbTextValue(this.color);
 		}
-		
-		if (!labelColor.isEnabled()) {
-			return;
-		}
-		
-		// Select color.
-		Color newColor = Utility.chooseColor(this, labelColor.getBackground());
-		if (newColor == null) {
-			return;
-		}
-		
-		setShowColor(newColor);
-		
-		setHexaTextValue(this.color);
-		setRgbTextValue(this.color);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -324,14 +380,19 @@ public class ColorEditorPanel extends JPanel implements SlotValueEditorPanelInte
 	 * @param color
 	 */
 	private void setShowColor(Color color) {
-		
-		// Set color.
-		this.color = new ColorObj(color);
-		
-		labelColor.setBackground(color);
-		textColorDescription.setText(String.format("<html><center><b>%s</b>&nbsp;&nbsp;&nbsp;<i>RGB(%d, %d, %d)&nbsp;&nbsp;&nbsp;RGBA(%d, %d, %d, %d)</i></center></html>",
-				new ColorObj(color).getText(), color.getRed(), color.getGreen(), color.getBlue(),
-					color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()));
+		try {
+			
+			// Set color.
+			this.color = new ColorObj(color);
+			
+			labelColor.setBackground(color);
+			textColorDescription.setText(String.format("<html><center><b>%s</b>&nbsp;&nbsp;&nbsp;<i>RGB(%d, %d, %d)&nbsp;&nbsp;&nbsp;RGBA(%d, %d, %d, %d)</i></center></html>",
+					new ColorObj(color).getText(), color.getRed(), color.getGreen(), color.getBlue(),
+						color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -340,31 +401,53 @@ public class ColorEditorPanel extends JPanel implements SlotValueEditorPanelInte
 	 * @param popup
 	 */
 	private void addPopup(Component component, final JPopupMenu popup) {
+		try {
+			
+			component.addMouseListener(new MouseAdapter() {
+				public void mousePressed(MouseEvent e) {
+					try {
+						
+						if (e.isPopupTrigger()) {
+							showMenu(e);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				public void mouseReleased(MouseEvent e) {
+					try {
+						
+						if (e.isPopupTrigger()) {
+							showMenu(e);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				private void showMenu(MouseEvent e) {
+					try {
+						
+						if (!labelColor.isEnabled()) {
+							return;
+						}
+						// Get clipboard color and enable / disable paste trayMenu item.
+						ColorObj color = getClipboardColor();
+						menuPasteColor.setEnabled(color != null);
 		
-		component.addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e);
+						// Show trayMenu popup.
+						popup.show(e.getComponent(), e.getX(), e.getY());
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-			public void mouseReleased(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e);
-				}
-			}
-			private void showMenu(MouseEvent e) {
-				
-				if (!labelColor.isEnabled()) {
-					return;
-				}
-				// Get clipboard color and enable / disable paste trayMenu item.
-				ColorObj color = getClipboardColor();
-				menuPasteColor.setEnabled(color != null);
-
-				// Show trayMenu popup.
-				popup.show(e.getComponent(), e.getX(), e.getY());
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -373,87 +456,116 @@ public class ColorEditorPanel extends JPanel implements SlotValueEditorPanelInte
 	 */
 	protected static ColorObj getClipboardColor() {
 		
-		String clipboardText = Utility.getClipboardString();
-		
-		return ColorObj.convertString(clipboardText);
+		try {
+			String clipboardText = Utility.getClipboardString();
+			return ColorObj.convertString(clipboardText);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
 	 * On copy color.
 	 */
 	protected void onCopyColor() {
-		
-		String colorText = color.getText();
-		Utility.putClipboardString(colorText);
+		try {
+			
+			String colorText = color.getText();
+			Utility.putClipboardString(colorText);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Paste color.
 	 */
 	protected void onPasteColor() {
-		
-		String clipboardText = Utility.getClipboardString();
-		
-		// Get clipboard color.
-		ColorObj color  = ColorObj.convertString(clipboardText);
-		if (color == null) {
-			Utility.show(this, "org.multipage.generator.messageClipboardColorError");
-			return;
+		try {
+			
+			String clipboardText = Utility.getClipboardString();
+			
+			// Get clipboard color.
+			ColorObj color  = ColorObj.convertString(clipboardText);
+			if (color == null) {
+				Utility.show(this, "org.multipage.generator.messageClipboardColorError");
+				return;
+			}
+			
+			// Set color.
+			setValueInner(color);
+			setHexaTextValue(color);
+			setRgbTextValue(color);
 		}
-		
-		// Set color.
-		setValueInner(color);
-		
-		setHexaTextValue(color);
-		setRgbTextValue(color);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On change hexa value.
 	 */
 	protected void onChangeHexaInputValue() {
-		
-		if (disableChangeEvents) {
-			return;
-		}
-		
-		// Get hexa value and convert it to color.
-		String hexaText = textHexaValue.getText();
-		
-		ColorObj color = ColorObj.convertStringHexa(hexaText);
-		if (color != null) {
+		try {
 			
-			setValueInner(color);
-			setRgbTextValue(color);
+			if (disableChangeEvents) {
+				return;
+			}
+			
+			// Get hexa value and convert it to color.
+			String hexaText = textHexaValue.getText();
+			
+			ColorObj color = ColorObj.convertStringHexa(hexaText);
+			if (color != null) {
+				
+				setValueInner(color);
+				setRgbTextValue(color);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On change decimal value.
 	 */
 	protected void onChangeRgbInputValue() {
-		
-		if (disableChangeEvents) {
-			return;
-		}
-		
-		// Get rgb value and convert it to color.
-		String rgbText = textRGBValue.getText();
-		
-		ColorObj color = ColorObj.convertStringRgb(rgbText);
-		if (color != null) {
+		try {
 			
-			setValueInner(color);
-			setHexaTextValue(color);
+			if (disableChangeEvents) {
+				return;
+			}
+			
+			// Get rgb value and convert it to color.
+			String rgbText = textRGBValue.getText();
+			
+			ColorObj color = ColorObj.convertStringRgb(rgbText);
+			if (color != null) {
+				
+				setValueInner(color);
+				setHexaTextValue(color);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On reset.
 	 */
 	protected void onReset() {
-		
-		setValue(new ColorObj(Color.WHITE));
+		try {
+			
+			setValue(new ColorObj(Color.WHITE));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -461,9 +573,14 @@ public class ColorEditorPanel extends JPanel implements SlotValueEditorPanelInte
 	 */
 	@Override
 	public void setDefault(boolean isDefault) {
-		
-		// Set background color.
-		labelColor.setBackground(isDefault ? new Color(240, 240, 240) : color);
+		try {
+			
+			// Set background color.
+			labelColor.setBackground(isDefault ? new Color(240, 240, 240) : color);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -472,6 +589,12 @@ public class ColorEditorPanel extends JPanel implements SlotValueEditorPanelInte
 	@Override
 	public String getValueMeaning() {
 		
-		return StringValueEditor.meansColor;
+		try {
+			return StringValueEditor.meansColor;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 }

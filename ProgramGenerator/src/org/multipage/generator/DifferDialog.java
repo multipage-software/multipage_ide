@@ -1,3 +1,9 @@
+/*
+ * Copyright 2010-2025 (C) vakol
+ * 
+ * Created on : 2017-04-26
+ *
+ */
 package org.multipage.generator;
 
 import java.awt.BorderLayout;
@@ -7,10 +13,11 @@ import javax.swing.JDialog;
 
 import org.multipage.generator.RevertExternalProvidersDialog.ListEntry;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author user
+ * Dialog that displays differences within external slots.
+ * @author vakol
  *
  */
 public class DifferDialog extends JDialog {
@@ -46,8 +53,13 @@ public class DifferDialog extends JDialog {
 	public DifferDialog(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.DOCUMENT_MODAL);
 		
-		// Initialize components.
-		initComponents();
+		try {
+			// Initialize components.
+			initComponents();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**

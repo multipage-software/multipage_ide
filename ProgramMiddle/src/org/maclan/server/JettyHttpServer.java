@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -20,7 +20,8 @@ import org.maclan.MiddleUtility;
 import org.multipage.sync.SyncMain;
 
 /**
- * @author
+ * Jetty HTTP server.
+ * @author vakol
  *
  */
 public class JettyHttpServer extends ProgramHttpServer {
@@ -41,7 +42,8 @@ public class JettyHttpServer extends ProgramHttpServer {
 	@Override
 	public void setLogin(Properties login) {
 		
-		ProgramServlet.login = login;
+		// Delegate call.
+		ProgramServlet.setLogin(login);
 	}
 
 	/**
@@ -101,12 +103,12 @@ public class JettyHttpServer extends ProgramHttpServer {
 		
 		JavaScriptDebugger.setEnabled(true); // Enable debugger.
 		
-		// Start debug client
-		MiddleResult result = startDebugClient();
+		// Start debug listener.
+		MiddleResult result = startDebuggerListener();
 		result.throwPossibleException();
 		
-		// Save a reference to debugger in context
-		context.setAttribute("debugger", debugger);
+		// Save a reference to debugger listener in context attribute.
+		context.setAttribute("debugger", debuggerListener);
 	}
 	
 	/**
@@ -118,7 +120,7 @@ public class JettyHttpServer extends ProgramHttpServer {
 		// Try to stop server.
 		try {
 			// Stops debugger
-			MiddleResult result = stopDebugger();
+			MiddleResult result = stopDebuggerListener();
 			result.throwPossibleException();
 			
 			// Stops HTTP server

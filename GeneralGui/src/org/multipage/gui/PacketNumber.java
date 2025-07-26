@@ -1,13 +1,19 @@
+/*
+ * Copyright 2010-2025 (C) vakol
+ * 
+ * Created on : 2024-04-04
+ *
+ */
 package org.multipage.gui;
 
 /**
- * Integer number intending for sending block lengths etc.
+ * Integer value used in packets.
  * @author vakol
  */
 public class PacketNumber extends PacketElement {
 	
 	/**
-	 * Value of integer element. Often length of a block.
+	 * Value of integer element. (For example length of block.)
 	 */
 	public int value = 0;
 	

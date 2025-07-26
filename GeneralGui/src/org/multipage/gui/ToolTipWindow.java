@@ -1,19 +1,29 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.Point;
 
-import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JWindow;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+
+import org.multipage.util.Safe;
 
 /**
- * @author
+ * Tooltip window.
+ * @author vakol
  *
  */
 public class ToolTipWindow extends JWindow {
@@ -38,39 +48,54 @@ public class ToolTipWindow extends JWindow {
 	 */
 	public ToolTipWindow(Component parent) {
 		super(Utility.findWindow(parent));
-		
-		// Add label to the window.
-		setLayout(new BorderLayout());
-		JPanel labelWrapper = new JPanel();
-		labelWrapper.setBorder(new LineBorder(Color.BLACK));
-		label.setBorder(new EmptyBorder(1, 3, 1, 3));	// Label padding: top, left, bottom, right
-		label.setFont(font);
-		labelWrapper.setLayout(new BorderLayout());
-		labelWrapper.add(label, BorderLayout.CENTER);
-		add(labelWrapper, BorderLayout.CENTER);
+		try {
+			
+			// Add label to the window.
+			setLayout(new BorderLayout());
+			JPanel labelWrapper = new JPanel();
+			labelWrapper.setBorder(new LineBorder(Color.BLACK));
+			label.setBorder(new EmptyBorder(1, 3, 1, 3));	// Label padding: top, left, bottom, right
+			label.setFont(font);
+			labelWrapper.setLayout(new BorderLayout());
+			labelWrapper.add(label, BorderLayout.CENTER);
+			add(labelWrapper, BorderLayout.CENTER);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Show window.
 	 */
 	public void showw(Point topleft, String tooltip) {
-		
-		// Set window position.
-		setLocation(topleft);
-		
-		// Set label.
-		label.setText(tooltip);
-		pack();
-		
-		setVisible(true);
+		try {
+			
+			// Set window position.
+			setLocation(topleft);
+			
+			// Set label.
+			label.setText(tooltip);
+			pack();
+			
+			setVisible(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Hide window.
 	 */
 	public void hidew() {
-		
-		setVisible(false);
+		try {
+			
+			setVisible(false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -78,8 +103,13 @@ public class ToolTipWindow extends JWindow {
 	 * @param color
 	 */
 	public void setBackgroundLabel(Color color) {
-		
-		label.setBackground(color);
-		label.setOpaque(true);
+		try {
+			
+			label.setBackground(color);
+			label.setOpaque(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

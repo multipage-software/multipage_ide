@@ -1,3 +1,9 @@
+/*
+ * Copyright 2010-2025 (C) vakol
+ * 
+ * Created on : 2017-04-26
+ *
+ */
 package org.multipage.generator;
 
 import java.util.LinkedList;
@@ -14,13 +20,14 @@ import javax.swing.SpringLayout;
 import org.maclan.server.ServerUtilities;
 import org.multipage.generator.RevertExternalProvidersDialog.ListEntry;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 import name.fraser.neil.plaintext.diff_match_patch;
 import name.fraser.neil.plaintext.diff_match_patch.Diff;
 
 /**
- * 
- * @author user
+ * Panel that dislpays differences in external providers.
+ * @author vakol
  *
  */
 public class DifferPanel extends JPanel {
@@ -44,10 +51,15 @@ public class DifferPanel extends JPanel {
 	 */
 	public DifferPanel() {
 		
-		// Initialize components.
-		initComponents();
-		// Post creation.
-		postCreation(); //$hide$
+		try {
+			// Initialize components.
+			initComponents();
+			// Post creation.
+			postCreation(); //$hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -103,18 +115,28 @@ public class DifferPanel extends JPanel {
 	 * Post creation steps.
 	 */
 	private void postCreation() {
-		
-		localize();
+		try {
+			
+			localize();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(labelMessage);
-		Utility.localize(radiobuttonSaveNewSourceCode);
-		Utility.localize(radioRewriteExternalProviderChanges);
+		try {
+			
+			Utility.localize(labelMessage);
+			Utility.localize(radiobuttonSaveNewSourceCode);
+			Utility.localize(radioRewriteExternalProviderChanges);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -123,32 +145,37 @@ public class DifferPanel extends JPanel {
 	 * @param text2
 	 */
 	public void displayDiff(ListEntry entry) {
-		
-		diff_match_patch diff = new diff_match_patch();
-		
-		// Make diff depending on found external provider content.
-		LinkedList<Diff> diffsResult = null;
-		if (ServerUtilities.possiblyContainsTags(entry.externalText)) {
-			diffsResult = diff.diff_main(entry.slotText, entry.externalText);
+		try {
+			
+			diff_match_patch diff = new diff_match_patch();
+			
+			// Make diff depending on found external provider content.
+			LinkedList<Diff> diffsResult = null;
+			if (ServerUtilities.possiblyContainsTags(entry.externalText)) {
+				diffsResult = diff.diff_main(entry.slotText, entry.externalText);
+			}
+			else {
+				diffsResult = diff.diff_main(entry.processedText, entry.externalText);
+			}
+			String htmlDiff = diff.diff_prettyHtml(diffsResult);
+			
+			// Trim and display diff text.
+			htmlDiff = htmlDiff.replaceAll("<del style=\"background:#ffe6e6;\">", "<span style=\"background:#ffe6e6;\">");
+			htmlDiff = htmlDiff.replaceAll("</del>", "</span>");
+			
+			htmlDiff = htmlDiff.replaceAll("<ins style=\"background:#e6ffe6;\">", "<span style=\"background:#e6ffe6;\">");
+			htmlDiff = htmlDiff.replaceAll("</ins>", "</span>");
+			
+			htmlDiff = htmlDiff.replaceAll("&para;", "");
+			
+			editorPaneLeft.setText(htmlDiff);
+			
+			// Trim and display slot text.
+			String text = entry.slotText.replaceAll("\n", "<br>");
+			editorPaneRight.setText(text);
 		}
-		else {
-			diffsResult = diff.diff_main(entry.processedText, entry.externalText);
-		}
-		String htmlDiff = diff.diff_prettyHtml(diffsResult);
-		
-		// Trim and display diff text.
-		htmlDiff = htmlDiff.replaceAll("<del style=\"background:#ffe6e6;\">", "<span style=\"background:#ffe6e6;\">");
-		htmlDiff = htmlDiff.replaceAll("</del>", "</span>");
-		
-		htmlDiff = htmlDiff.replaceAll("<ins style=\"background:#e6ffe6;\">", "<span style=\"background:#e6ffe6;\">");
-		htmlDiff = htmlDiff.replaceAll("</ins>", "</span>");
-		
-		htmlDiff = htmlDiff.replaceAll("&para;", "");
-		
-		editorPaneLeft.setText(htmlDiff);
-		
-		// Trim and display slot text.
-		String text = entry.slotText.replaceAll("\n", "<br>");
-		editorPaneRight.setText(text);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

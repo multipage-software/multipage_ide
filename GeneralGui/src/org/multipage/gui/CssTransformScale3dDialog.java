@@ -1,20 +1,32 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import java.awt.*;
-import javax.swing.*;
-import java.awt.event.*;
-import java.io.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
+
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.SpringLayout;
+
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays 3D scale editor.
+ * @author vakol
  *
  */
 public class CssTransformScale3dDialog extends JDialog {
@@ -87,12 +99,17 @@ public class CssTransformScale3dDialog extends JDialog {
 	 */
 	public static CssTransformScale3d showDialog(Component parent) {
 		
-		CssTransformScale3dDialog dialog = new CssTransformScale3dDialog(parent);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			CssTransformScale3dDialog dialog = new CssTransformScale3dDialog(parent);
+			dialog.setVisible(true);
 			
-			return dialog.getScale();
+			if (dialog.confirm) {
+				
+				return dialog.getScale();
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -106,13 +123,18 @@ public class CssTransformScale3dDialog extends JDialog {
 	public static boolean editDialog(Component parent,
 			CssTransformScale3d scale) {
 		
-		CssTransformScale3dDialog dialog = new CssTransformScale3dDialog(parent);
-		dialog.setScale(scale);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			CssTransformScale3dDialog dialog = new CssTransformScale3dDialog(parent);
+			dialog.setScale(scale);
+			dialog.setVisible(true);
 			
-			scale.setFrom(dialog.getScale());
+			if (dialog.confirm) {
+				
+				scale.setFrom(dialog.getScale());
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return false;
 	}
@@ -122,10 +144,15 @@ public class CssTransformScale3dDialog extends JDialog {
 	 * @param scale
 	 */
 	private void setScale(CssTransformScale3d scale) {
-		
-		textSx.setText(String.valueOf(scale.sx));
-		textSy.setText(String.valueOf(scale.sy));
-		textSz.setText(String.valueOf(scale.sz));
+		try {
+			
+			textSx.setText(String.valueOf(scale.sx));
+			textSy.setText(String.valueOf(scale.sy));
+			textSz.setText(String.valueOf(scale.sz));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -133,14 +160,19 @@ public class CssTransformScale3dDialog extends JDialog {
 	 * @return
 	 */
 	private CssTransformScale3d getScale() {
-		
-		CssTransformScale3d scale = new CssTransformScale3d();
-		
-		scale.sx = Utility.getFloat(textSx, 0.0f);
-		scale.sy = Utility.getFloat(textSy, 0.0f);
-		scale.sz = Utility.getFloat(textSz, 0.0f);
-
-		return scale;
+		try {
+			CssTransformScale3d scale = new CssTransformScale3d();
+			
+			scale.sx = Utility.getFloat(textSx, 0.0f);
+			scale.sy = Utility.getFloat(textSy, 0.0f);
+			scale.sz = Utility.getFloat(textSz, 0.0f);
+	
+			return scale;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -149,12 +181,17 @@ public class CssTransformScale3dDialog extends JDialog {
 	 */
 	public CssTransformScale3dDialog(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -234,42 +271,62 @@ public class CssTransformScale3dDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		localize();
-		setIcons();
-		
-		loadDialog();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			localize();
+			setIcons();
+			
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(this);
+		try {
+			
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(this);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
-		
-		saveDialog();
-		
-		confirm = false;
+		try {
+			
+			saveDialog();
+			confirm = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -277,10 +334,15 @@ public class CssTransformScale3dDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		saveDialog();
-		
-		confirm = true;
+		try {
+			
+			saveDialog();
+			confirm = true;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -288,24 +350,34 @@ public class CssTransformScale3dDialog extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setBounds(bounds);
+			}
+			
+			textSx.setText("0.0");
+			textSy.setText("0.0");
+			textSz.setText("0.0");
 		}
-		else {
-			setBounds(bounds);
-		}
-		
-		textSx.setText("0.0");
-		textSy.setText("0.0");
-		textSz.setText("0.0");
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

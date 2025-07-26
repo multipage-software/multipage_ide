@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2022 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 01-09-2022
+ * Created on : 2022-09-01
  */
 package org.multipage.addins;
 
@@ -20,7 +20,10 @@ import java.util.concurrent.TimeUnit;
 
 import javax.swing.JOptionPane;
 
+import org.multipage.util.Safe;
+
 /**
+ * Helper application that can import files to main application JAR file.
  * @author vakol
  *
  */
@@ -30,44 +33,50 @@ public class ImportFileApp {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		
-		// Check number of input arguments.
-		if (args.length < 4) {
-			return;
-		}
-		
-		// Get file to import into the JAR file.
-		String importedFilePath = args[0];
-		// Get JAR file path.
-		String jarFilePath = args[1];
-		// Get target folder.
-		String targetFolder = args[2];
-		// Application to restart.
-		String restartedAppPath = args[3];
-		
-		// TODO: <---DEBUG MESSAGES
-		JOptionPane.showConfirmDialog(null, "START IMPORT");
-		
-		// Import file to JAR archive.
-	    Boolean success = importToJarArchive(importedFilePath, jarFilePath, targetFolder);
-	    JOptionPane.showConfirmDialog(null, "Import successful " + success);
-	    
-	    // Restart main application.
-	    File appFile = new File(restartedAppPath);
-	    if (!appFile.isFile()) {
-	    	JOptionPane.showConfirmDialog(null, "Missing file " + appFile);
-	    	return;
-	    }
-	    String workingDirectory = appFile.getParent();
-	    
-		// Run main application.
 		try {
-			String result = runExecutableJar(workingDirectory, restartedAppPath, null);
-			JOptionPane.showConfirmDialog(null, "Restart result " + result);
+			
+			// Check number of input arguments.
+			if (args.length < 4) {
+				return;
+			}
+			
+			// Get file to import into the JAR file.
+			String importedFilePath = args[0];
+			// Get JAR file path.
+			String jarFilePath = args[1];
+			// Get target folder.
+			String targetFolder = args[2];
+			// Application to restart.
+			String restartedAppPath = args[3];
+			
+			// TODO: <---DEBUG MESSAGES
+			JOptionPane.showConfirmDialog(null, "START IMPORT");
+			
+			// Import file to JAR archive.
+		    Boolean success = importToJarArchive(importedFilePath, jarFilePath, targetFolder);
+		    JOptionPane.showConfirmDialog(null, "Import successful " + success);
+		    
+		    // Restart main application.
+		    File appFile = new File(restartedAppPath);
+		    if (!appFile.isFile()) {
+		    	JOptionPane.showConfirmDialog(null, "Missing file " + appFile);
+		    	return;
+		    }
+		    String workingDirectory = appFile.getParent();
+		    
+			// Run main application.
+			try {
+				String result = runExecutableJar(workingDirectory, restartedAppPath, null);
+				JOptionPane.showConfirmDialog(null, "Restart result " + result);
+			}
+			catch (Exception e) {
+				JOptionPane.showConfirmDialog(null, "Restart exception " + e.getLocalizedMessage());
+			}
 		}
-		catch (Exception e) {
-			JOptionPane.showConfirmDialog(null, "Restart exception " + e.getLocalizedMessage());
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+
 	}
 	
 	/**
@@ -75,9 +84,16 @@ public class ImportFileApp {
 	 */
 	private static boolean importToJarArchive(String importedFilePath, String jarFilePath, String targetFolder) {
 		
-		// Check imported file.
-		File importedFile = new File(importedFilePath);
-		if (!importedFile.isFile()) {
+		File importedFile = null;
+		try {
+			// Check imported file.
+			importedFile = new File(importedFilePath);
+			if (!importedFile.isFile()) {
+				return false;
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 			return false;
 		}
 		

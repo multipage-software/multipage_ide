@@ -1,24 +1,36 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import javax.swing.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.util.Locale;
 
-import org.multipage.util.*;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.SpringLayout;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
-import java.awt.*;
-import java.io.*;
-import java.util.*;
-import java.awt.event.*;
+import org.multipage.util.Obj;
+import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that is used to edit CSS for animation.
+ * @author vakol
  *
  */
 public class CssAnimationPanel extends InsertPanel implements StringValueEditor {
@@ -121,16 +133,21 @@ public class CssAnimationPanel extends InsertPanel implements StringValueEditor 
 	 */
 	public CssAnimationPanel(String initialString) {
 		
-		startSettingControls();
-
-		initComponents();
-		
-		// $hide>>$
-		this.initialString = initialString;
-		postCreate();
-		// $hide<<$
-		
-		stopSettingControls();
+		try {
+			startSettingControls();
+	
+			initComponents();
+			
+			// $hide>>$
+			this.initialString = initialString;
+			postCreate();
+			// $hide<<$
+			
+			stopSettingControls();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -340,43 +357,53 @@ public class CssAnimationPanel extends InsertPanel implements StringValueEditor 
 	 * On iteration count combo.
 	 */
 	protected void onIterationCountCombo() {
-		
-		if (comboIterationCount.getSelectedIndex() <= 0) {
-			return;
+		try {
+			
+			if (comboIterationCount.getSelectedIndex() <= 0) {
+				return;
+			}
+			
+			if (settingControls) {
+				return;
+			}
+			startSettingControls();
+			
+			textIterationCount.setText("");
+			
+			stopSettingControls();
 		}
-		
-		if (settingControls) {
-			return;
-		}
-		startSettingControls();
-		
-		textIterationCount.setText("");
-		
-		stopSettingControls();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On timing function combo.
 	 */
 	protected void onTimingFunctionCombo() {
-		
-		if (comboTimingFunction.getSelectedIndex() <= 0) {
-			return;
+		try {
+			
+			if (comboTimingFunction.getSelectedIndex() <= 0) {
+				return;
+			}
+			
+			if (settingControls) {
+				return;
+			}
+			startSettingControls();
+			
+			textX1.setText("");
+			textY1.setText("");
+			textX2.setText("");
+			textY2.setText("");
+			textSteps.setText("");
+			comboStepsDirection.setSelectedIndex(0);
+			
+			stopSettingControls();
 		}
-		
-		if (settingControls) {
-			return;
-		}
-		startSettingControls();
-		
-		textX1.setText("");
-		textY1.setText("");
-		textX2.setText("");
-		textY2.setText("");
-		textSteps.setText("");
-		comboStepsDirection.setSelectedIndex(0);
-		
-		stopSettingControls();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -392,12 +419,8 @@ public class CssAnimationPanel extends InsertPanel implements StringValueEditor 
 	 */
 	public void stopSettingControls() {
 		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				
-				settingControls = false;
-			}
+		Safe.invokeLater(() -> {
+			settingControls = false;
 		});
 	}
 
@@ -405,8 +428,13 @@ public class CssAnimationPanel extends InsertPanel implements StringValueEditor 
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-
-		setFromInitialString();
+		try {
+			
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -421,157 +449,196 @@ public class CssAnimationPanel extends InsertPanel implements StringValueEditor 
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		localize();
-		
-		loadUnits();
-		loadComboBoxes();
-		
-		loadDialog();
-		
-		setListeners();
+		try {
+			
+			localize();
+			
+			loadUnits();
+			loadComboBoxes();
+			
+			loadDialog();
+			
+			setListeners();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set listeners.
 	 */
 	private void setListeners() {
-		
-		// On Bezier change.
-		Runnable onBezierChange = new Runnable() {
-			@Override
-			public void run() {
-				onBezierChange();
-			}
+		try {
+			
+			// On Bezier change.
+			Runnable onBezierChange = () -> {
+				try {
+					onBezierChange();
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			};
+			Utility.setTextChangeListener(textX1, onBezierChange);
+			Utility.setTextChangeListener(textY1, onBezierChange);
+			Utility.setTextChangeListener(textX2, onBezierChange);
+			Utility.setTextChangeListener(textY2, onBezierChange);
+			
+			// On step function change.
+			Utility.setTextChangeListener(textSteps, () -> {
+				try {
+					onStepFunctionChange();
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+			
+			// On iteration count change.
+			Utility.setTextChangeListener(textIterationCount, () -> {
+				try {
+					onIterationCountChange();
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
 		};
-		Utility.setTextChangeListener(textX1, onBezierChange);
-		Utility.setTextChangeListener(textY1, onBezierChange);
-		Utility.setTextChangeListener(textX2, onBezierChange);
-		Utility.setTextChangeListener(textY2, onBezierChange);
-		
-		// On step function change.
-		Utility.setTextChangeListener(textSteps, new Runnable() {
-			@Override
-			public void run() {
-				onStepFunctionChange();
-			}
-		});
-		
-		// On iteration count change.
-		Utility.setTextChangeListener(textIterationCount, new Runnable() {
-			@Override
-			public void run() {
-				onIterationCountChange();
-			}
-		});
 	}
 
 	/**
 	 * On iteration count change.
 	 */
 	protected void onIterationCountChange() {
-		
-		if (settingControls) {
-			return;
+		try {
+			
+			if (settingControls) {
+				return;
+			}
+			startSettingControls();
+			comboIterationCount.setSelectedIndex(0);
+			stopSettingControls();
 		}
-		startSettingControls();
-		
-		comboIterationCount.setSelectedIndex(0);
-		
-		stopSettingControls();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On step function change.
 	 */
 	protected void onStepFunctionChange() {
-		
-		if (settingControls) {
-			return;
+		try {
+			
+			if (settingControls) {
+				return;
+			}
+			startSettingControls();
+			
+			comboTimingFunction.setSelectedIndex(0);
+			textX1.setText("");
+			textY1.setText("");
+			textX2.setText("");
+			textY2.setText("");
+			
+			stopSettingControls();
 		}
-		startSettingControls();
-		
-		comboTimingFunction.setSelectedIndex(0);
-		textX1.setText("");
-		textY1.setText("");
-		textX2.setText("");
-		textY2.setText("");
-		
-		stopSettingControls();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On Bezier change.
 	 */
 	protected void onBezierChange() {
-		
-		if (settingControls) {
-			return;
+		try {
+			
+			if (settingControls) {
+				return;
+			}
+			startSettingControls();
+			
+			comboTimingFunction.setSelectedIndex(0);
+			textSteps.setText("");
+			comboStepsDirection.setSelectedIndex(0);
+			
+			stopSettingControls();
 		}
-		startSettingControls();
-		
-		comboTimingFunction.setSelectedIndex(0);
-		textSteps.setText("");
-		comboStepsDirection.setSelectedIndex(0);
-		
-		stopSettingControls();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load combo boxes values.
 	 */
 	private void loadComboBoxes() {
-		
-		Utility.loadEmptyItem(comboTimingFunction);
-		Utility.loadNamedItems(comboTimingFunction, new String [][] {
-				{"linear", "org.multipage.gui.textStepsTimingLinear"},
-				{"ease", "org.multipage.gui.textStepsTimingEase"},
-				{"ease-in", "org.multipage.gui.textStepsTimingEaseIn"},
-				{"ease-in-out", "org.multipage.gui.textStepsTimingEaseInOut"},
-				{"ease-out", "org.multipage.gui.textStepsTimingEaseOut"},
-				{"step-start", "org.multipage.gui.textStepsTimingStepStart"},
-				{"step-end", "org.multipage.gui.textStepsTimingStepEnd"}
-		});
-		
-		Utility.loadNamedItems(comboStepsDirection, new String [][] {
-				{"start", "org.multipage.gui.textStepsDirectionStart"},
-				{"end", "org.multipage.gui.textStepsDirectionEnd"}
-		});
-		
-		Utility.loadEmptyItem(comboIterationCount);
-		Utility.loadNamedItems(comboIterationCount, new String [][] {
-				{"infinite", "org.multipage.gui.textAnimationIterationInfinite"}
-		});
-		
-		Utility.loadNamedItems(comboDirection, new String [][] {
-				{"normal", "org.multipage.gui.textAnimationDirectionNormal"},
-				{"alternate", "org.multipage.gui.textAnimationDirectionAlternate"},
-				{"reverse", "org.multipage.gui.textAnimationDirectionReverse"},
-				{"alternate-reverse", "org.multipage.gui.textAnimationDirectionAlternateReverse"}
-		});
-		
-		Utility.loadNamedItems(comboFillMode, new String [][] {
-				{"none", "org.multipage.gui.textAnimationFillNone"},
-				{"forwards", "org.multipage.gui.textAnimationFillForwards"},
-				{"backwards", "org.multipage.gui.textAnimationFillBackwards"},
-				{"both", "org.multipage.gui.textAnimationFillBoth"}
-		});
-		
-		Utility.loadNamedItems(comboPlayState, new String [][] {
-				{"running", "org.multipage.gui.textAnimationPlayStateRunninig"},
-				{"paused", "org.multipage.gui.textAnimationPlayStatePaused"}
-		});
+		try {
+			
+			Utility.loadEmptyItem(comboTimingFunction);
+			Utility.loadNamedItems(comboTimingFunction, new String [][] {
+					{"linear", "org.multipage.gui.textStepsTimingLinear"},
+					{"ease", "org.multipage.gui.textStepsTimingEase"},
+					{"ease-in", "org.multipage.gui.textStepsTimingEaseIn"},
+					{"ease-in-out", "org.multipage.gui.textStepsTimingEaseInOut"},
+					{"ease-out", "org.multipage.gui.textStepsTimingEaseOut"},
+					{"step-start", "org.multipage.gui.textStepsTimingStepStart"},
+					{"step-end", "org.multipage.gui.textStepsTimingStepEnd"}
+			});
+			
+			Utility.loadNamedItems(comboStepsDirection, new String [][] {
+					{"start", "org.multipage.gui.textStepsDirectionStart"},
+					{"end", "org.multipage.gui.textStepsDirectionEnd"}
+			});
+			
+			Utility.loadEmptyItem(comboIterationCount);
+			Utility.loadNamedItems(comboIterationCount, new String [][] {
+					{"infinite", "org.multipage.gui.textAnimationIterationInfinite"}
+			});
+			
+			Utility.loadNamedItems(comboDirection, new String [][] {
+					{"normal", "org.multipage.gui.textAnimationDirectionNormal"},
+					{"alternate", "org.multipage.gui.textAnimationDirectionAlternate"},
+					{"reverse", "org.multipage.gui.textAnimationDirectionReverse"},
+					{"alternate-reverse", "org.multipage.gui.textAnimationDirectionAlternateReverse"}
+			});
+			
+			Utility.loadNamedItems(comboFillMode, new String [][] {
+					{"none", "org.multipage.gui.textAnimationFillNone"},
+					{"forwards", "org.multipage.gui.textAnimationFillForwards"},
+					{"backwards", "org.multipage.gui.textAnimationFillBackwards"},
+					{"both", "org.multipage.gui.textAnimationFillBoth"}
+			});
+			
+			Utility.loadNamedItems(comboPlayState, new String [][] {
+					{"running", "org.multipage.gui.textAnimationPlayStateRunninig"},
+					{"paused", "org.multipage.gui.textAnimationPlayStatePaused"}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load units.
 	 */
 	private void loadUnits() {
-		
-		final String [] timeUnits = new String [] { "s", "ms" };
-		
-		Utility.loadCssUnits(comboDurationUnits, timeUnits);
-		Utility.loadCssUnits(comboDelayUnits, timeUnits);
+		try {
+			
+			final String [] timeUnits = new String [] { "s", "ms" };
+			
+			Utility.loadCssUnits(comboDurationUnits, timeUnits);
+			Utility.loadCssUnits(comboDelayUnits, timeUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -581,19 +648,25 @@ public class CssAnimationPanel extends InsertPanel implements StringValueEditor 
 	@Override
 	public String getSpecification() {
 		
-		String specification = "";
-		
-		// Animation name.
-		specification += getAnimationName();
-		specification += " " + getDuration();
-		specification += " " + getTimingFunction();
-		specification += " " + getDelay();
-		specification += " " + getIterationCount();
-		specification += " " + getDirection();
-		specification += " " + getFillMode();
-		specification += " " + getPlayState();
-		
-		return specification;
+		try {
+			String specification = "";
+			
+			// Animation name.
+			specification += getAnimationName();
+			specification += " " + getDuration();
+			specification += " " + getTimingFunction();
+			specification += " " + getDelay();
+			specification += " " + getIterationCount();
+			specification += " " + getDirection();
+			specification += " " + getFillMode();
+			specification += " " + getPlayState();
+			
+			return specification;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -602,11 +675,17 @@ public class CssAnimationPanel extends InsertPanel implements StringValueEditor 
 	 */
 	private String getPlayState() {
 		
-		String playState = Utility.getSelectedNamedItem(comboPlayState);
-		if (playState.isEmpty()) {
-			return "running";
+		try {
+			String playState = Utility.getSelectedNamedItem(comboPlayState);
+			if (playState.isEmpty()) {
+				return "running";
+			}
+			return playState;
 		}
-		return playState;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -615,11 +694,17 @@ public class CssAnimationPanel extends InsertPanel implements StringValueEditor 
 	 */
 	private String getFillMode() {
 		
-		String fillMode = Utility.getSelectedNamedItem(comboFillMode);
-		if (fillMode.isEmpty()) {
-			return "none";
+		try {
+			String fillMode = Utility.getSelectedNamedItem(comboFillMode);
+			if (fillMode.isEmpty()) {
+				return "none";
+			}
+			return fillMode;
 		}
-		return fillMode;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -628,11 +713,17 @@ public class CssAnimationPanel extends InsertPanel implements StringValueEditor 
 	 */
 	private String getDirection() {
 		
-		String direction = Utility.getSelectedNamedItem(comboDirection);
-		if (direction.isEmpty()) {
-			return "normal";
+		try {
+			String direction = Utility.getSelectedNamedItem(comboDirection);
+			if (direction.isEmpty()) {
+				return "normal";
+			}
+			return direction;
 		}
-		return direction;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -641,25 +732,29 @@ public class CssAnimationPanel extends InsertPanel implements StringValueEditor 
 	 */
 	private String getIterationCount() {
 		
-		String countText = textIterationCount.getText();
-		if (countText.isEmpty()) {
-			
-			countText = Utility.getSelectedNamedItem(comboIterationCount);
+		try {
+			String countText = textIterationCount.getText();
 			if (countText.isEmpty()) {
-				return "1";
+				
+				countText = Utility.getSelectedNamedItem(comboIterationCount);
+				if (countText.isEmpty()) {
+					return "1";
+				}
+				
+				return countText;
 			}
 			
-			return countText;
+			try {
+				Float.parseFloat(countText);
+				return countText;
+			}
+			catch (Exception e) {
+				
+			}
 		}
-		
-		try {
-			Float.parseFloat(countText);
-			return countText;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		catch (Exception e) {
-			
-		}
-		
 		return "1";
 	}
 
@@ -669,22 +764,28 @@ public class CssAnimationPanel extends InsertPanel implements StringValueEditor 
 	 */
 	private String getDelay() {
 		
-		String delay = textDelay.getText();
-		if (delay.isEmpty()) {
-			return "0s";
-		}
-		
-		String units = (String) comboDelayUnits.getSelectedItem();
-		if (units == null) {
-			units = "s";
-		}
 		try {
-			Float.parseFloat(delay);
+			String delay = textDelay.getText();
+			if (delay.isEmpty()) {
+				return "0s";
+			}
+			
+			String units = (String) comboDelayUnits.getSelectedItem();
+			if (units == null) {
+				units = "s";
+			}
+			try {
+				Float.parseFloat(delay);
+			}
+			catch (Exception e) {
+				delay = "0";
+			}
+			return delay + units;
 		}
-		catch (Exception e) {
-			delay = "0";
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		return delay + units;
+		return "";
 	}
 
 	/**
@@ -693,71 +794,77 @@ public class CssAnimationPanel extends InsertPanel implements StringValueEditor 
 	 */
 	private String getTimingFunction() {
 		
-		// Get named function.
-		String functionName = Utility.getSelectedNamedItem(comboTimingFunction);
-		if (!functionName.isEmpty()) {
-			return functionName;
-		}
-		
-		// Get Bezier function.
-		String x1Text = textX1.getText();
-		String y1Text = textY1.getText();
-		String x2Text = textX2.getText();
-		String y2Text = textY2.getText();
-		
-		if (!x1Text.isEmpty() || !y1Text.isEmpty() || !x2Text.isEmpty() || !y2Text.isEmpty()) {
-			
-			try {
-				float x1 = Float.parseFloat(x1Text);
-				x1Text = Utility.removeFloatNulls(String.valueOf(x1));
-			}
-			catch (Exception e) {
-				x1Text = "0";
-			}
-			try {
-				float y1 = Float.parseFloat(y1Text);
-				y1Text = Utility.removeFloatNulls(String.valueOf(y1));
-			}
-			catch (Exception e) {
-				y1Text = "0";
-			}
-			try {
-				float x2 = Float.parseFloat(x2Text);
-				x2Text = Utility.removeFloatNulls(String.valueOf(x2));
-			}
-			catch (Exception e) {
-				x2Text = "0";
-			}
-			try {
-				float y2 = Float.parseFloat(y2Text);
-				y2Text = Utility.removeFloatNulls(String.valueOf(y2));
-			}
-			catch (Exception e) {
-				y2Text = "0";
-			}
-			return String.format(Locale.ENGLISH, "cubic-bezier(%s, %s, %s, %s)", x1Text, y1Text, x2Text, y2Text);
-		}
-		
-		// Get step function.
-		String stepsText = textSteps.getText();
-		String stepsDirection = Utility.getSelectedNamedItem(comboStepsDirection);
-		
-		if (stepsText.isEmpty()) {
-			return "ease";
-		}
-
-		if (stepsDirection.isEmpty()) {
-			stepsDirection = "start";
-		}
-
 		try {
-			Float.parseFloat(stepsText);
+			// Get named function.
+			String functionName = Utility.getSelectedNamedItem(comboTimingFunction);
+			if (!functionName.isEmpty()) {
+				return functionName;
+			}
+			
+			// Get Bezier function.
+			String x1Text = textX1.getText();
+			String y1Text = textY1.getText();
+			String x2Text = textX2.getText();
+			String y2Text = textY2.getText();
+			
+			if (!x1Text.isEmpty() || !y1Text.isEmpty() || !x2Text.isEmpty() || !y2Text.isEmpty()) {
+				
+				try {
+					float x1 = Float.parseFloat(x1Text);
+					x1Text = Utility.removeFloatNulls(String.valueOf(x1));
+				}
+				catch (Exception e) {
+					x1Text = "0";
+				}
+				try {
+					float y1 = Float.parseFloat(y1Text);
+					y1Text = Utility.removeFloatNulls(String.valueOf(y1));
+				}
+				catch (Exception e) {
+					y1Text = "0";
+				}
+				try {
+					float x2 = Float.parseFloat(x2Text);
+					x2Text = Utility.removeFloatNulls(String.valueOf(x2));
+				}
+				catch (Exception e) {
+					x2Text = "0";
+				}
+				try {
+					float y2 = Float.parseFloat(y2Text);
+					y2Text = Utility.removeFloatNulls(String.valueOf(y2));
+				}
+				catch (Exception e) {
+					y2Text = "0";
+				}
+				return String.format(Locale.ENGLISH, "cubic-bezier(%s, %s, %s, %s)", x1Text, y1Text, x2Text, y2Text);
+			}
+			
+			// Get step function.
+			String stepsText = textSteps.getText();
+			String stepsDirection = Utility.getSelectedNamedItem(comboStepsDirection);
+			
+			if (stepsText.isEmpty()) {
+				return "ease";
+			}
+	
+			if (stepsDirection.isEmpty()) {
+				stepsDirection = "start";
+			}
+	
+			try {
+				Float.parseFloat(stepsText);
+			}
+			catch (Exception e) {
+				stepsText = "1";
+			}
+			
+			return String.format("steps(%s, %s)", stepsText, stepsDirection);
 		}
-		catch (Exception e) {
-			stepsText = "1";
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		return String.format("steps(%s, %s)", stepsText, stepsDirection);
+		return "";
 	}
 
 	/**
@@ -766,22 +873,28 @@ public class CssAnimationPanel extends InsertPanel implements StringValueEditor 
 	 */
 	private String getDuration() {
 		
-		String duration = textDuration.getText();
-		if (duration.isEmpty()) {
-			return "0s";
-		}
-		
-		String units = (String) comboDurationUnits.getSelectedItem();
-		if (units == null) {
-			units = "s";
-		}
 		try {
-			Float.parseFloat(duration);
+			String duration = textDuration.getText();
+			if (duration.isEmpty()) {
+				return "0s";
+			}
+			
+			String units = (String) comboDurationUnits.getSelectedItem();
+			if (units == null) {
+				units = "s";
+			}
+			try {
+				Float.parseFloat(duration);
+			}
+			catch (Exception e) {
+				duration = "0";
+			}
+			return duration + units;
 		}
-		catch (Exception e) {
-			duration = "0";
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		return duration + units;
+		return "";
 	}
 
 	/**
@@ -790,158 +903,179 @@ public class CssAnimationPanel extends InsertPanel implements StringValueEditor 
 	 */
 	private String getAnimationName() {
 		
-		String name = textName.getText().trim();
-		if (name.isEmpty()) {
-			return "none";
+		try {
+			String name = textName.getText().trim();
+			if (name.isEmpty()) {
+				return "none";
+			}
+			
+			// Check name identifier.
+			Obj<Integer> position = new Obj<Integer>();
+			String identifier = Utility.getNextMatch(name, position, "^[A-Za-z0-9\\-_]+");
+			if (identifier == null) {
+				return "none";
+			}
+			
+			return name;
 		}
-		
-		// Check name identifier.
-		Obj<Integer> position = new Obj<Integer>();
-		String identifier = Utility.getNextMatch(name, position, "^[A-Za-z0-9\\-_]+");
-		if (identifier == null) {
-			return "none";
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		return name;
+		return "";
 	}
 
 	/**
 	 * Set from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		// Initialize controls.
-		textName.setText("none");
-		textDuration.setText("0");
-		comboTimingFunction.setSelectedIndex(2);
-		textDelay.setText("0");
-		textIterationCount.setText("1");
-
-		if (initialString != null) {
+		try {
 			
-			Obj<Integer> position = new Obj<Integer>(0);
-			
-			try {
-				// Get animation name.
-				String text = Utility.getNextMatch(initialString, position, "\\G\\s*[A-Za-z0-9\\-_]+");
-				if (text == null) {
-					return;
-				}
-				textName.setText(text.trim());
+			// Initialize controls.
+			textName.setText("none");
+			textDuration.setText("0");
+			comboTimingFunction.setSelectedIndex(2);
+			textDelay.setText("0");
+			textIterationCount.setText("1");
+	
+			if (initialString != null) {
 				
-				// Get duration.
-				text = Utility.getNextMatch(initialString, position, "\\G\\s*[0-9\\.]+((?=s)|(?=ms))");
-				if (text == null) {
-					return;
-				}
-				textDuration.setText(Utility.removeFloatNulls(text.trim()));
-				text = Utility.getNextMatch(initialString, position, "\\G(s|ms)");
-				if (text == null) {
-					return;
-				}
-				comboDurationUnits.setSelectedItem(text);
+				Obj<Integer> position = new Obj<Integer>(0);
 				
-				// Get timing function.
-				int positionAux = position.ref;
-				text = Utility.getNextMatch(initialString, position, "\\G\\s*(linear|ease-in-out|ease-in|ease-out|ease|step-start|step-end)");
-				if (text != null) {
-					Utility.selectComboNamedItem(comboTimingFunction, text.trim());
-					
-					// Reset other components.
-					resetBezierFunction();
-					resetStepFunction();
-				}
-				else {
-					position.ref = positionAux;
-					if (!processNextBezierFunction(initialString, position)) {
-
-						position.ref = positionAux;
-						if (!processNextStepFunction(initialString, position)) {
-							return;
-						}
-					}
-				}
-
-				// Get animation delay.
-				text = Utility.getNextMatch(initialString, position, "\\G\\s*[0-9\\.\\-\\+]+((?=s)|(?=ms))");
-				if (text == null) {
-					return;
-				}
-				textDelay.setText(Utility.removeFloatNulls(text.trim()));
-				text = Utility.getNextMatch(initialString, position, "\\G(s|ms)");
-				if (text == null) {
-					return;
-				}
-				comboDelayUnits.setSelectedItem(text);
-				
-				// Get iteration count.
-				positionAux = position.ref;
-				text = Utility.getNextMatch(initialString, position, "\\G\\s*infinite");
-				if (text != null) {
-					
-					text = text.trim();
-					Utility.selectComboNamedItem(comboIterationCount, text);
-					
-					// Reset other components.
-					textIterationCount.setText("");
-				}
-				else {
-					position.ref = positionAux;
-					text = getNextFloat(initialString, position);
+				try {
+					// Get animation name.
+					String text = Utility.getNextMatch(initialString, position, "\\G\\s*[A-Za-z0-9\\-_]+");
 					if (text == null) {
 						return;
 					}
+					textName.setText(text.trim());
 					
-					textIterationCount.setText(text);
+					// Get duration.
+					text = Utility.getNextMatch(initialString, position, "\\G\\s*[0-9\\.]+((?=s)|(?=ms))");
+					if (text == null) {
+						return;
+					}
+					textDuration.setText(Utility.removeFloatNulls(text.trim()));
+					text = Utility.getNextMatch(initialString, position, "\\G(s|ms)");
+					if (text == null) {
+						return;
+					}
+					comboDurationUnits.setSelectedItem(text);
 					
-					// Reset other components.
-					comboIterationCount.setSelectedIndex(0);
+					// Get timing function.
+					int positionAux = position.ref;
+					text = Utility.getNextMatch(initialString, position, "\\G\\s*(linear|ease-in-out|ease-in|ease-out|ease|step-start|step-end)");
+					if (text != null) {
+						Utility.selectComboNamedItem(comboTimingFunction, text.trim());
+						
+						// Reset other components.
+						resetBezierFunction();
+						resetStepFunction();
+					}
+					else {
+						position.ref = positionAux;
+						if (!processNextBezierFunction(initialString, position)) {
+	
+							position.ref = positionAux;
+							if (!processNextStepFunction(initialString, position)) {
+								return;
+							}
+						}
+					}
+	
+					// Get animation delay.
+					text = Utility.getNextMatch(initialString, position, "\\G\\s*[0-9\\.\\-\\+]+((?=s)|(?=ms))");
+					if (text == null) {
+						return;
+					}
+					textDelay.setText(Utility.removeFloatNulls(text.trim()));
+					text = Utility.getNextMatch(initialString, position, "\\G(s|ms)");
+					if (text == null) {
+						return;
+					}
+					comboDelayUnits.setSelectedItem(text);
+					
+					// Get iteration count.
+					positionAux = position.ref;
+					text = Utility.getNextMatch(initialString, position, "\\G\\s*infinite");
+					if (text != null) {
+						
+						text = text.trim();
+						Utility.selectComboNamedItem(comboIterationCount, text);
+						
+						// Reset other components.
+						textIterationCount.setText("");
+					}
+					else {
+						position.ref = positionAux;
+						text = getNextFloat(initialString, position);
+						if (text == null) {
+							return;
+						}
+						
+						textIterationCount.setText(text);
+						
+						// Reset other components.
+						comboIterationCount.setSelectedIndex(0);
+					}
+					
+					// Get direction.
+					text = Utility.getNextMatch(initialString, position, "\\G\\s*(normal|alternate-reverse|alternate|reverse)");
+					if (text == null) {
+						return;
+					}
+					Utility.selectComboNamedItem(comboDirection, text.trim());
+					
+					// Get fill mode.
+					text = Utility.getNextMatch(initialString, position, "\\G\\s*(none|forwards|backwards|both)");
+					if (text == null) {
+						return;
+					}
+					Utility.selectComboNamedItem(comboFillMode, text.trim());
+					
+					// Get play state.
+					text = Utility.getNextMatch(initialString, position, "\\G\\s*(running|paused)");
+					if (text == null) {
+						return;
+					}
+					Utility.selectComboNamedItem(comboPlayState, text.trim());
 				}
-				
-				// Get direction.
-				text = Utility.getNextMatch(initialString, position, "\\G\\s*(normal|alternate-reverse|alternate|reverse)");
-				if (text == null) {
-					return;
+				catch (Exception e) {
 				}
-				Utility.selectComboNamedItem(comboDirection, text.trim());
-				
-				// Get fill mode.
-				text = Utility.getNextMatch(initialString, position, "\\G\\s*(none|forwards|backwards|both)");
-				if (text == null) {
-					return;
-				}
-				Utility.selectComboNamedItem(comboFillMode, text.trim());
-				
-				// Get play state.
-				text = Utility.getNextMatch(initialString, position, "\\G\\s*(running|paused)");
-				if (text == null) {
-					return;
-				}
-				Utility.selectComboNamedItem(comboPlayState, text.trim());
-			}
-			catch (Exception e) {
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Reset step function.
 	 */
 	private void resetStepFunction() {
-		
-		textSteps.setText("");
-		comboStepsDirection.setSelectedIndex(0);
+		try {
+			
+			textSteps.setText("");
+			comboStepsDirection.setSelectedIndex(0);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Reset Bezier function input components.
 	 */
 	private void resetBezierFunction() {
-		
-		textX1.setText("");
-		textY1.setText("");
-		textX2.setText("");
-		textY2.setText("");
+		try {
+			
+			textX1.setText("");
+			textY1.setText("");
+			textX2.setText("");
+			textY2.setText("");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -953,50 +1087,56 @@ public class CssAnimationPanel extends InsertPanel implements StringValueEditor 
 	private boolean processNextStepFunction(String initialString,
 			Obj<Integer> position) {
 		
-		String text = Utility.getNextMatch(initialString, position, "\\G\\s*steps\\s*\\(");
-		if (text == null) {
-			return false;
-		}
-		
-		// Reset other components.
-		comboTimingFunction.setSelectedIndex(0);
-		resetBezierFunction();
-		
-		// Load number of steps.
-		text = Utility.getNextMatch(initialString, position, "\\G\\s*[0-9]+");
-		if (text == null) {
-			return false;
-		}
-		text = text.trim();
 		try {
-			Integer.parseInt(text);
+			String text = Utility.getNextMatch(initialString, position, "\\G\\s*steps\\s*\\(");
+			if (text == null) {
+				return false;
+			}
+			
+			// Reset other components.
+			comboTimingFunction.setSelectedIndex(0);
+			resetBezierFunction();
+			
+			// Load number of steps.
+			text = Utility.getNextMatch(initialString, position, "\\G\\s*[0-9]+");
+			if (text == null) {
+				return false;
+			}
+			text = text.trim();
+			try {
+				Integer.parseInt(text);
+			}
+			catch (Exception e) {
+				text = "1";
+			}
+			textSteps.setText(text);
+			
+			// Skip comma.
+			text = Utility.getNextMatch(initialString, position, "\\G\\s*\\,");
+			if (text == null) {
+				return false;
+			}
+			
+			// Get direction.
+			text = Utility.getNextMatch(initialString, position, "\\G\\s*(start|end)");
+			if (text == null) {
+				return false;
+			}
+			text = text.trim();
+			Utility.selectComboNamedItem(comboStepsDirection, text);
+			
+			// Find closing bracket.
+			text = Utility.getNextMatch(initialString, position, "\\G\\s*\\)");
+			if (text == null) {
+				return false;
+			}
+			
+			return true;
 		}
-		catch (Exception e) {
-			text = "1";
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		textSteps.setText(text);
-		
-		// Skip comma.
-		text = Utility.getNextMatch(initialString, position, "\\G\\s*\\,");
-		if (text == null) {
-			return false;
-		}
-		
-		// Get direction.
-		text = Utility.getNextMatch(initialString, position, "\\G\\s*(start|end)");
-		if (text == null) {
-			return false;
-		}
-		text = text.trim();
-		Utility.selectComboNamedItem(comboStepsDirection, text);
-		
-		// Find closing bracket.
-		text = Utility.getNextMatch(initialString, position, "\\G\\s*\\)");
-		if (text == null) {
-			return false;
-		}
-		
-		return true;
+		return false;
 	}
 
 	/**
@@ -1008,55 +1148,61 @@ public class CssAnimationPanel extends InsertPanel implements StringValueEditor 
 	private boolean processNextBezierFunction(String initialString,
 			Obj<Integer> position) {
 		
-		String text = Utility.getNextMatch(initialString, position, "\\G\\s*cubic-bezier\\s*\\(");
-		if (text == null) {
-			return false;
-		}
+		try {
+			String text = Utility.getNextMatch(initialString, position, "\\G\\s*cubic-bezier\\s*\\(");
+			if (text == null) {
+				return false;
+			}
+				
+			// Reset other time function components.
+			comboTimingFunction.setSelectedIndex(0);
+			resetStepFunction();
 			
-		// Reset other time function components.
-		comboTimingFunction.setSelectedIndex(0);
-		resetStepFunction();
-		
-		text = getNextFloat(initialString, position);
-		if (text == null) {
-			return false;
+			text = getNextFloat(initialString, position);
+			if (text == null) {
+				return false;
+			}
+			textX1.setText(text);
+			text = Utility.getNextMatch(initialString, position, "\\G\\s*\\,");
+			if (text == null) {
+				return false;
+			}
+			text = getNextFloat(initialString, position);
+			if (text == null) {
+				return false;
+			}
+			textY1.setText(text);
+			text = Utility.getNextMatch(initialString, position, "\\G\\s*\\,");
+			if (text == null) {
+				return false;
+			}
+			text = getNextFloat(initialString, position);
+			if (text == null) {
+				return false;
+			}
+			textX2.setText(text);
+			text = Utility.getNextMatch(initialString, position, "\\G\\s*\\,");
+			if (text == null) {
+				return false;
+			}
+			text = getNextFloat(initialString, position);
+			if (text == null) {
+				return false;
+			}
+			textY2.setText(text);
+			
+			// Find closing bracket.
+			text = Utility.getNextMatch(initialString, position, "\\G\\s*\\)");
+			if (text == null) {
+				return false;
+			}
+			
+			return true;
 		}
-		textX1.setText(text);
-		text = Utility.getNextMatch(initialString, position, "\\G\\s*\\,");
-		if (text == null) {
-			return false;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		text = getNextFloat(initialString, position);
-		if (text == null) {
-			return false;
-		}
-		textY1.setText(text);
-		text = Utility.getNextMatch(initialString, position, "\\G\\s*\\,");
-		if (text == null) {
-			return false;
-		}
-		text = getNextFloat(initialString, position);
-		if (text == null) {
-			return false;
-		}
-		textX2.setText(text);
-		text = Utility.getNextMatch(initialString, position, "\\G\\s*\\,");
-		if (text == null) {
-			return false;
-		}
-		text = getNextFloat(initialString, position);
-		if (text == null) {
-			return false;
-		}
-		textY2.setText(text);
-		
-		// Find closing bracket.
-		text = Utility.getNextMatch(initialString, position, "\\G\\s*\\)");
-		if (text == null) {
-			return false;
-		}
-		
-		return true;
+		return false;
 	}
 
 	/**
@@ -1067,18 +1213,19 @@ public class CssAnimationPanel extends InsertPanel implements StringValueEditor 
 	 */
 	private String getNextFloat(String text, Obj<Integer> position) {
 		
-		String floatNumber = Utility.getNextMatch(text, position, "\\G\\s*[0-9\\.\\-\\+]+");
-		if (floatNumber == null) {
-			return null;
-		}
-		
 		try {
+			String floatNumber = Utility.getNextMatch(text, position, "\\G\\s*[0-9\\.\\-\\+]+");
+			if (floatNumber == null) {
+				return null;
+			}
+		
 			Float.parseFloat(floatNumber.trim());
 			
 			floatNumber = Utility.removeFloatNulls(floatNumber);
 			return floatNumber;
 		}
-		catch (Exception e) {
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -1087,17 +1234,22 @@ public class CssAnimationPanel extends InsertPanel implements StringValueEditor 
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(labelName);
-		Utility.localize(labelDuration);
-		Utility.localize(labelTimingFunction);
-		Utility.localize(labelBezier);
-		Utility.localize(labelSteps);
-		Utility.localize(labelDelay);
-		Utility.localize(labelIterationCount);
-		Utility.localize(labelDirection);
-		Utility.localize(labelFillMode);
-		Utility.localize(labelPlayState);
+		try {
+			
+			Utility.localize(labelName);
+			Utility.localize(labelDuration);
+			Utility.localize(labelTimingFunction);
+			Utility.localize(labelBezier);
+			Utility.localize(labelSteps);
+			Utility.localize(labelDelay);
+			Utility.localize(labelIterationCount);
+			Utility.localize(labelDirection);
+			Utility.localize(labelFillMode);
+			Utility.localize(labelPlayState);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -1106,7 +1258,13 @@ public class CssAnimationPanel extends InsertPanel implements StringValueEditor 
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.gui.textCssAnimationBuilder");
+		try {
+			return Resources.getString("org.multipage.gui.textCssAnimationBuilder");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -1115,7 +1273,13 @@ public class CssAnimationPanel extends InsertPanel implements StringValueEditor 
 	@Override
 	public String getResultText() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -1171,7 +1335,13 @@ public class CssAnimationPanel extends InsertPanel implements StringValueEditor 
 	@Override
 	public String getStringValue() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -1180,9 +1350,14 @@ public class CssAnimationPanel extends InsertPanel implements StringValueEditor 
 	 */
 	@Override
 	public void setStringValue(String string) {
-		
-		initialString = string;
-		setFromInitialString();
+		try {
+			
+			initialString = string;
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

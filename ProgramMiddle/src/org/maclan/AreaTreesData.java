@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -51,7 +51,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /**
- * @author
+ * Area trees for import and export.
+ * @author vakol
  *
  */
 public class AreaTreesData {
@@ -537,6 +538,7 @@ public class AreaTreesData {
 	 * @param areaId
 	 * @param alias
 	 * @param revision
+	 * @param revisionDescription
 	 * @param created
 	 * @param localizedTextValueId
 	 * @param textValue
@@ -560,8 +562,9 @@ public class AreaTreesData {
 	 * @param boolean1 
 	 * @param enumeration 
 	 */
-	public void addSlot(Long areaId, String alias, Long revision, Timestamp created,
-			Long localizedTextValueId,
+	public void addSlot(Long areaId, String alias,
+			Long revision, String revisionDescription, 
+			Timestamp created, Long localizedTextValueId,
 			String textValue, Long integerValue, Double realValue,
 			String access, Boolean hidden, Long id, Boolean booleanValue,
 			Long enumerationValueId, Long color, Long descriptionId,
@@ -573,6 +576,7 @@ public class AreaTreesData {
 		slotData.areaId = areaId;
 		slotData.alias = alias;
 		slotData.revision = revision;
+		slotData.revisionDescription = revisionDescription;
 		slotData.created = created;
 		slotData.localizedTextValueId = localizedTextValueId;
 		slotData.textValue = textValue;
@@ -886,10 +890,26 @@ public class AreaTreesData {
 			Element root = document.createElement("AreaTreeData");
 			document.appendChild(root);
 			
-			// Insert root area ID.
+			// Insert root area ID. (Deprecated.)
 			Element element = document.createElement("RootAreaId");
-			attribute2(element, "id", rootAreaIds);
-			root.appendChild(element);
+			Long rootAreaId = null;
+			
+			int rootAreaCount = rootAreaIds.size();
+			if (rootAreaCount > 0) {
+				
+                rootAreaId = rootAreaIds.get(0);
+    			attribute2(element, "id", rootAreaId);
+    			root.appendChild(element);
+            }
+			
+			// Insert root area IDs.
+			Element elementRootAreaIds = document.createElement("RootAreaIds");
+			for (Long rootAreaIdItem : rootAreaIds) {
+                element = document.createElement("Record");
+                attribute2(element, "id", rootAreaIdItem);
+                elementRootAreaIds.appendChild(element);
+            }
+			root.appendChild(elementRootAreaIds);
 			
 			// Insert home area ID.
 			element = document.createElement("HomeAreaId");
@@ -1007,6 +1027,7 @@ public class AreaTreesData {
 				attribute2(element, "areaId", slotData.areaId);
 				attribute2(element, "alias", slotData.alias);
 				attribute2(element, "revision", slotData.revision);
+				attribute2(element, "revisionDescription", slotData.revisionDescription);
 				attribute2(element, "created", slotData.created);
 				attribute2(element, "localizedTextValueId", slotData.localizedTextValueId);
 				attribute2(element, "textValue", slotData.externalProvider != null ? null : slotData.textValue);
@@ -1508,6 +1529,7 @@ public class AreaTreesData {
 		        		else if (tableName.equals("SlotData")) {
 		        			String alias = attributeString(record, "alias");
 		        			Long revision = attributeLong(record, "revision");
+		        			String revision_description = attributeString(record, "revisionDescription");
 		        			Timestamp created = attributeTimestamp(record, "created");
 		        			String textValue = attributeString(record, "textValue");
 		        			Double realValue = attributeDouble(record, "realValue");
@@ -1531,7 +1553,8 @@ public class AreaTreesData {
 		        			String externalProvider = attributeString(record, "externalProvider");
 		        			Boolean readsInput = attributeBoolean(record, "readsInput");
 		        			Boolean writesOutput = attributeBoolean(record, "writesOutput");
-		        			addSlot(areaId, alias, revision, created, localizedTextValueId, textValue, integerValue, realValue,
+		        			addSlot(areaId, alias, revision, revision_description, created, 
+		        					localizedTextValueId, textValue, integerValue, realValue,
 		        					access, hidden, id, booleanValue, enumerationValueId, colorValue,
 		        					descriptionId, isDefault, name, valueMeaning, preferred, userDefined,
 		        					specialValue, areaValue, externalProvider, readsInput, writesOutput);

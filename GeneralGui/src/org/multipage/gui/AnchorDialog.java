@@ -1,22 +1,35 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JRootPane;
+import javax.swing.JTextField;
+import javax.swing.SpringLayout;
+import javax.swing.SwingUtilities;
 
-import java.awt.event.*;
-import java.io.*;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that can edit URL anchors.
+ * @author vakol
  *
  */
 public class AnchorDialog extends JDialog {
@@ -87,14 +100,19 @@ public class AnchorDialog extends JDialog {
 	 */
 	public static String showDialog(Component parent, String text) {
 		
-		AnchorDialog dialog = new AnchorDialog(parent);
-		dialog.textAnchorText.setText(text);
-		
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			AnchorDialog dialog = new AnchorDialog(parent);
+			dialog.textAnchorText.setText(text);
 			
-			return dialog.getAnchor();
+			dialog.setVisible(true);
+			
+			if (dialog.confirm) {
+				
+				return dialog.getAnchor();
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -105,7 +123,13 @@ public class AnchorDialog extends JDialog {
 	 */
 	private String getAnchor() {
 		
-		return String.format("<a href=\"%s\">%s</a>", textUrl.getText(), textAnchorText.getText());
+		try {
+			return String.format("<a href=\"%s\">%s</a>", textUrl.getText(), textAnchorText.getText());
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -115,11 +139,15 @@ public class AnchorDialog extends JDialog {
 	public AnchorDialog(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
 
-		initComponents();
-		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -194,64 +222,93 @@ public class AnchorDialog extends JDialog {
 	 * On window opened.
 	 */
 	protected void onWindowOpened() {
-		
-		textUrl.requestFocus();
+		try {
+			
+			textUrl.requestFocus();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		localize();
-		setIcons();
-		
-		loadDialog();
-		
-		setDefaultButton();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			localize();
+			setIcons();
+			loadDialog();
+			
+			setDefaultButton();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set default button.
 	 */
 	private void setDefaultButton() {
-		
-		JRootPane rootPane = SwingUtilities.getRootPane(buttonOk); 
-		rootPane.setDefaultButton(buttonOk);
+		try {
+			
+			JRootPane rootPane = SwingUtilities.getRootPane(buttonOk); 
+			rootPane.setDefaultButton(buttonOk);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(labelText);
-		Utility.localize(labelUrl);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(labelText);
+			Utility.localize(labelUrl);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
-		
-		saveDialog();
-		
-		confirm = false;
+		try {
+			
+			saveDialog();
+			confirm = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -259,10 +316,15 @@ public class AnchorDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		saveDialog();
-		
-		confirm = true;
+		try {
+			
+			saveDialog();
+			confirm = true;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -270,20 +332,30 @@ public class AnchorDialog extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setBounds(bounds);
+			}
 		}
-		else {
-			setBounds(bounds);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

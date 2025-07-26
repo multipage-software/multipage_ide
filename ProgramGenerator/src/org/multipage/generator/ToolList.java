@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -23,10 +23,12 @@ import javax.swing.SwingUtilities;
 import org.multipage.gui.CursorArea;
 import org.multipage.gui.CursorAreaImpl;
 import org.multipage.gui.ToolTipWindow;
+import org.multipage.util.Safe;
 
 
 /**
  * Tool list class.
+ * @author vakol
  */
 public class ToolList implements CursorArea {
 	
@@ -77,7 +79,7 @@ public class ToolList implements CursorArea {
 	/**
 	 * Parent panel.
 	 */
-	private GeneralDiagram parent;
+	private GeneralDiagramPanel parent;
 
 	/**
 	 * Shift.
@@ -119,7 +121,7 @@ public class ToolList implements CursorArea {
 	 * Constructor.
 	 * @wbp.parser.entryPoint
 	 */
-	public ToolList(GeneralDiagram parent, Cursor cursor) {
+	public ToolList(GeneralDiagramPanel parent, Cursor cursor) {
 		
 		this.parent = parent;
 		cursorArea = new CursorAreaImpl(cursor, parent, null);
@@ -310,47 +312,57 @@ public class ToolList implements CursorArea {
 	 * On mouse down.
 	 */
 	public void onMouseDown(final Point point) {
-		
-		if (isOnUpShifter(point) || isOnDownShifter(point)) {
-			// Schedule timer.
-			timer = new java.util.Timer("IDE-Tool-List");
-			timerTask = new TimerTask() {
-				@Override
-				public void run() {
-					
-					if (isOnUpShifter(point)) {
-						shiftUpPushed = true;
-						onUpShifter();
-						return;
+		try {
+			
+			if (isOnUpShifter(point) || isOnDownShifter(point)) {
+				// Schedule timer.
+				timer = new java.util.Timer("IDE-Tool-List");
+				timerTask = new TimerTask() {
+					@Override
+					public void run() {
+						
+						if (isOnUpShifter(point)) {
+							shiftUpPushed = true;
+							onUpShifter();
+							return;
+						}
+						if (isOnDownShifter(point)) {
+							shiftDownPushed = true;
+							onDownShifter();
+							return;
+						}
 					}
-					if (isOnDownShifter(point)) {
-						shiftDownPushed = true;
-						onDownShifter();
-						return;
-					}
-				}
-			};
-			timer.scheduleAtFixedRate(timerTask, 0, repeatMs);
-			return;
+				};
+				timer.scheduleAtFixedRate(timerTask, 0, repeatMs);
+				return;
+			}
+			
+			selectTool(point);
 		}
-		
-		selectTool(point);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On mouse signalReleased.
 	 */
 	public void onMouseReleased() {
-	
-		// Reset timer.
-		if (timerTask != null) {
-			timerTask.cancel();
-			timer.cancel();
+		try {
+			
+			// Reset timer.
+			if (timerTask != null) {
+				timerTask.cancel();
+				timer.cancel();
+			}
+			
+			shiftUpPushed = shiftDownPushed = false;
+			
+			parent.repaint();
 		}
-		
-		shiftUpPushed = shiftDownPushed = false;
-		
-		parent.repaint();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	private boolean isOnUpShifter(Point point) {
@@ -426,10 +438,15 @@ public class ToolList implements CursorArea {
 	 */
 	public ToolId getSelected() {
 		
-		for (Tool tool : list) {
-			if (tool.isSelected()) {
-				return tool.getToolId();
+		try {
+			for (Tool tool : list) {
+				if (tool.isSelected()) {
+					return tool.getToolId();
+				}
 			}
+		}
+		catch (Exception e) {
+            e.printStackTrace();
 		}
 		return ToolId.UNKNOWN;
 	}
@@ -480,7 +497,7 @@ public class ToolList implements CursorArea {
 
 		if (parent != null && parent.isVisible()) {
 			
-			ToolTipWindow tooltipWindow = GeneralDiagram.getTooltipWindow();
+			ToolTipWindow tooltipWindow = GeneralDiagramPanel.getTooltipWindow();
 			
 			if (tooltipWindow != null) {
 				
@@ -552,11 +569,17 @@ public class ToolList implements CursorArea {
 	 * @return
 	 */
 	public boolean contains(Point point) {
-
-		Dimension dimension = parent.getSize();
 		
-		Rectangle rectangle = new Rectangle(0, 0, width,
-				(int) dimension.getHeight());
-		return rectangle.contains(point);
+		try {
+			Dimension dimension = parent.getSize();
+			
+			Rectangle rectangle = new Rectangle(0, 0, width,
+					(int) dimension.getHeight());
+			return rectangle.contains(point);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+        }
+		return false;
 	}
 }

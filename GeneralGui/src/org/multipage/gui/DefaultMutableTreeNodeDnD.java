@@ -1,19 +1,25 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import java.awt.datatransfer.*;
-import java.io.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
+import java.io.Serializable;
 
-import javax.swing.tree.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+
+import org.multipage.util.Safe;
 
 /**
- * @author
+ * Class for tree node with Drag and Drop capability. 
+ * @author vakol
  *
  */
 public class DefaultMutableTreeNodeDnD extends DefaultMutableTreeNode implements Transferable, Serializable {
@@ -41,8 +47,13 @@ public class DefaultMutableTreeNodeDnD extends DefaultMutableTreeNode implements
 	 * @param userObject
 	 */
 	public DefaultMutableTreeNodeDnD(Object userObject) {
-		
-		this.setUserObject(userObject);
+		try {
+			
+			this.setUserObject(userObject);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -69,7 +80,13 @@ public class DefaultMutableTreeNodeDnD extends DefaultMutableTreeNode implements
 	@Override
 	public boolean isDataFlavorSupported(DataFlavor flavor) {
 		
-		return flavor.equals(dataFlavors[0]);
+		try {
+			return flavor.equals(dataFlavors[0]);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**

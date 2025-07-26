@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -26,10 +26,11 @@ import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays information about connected areas.
+ * @author vakol
  *
  */
 public class ConfirmAreasConnect extends JDialog {
@@ -106,18 +107,24 @@ public class ConfirmAreasConnect extends JDialog {
 	public static boolean showConfirmDialog(Window parent, Obj<Boolean> inheritance, Obj<String> relationNameSub, Obj<String> relationNameSuper,
 			Obj<Boolean> hideSub) {
 		
-		ConfirmAreasConnect dialog = new ConfirmAreasConnect(parent);
-		dialog.setVisible(true);
-		
-		if (confirm) {
-			relationNameSub.ref = dialog.textNameSub.getText();
-			relationNameSuper.ref = dialog.textNameSuper.getText();
+		try {
+			ConfirmAreasConnect dialog = new ConfirmAreasConnect(parent);
+			dialog.setVisible(true);
 			
-			inheritance.ref = dialog.checkBoxInherit.isSelected();
-			hideSub.ref = dialog.checkHideSubAreas.isSelected();
+			if (confirm) {
+				relationNameSub.ref = dialog.textNameSub.getText();
+				relationNameSuper.ref = dialog.textNameSuper.getText();
+				
+				inheritance.ref = dialog.checkBoxInherit.isSelected();
+				hideSub.ref = dialog.checkHideSubAreas.isSelected();
+			}
+			
+			return confirm;
 		}
-		
-		return confirm;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -128,11 +135,16 @@ public class ConfirmAreasConnect extends JDialog {
 	public ConfirmAreasConnect(Window parent) {
 		super(parent, ModalityType.APPLICATION_MODAL);
 		
-		// Initialize components.
-		initComponents();
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			// Initialize components.
+			initComponents();
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -203,46 +215,67 @@ public class ConfirmAreasConnect extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		localize();
-		setIcons();
-		Utility.centerOnScreen(this);
-		
-		// Set dialog components.
-		checkBoxInherit.setSelected(inheritState);
-		checkHideSubAreas.setSelected(hideSubAreas);
+		try {
+			
+			localize();
+			setIcons();
+			Utility.centerOnScreen(this);
+			
+			// Set dialog components.
+			checkBoxInherit.setSelected(inheritState);
+			checkHideSubAreas.setSelected(hideSubAreas);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(checkBoxInherit);
-		Utility.localize(buttonCancel);
-		Utility.localize(buttonOk);
-		Utility.localize(labelRelationNameSub);
-		Utility.localize(labelRelationNameSuper);
-		Utility.localize(checkHideSubAreas);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(checkBoxInherit);
+			Utility.localize(buttonCancel);
+			Utility.localize(buttonOk);
+			Utility.localize(labelRelationNameSub);
+			Utility.localize(labelRelationNameSuper);
+			Utility.localize(checkHideSubAreas);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		saveDialog();
-		confirm = true;
+		try {
+			
+			saveDialog();
+			confirm = true;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -259,8 +292,13 @@ public class ConfirmAreasConnect extends JDialog {
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		inheritState = checkBoxInherit.isSelected();
-		hideSubAreas = checkHideSubAreas.isSelected();
+		try {
+			
+			inheritState = checkBoxInherit.isSelected();
+			hideSubAreas = checkHideSubAreas.isSelected();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

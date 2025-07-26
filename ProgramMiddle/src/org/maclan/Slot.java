@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -16,7 +16,8 @@ import org.multipage.util.Obj;
 import org.multipage.util.Resources;
 
 /**
- * @author
+ * Class for slots.
+ * @author vakol
  *
  */
 public class Slot {
@@ -108,22 +109,27 @@ public class Slot {
 	private String specialValue;
 	
 	/**
-	 * Revision number
+	 * Revision number.
 	 */
 	private long revision = 0;
 	
 	/**
-	 * External provider link
+     * Revision description.
+     */
+	private String revisionDescription = null;
+	
+	/**
+	 * External provider link.
 	 */
 	private String externalProvider;
 	
 	/**
-	 * Determines if slot writes its result to external provider
+	 * Determines if slot writes its result to external provider.
 	 */
 	private boolean writesOutput;
 	
 	/**
-	 * Determines if slot reads its content text from external provider
+	 * Determines if slot reads its content text from external provider.
 	 */
 	private boolean readsInput;
 	
@@ -741,6 +747,7 @@ public class Slot {
 		newSlot.userDefined = userDefined;
 		newSlot.specialValue = specialValue;
 		newSlot.revision = revision;
+		newSlot.revisionDescription = revisionDescription;
 		newSlot.externalProvider = externalProvider;
 		newSlot.externalChange = externalChange;
 		newSlot.readsInput = readsInput;
@@ -773,6 +780,7 @@ public class Slot {
 		userDefined = slot.userDefined;
 		specialValue = slot.specialValue;
 		revision = slot.revision;
+		revisionDescription = slot.revisionDescription;
 		externalProvider = slot.externalProvider;
 		readsInput = slot.readsInput;
 		updatedExternally = slot.updatedExternally;
@@ -786,7 +794,11 @@ public class Slot {
 	 */
 	public boolean differs(Slot slot) {
 		
-		return !this.equals(slot) || !this.equalsDeep(slot);
+		boolean isEqual = this.equals(slot);
+		boolean isDeepEqual = this.equalsDeep(slot);
+		
+		boolean isSame = isEqual && isDeepEqual;
+		return !isSame;
 	}
 	
 	/**
@@ -1240,10 +1252,10 @@ public class Slot {
 	public String toString() {
 		
 		if (value == null) {
-			return alias + ": null";
+			return "null";
 		}
 		
-		return alias + ": " + value.toString();
+		return value.toString();
 	}
 
 	/**
@@ -1661,7 +1673,7 @@ public class Slot {
 	}
 	
 	/**
-	 * Get revision number
+	 * Get revision number.
 	 * @return
 	 */
 	public long getRevision() {
@@ -1670,7 +1682,7 @@ public class Slot {
 	}
 	
 	/**
-	 * Set revision number
+	 * Set revision number.
 	 * @param revision
 	 */
 	public void setRevision(long revision) {
@@ -1679,7 +1691,25 @@ public class Slot {
 	}
 	
 	/**
-	 * Set external provider of the slot value
+     * Get revision description.
+     * @return
+     */
+	public String getRevisionDescription() {
+		
+		return revisionDescription;
+	}
+	
+	/**
+	 * Set revision description.
+	 * @param description
+	 */
+	public void setRevisionDescription(String description) {
+		
+		this.revisionDescription = description;
+	}
+	
+	/**
+	 * Set external provider of the slot value.
 	 * @param externalProvider
 	 */
 	public void setExternalProvider(String externalProvider) {
@@ -1692,7 +1722,7 @@ public class Slot {
 	}
 
 	/**
-	 * Returns true, if exists external provider
+	 * Returns true, if exists external provider.
 	 * @return
 	 */
 	public boolean isExternalProvider() {
@@ -1701,7 +1731,7 @@ public class Slot {
 	}
 	
 	/**
-	 * Get external provider
+	 * Get external provider.
 	 * @return
 	 */
 	public String getExternalProvider() {
@@ -1714,7 +1744,7 @@ public class Slot {
 	}
 	
 	/**
-	 * Set that slot reads code from external provider
+	 * Set that slot reads code from external provider.
 	 * @param readsInput
 	 */
 	public void setReadsInput(Boolean readsInput) {
@@ -1726,7 +1756,7 @@ public class Slot {
 	}
 	
 	/**
-	 * Returns true value, if the slot reads its content text from external provider
+	 * Returns true value, if the slot reads its content text from external provider.
 	 * @return
 	 */
 	public boolean getReadsInput() {
@@ -1735,7 +1765,7 @@ public class Slot {
 	}
 	
 	/**
-	 * Set that slot writes its result text to external provider
+	 * Set that slot writes its result text to external provider.
 	 * @param writesOutput
 	 */
 	public void setWritesOutput(Boolean writesOutput) {
@@ -1747,7 +1777,7 @@ public class Slot {
 	}
 	
 	/**
-	 * Returns true value, if the slot writes its result text to external provider
+	 * Returns true value, if the slot writes its result text to external provider.
 	 * @return
 	 */
 	public boolean getWritesOutput() {

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -20,10 +20,11 @@ import org.maclan.Slot;
 import org.maclan.SlotType;
 import org.multipage.gui.GraphUtility;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * Alias renderer.
- * @author
+ * Slot renderer.
+ * @author vakol
  *
  */
 public class SlotCellRenderer extends JLabel {
@@ -43,17 +44,22 @@ public class SlotCellRenderer extends JLabel {
 	 */
 	private static final Font builderDefinedSlotFont = new Font("Tahoma", Font.PLAIN, 12);
 	private static final Font userDefinedSlotFont = new Font("Tahoma", Font.BOLD, 12);
-	private static final Font hiddenFont;
+	private static Font hiddenFont;
 	
 	/**
 	 * Static constructor.
 	 */
 	static {
-		
-		// Create hidden font.
-		Map  attributes = builderDefinedSlotFont.getAttributes();
-		attributes.put(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
-		hiddenFont = new Font(attributes);
+		try {
+			
+			// Create hidden font.
+			Map attributes = builderDefinedSlotFont.getAttributes();
+			attributes.put(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
+			hiddenFont = new Font(attributes);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -71,9 +77,14 @@ public class SlotCellRenderer extends JLabel {
 	 * Constructor.
 	 */
 	public SlotCellRenderer() {
-		
-		setOpaque(true);
-		setFont(new Font("Arial", Font.PLAIN, 12));
+		try {
+			
+			setOpaque(true);
+			setFont(new Font("Arial", Font.PLAIN, 12));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -85,19 +96,24 @@ public class SlotCellRenderer extends JLabel {
 	 */
 	public void setProperties(String text, boolean isSelected, boolean hasFocus,
 			boolean isFound, boolean isHidden) {
-		
-		this.isSelected = isSelected;
-		this.hasFocus = hasFocus;
-		this.isBoolean = false;
-		this.isDefault = false;
-		this.isFound = isFound;
-		
-		setText(text);
-		setBackground(isFound ? highlightColor : Color.WHITE);
-		
-		if (isHidden) {
-			setFont(hiddenFont);
+		try {
+			
+			this.isSelected = isSelected;
+			this.hasFocus = hasFocus;
+			this.isBoolean = false;
+			this.isDefault = false;
+			this.isFound = isFound;
+			
+			setText(text);
+			setBackground(isFound ? highlightColor : Color.WHITE);
+			
+			if (isHidden) {
+				setFont(hiddenFont);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -110,16 +126,21 @@ public class SlotCellRenderer extends JLabel {
 	 */
 	public void setPropertiesColor(ColorObj color, boolean isSelected,
 			boolean hasFocus, boolean isFound, boolean isHidden) {
-		
-		this.isSelected = isSelected;
-		this.hasFocus = hasFocus;
-		this.isBoolean = false;
-		this.isDefault = false;
-		this.isFound = isFound;
-		
-		setText("");
-		setBackground(isFound ? ColorObj.blend(highlightColor, color) : color);
-		setForeground(isHidden ? Color.GRAY : Color.BLACK);
+		try {
+			
+			this.isSelected = isSelected;
+			this.hasFocus = hasFocus;
+			this.isBoolean = false;
+			this.isDefault = false;
+			this.isFound = isFound;
+			
+			setText("");
+			setBackground(isFound ? ColorObj.blend(highlightColor, color) : color);
+			setForeground(isHidden ? Color.GRAY : Color.BLACK);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -133,18 +154,23 @@ public class SlotCellRenderer extends JLabel {
 	private void setPropertiesBoolean(Boolean booleanValue,
 			boolean isSelected, boolean hasFocus, boolean isFound,
 			boolean isHidden) {
-		
-		this.isSelected = isSelected;
-		this.hasFocus = hasFocus;
-		this.booleanValue = booleanValue;
-		this.isBoolean = true;
-		this.isDefault = false;
-		this.isFound = isFound;
-		
-		setText("");
-		Color color = Color.WHITE;
-		setBackground(isFound ? ColorObj.blend(highlightColor, color) : color);
-		setForeground(isHidden ? Color.GRAY : Color.BLACK);
+		try {
+			
+			this.isSelected = isSelected;
+			this.hasFocus = hasFocus;
+			this.booleanValue = booleanValue;
+			this.isBoolean = true;
+			this.isDefault = false;
+			this.isFound = isFound;
+			
+			setText("");
+			Color color = Color.WHITE;
+			setBackground(isFound ? ColorObj.blend(highlightColor, color) : color);
+			setForeground(isHidden ? Color.GRAY : Color.BLACK);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -156,17 +182,22 @@ public class SlotCellRenderer extends JLabel {
 	 */
 	private void setDefaultProperties(boolean isSelected, boolean hasFocus,
 			boolean isFound, boolean isHidden) {
-		
-		this.isSelected = isSelected;
-		this.hasFocus = hasFocus;
-		this.isBoolean = false;
-		this.isDefault = true;
-		this.isFound = isFound;
-		
-		setText("");
-		Color color = Color.WHITE;
-		setBackground(isFound ? ColorObj.blend(highlightColor, color) : color);
-		setForeground(isHidden ? Color.GRAY : Color.BLACK);
+		try {
+			
+			this.isSelected = isSelected;
+			this.hasFocus = hasFocus;
+			this.isBoolean = false;
+			this.isDefault = true;
+			this.isFound = isFound;
+			
+			setText("");
+			Color color = Color.WHITE;
+			setBackground(isFound ? ColorObj.blend(highlightColor, color) : color);
+			setForeground(isHidden ? Color.GRAY : Color.BLACK);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -175,15 +206,20 @@ public class SlotCellRenderer extends JLabel {
 	@Override
 	public void paint(Graphics g) {
 		
-		super.paint(g);
-		
-		if (isBoolean && !isFound) {
-			GraphUtility.drawBooleanValue(g, this, booleanValue);
+		try {
+			super.paint(g);
+			
+			if (isBoolean && !isFound) {
+				GraphUtility.drawBooleanValue(g, this, booleanValue);
+			}
+			if (isDefault && !isFound) {
+				GraphUtility.drawDefaultValue(g, this);
+			}
+			GraphUtility.drawSelection(g, this, isSelected, hasFocus);
 		}
-		if (isDefault && !isFound) {
-			GraphUtility.drawDefaultValue(g, this);
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		GraphUtility.drawSelection(g, this, isSelected, hasFocus);
 	}
 
 	/**
@@ -198,70 +234,75 @@ public class SlotCellRenderer extends JLabel {
 	 */
 	public void setSlotCell(Slot slot, int column, Object value, boolean isSelected,
 			boolean hasFocus, boolean isSlotFound, boolean isBuilder) {
-		
-		if (slot == null) {
-			return;
-		}
-		
-		// Emphasize user defined slots.
-		setFont(slot.isUserDefined() ? userDefinedSlotFont : builderDefinedSlotFont);
-		
-		// Gray not preferred slots.
-		setForeground(!slot.isPreferred() ? Color.GRAY : Color.BLACK);
-		
-		boolean isSpecialValue = slot.isSpecialValue();
-		
-		// On alias/name.
-		if (!isBuilder && column == 0 || isBuilder && column == 1) {
+		try {
 			
-			String text = isBuilder ? slot.getAliasWithId() : slot.getAlias();
+			if (slot == null) {
+				return;
+			}
+			
+			// Emphasize user defined slots.
+			setFont(slot.isUserDefined() ? userDefinedSlotFont : builderDefinedSlotFont);
+			
+			// Gray not preferred slots.
+			setForeground(!slot.isPreferred() ? Color.GRAY : Color.BLACK);
+			
+			boolean isSpecialValue = slot.isSpecialValue();
+			
+			// On alias/name.
+			if (!isBuilder && column == 0 || isBuilder && column == 1) {
+				
+				String text = isBuilder ? slot.getAliasWithId() : slot.getAlias();
+				
+				setProperties(text, isSelected, hasFocus,
+							isSlotFound, slot.isHidden());
+				return;
+			}
+			// On value.
+			else if (!isBuilder && column == 1 || isBuilder && column == 2) {
+					
+				// On default value.
+				if (slot.isDefault()) {
+					
+					setDefaultProperties(isSelected, hasFocus,
+							isSlotFound, slot.isHidden());
+					return;
+				}
+				
+				SlotType slotType = slot.getTypeUseValueMeaning();
+				
+				// On color.
+				if (!isSpecialValue && slotType == SlotType.COLOR) {
+					
+					setPropertiesColor(slot.getColorValue(), isSelected, hasFocus,
+							isSlotFound, slot.isHidden());
+					return;
+				}
+				
+				// On boolean value.
+				if (!isSpecialValue && slotType == SlotType.BOOLEAN) {
+					
+					setPropertiesBoolean(slot.getBooleanValue(), isSelected, hasFocus,
+							isSlotFound, slot.isHidden());
+					return;
+				}
+			}
+			
+			// On remaining text cells.
+			String text;
+			if (value != null) {
+				
+				// Display only first line of the text.
+				text = Utility.extractFirstLine(value.toString());
+			}
+			else {
+				text = "";
+			}
 			
 			setProperties(text, isSelected, hasFocus,
-						isSlotFound, slot.isHidden());
-			return;
+					isSlotFound, slot.isHidden());
 		}
-		// On value.
-		else if (!isBuilder && column == 1 || isBuilder && column == 2) {
-				
-			// On default value.
-			if (slot.isDefault()) {
-				
-				setDefaultProperties(isSelected, hasFocus,
-						isSlotFound, slot.isHidden());
-				return;
-			}
-			
-			SlotType slotType = slot.getTypeUseValueMeaning();
-			
-			// On color.
-			if (!isSpecialValue && slotType == SlotType.COLOR) {
-				
-				setPropertiesColor(slot.getColorValue(), isSelected, hasFocus,
-						isSlotFound, slot.isHidden());
-				return;
-			}
-			
-			// On boolean value.
-			if (!isSpecialValue && slotType == SlotType.BOOLEAN) {
-				
-				setPropertiesBoolean(slot.getBooleanValue(), isSelected, hasFocus,
-						isSlotFound, slot.isHidden());
-				return;
-			}
-		}
-		
-		// On remaining text cells.
-		String text;
-		if (value != null) {
-			
-			// Display only first line of the text.
-			text = Utility.extractFirstLine(value.toString());
-		}
-		else {
-			text = "";
-		}
-		
-		setProperties(text, isSelected, hasFocus,
-				isSlotFound, slot.isHidden());
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

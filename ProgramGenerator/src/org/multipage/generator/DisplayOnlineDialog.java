@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -46,10 +46,11 @@ import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
 import org.multipage.translator.LanguageRenderer;
 import org.multipage.util.Obj;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays editor for properties of displayed area.
+ * @author vakol
  *
  */
 public class DisplayOnlineDialog extends JDialog {
@@ -174,22 +175,27 @@ public class DisplayOnlineDialog extends JDialog {
 	public static boolean showDialog(Component parent, Obj<Language> language,
 			Obj<VersionObj> version, Obj<Boolean> showTextIds, Obj<String> parametersOrUrl, Obj<Boolean> externalBrowser) {
 		
-		defaultUrl = "http://localhost:" + Settings.getHttpPortNumber();
-		
-		DisplayOnlineDialog dialog = new DisplayOnlineDialog(Utility.findWindow(parent));
-		
-		dialog.setVisible(true);
-		
-		// Set output.
-		if (dialog.confirm) {
-			language.ref = dialog.getSelectedLanguage();
-			version.ref = dialog.getSelectedVersion();
-			showTextIds.ref = dialog.checkShowIds.isSelected();
-			parametersOrUrl.ref = Utility.getComboBoxText(dialog.comboParametersOrUrl);
-			externalBrowser.ref = dialog.checkExternalBrowser.isSelected();
+		try {
+			defaultUrl = "http://localhost:" + Settings.getHttpPortNumber();
+			
+			DisplayOnlineDialog dialog = new DisplayOnlineDialog(Utility.findWindow(parent));
+			dialog.setVisible(true);
+			
+			// Set output.
+			if (dialog.confirm) {
+				language.ref = dialog.getSelectedLanguage();
+				version.ref = dialog.getSelectedVersion();
+				showTextIds.ref = dialog.checkShowIds.isSelected();
+				parametersOrUrl.ref = Utility.getComboBoxText(dialog.comboParametersOrUrl);
+				externalBrowser.ref = dialog.checkExternalBrowser.isSelected();
+			}
+			
+			return dialog.confirm;
 		}
-		
-		return dialog.confirm;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
@@ -198,12 +204,16 @@ public class DisplayOnlineDialog extends JDialog {
 	 */
 	public DisplayOnlineDialog(Window parentWindow) {
 		super(parentWindow, ModalityType.DOCUMENT_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -343,52 +353,67 @@ public class DisplayOnlineDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		localize();
-		setIcons();
-		
-		initializeLanguagesComboBox();
-		loadLanguagesToCombo();
-		
-		initializeVersionsComboBox();
-		loadVersions();
-		
-		loadDialog();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			localize();
+			setIcons();
+			
+			initializeLanguagesComboBox();
+			loadLanguagesToCombo();
+			
+			initializeVersionsComboBox();
+			loadVersions();
+			
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
-			bounds = getBounds();
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+				bounds = getBounds();
+			}
+			setBounds(bounds);
+			
+			Utility.loadComboBoxItemsArray(comboParametersOrUrl, parametersOrUrlRecentState, false);
+			Utility.putComboBoxItem(comboParametersOrUrl, defaultUrl);
+			Utility.setComboBoxText(comboParametersOrUrl, parametersOrUrlState);
+			selectLanguage(languageIdState);
+			selectVersion(versionIdState);
+			
+			checkShowIds.setSelected(showIdsState);
+			onShowIds();
+			
+			checkExternalBrowser.setSelected(externalBrowserState);
 		}
-		setBounds(bounds);
-		
-		Utility.loadComboBoxItemsArray(comboParametersOrUrl, parametersOrUrlRecentState, false);
-		Utility.putComboBoxItem(comboParametersOrUrl, defaultUrl);
-		Utility.setComboBoxText(comboParametersOrUrl, parametersOrUrlState);
-		selectLanguage(languageIdState);
-		selectVersion(versionIdState);
-		
-		checkShowIds.setSelected(showIdsState);
-		onShowIds();
-		
-		checkExternalBrowser.setSelected(externalBrowserState);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Remove combo box item.
 	 */
 	private void removeParametersOrUrl() {
-		
-		String text = Utility.getComboBoxText(comboParametersOrUrl);
-		comboParametersOrUrl.removeItem(text);
-		Utility.setComboBoxText(comboParametersOrUrl, "");
+		try {
+			
+			String text = Utility.getComboBoxText(comboParametersOrUrl);
+			comboParametersOrUrl.removeItem(text);
+			Utility.setComboBoxText(comboParametersOrUrl, "");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -396,15 +421,20 @@ public class DisplayOnlineDialog extends JDialog {
 	 * @param languageId
 	 */
 	private void selectLanguage(long languageId) {
-		
-		for (int index = 0; index < comboBoxLanguages.getItemCount(); index++) {
+		try {
 			
-			Language language = (Language) comboBoxLanguages.getItemAt(index);
-			if (language.id == languageId) {
-				comboBoxLanguages.setSelectedIndex(index);
-				break;
+			for (int index = 0; index < comboBoxLanguages.getItemCount(); index++) {
+				
+				Language language = (Language) comboBoxLanguages.getItemAt(index);
+				if (language.id == languageId) {
+					comboBoxLanguages.setSelectedIndex(index);
+					break;
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -412,50 +442,70 @@ public class DisplayOnlineDialog extends JDialog {
 	 * @param versionId
 	 */
 	private void selectVersion(long versionId) {
-		
-		for (int index = 0; index < comboBoxVersions.getItemCount(); index++) {
+		try {
 			
-			VersionObj version = (VersionObj) comboBoxVersions.getItemAt(index);
-			if (version.getId() == versionId) {
-				comboBoxVersions.setSelectedIndex(index);
-				break;
+			for (int index = 0; index < comboBoxVersions.getItemCount(); index++) {
+				
+				VersionObj version = (VersionObj) comboBoxVersions.getItemAt(index);
+				if (version.getId() == versionId) {
+					comboBoxVersions.setSelectedIndex(index);
+					break;
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(labelDisplayUrl);
-		Utility.localize(labelSelectLanguage);
-		Utility.localize(labelSelectVersion);
-		Utility.localize(checkShowIds);
-		Utility.localize(checkExternalBrowser);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(labelDisplayUrl);
+			Utility.localize(labelSelectLanguage);
+			Utility.localize(labelSelectVersion);
+			Utility.localize(checkShowIds);
+			Utility.localize(checkExternalBrowser);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
-		buttonRemoveUrl.setIcon(Images.getIcon("org/multipage/basic/images/eraser.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+			buttonRemoveUrl.setIcon(Images.getIcon("org/multipage/basic/images/eraser.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		confirm = true;
-		
-		saveDialog();
+		try {
+			
+			confirm = true;
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -463,10 +513,15 @@ public class DisplayOnlineDialog extends JDialog {
 	 * On cancel.
 	 */
 	protected void onCancel() {
-		
-		confirm = false;
-		
-		saveDialog();
+		try {
+			
+			confirm = false;
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -474,24 +529,28 @@ public class DisplayOnlineDialog extends JDialog {
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
-		
-		parametersOrUrlState = Utility.getComboBoxText(comboParametersOrUrl);
-		if (!parametersOrUrlState.isEmpty()) {
-			Utility.putComboBoxItem(comboParametersOrUrl, parametersOrUrlState);
+		try {
+			
+			bounds = getBounds();
+			
+			parametersOrUrlState = Utility.getComboBoxText(comboParametersOrUrl);
+			if (!parametersOrUrlState.isEmpty()) {
+				Utility.putComboBoxItem(comboParametersOrUrl, parametersOrUrlState);
+			}
+			parametersOrUrlRecentState = (String []) Utility.getComboBoxItemsArray(comboParametersOrUrl);
+			
+			Language language = getSelectedLanguage();
+			languageIdState = language != null ? language.id : 0L;
+			
+			VersionObj version = getSelectedVersion();
+			versionIdState = version != null ? version.getId() : 0L;
+			
+			showIdsState = checkShowIds.isSelected();
+			externalBrowserState = checkExternalBrowser.isSelected();
 		}
-		parametersOrUrlRecentState = (String []) Utility.getComboBoxItemsArray(comboParametersOrUrl);
-		
-		Language language = getSelectedLanguage();
-		languageIdState = language != null ? language.id : 0L;
-		
-		VersionObj version = getSelectedVersion();
-		versionIdState = version != null ? version.getId() : 0L;
-		
-		showIdsState = checkShowIds.isSelected();
-		
-		externalBrowserState = checkExternalBrowser.isSelected();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -500,7 +559,13 @@ public class DisplayOnlineDialog extends JDialog {
 	 */
 	private Language getSelectedLanguage() {
 		
-		return (Language) comboBoxLanguages.getSelectedItem();
+		try {
+			return (Language) comboBoxLanguages.getSelectedItem();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -509,86 +574,109 @@ public class DisplayOnlineDialog extends JDialog {
 	 */
 	private VersionObj getSelectedVersion() {
 		
-		return (VersionObj) comboBoxVersions.getSelectedItem();
+		try {
+			return (VersionObj) comboBoxVersions.getSelectedItem();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
 	 * Initialize combo box.
 	 */
+	@SuppressWarnings("unchecked")
 	private void initializeLanguagesComboBox() {
-
-		// Set renderer.
-		comboBoxLanguages.setRenderer(new ListCellRenderer() {
-			// Create renderer.
-			private LanguageRenderer renderer = new LanguageRenderer();
-			// Return renderer.
-			@Override
-			public Component getListCellRendererComponent(JList list, Object value,
-					int index, boolean isSelected, boolean cellHasFocus) {
-				// Check value.
-				if (!(value instanceof Language)) {
-					return null;
+		try {
+			
+			// Set renderer.
+			comboBoxLanguages.setRenderer(new ListCellRenderer() {
+				// Create renderer.
+				private LanguageRenderer renderer = new LanguageRenderer();
+				// Return renderer.
+				@Override
+				public Component getListCellRendererComponent(JList list, Object value,
+						int index, boolean isSelected, boolean cellHasFocus) {
+					
+					try {
+						// Check value.
+						if (!(value instanceof Language)) {
+							return null;
+						}
+						Language language = (Language) value;
+						
+						boolean isStart = language.id == startLanguageId;
+		
+						// Set renderer properties.
+						renderer.setProperties(language.description, language.id,
+								language.alias, language.image, isStart, index,
+								isSelected, cellHasFocus);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return renderer;
 				}
-				Language language = (Language) value;
-				
-				boolean isStart = language.id == startLanguageId;
-
-				// Set renderer properties.
-				renderer.setProperties(language.description, language.id,
-						language.alias, language.image, isStart, index,
-						isSelected, cellHasFocus);
-				return renderer;
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load languages.
 	 */
 	private void loadLanguagesToCombo() {
-		
-		// Get prerequisites.
-		Middle middle = ProgramBasic.getMiddle();
-		Properties login = ProgramBasic.getLoginProperties();
-
-		// Reset combo box.
-		comboBoxLanguages.removeAllItems();
-		
-		// Load languages.
-		LinkedList<Language> languages = new LinkedList<Language>();
-		
-		MiddleResult result;
-		
-		// Login to the database.
-		result = middle.login(login);
-		if (result.isOK()) {
+		try {
 			
-			result = middle.loadLanguages(languages);
+			// Get prerequisites.
+			Middle middle = ProgramBasic.getMiddle();
+			Properties login = ProgramBasic.getLoginProperties();
+	
+			// Reset combo box.
+			comboBoxLanguages.removeAllItems();
+			
+			// Load languages.
+			LinkedList<Language> languages = new LinkedList<Language>();
+			
+			MiddleResult result;
+			
+			// Login to the database.
+			result = middle.login(login);
 			if (result.isOK()) {
 				
-				// Load start language ID.
-				Obj<Long> startLanguageId = new Obj<Long>();
-				result = middle.loadStartLanguageId(startLanguageId);
-				
-				this.startLanguageId = startLanguageId.ref;
+				result = middle.loadLanguages(languages);
+				if (result.isOK()) {
+					
+					// Load start language ID.
+					Obj<Long> startLanguageId = new Obj<Long>();
+					result = middle.loadStartLanguageId(startLanguageId);
+					
+					this.startLanguageId = startLanguageId.ref;
+				}
+	
+				// Logout from the database.
+				MiddleResult logoutResult = middle.logout(result);
+				if (result.isOK()) {
+					result = logoutResult;
+				}
 			}
-
-			// Logout from the database.
-			MiddleResult logoutResult = middle.logout(result);
-			if (result.isOK()) {
-				result = logoutResult;
+			
+			if (result.isNotOK()) {
+				result.show(this);
+				return;
+			}
+			
+			// Load combo box.
+			for (Language language : languages) {
+				comboBoxLanguages.addItem(language);
 			}
 		}
-		
-		if (result.isNotOK()) {
-			result.show(this);
-			return;
-		}
-		
-		// Load combo box.
-		for (Language language : languages) {
-			comboBoxLanguages.addItem(language);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	
@@ -596,63 +684,84 @@ public class DisplayOnlineDialog extends JDialog {
 	 * Load versions.
 	 */
 	private void loadVersions() {
-		
-		comboBoxVersions.removeAllItems();
-		
-		// Prepare prerequisites.
-		Properties login = ProgramBasic.getLoginProperties();
-		Middle middle = ProgramBasic.getMiddle();
-		
-		LinkedList<VersionObj> versions = new LinkedList<VersionObj>();
-		
-		// Load data from the database.
-		MiddleResult result = middle.loadVersions(login, 0L, versions);
-		
-		// On error inform user.
-		if (result.isNotOK()) {
-			result.show(this);
-			return;
+		try {
+			
+			comboBoxVersions.removeAllItems();
+			
+			// Prepare prerequisites.
+			Properties login = ProgramBasic.getLoginProperties();
+			Middle middle = ProgramBasic.getMiddle();
+			
+			LinkedList<VersionObj> versions = new LinkedList<VersionObj>();
+			
+			// Load data from the database.
+			MiddleResult result = middle.loadVersions(login, 0L, versions);
+			
+			// On error inform user.
+			if (result.isNotOK()) {
+				result.show(this);
+				return;
+			}
+			
+			// Populate list.
+			for (VersionObj version : versions) {
+				comboBoxVersions.addItem(version);
+			}
 		}
-		
-		// Populate list.
-		for (VersionObj version : versions) {
-			comboBoxVersions.addItem(version);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Initialize version combo.
 	 */
+	@SuppressWarnings("unchecked")
 	private void initializeVersionsComboBox() {
-		
-		// Create and set renderer.
-		comboBoxVersions.setRenderer(new ListCellRenderer<VersionObj>() {
-
-			// Label object.
-			VersionRenderer renderer = new VersionRenderer();
-
-			// Renderer method.
-			@Override
-			public Component getListCellRendererComponent(
-					JList<? extends VersionObj> list, VersionObj value,
-					int index, boolean isSelected, boolean cellHasFocus) {
-				
-				if (value == null) {
-					renderer.reset();
+		try {
+			
+			// Create and set renderer.
+			comboBoxVersions.setRenderer(new ListCellRenderer<VersionObj>() {
+	
+				// Label object.
+				VersionRenderer renderer = new VersionRenderer();
+	
+				// Renderer method.
+				@Override
+				public Component getListCellRendererComponent(
+						JList<? extends VersionObj> list, VersionObj value,
+						int index, boolean isSelected, boolean cellHasFocus) {
+					
+					try {
+						if (value == null) {
+							renderer.reset();
+						}
+						else {
+							renderer.set(value, index, isSelected, cellHasFocus);
+						}
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return renderer;
 				}
-				else {
-					renderer.set(value, index, isSelected, cellHasFocus);
-				}
-				return renderer;
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On show IDs.
 	 */
 	protected void onShowIds() {
-		
-		checkShowIds.setForeground(checkShowIds.isSelected() ? Color.RED : Color.BLACK);
+		try {
+			
+			checkShowIds.setForeground(checkShowIds.isSelected() ? Color.RED : Color.BLACK);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

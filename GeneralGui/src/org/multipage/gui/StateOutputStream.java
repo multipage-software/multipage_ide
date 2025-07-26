@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2021 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 29-12-2021
+ * Created on : 2021-12-29
  *
  */
 package org.multipage.gui;
@@ -13,7 +13,9 @@ import java.io.ObjectOutputStream.PutField;
 import com.thoughtworks.xstream.XStream;
 
 /**
- * @author vacla
+ * Output stream interface for classes that write objects representing application states.
+ * The XStream implementation uses XML format to write object fields.
+ * @author vakol
  *
  */
 public interface StateOutputStream {

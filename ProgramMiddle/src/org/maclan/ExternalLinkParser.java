@@ -1,13 +1,14 @@
 /*
- * Copyright 2010-2019 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 24-12-2019
+ * Created on : 2019-12-01
  *
  */
 package org.maclan;
 
 /**
- * @author user
+ * Base class for external link parsers.
+ * @author vakol
  *
  */
 public abstract class ExternalLinkParser {

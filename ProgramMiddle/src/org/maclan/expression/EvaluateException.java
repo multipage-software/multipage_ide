@@ -1,12 +1,16 @@
-/**
+/*
+ * Copyright 2010-2025 (C) vakol
  * 
+ * Created on : 2017-04-26
+ *
  */
 package org.maclan.expression;
 
 import org.multipage.util.Resources;
 
 /**
- * @author
+ * Eexpression evaluation exception.
+ * @author vakol
  *
  */
 public class EvaluateException extends Exception {

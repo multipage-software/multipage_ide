@@ -1,7 +1,7 @@
-/**
- * Copyright 2010-2017 (C) vakol
+/*
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -19,9 +19,11 @@ import java.util.function.BiFunction;
 import org.apache.commons.lang3.tuple.Pair;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
+import org.multipage.util.Safe;
 
 /**
- * @author
+ * Model for the areas.
+ * @author vakol
  *
  */
 public class AreasModel {
@@ -161,6 +163,7 @@ public class AreasModel {
 	 * @param passedIds
 	 * @param projects
 	 */
+	@SuppressWarnings("unchecked")
 	private void forEachAreaRecursively(Area currentArea, boolean duplicated, BiFunction<Area, LinkedList<Area>, Boolean> useAreaLambda,
 			HashSet<Long> passedIds, LinkedList<Area> projects) {
 		
@@ -1422,5 +1425,30 @@ public class AreasModel {
 	public String getTimeStamp() {
 		
 		return this.timeStamp;
+	}
+	
+	/**
+	 * Check if a start resource exists.
+	 * @param resourceId
+	 * @param versionId
+	 * @return
+	 */
+	public boolean existsStartResource(long resourceId, long versionId) {
+		
+		try {
+			for (Area area : areas) {
+				Long areaStartResourceId = area.getStartResourceId();
+				long areaVersionId = area.getVersionId();
+				
+				if (areaStartResourceId != null && areaStartResourceId == resourceId
+						&& areaVersionId == versionId) {
+					return true;
+				}
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 }

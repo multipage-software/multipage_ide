@@ -1,13 +1,21 @@
+/*
+ * Copyright 2010-2025 (C) vakol
+ * 
+ * Created on : 2017-04-26
+ *
+ */
 package org.maclan.expression;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 
-import org.multipage.util.*;
+import org.multipage.util.Obj;
+import org.multipage.util.Resources;
 
 /**
- * 
- * @author
+ * Class for expression function.
+ * @author vakol
  *
  */
 public class Function implements ExpressionElement, ObjectElement {

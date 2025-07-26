@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -38,11 +38,13 @@ import org.multipage.gui.GuiSignal;
 import org.multipage.gui.Images;
 import org.multipage.gui.TextFieldAutoSave;
 import org.multipage.gui.TextFieldEx;
+import org.multipage.gui.TopMostButton;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Frame that displays area editor.
+ * @author vakol
  *
  */
 public class AreaEditorFrame extends AreaEditorFrameBase {
@@ -56,9 +58,7 @@ public class AreaEditorFrame extends AreaEditorFrameBase {
 	public static final int RESOURCES = 0;
 	public static final int DEPENDENCIES = 1;
 	public static final int CONSTRUCTOR = 2;
-
-	private static AreaEditorFrameBase dialog;
-
+	
 	// $hide<<$
 	/**
 	 * Components.
@@ -104,16 +104,21 @@ public class AreaEditorFrame extends AreaEditorFrameBase {
 	 */
 	public static void showDialog(JFrame parentFrame, Area area, int tabIdentifier) {
 		
-		if (dialog == null) {
-			
-			dialog = ProgramGenerator.newAreaEditor(parentFrame, area);
+		try {
+			AreaEditorFrameBase dialog = DialogNavigator.getAreaEditor(area);
+			if (dialog == null) {
+				dialog = ProgramGenerator.newAreaEditor(parentFrame, area);
+				DialogNavigator.addAreaEditor(dialog);
+			}
 			
 			if (tabIdentifier != -1) {
 				dialog.selectTab(tabIdentifier);
 			}
- 			
+
 			dialog.setVisible(true);
-			dialog = null;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 	}
 
@@ -122,11 +127,13 @@ public class AreaEditorFrame extends AreaEditorFrameBase {
 	 */
 	public static void showDialog(Component parentComponent, Area area) {
 		
-		if (dialog == null) {
-			
-			dialog = ProgramGenerator.newAreaEditor(parentComponent, area);
+		try {
+			AreaEditorFrameBase dialog = ProgramGenerator.newAreaEditor(parentComponent, area);
+			DialogNavigator.addAreaEditor(dialog);
 			dialog.setVisible(true);
-			dialog = null;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 	}
 
@@ -138,19 +145,24 @@ public class AreaEditorFrame extends AreaEditorFrameBase {
 	public AreaEditorFrame(Component parentComponent, Area area) {
 		super(parentComponent, area);
 		
-		// Initialize components.
-		initComponents();
-		// $hide>>$
-		// Post creation.
-		postCreate();
-		// $hide<<$
+		try {
+			// Initialize components.
+			initComponents();
+			// $hide>>$
+			// Post creation.
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
 	 * Initialize components.
 	 */
 	private void initComponents() {
-		setMinimumSize(new Dimension(530, 360));
+		setMinimumSize(new Dimension(530, 380));
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
@@ -204,7 +216,7 @@ public class AreaEditorFrame extends AreaEditorFrameBase {
 		
 		horizontalStrut = Box.createHorizontalStrut(20);
 		bottomPanel.add(horizontalStrut);
-		buttonClose.setPreferredSize(new Dimension(110, 25));
+		buttonClose.setPreferredSize(new Dimension(140, 25));
 		buttonClose.setMargin(new Insets(2, 4, 2, 4));
 		bottomPanel.add(buttonClose);
 		
@@ -217,16 +229,8 @@ public class AreaEditorFrame extends AreaEditorFrameBase {
 		sl_panel.putConstraint(SpringLayout.WEST, labelAreaDescription, 0, SpringLayout.WEST, panel);
 		panel.add(labelAreaDescription);
 		
-		textDescription = new TextFieldAutoSave(AreaEditorCommonBase.description);
+		textDescription = new TextFieldAutoSave();
 		sl_panel.putConstraint(SpringLayout.NORTH, labelAreaDescription, 0, SpringLayout.NORTH, textDescription);
-//		textDescription.addKeyListener(new KeyAdapter() {
-//			@Override
-//			public void keyPressed(KeyEvent e) {
-//				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-//					onDescriptionEnter();
-//				}
-//			}
-//		});
 		sl_panel.putConstraint(SpringLayout.WEST, textDescription, 6, SpringLayout.EAST, labelAreaDescription);
 		panel.add(textDescription);
 		textDescription.setColumns(10);
@@ -266,11 +270,6 @@ public class AreaEditorFrame extends AreaEditorFrameBase {
 		sl_panel.putConstraint(SpringLayout.EAST, textDescription, -3, SpringLayout.WEST, buttonSaveDescription);
 		sl_panel.putConstraint(SpringLayout.NORTH, buttonSaveDescription, 0, SpringLayout.NORTH, textDescription);
 		sl_panel.putConstraint(SpringLayout.EAST, buttonSaveDescription, -10, SpringLayout.EAST, panel);
-//		buttonSaveDescription.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				saveDescription();
-//			}
-//		});
 		buttonSaveDescription.setIconTextGap(0);
 		buttonSaveDescription.setMargin(new Insets(0, 0, 0, 0));
 		buttonSaveDescription.setPreferredSize(new Dimension(20, 20));
@@ -293,7 +292,7 @@ public class AreaEditorFrame extends AreaEditorFrameBase {
 		labelAreaAlias = new JLabel("org.multipage.generator.textAreaAlias");
 		panel.add(labelAreaAlias);
 		
-		textAlias = new TextFieldAutoSave(AreaEditorCommonBase.alias);
+		textAlias = new TextFieldAutoSave();
 		sl_panel.putConstraint(SpringLayout.WEST, textAlias, 6, SpringLayout.EAST, labelAreaDescription);
 		sl_panel.putConstraint(SpringLayout.NORTH, labelAreaAlias, 0, SpringLayout.NORTH, textAlias);
 		sl_panel.putConstraint(SpringLayout.NORTH, textAlias, 66, SpringLayout.NORTH, panel);
@@ -322,7 +321,7 @@ public class AreaEditorFrame extends AreaEditorFrameBase {
 		sl_panel.putConstraint(SpringLayout.EAST, labelFileName, 0, SpringLayout.EAST, labelAreaDescription);
 		panel.add(labelFileName);
 		
-		textFileName = new TextFieldAutoSave(AreaEditorCommonBase.fileName);
+		textFileName = new TextFieldAutoSave();
 		sl_panel.putConstraint(SpringLayout.WEST, textFileName, 0, SpringLayout.WEST, textDescription);
 		textFileName.setColumns(10);
 		panel.add(textFileName);
@@ -340,7 +339,7 @@ public class AreaEditorFrame extends AreaEditorFrameBase {
 		buttonSaveFileName.setIconTextGap(0);
 		panel.add(buttonSaveFileName);
 		
-		textFolder = new TextFieldAutoSave(AreaEditorCommonBase.folder);
+		textFolder = new TextFieldAutoSave();
 		sl_panel.putConstraint(SpringLayout.NORTH, textFileName, 3, SpringLayout.SOUTH, textFolder);
 		sl_panel.putConstraint(SpringLayout.NORTH, textFolder, 3, SpringLayout.SOUTH, textAlias);
 		textFolder.setColumns(10);
@@ -365,7 +364,7 @@ public class AreaEditorFrame extends AreaEditorFrameBase {
 		buttonSaveFolder.setIconTextGap(0);
 		panel.add(buttonSaveFolder);
 		
-		textFileExtension = new TextFieldAutoSave(AreaEditorCommonBase.fileExtension);
+		textFileExtension = new TextFieldAutoSave();
 		sl_panel.putConstraint(SpringLayout.NORTH, textFileExtension, 0, SpringLayout.NORTH, labelFileName);
 		sl_panel.putConstraint(SpringLayout.EAST, textFileExtension, 0, SpringLayout.EAST, textDescription);
 		textFileExtension.setColumns(10);
@@ -394,43 +393,64 @@ public class AreaEditorFrame extends AreaEditorFrameBase {
 	 * Insert tabs' contents.
 	 */
 	protected void insertTabsContents() {
-		
-		// Area resources panel.
-		panelResources = new AreaResourcesEditor();
-		panelResources.setArea(area);
-		insertTabContent(panelResourcesAux, panelResources);
-
-		// Area dependencies panel.
-		panelDependencies = new AreaDependenciesPanel();
-		panelDependencies.setArea(area);
-		insertTabContent(panelDependenciesAux, panelDependencies);
-		
-		// Area constructors panel.
-		panelConstructor = new AreaConstructorPanel();
-		panelConstructor.setArea(area);
-		insertTabContent(panelConstructorAux, panelConstructor);
+		try {
+			
+			// Area resources panel.
+			panelResources = new AreaResourcesEditor();
+			panelResources.setArea(area);
+			insertTabContent(panelResourcesAux, panelResources);
+	
+			// Area dependencies panel.
+			panelDependencies = new AreaDependenciesPanel();
+			panelDependencies.setArea(area);
+			insertTabContent(panelDependenciesAux, panelDependencies);
+			
+			// Area constructors panel.
+			panelConstructor = new AreaConstructorPanel();
+			panelConstructor.setArea(area);
+			insertTabContent(panelConstructorAux, panelConstructor);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Initialize display button.
 	 */
 	private void initDisplayButton() {
-		
-		// Set icon, tool tip and listener.
-		buttonDisplay.setIcon(Images.getIcon("org/multipage/generator/images/display_home_page.png"));
-		buttonDisplay.setToolTipText(Resources.getString("org.multipage.generator.tooltipDisplayHomePage"));
-		
-		buttonDisplay.addActionListener((e) -> {
-			onDisplayHomePage();
-		});
+		try {
+			
+			// Set icon, tool tip and listener.
+			buttonDisplay.setIcon(Images.getIcon("org/multipage/generator/images/display_home_page.png"));
+			buttonDisplay.setToolTipText(Resources.getString("org.multipage.generator.tooltipDisplayHomePage"));
+			
+			buttonDisplay.addActionListener((e) -> {
+				try {
+					
+					onDisplayHomePage();
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On display home page.
 	 */
 	private void onDisplayHomePage() {
-		
-		ApplicationEvents.transmit(this, GuiSignal.displayHomePage);
+		try {
+			
+			ApplicationEvents.transmit(this, GuiSignal.displayHomePage);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -438,25 +458,41 @@ public class AreaEditorFrame extends AreaEditorFrameBase {
 	 */
 	@Override
 	protected void postCreate() {
-		
-		// Set title.
-		String title = String.format(Resources.getString("org.multipage.generator.textAreaEditor"), area.getDescriptionForced());
-		setTitle(title);
-		
-		// Call super class method.
-		super.postCreate();
-		
-		// If it is a protected area disable alias.
-		if (area.isProtected()) {
-			textAlias.setEnabled(false);
+		try {
+			
+			// Add top most window toggle button.
+			TopMostButton.add(frame, panel);
+			// Set title.
+			String title = String.format(Resources.getString("org.multipage.generator.textAreaEditor"), area.getDescriptionForced());
+			setTitle(title);
+			
+			// Call super class method.
+			super.postCreate();
+			
+			// If it is a protected area disable alias.
+			if (area.isProtected()) {
+				textAlias.setEnabled(false);
+			}
+			
+			// Initialize display button.
+			initDisplayButton();
+			// Update dialog controls.
+			updateAreaEditor();
 		}
-		
-		// Initialize display button.
-		initDisplayButton();
-		// Update dialog controls.
-		updateAreaDialog();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
-
+	
+	/**
+	 * Get window.
+	 */
+	@Override
+	public JFrame getFrame() {
+		
+		return frame;
+	}
+	
 	/**
 	 * Get tabbed pane.
 	 */
@@ -539,7 +575,7 @@ public class AreaEditorFrame extends AreaEditorFrameBase {
 	}
 
 	@Override
-	protected JButton getButtonClose() {
+	protected JButton getButtonSaveAndClose() {
 		
 		return buttonClose;
 	}

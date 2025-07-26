@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -19,10 +19,11 @@ import org.maclan.VersionObj;
 import org.multipage.gui.GraphUtility;
 import org.multipage.gui.Images;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Renderer that displays version of an area.
+ * @author vakol
  *
  */
 public class VersionRenderer extends JPanel {
@@ -53,10 +54,14 @@ public class VersionRenderer extends JPanel {
 	 * Create the panel.
 	 */
 	public VersionRenderer() {
-
-		initComponents();
 		
-		postCreate(); // $hide$
+		try {
+			initComponents();
+			postCreate(); // $hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -105,26 +110,41 @@ public class VersionRenderer extends JPanel {
 	 * Post create.
 	 */
 	private void postCreate() {
-		
-		localize();
-		setIcons();
+		try {
+			
+			localize();
+			setIcons();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		labelDescription.setIcon(Images.getIcon("org/multipage/generator/images/version.png"));
+		try {
+			
+			labelDescription.setIcon(Images.getIcon("org/multipage/generator/images/version.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(labelIdText);
-		Utility.localize(labelAliasText);
+		try {
+			
+			Utility.localize(labelIdText);
+			Utility.localize(labelAliasText);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* Paint method
@@ -133,27 +153,37 @@ public class VersionRenderer extends JPanel {
 	@Override
 	public void paint(Graphics g) {
 		
-		// Paint component.
-		super.paint(g);
-		// Draw selection.
-		GraphUtility.drawSelection(g, this, isSelected, cellHasFocus);
+		try {
+			// Paint component.
+			super.paint(g);
+			// Draw selection.
+			GraphUtility.drawSelection(g, this, isSelected, cellHasFocus);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
 	 * Reset properties.
 	 */
 	public void reset() {
-		
-		isSelected = false;
-		cellHasFocus = false;
-		
-		// Background color.
-		setBackground(Utility.itemColor(0));
-		
-		// Reset parameters.
-		labelId.setText("");
-		labelDescription.setText("");
-		labelAlias.setText("");
+		try {
+			
+			isSelected = false;
+			cellHasFocus = false;
+			
+			// Background color.
+			setBackground(Utility.itemColor(0));
+			
+			// Reset parameters.
+			labelId.setText("");
+			labelDescription.setText("");
+			labelAlias.setText("");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -165,17 +195,22 @@ public class VersionRenderer extends JPanel {
 	 */
 	public void set(VersionObj version, int index,
 			boolean isSelected, boolean cellHasFocus) {
-		
-		this.isSelected = isSelected;
-		this.cellHasFocus = cellHasFocus;
-		
-		// Background color.
-		setBackground(Utility.itemColor(index));
-		
-		// Show version parameters.
-		labelId.setText(String.valueOf(version.getId()));
-		labelDescription.setText(version.getDescription());
-		labelAlias.setText(version.getAlias());
+		try {
+			
+			this.isSelected = isSelected;
+			this.cellHasFocus = cellHasFocus;
+			
+			// Background color.
+			setBackground(Utility.itemColor(index));
+			
+			// Show version parameters.
+			labelId.setText(String.valueOf(version.getId()));
+			labelDescription.setText(version.getDescription());
+			labelAlias.setText(version.getAlias());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -183,11 +218,16 @@ public class VersionRenderer extends JPanel {
 	 * @param enable
 	 */
 	public void setEnabledComponents(boolean enable) {
-		
-		labelIdText.setEnabled(enable);
-		labelId.setEnabled(enable);
-		labelDescription.setEnabled(enable);
-		labelAliasText.setEnabled(enable);
-		labelAlias.setEnabled(enable);
+		try {
+			
+			labelIdText.setEnabled(enable);
+			labelId.setEnabled(enable);
+			labelDescription.setEnabled(enable);
+			labelAliasText.setEnabled(enable);
+			labelAlias.setEnabled(enable);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

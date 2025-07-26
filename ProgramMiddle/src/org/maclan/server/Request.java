@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -10,15 +10,15 @@ package org.maclan.server;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
-import java.util.Map.*;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletInputStream;
-import javax.servlet.http.*;
+import javax.servlet.http.HttpServletRequest;
 
 /**
- * 
- * @author
+ * Class for the request object.
+ * @author vakol
  *
  */
 public class Request {

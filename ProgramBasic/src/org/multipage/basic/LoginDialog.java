@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -63,10 +63,11 @@ import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays login controls.
+ * @author vakol
  *
  */
 public class LoginDialog extends JDialog {
@@ -139,13 +140,19 @@ public class LoginDialog extends JDialog {
 		 */
 		@Override
 		protected void paintComponent(Graphics g) {
-			// Paint component.
-			super.paintComponent(g);
-			// Paint text.
-			String text = Resources.getString("org.multipage.basic.textSecurityDelay");
-			Rectangle2D rectangle = g.getFontMetrics().getStringBounds(text, g);
-			g.setColor(Color.GRAY);
-			g.drawString(text, getWidth() / 2 - (int)rectangle.getCenterX(), 11);
+			try {
+				
+				// Paint component.
+				super.paintComponent(g);
+				// Paint text.
+				String text = Resources.getString("org.multipage.basic.textSecurityDelay");
+				Rectangle2D rectangle = g.getFontMetrics().getStringBounds(text, g);
+				g.setColor(Color.GRAY);
+				g.drawString(text, getWidth() / 2 - (int)rectangle.getCenterX(), 11);
+			}
+			catch(Throwable expt) {
+				Safe.exception(expt);
+			};	
 		}
 	};
 
@@ -156,7 +163,7 @@ public class LoginDialog extends JDialog {
 	 */
 	private static boolean isPortValid(int number) {
 
-		return number >=0 && number <= 0xFFFF;
+		return number >= 0 && number <= 0xFFFF;
 	}
 
 	/**
@@ -257,19 +264,24 @@ public class LoginDialog extends JDialog {
 	 */
 	public LoginDialog(Window owner, String title, ModalityType modality) {
 		super(owner, title, modality);
-
-		// Set application main window.
-		if (owner != null) {
-			Utility.setApplicationMainWindow(owner);
-		}
-		else {
-			Utility.setApplicationMainWindow(this);
-		}
 		
-		initComponents();
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			// Set application main window.
+			if (owner != null) {
+				Utility.setApplicationMainWindow(owner);
+			}
+			else {
+				Utility.setApplicationMainWindow(this);
+			}
+			
+			initComponents();
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -481,130 +493,177 @@ public class LoginDialog extends JDialog {
 	}
 
 	/**
-	 * On cancel.
-	 */
-	protected void onCancel() {
-		
-		// On action.
-		loginFlag = true;
-		saveDialog();
-		dispose();
-	}
-
-	/**
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		// Set progress bar.
-		progress.setVisible(false);
-		progressPanel.add(progress);
-		morePanel.setVisible(false);
-		setSize(normalSize);
-		Utility.centerOnScreen(this);
-		localize();
-		setIcons();
-		setToolTips();
-		setListeners();
-		// Set ENTER key.
-		loginButton.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "pressed");
-		// Load dialog.
-		loadDialog();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			// Set progress bar.
+			progress.setVisible(false);
+			progressPanel.add(progress);
+			morePanel.setVisible(false);
+			setSize(normalSize);
+			Utility.centerOnScreen(this);
+			localize();
+			setIcons();
+			setToolTips();
+			setListeners();
+			// Set ENTER key.
+			loginButton.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "pressed");
+			// Load dialog.
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
-
+	
+	/**
+	 * On cancel.
+	 */
+	protected void onCancel() {
+		try {
+			
+			// On action.
+			loginFlag = true;
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
+		dispose();
+	}
 	/**
 	 * On component shown.
 	 */
 	protected void onComponentShown() {
-		
-		Utility.closeSplash();
-		passwordText.requestFocusInWindow();
+		try {
+			
+			Utility.closeSplash();
+			passwordText.requestFocusInWindow();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set listeners.
 	 */
 	private void setListeners() {
-		
-		// Port number validation.
-		portText.setInputVerifier(new InputVerifier() {
-			@Override
-			public boolean verify(JComponent input) {
-				return isPortValid();
-			}
-		});
-		
-		// Action on ENTER key.
-		KeyAdapter keyAdapter = new KeyAdapter() {
-			@Override
-			public void keyReleased(KeyEvent e) {
-				super.keyReleased(e);
-				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					onLogin();
+		try {
+			
+			// Port number validation.
+			portText.setInputVerifier(new InputVerifier() {
+				@Override
+				public boolean verify(JComponent input) {
+					
+					try {
+						return isPortValid();
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return false;
 				}
-			}
+			});
+			
+			// Action on ENTER key.
+			KeyAdapter keyAdapter = new KeyAdapter() {
+				@Override
+				public void keyReleased(KeyEvent e) {
+					try {
+						
+						super.keyReleased(e);
+						if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+							onLogin();
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			};
+			
+			// Set adapters.
+			usernameText.addKeyListener(keyAdapter);
+			passwordText.addKeyListener(keyAdapter);
+			serverText.addKeyListener(keyAdapter);
+			portText.addKeyListener(keyAdapter);
+			sslCheckBox.addKeyListener(keyAdapter);
+			loginButton.addKeyListener(keyAdapter);
+			cancelButton.addKeyListener(keyAdapter);
+			comboDatabaseNames.getEditor().addActionListener((e) -> {
+				Safe.invokeLater(() -> {
+					onLogin();
+				});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
 		};
-		
-		// Set adapters.
-		usernameText.addKeyListener(keyAdapter);
-		passwordText.addKeyListener(keyAdapter);
-		serverText.addKeyListener(keyAdapter);
-		portText.addKeyListener(keyAdapter);
-		sslCheckBox.addKeyListener(keyAdapter);
-		loginButton.addKeyListener(keyAdapter);
-		cancelButton.addKeyListener(keyAdapter);
-		comboDatabaseNames.getEditor().addActionListener((e) -> { SwingUtilities.invokeLater(() -> { onLogin(); }); });
 	}
 
 	/**
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		// Load user name.
-		usernameText.setText(userName);
-		// Load serverText name.
-		serverText.setText(serverName);
-		// Load portText number.
-		portText.setText(String.valueOf(portNumber));
-		// Load SSL flag.
-		sslCheckBox.setSelected(sslFlag);
-		// Load database names.
-		comboDatabaseNames.removeAllItems();
-		for (String name : databaseNames) {
-			addDatabaseName(name);
+		try {
+			
+			// Load user name.
+			usernameText.setText(userName);
+			// Load serverText name.
+			serverText.setText(serverName);
+			// Load portText number.
+			portText.setText(String.valueOf(portNumber));
+			// Load SSL flag.
+			sslCheckBox.setSelected(sslFlag);
+			// Load database names.
+			comboDatabaseNames.removeAllItems();
+			for (String name : databaseNames) {
+				addDatabaseName(name);
+			}
+			// Set database name.
+			if (!databaseName.isEmpty()) {
+				comboDatabaseNames.getEditor().setItem(databaseName);
+			}
+			else {
+				updateDatabaseNamesComboBox();
+			}
 		}
-		// Set database name.
-		if (!databaseName.isEmpty()) {
-			comboDatabaseNames.getEditor().setItem(databaseName);
-		}
-		else {
-			updateDatabaseNamesComboBox();
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		userName = usernameText.getText();
-		serverName = serverText.getText();
-		portNumber = isPortValid() ? Integer.parseInt(portText.getText()) : defaultPortNumber;
-		sslFlag = sslCheckBox.isSelected();
-		databaseName = comboDatabaseNames.getEditor().getItem().toString();
-		
-		// Clear database names.
-		databaseNames.clear();
-		
-		// Save new database names.
-		ComboBoxModel<String> model = comboDatabaseNames.getModel();
-		for (int index = 0; index < model.getSize(); index++) {
+		try {
 			
-			String item = model.getElementAt(index);
-			databaseNames.add(item);
+			userName = usernameText.getText();
+			serverName = serverText.getText();
+			portNumber = isPortValid() ? Integer.parseInt(portText.getText()) : defaultPortNumber;
+			sslFlag = sslCheckBox.isSelected();
+			databaseName = comboDatabaseNames.getEditor().getItem().toString();
+			
+			// Clear database names.
+			databaseNames.clear();
+			
+			// Save new database names.
+			ComboBoxModel<String> model = comboDatabaseNames.getModel();
+			for (int index = 0; index < model.getSize(); index++) {
+				
+				String item = model.getElementAt(index);
+				databaseNames.add(item);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -612,18 +671,23 @@ public class LoginDialog extends JDialog {
 	 * @param databaseName
 	 */
 	private void addDatabaseName(String databaseName) {
-		
-		// Check if the database name is already in list.
-		DefaultComboBoxModel model = (DefaultComboBoxModel) comboDatabaseNames.getModel();
-		for (int index = 0; index < model.getSize(); index ++) {
-			Object item = model.getElementAt(index);
-			if (item != null && item.toString().equals(databaseName)) {
-				return;
+		try {
+			
+			// Check if the database name is already in list.
+			DefaultComboBoxModel model = (DefaultComboBoxModel) comboDatabaseNames.getModel();
+			for (int index = 0; index < model.getSize(); index ++) {
+				Object item = model.getElementAt(index);
+				if (item != null && item.toString().equals(databaseName)) {
+					return;
+				}
 			}
+			
+			// Add new database name into the list.
+			comboDatabaseNames.addItem(databaseName);
 		}
-		
-		// Add new database name into the list.
-		comboDatabaseNames.addItem(databaseName);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -631,10 +695,15 @@ public class LoginDialog extends JDialog {
 	 * @param databaseNames
 	 */
 	private void addNewDatabaseNames(LinkedList<String> databaseNames) {
-		
-		for (String databaseName : databaseNames) {
-			addDatabaseName(databaseName);
+		try {
+			
+			for (String databaseName : databaseNames) {
+				addDatabaseName(databaseName);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -649,245 +718,294 @@ public class LoginDialog extends JDialog {
 		
 		try {
 			number = Integer.parseInt(portText.getText());
-			valid = number >=0 && number <= 0xFFFF;
+			valid = number >= 0 && number <= 0xFFFF;
 		}
 		catch (NumberFormatException e) {
 			valid = false;
 		}
 		
-		// If not valid inform user.
-		if (!valid) {
-			JOptionPane.showMessageDialog(this, Resources.getString("org.multipage.basic.messagePortNumberFormat"));
-			portText.setText(portText.getValue().toString());
-			return false;
+		try {
+			// If not valid inform user.
+			if (!valid) {
+				JOptionPane.showMessageDialog(this, Resources.getString("org.multipage.basic.messagePortNumberFormat"));
+				portText.setText(portText.getValue().toString());
+				return false;
+			}
+			return valid;
 		}
-		return valid;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(usernameLabel);
-		Utility.localize(passwordLabel);
-		Utility.localize(loginButton);
-		Utility.localize(cancelButton);
-		Utility.localize(checkboxMore);
-		Utility.localize(serverLabel);
-		Utility.localize(portLabel);
-		Utility.localize(databaseLabel);
-		Utility.localize(sslCheckBox);
-		Utility.localize(menuDatabase);
-		Utility.localize(menuCreateDatabase);
-		Utility.localize(menuRemoveDatabase);
+		try {
+			
+			Utility.localize(usernameLabel);
+			Utility.localize(passwordLabel);
+			Utility.localize(loginButton);
+			Utility.localize(cancelButton);
+			Utility.localize(checkboxMore);
+			Utility.localize(serverLabel);
+			Utility.localize(portLabel);
+			Utility.localize(databaseLabel);
+			Utility.localize(sslCheckBox);
+			Utility.localize(menuDatabase);
+			Utility.localize(menuCreateDatabase);
+			Utility.localize(menuRemoveDatabase);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		setIconImage(Images.getImage("org/multipage/basic/images/main_icon.png"));
-		padlock.setIcon(Images.getIcon("org/multipage/basic/images/padlock.png"));
-		loginButton.setIcon(Images.getIcon("org/multipage/basic/images/ok_icon.png"));
-		cancelButton.setIcon(Images.getIcon("org/multipage/basic/images/cancel_icon.png"));
-		buttonLoadDatabaseNames.setIcon(Images.getIcon("org/multipage/basic/images/reload.png"));
-		menuCreateDatabase.setIcon(Images.getIcon("org/multipage/basic/images/new_database.png"));
-		menuRemoveDatabase.setIcon(Images.getIcon("org/multipage/basic/images/remove_database.png"));
+		try {
+			
+			setIconImage(Images.getImage("org/multipage/basic/images/main_icon.png"));
+			padlock.setIcon(Images.getIcon("org/multipage/basic/images/padlock.png"));
+			loginButton.setIcon(Images.getIcon("org/multipage/basic/images/ok_icon.png"));
+			cancelButton.setIcon(Images.getIcon("org/multipage/basic/images/cancel_icon.png"));
+			buttonLoadDatabaseNames.setIcon(Images.getIcon("org/multipage/basic/images/reload.png"));
+			menuCreateDatabase.setIcon(Images.getIcon("org/multipage/basic/images/new_database.png"));
+			menuRemoveDatabase.setIcon(Images.getIcon("org/multipage/basic/images/remove_database.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set tool tips.
 	 */
 	private void setToolTips() {
-		
-		buttonLoadDatabaseNames.setToolTipText(Resources.getString("org.multipage.basic.tooltipUpdateDatabaseNames"));
+		try {
+			
+			buttonLoadDatabaseNames.setToolTipText(Resources.getString("org.multipage.basic.tooltipUpdateDatabaseNames"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On login button pressed.
 	 */
 	protected void onLogin() {
-		
-		// Initialize.
-		boolean exit = false;
-		
-		// Get HTTP server object.
-		ProgramHttpServer server = ProgramBasic.getHttpServer();
-		
-		// Get focused component.
-		focus = getFocusOwner();
-		
-		// Try to login.
-		if (attempts > 0) {
+		try {
 			
-			start_login: while (!exit) {
+			// Initialize.
+			boolean exit = false;
 			
-				// Check login properties.
-				Properties properties = getLoginPropertiesPrivate();
-				result = ProgramBasic.getMiddle().checkLogin(properties);
+			// Get HTTP server object.
+			ProgramHttpServer server = ProgramBasic.getHttpServer();
+			
+			// Get focused component.
+			focus = getFocusOwner();
+			
+			// Try to login.
+			if (attempts > 0) {
 				
-				if (result != MiddleResult.OK) {
+				start_login: while (!exit) {
+				
+					// Check login properties.
+					Properties properties = getLoginPropertiesPrivate();
+					result = ProgramBasic.getMiddle().checkLogin(properties);
 					
-					// Inform user.
-					result.show(this);
-					
-					// On bad database.
-					if (result == MiddleResult.DATABASE_NOT_FOUND) {
+					if (result != MiddleResult.OK) {
 						
-						// Get database name.
-						String databaseName = properties.getProperty("database");
+						// Inform user.
+						result.show(this);
 						
-						// Confirm database.
-						if (Utility.ask("org.multipage.basic.messageCreateNewDatabase", databaseName)) {
+						// On bad database.
+						if (result == MiddleResult.DATABASE_NOT_FOUND) {
 							
-							// create new database.
-							result = createNewDatabase(databaseName);
-							if (result.isNotOK()) {
-								result.show(null);
-							}
-							else {
-								continue;
-							}
-						}
-					}
-					
-					// On bad credentials.
-					else if (result == MiddleResult.BAD_USERNAME || result == MiddleResult.BAD_PASSWORD) {
-						
-						// Decrement attempts counter.
-						attempts--;
-						if (attempts == 0) {
-
-							maximumAttemptsReached();
-							return;
-						}
-						
-						SwingWorker<Void, Void> thread = new SwingWorker<Void, Void>() {
-							// Do background.
-							@Override
-							protected Void doInBackground() throws Exception {
-
-								try {
-									setEnabled(false);
-									// Set progress.
-									setProgress(0);
-									// Do loop and update progress bar.
-									int interval = 20; // milliseconds
-									for (int milliseconds = 0; milliseconds <= loginSleep; milliseconds += interval) {
-										Thread.sleep(interval);
-										setProgress(milliseconds * 100 / (int) loginSleep);
-									}
-									// Set progress.
-									setProgress(100);
-									setEnabled(true);
-									
-								} catch (InterruptedException e) {
-									e.printStackTrace();
-								}
-								return null;
-							}
-							// On done.
-							@Override
-							protected void done() {
-
-								// On thread end.
-								setEnabled(true);
-								progress.setValue(0);
-								passwordText.setText("");
-								progress.setVisible(false);
+							// Get database name.
+							String databaseName = properties.getProperty("database");
+							
+							// Confirm database.
+							if (Utility.ask("org.multipage.basic.messageCreateNewDatabase", databaseName)) {
 								
-								// Request old focus.
-								if (focus != null) {
-									focus.requestFocusInWindow();
+								// create new database.
+								result = createNewDatabase(databaseName);
+								if (result.isNotOK()) {
+									result.show(null);
+								}
+								else {
+									continue;
 								}
 							}
-						};
-						// Set properties listener.
-						thread.addPropertyChangeListener(new PropertyChangeListener() {
-							// Property change listener.
-							@Override
-							public void propertyChange(PropertyChangeEvent evt) {
-								// Get property name.
-								String propertyName = evt.getPropertyName();
-								// If it is state property.
-								if (propertyName == "state") {
-									
-									SwingWorker.StateValue state = (SwingWorker.StateValue) evt.getNewValue();
-									
-									if (state == SwingWorker.StateValue.STARTED) {
-										progress.setVisible(true);
-										setEnabled(false);
-									}
-								}
-								// If it is progress property.
-								else if (propertyName == "progress") {
-									
-									int progressValue = (Integer) evt.getNewValue();
-									// Set progress bar.
-									progress.setValue(progressValue);
-								}
-							}
-						});
-						// Start the thread.
-						thread.execute();
-					}
-					else if (result == MiddleResult.SSL_NOT_SUPPORTED_BY_SERVER) {
+						}
 						
-						// Ask user if should use not not encrypted connection.
-						if (JOptionPane.showConfirmDialog(this, Resources.getString("org.multipage.basic.messageUseNotEncryptedConection")) == JOptionPane.YES_OPTION) {
-							sslCheckBox.setSelected(false);
-							continue start_login;
+						// On bad credentials.
+						else if (result == MiddleResult.BAD_USERNAME || result == MiddleResult.BAD_PASSWORD) {
+							
+							// Decrement attempts counter.
+							attempts--;
+							if (attempts == 0) {
+	
+								maximumAttemptsReached();
+								return;
+							}
+							
+							SwingWorker<Void, Void> thread = new SwingWorker<Void, Void>() {
+								// Do background.
+								@Override
+								protected Void doInBackground() throws Exception {
+	
+									try {
+										setEnabled(false);
+										// Set progress.
+										setProgress(0);
+										// Do loop and update progress bar.
+										int interval = 20; // milliseconds
+										for (int milliseconds = 0; milliseconds <= loginSleep; milliseconds += interval) {
+											Thread.sleep(interval);
+											setProgress(milliseconds * 100 / (int) loginSleep);
+										}
+										// Set progress.
+										setProgress(100);
+										setEnabled(true);
+										
+									}
+									catch (InterruptedException e) {
+										Safe.exception(e);
+									}
+									return null;
+								}
+								// On done.
+								@Override
+								protected void done() {
+									try {
+										
+										// On thread end.
+										setEnabled(true);
+										progress.setValue(0);
+										passwordText.setText("");
+										progress.setVisible(false);
+										
+										// Request old focus.
+										if (focus != null) {
+											focus.requestFocusInWindow();
+										}
+									}
+									catch(Throwable expt) {
+										Safe.exception(expt);
+									};
+								}
+							};
+							// Set properties listener.
+							thread.addPropertyChangeListener(new PropertyChangeListener() {
+								// Property change listener.
+								@Override
+								public void propertyChange(PropertyChangeEvent evt) {
+									try {
+										
+										// Get property name.
+										String propertyName = evt.getPropertyName();
+										// If it is state property.
+										if (propertyName == "state") {
+											
+											SwingWorker.StateValue state = (SwingWorker.StateValue) evt.getNewValue();
+											
+											if (state == SwingWorker.StateValue.STARTED) {
+												progress.setVisible(true);
+												setEnabled(false);
+											}
+										}
+										// If it is progress property.
+										else if (propertyName == "progress") {
+											
+											int progressValue = (Integer) evt.getNewValue();
+											// Set progress bar.
+											progress.setValue(progressValue);
+										}
+									}
+									catch(Throwable expt) {
+										Safe.exception(expt);
+									};
+								}
+							});
+							// Start the thread.
+							thread.execute();
+						}
+						else if (result == MiddleResult.SSL_NOT_SUPPORTED_BY_SERVER) {
+							
+							// Ask user if should use not not encrypted connection.
+							if (JOptionPane.showConfirmDialog(this, Resources.getString("org.multipage.basic.messageUseNotEncryptedConection")) == JOptionPane.YES_OPTION) {
+								sslCheckBox.setSelected(false);
+								continue start_login;
+							}
 						}
 					}
-				}
-				else {
-					// If login is OK.
-					progress.setToolTipText("");
-					loginFlag = true;
-					result = MiddleResult.OK;
-					
-					addComboEditorValueToList();
-					saveDialog();
-					dispose();
-					
-					// Set HTTP server login information.
-					if (server != null) {
-						server.setLogin(ProgramBasic.getLoginProperties());
+					else {
+						// If login is OK.
+						progress.setToolTipText("");
+						loginFlag = true;
+						result = MiddleResult.OK;
+						
+						addComboEditorValueToList();
+						saveDialog();
+						dispose();
+						
+						// Set HTTP server login information.
+						if (server != null) {
+							server.setLogin(ProgramBasic.getLoginProperties());
+						}
 					}
+					
+					exit = true;
 				}
-				
-				exit = true;
+			}
+			else {
+				maximumAttemptsReached();
 			}
 		}
-		else {
-			maximumAttemptsReached();
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Add editor combo box value to the list.
 	 */
 	private void addComboEditorValueToList() {
-		
-		// Get editor value.
-		String editorValue = (String) comboDatabaseNames.getEditor().getItem();
-		
-		// Add editor value to the list.
-		addDatabaseName(editorValue);
+		try {
+			
+			// Get editor value.
+			String editorValue = (String) comboDatabaseNames.getEditor().getItem();
+			
+			// Add editor value to the list.
+			addDatabaseName(editorValue);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On maximum attempts reached.
 	 */
 	private void maximumAttemptsReached() {
-
-		// Inform user.
-		JOptionPane.showMessageDialog(this, Resources.getString("org.multipage.basic.messageMaximumAttempts"));
-		// Cancel login.
-		loginFlag = false;
-		saveDialog();
+		try {
+			
+			// Inform user.
+			JOptionPane.showMessageDialog(this, Resources.getString("org.multipage.basic.messageMaximumAttempts"));
+			// Cancel login.
+			loginFlag = false;
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -897,27 +1015,33 @@ public class LoginDialog extends JDialog {
 	 */
 	public synchronized Properties getLoginProperties() {
 		
-		Properties properties = new Properties();
-		
-		char [] passwordArea = passwordText.getPassword();
-		
-		properties.setProperty("username", userName);
-		properties.setProperty("password", String.valueOf(passwordArea));
-		properties.setProperty("server", serverName);
-		properties.setProperty("port", String.valueOf(portNumber));
-		properties.setProperty("ssl", sslFlag ? "true" : "false");
-		
-		if (databaseName.isEmpty()) {
-			databaseName = "empty";
+		try {
+			Properties properties = new Properties();
+			
+			char [] passwordArea = passwordText.getPassword();
+			
+			properties.setProperty("username", userName);
+			properties.setProperty("password", String.valueOf(passwordArea));
+			properties.setProperty("server", serverName);
+			properties.setProperty("port", String.valueOf(portNumber));
+			properties.setProperty("ssl", sslFlag ? "true" : "false");
+			
+			if (databaseName.isEmpty()) {
+				databaseName = "empty";
+			}
+			properties.setProperty("database", databaseName);
+			
+			// Remove passwordText.
+			for (int index = 0; index < passwordArea.length; index++) {
+				passwordArea[index] = 0; 
+			}
+			
+			return properties;
 		}
-		properties.setProperty("database", databaseName);
-		
-		// Remove passwordText.
-		for (int index = 0; index < passwordArea.length; index++) {
-			passwordArea[index] = 0; 
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		return properties;
+		return null;
 	}
 	
 	/**
@@ -926,47 +1050,57 @@ public class LoginDialog extends JDialog {
 	 */
 	private Properties getLoginPropertiesPrivate() {
 		
-		Properties properties = new Properties();
-		
-		StringBuilder password = new StringBuilder();
-		password.append(passwordText.getPassword());
-		
-		// Inform about empty password.
-		if (password.length() <= 0) {
-			Utility.show(this, "org.multipage.basic.messageEmptyPassword");
+		try {
+			Properties properties = new Properties();
+			
+			StringBuilder password = new StringBuilder();
+			password.append(passwordText.getPassword());
+			
+			// Inform about empty password.
+			if (password.length() <= 0) {
+				Utility.show(this, "org.multipage.basic.messageEmptyPassword");
+			}
+			
+			properties.setProperty("username", usernameText.getText());
+			properties.setProperty("password", password.toString());
+			properties.setProperty("server", serverText.getText());
+			properties.setProperty("port", portText.getText());
+			properties.setProperty("ssl", sslCheckBox.isSelected() ? "true" : "false");
+			
+			String databaseName = comboDatabaseNames.getEditor().getItem().toString();
+			if (databaseName.isEmpty()) {
+				databaseName = "empty";
+			}
+					
+			properties.setProperty("database", databaseName);
+			
+			// Remove passwordText.
+			for (int index = 0; index < password.length(); index++) {
+				password.setCharAt(index, '\00');
+			}
+			
+			return properties;
 		}
-		
-		properties.setProperty("username", usernameText.getText());
-		properties.setProperty("password", password.toString());
-		properties.setProperty("server", serverText.getText());
-		properties.setProperty("port", portText.getText());
-		properties.setProperty("ssl", sslCheckBox.isSelected() ? "true" : "false");
-		
-		String databaseName = comboDatabaseNames.getEditor().getItem().toString();
-		if (databaseName.isEmpty()) {
-			databaseName = "empty";
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-				
-		properties.setProperty("database", databaseName);
-		
-		// Remove passwordText.
-		for (int index = 0; index < password.length(); index++) {
-			password.setCharAt(index, '\00');
-		}
-		
-		
-		return properties;
+		return null;
 	}
 	
 	/**
 	 * Show more.
 	 */
 	private void showMore(boolean show) {
-		
-		// Set dialog size.
-		setSize(show ? extendedSize : normalSize);
-		// Set more panel visible / not visible.
-		morePanel.setVisible(show);
+		try {
+			
+			// Set dialog size.
+			setSize(show ? extendedSize : normalSize);
+			// Set more panel visible / not visible.
+			morePanel.setVisible(show);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -987,48 +1121,65 @@ public class LoginDialog extends JDialog {
 	 * @return the success
 	 */
 	public boolean isSuccess() {
-		return result.isOK();
+		
+		try {
+			return result.isOK();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
 	 * On remove database name.
 	 */
 	protected void onRemoveDatabaseName() {
-		
-		// Get editor text value.
-		String editorValue = (String) comboDatabaseNames.getEditor().getItem();
-		if (editorValue.isEmpty()) {
-			return;
+		try {
+			
+			// Get editor text value.
+			String editorValue = (String) comboDatabaseNames.getEditor().getItem();
+			if (editorValue.isEmpty()) {
+				return;
+			}
+			
+			// Ask user.
+			if (!Utility.ask(this, "org.multipage.basic.messageRemoveCurrentDatabaseNameFromList")) {
+				return;
+			}
+			
+			// Try to remove given list item.
+			removeDatabaseName(editorValue);
 		}
-		
-		// Ask user.
-		if (!Utility.ask(this, "org.multipage.basic.messageRemoveCurrentDatabaseNameFromList")) {
-			return;
-		}
-		
-		// Try to remove given list item.
-		removeDatabaseName(editorValue);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Removes database name from combo box list.
 	 */
 	protected void removeDatabaseName(String databaseName) {
-		
-		ComboBoxModel<String> model = comboDatabaseNames.getModel();
-		
-		// Try to remove given list item.
-		for (int index = 0; index < model.getSize(); index++) {
-			String itemValue = model.getElementAt(index);
+		try {
 			
-			if (itemValue.contains(databaseName)) {
+			ComboBoxModel<String> model = comboDatabaseNames.getModel();
+			
+			// Try to remove given list item.
+			for (int index = 0; index < model.getSize(); index++) {
+				String itemValue = model.getElementAt(index);
 				
-				// Remove the item, initialize combo box editor and exit the loop.
-				comboDatabaseNames.removeItemAt(index);
-				updateDatabaseNamesComboBox();
-				break;
+				if (itemValue.contains(databaseName)) {
+					
+					// Remove the item, initialize combo box editor and exit the loop.
+					comboDatabaseNames.removeItemAt(index);
+					updateDatabaseNamesComboBox();
+					break;
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -1037,84 +1188,110 @@ public class LoginDialog extends JDialog {
 	 */
 	private MiddleResult getAvailableDatabases(LinkedList<String> databaseNames) {
 		
-		// Get available database names.
-		Properties loginProperties = getLoginPropertiesPrivate();
-		
-		MiddleResult result = ProgramBasic.getMiddle().getDatabaseNames(loginProperties, databaseNames);
-		return result;
+		try {
+			// Get available database names.
+			Properties loginProperties = getLoginPropertiesPrivate();
+			
+			MiddleResult result = ProgramBasic.getMiddle().getDatabaseNames(loginProperties, databaseNames);
+			return result;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
 	 * Update database names combo box.
 	 */
 	private void updateDatabaseNamesComboBox() {
-		
-		// Get available databases.
-		LinkedList<String> databaseNames = new LinkedList<String>();
-		MiddleResult result = getAvailableDatabases(databaseNames);
-		
-		// Delegate the call.
-		if (result.isOK()) {
-			updateDatabaseNamesComboBox(databaseNames);
+		try {
+			
+			// Get available databases.
+			LinkedList<String> databaseNames = new LinkedList<String>();
+			MiddleResult result = getAvailableDatabases(databaseNames);
+			
+			// Delegate the call.
+			if (result.isOK()) {
+				updateDatabaseNamesComboBox(databaseNames);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Update database names combo box.
 	 */
 	private void updateDatabaseNamesComboBox(LinkedList<String> databaseNames) {
-		
-		// Add new database names.
-		addNewDatabaseNames(databaseNames);
-		
-		// Set editor text
-		String editorValue = "";
-		
-		ComboBoxModel<String> model = comboDatabaseNames.getModel();
-		if (model.getSize() > 0) {
-			editorValue = model.getElementAt(0);
+		try {
+			
+			// Add new database names.
+			addNewDatabaseNames(databaseNames);
+			
+			// Set editor text
+			String editorValue = "";
+			
+			ComboBoxModel<String> model = comboDatabaseNames.getModel();
+			if (model.getSize() > 0) {
+				editorValue = model.getElementAt(0);
+			}
+			
+			// Reset editor value.
+			comboDatabaseNames.getEditor().setItem(editorValue);
 		}
-		
-		// Reset editor value.
-		comboDatabaseNames.getEditor().setItem(editorValue);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On update database names.
 	 */
 	protected void onUpdateDatabaseNames() {
-		
-		// Get available databases.
-		LinkedList<String> databaseNames = new LinkedList<String>();
-		MiddleResult result = getAvailableDatabases(databaseNames);
-		if (result.isNotOK()) {
-			Utility.show(this, "org.multipage.basic.messageCannotGetAvailableDatabases", result.getMessage());
-			return;
+		try {
+			
+			// Get available databases.
+			LinkedList<String> databaseNames = new LinkedList<String>();
+			MiddleResult result = getAvailableDatabases(databaseNames);
+			if (result.isNotOK()) {
+				Utility.show(this, "org.multipage.basic.messageCannotGetAvailableDatabases", result.getMessage());
+				return;
+			}
+			
+			// Let user select current database
+			String currentDatabase = SelectDatabaseDialog.showDialog(this, databaseNames);
+			
+			// Update combo box.
+			updateDatabaseNamesComboBox(databaseNames);
+			
+			// Select current database.
+			comboDatabaseNames.setSelectedItem(currentDatabase);
 		}
-		
-		// Let user select current database
-		String currentDatabase = SelectDatabaseDialog.showDialog(this, databaseNames);
-		
-		// Update combo box.
-		updateDatabaseNamesComboBox(databaseNames);
-		
-		// Select current database.
-		comboDatabaseNames.setSelectedItem(currentDatabase);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On new database.
 	 */
 	protected void onNewDatabase() {
-		
-		// Get database name.
-		String databaseName = Utility.input(this, "org.multipage.basic.textInsertNewDatabaseName");
-		if (databaseName == null) {
-			return;
+		try {
+			
+			// Get database name.
+			String databaseName = Utility.input(this, "org.multipage.basic.textInsertNewDatabaseName");
+			if (databaseName == null) {
+				return;
+			}
+			
+			// Create new database.
+			createNewDatabase(databaseName);
 		}
-		
-		// Create new database.
-		createNewDatabase(databaseName);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -1123,77 +1300,88 @@ public class LoginDialog extends JDialog {
 	 */
 	public MiddleResult createNewDatabase(String databaseName) {
 		
-		// Get connection properties.		
-		String userName = usernameText.getText();
-		char [] passwordArea = passwordText.getPassword();
-		String password =  String.valueOf(passwordArea);
-		String server = serverText.getText();
-		int port = -1;
 		try {
-			port = Integer.parseInt(portText.getText());
-		}
-		catch (Exception e) {
-		}
-		boolean useSsl = sslCheckBox.isSelected();
-		
-		// Try to create new database.
-		MiddleResult result = ProgramBasic.getMiddle().createDatabase(server, port, useSsl, userName, password, databaseName);
-		if (result.isNotOK()) {
-			result.show(this);
+			// Get connection properties.		
+			String userName = usernameText.getText();
+			char [] passwordArea = passwordText.getPassword();
+			String password =  String.valueOf(passwordArea);
+			String server = serverText.getText();
+			int port = -1;
+			try {
+				port = Integer.parseInt(portText.getText());
+			}
+			catch (Exception e) {
+			}
+			boolean useSsl = sslCheckBox.isSelected();
 			
-			return result;
+			// Try to create new database.
+			MiddleResult result = ProgramBasic.getMiddle().createDatabase(server, port, useSsl, userName, password, databaseName);
+			if (result.isNotOK()) {
+				result.show(this);
+				
+				return result;
+			}
+			
+			// Set new database name.
+			LoginDialog.databaseName = databaseName;
+			addDatabaseName(databaseName);
+			comboDatabaseNames.setSelectedItem(databaseName);
+			
+			return MiddleResult.OK;
 		}
-		
-		// Set new database name.
-		LoginDialog.databaseName = databaseName;
-		addDatabaseName(databaseName);
-		comboDatabaseNames.setSelectedItem(databaseName);
-		
-		return MiddleResult.OK;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
 	 * Remove old database.
 	 */
 	protected void onRemoveDatabase() {
-		
-		// Get database names list.
-		LinkedList<String> databaseNames = new LinkedList<String>();
-		MiddleResult result = getAvailableDatabases(databaseNames);
-		
-		if (result.isNotOK()) {
-			Utility.show(this, "org.multipage.basic.messageCannotGetAvailableDatabases", result.getMessage());
-			return;
+		try {
+			
+			// Get database names list.
+			LinkedList<String> databaseNames = new LinkedList<String>();
+			MiddleResult result = getAvailableDatabases(databaseNames);
+			
+			if (result.isNotOK()) {
+				Utility.show(this, "org.multipage.basic.messageCannotGetAvailableDatabases", result.getMessage());
+				return;
+			}
+			
+			// Select database.
+			String databaseName = SelectDatabaseDialog.showDialog(this, databaseNames);
+			if (databaseName == null) {
+				return;
+			}
+			
+			// Confirm deletion.
+			if (!Utility.ask(this, "org.multipage.basic.messageDropDatabase", databaseName)) {
+				return;
+			}
+			
+			// Get connection properties.	
+			Properties loginProperties = getLoginPropertiesPrivate();
+			String userName = loginProperties.getProperty("username");
+			String password =  loginProperties.getProperty("password");
+			String server = loginProperties.getProperty("server");
+			String portString = loginProperties.getProperty("port");
+			int port = Integer.parseInt(portString);
+			String useSslString = loginProperties.getProperty("useSsl");
+			boolean useSsl = Boolean.getBoolean(useSslString);
+			
+			// Try to remove selected database.
+			result = ProgramBasic.getMiddle().dropDatabase(server, port, useSsl, userName, password, databaseName);
+			if (result.isNotOK()) {
+				result.show(this);
+			}
+			
+			// Remove database name from combobox list
+			removeDatabaseName(databaseName);
 		}
-		
-		// Select database.
-		String databaseName = SelectDatabaseDialog.showDialog(this, databaseNames);
-		if (databaseName == null) {
-			return;
-		}
-		
-		// Confirm deletion.
-		if (!Utility.ask(this, "org.multipage.basic.messageDropDatabase", databaseName)) {
-			return;
-		}
-		
-		// Get connection properties.	
-		Properties loginProperties = getLoginPropertiesPrivate();
-		String userName = loginProperties.getProperty("username");
-		String password =  loginProperties.getProperty("password");
-		String server = loginProperties.getProperty("server");
-		String portString = loginProperties.getProperty("port");
-		int port = Integer.parseInt(portString);
-		String useSslString = loginProperties.getProperty("useSsl");
-		boolean useSsl = Boolean.getBoolean(useSslString);
-		
-		// Try to remove selected database.
-		result = ProgramBasic.getMiddle().dropDatabase(server, port, useSsl, userName, password, databaseName);
-		if (result.isNotOK()) {
-			result.show(this);
-		}
-		
-		// Remove database name from combobox list
-		removeDatabaseName(databaseName);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

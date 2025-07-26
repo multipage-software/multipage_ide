@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -38,10 +38,11 @@ import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.TextEditorPane;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Slot description dialog.
+ * @author vakol
  *
  */
 public class SlotDescriptionDialog extends JDialog {
@@ -118,11 +119,16 @@ public class SlotDescriptionDialog extends JDialog {
 	 * @param resource
 	 */
 	public static void showDialog(Component parent, Slot slot) {
-		
-		SlotDescriptionDialog dialog = new SlotDescriptionDialog(Utility.findWindow(parent));
-		dialog.setSlot(slot);
-		
-		dialog.setVisible(true);
+		try {
+			
+			SlotDescriptionDialog dialog = new SlotDescriptionDialog(Utility.findWindow(parent));
+			dialog.setSlot(slot);
+			
+			dialog.setVisible(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -130,12 +136,16 @@ public class SlotDescriptionDialog extends JDialog {
 	 * @param slot
 	 */
 	private void setSlot(Slot slot) {
-		
-		this.slot = slot;
-		
-		textSlotInfo.setText(slot.getSlotInfo());
-		
-		loadSlotDescription(slot);
+		try {
+			
+			this.slot = slot;
+			
+			textSlotInfo.setText(slot.getSlotInfo());
+			loadSlotDescription(slot);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -144,12 +154,16 @@ public class SlotDescriptionDialog extends JDialog {
 	 */
 	public SlotDescriptionDialog(Window parentWindow) {
 		super(parentWindow, ModalityType.DOCUMENT_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -239,93 +253,123 @@ public class SlotDescriptionDialog extends JDialog {
 	 * If the 
 	 */
 	protected void onWindowOpened() {
-		
-		// If the slot description is not an orphan, inform user.
-		Middle middle = ProgramBasic.getMiddle();
-		Properties login = ProgramBasic.getLoginProperties();
-
-		Obj<Boolean> isOrphan = new Obj<Boolean>();
-		
-		MiddleResult result = middle.loadSlotDescriptionIsOrphan(login, this.slot.getId(), isOrphan);
-		if (result.isNotOK()) {
-			result.show(this);
-			return;
+		try {
+			
+			// If the slot description is not an orphan, inform user.
+			Middle middle = ProgramBasic.getMiddle();
+			Properties login = ProgramBasic.getLoginProperties();
+	
+			Obj<Boolean> isOrphan = new Obj<Boolean>();
+			
+			MiddleResult result = middle.loadSlotDescriptionIsOrphan(login, this.slot.getId(), isOrphan);
+			if (result.isNotOK()) {
+				result.show(this);
+				return;
+			}
+			
+			if (!isOrphan.ref) {
+				Utility.show(this, "org.multipage.generator.messageThisSlotDescriptionIsUsedInOtherSlots");
+			}
+			else {
+				buttonUnlink.setEnabled(false);
+			}
 		}
-		
-		if (!isOrphan.ref) {
-			Utility.show(this, "org.multipage.generator.messageThisSlotDescriptionIsUsedInOtherSlots");
-		}
-		else {
-			buttonUnlink.setEnabled(false);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		createEditor();
-		
-		localize();
-		setIcons();
-		loadDialog();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			createEditor();
+			
+			localize();
+			setIcons();
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Create editor.
 	 */
 	private void createEditor() {
-		
-		editor = new TextEditorPane(this, true);
-		editor.selectHtmlEditor(true);
-		
-		panelContainer.add(editor);
+		try {
+			
+			editor = new TextEditorPane(this, true);
+			editor.selectHtmlEditor(true);
+			
+			panelContainer.add(editor);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(buttonUnlink);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(buttonUnlink);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
-		buttonUnlink.setIcon(Images.getIcon("org/multipage/generator/images/unlink.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+			buttonUnlink.setIcon(Images.getIcon("org/multipage/generator/images/unlink.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load slot description.
 	 */
 	protected void loadSlotDescription(Slot slot) {
-
-		// Load description.
-		Middle middle = ProgramBasic.getMiddle();
-		Properties login = ProgramBasic.getLoginProperties();
-		
-		Obj<String> description = new Obj<String>("");
-		
-		MiddleResult result = middle.loadSlotDescription(login, slot.getId(), description);
-		if (result.isNotOK()) {
-			result.show(this);
+		try {
+			
+			// Load description.
+			Middle middle = ProgramBasic.getMiddle();
+			Properties login = ProgramBasic.getLoginProperties();
+			
+			Obj<String> description = new Obj<String>("");
+			
+			MiddleResult result = middle.loadSlotDescription(login, slot.getId(), description);
+			if (result.isNotOK()) {
+				result.show(this);
+			}
+			
+			// Display description.
+			editor.setText(description.ref);
+			
+			// Set initial edit focus.
+			editor.grabFocusText();
 		}
-		
-		// Display description.
-		editor.setText(description.ref);
-		
-		// Set initial edit focus.
-		editor.grabFocusText();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -334,59 +378,85 @@ public class SlotDescriptionDialog extends JDialog {
 	 * @param description
 	 */
 	private void saveSlotDescription(long slotId, String description) {
-		
-		// Save slot description.
-		Middle middle = ProgramBasic.getMiddle();
-		Properties login = ProgramBasic.getLoginProperties();
-
-		MiddleResult result = middle.updateSlotDescription(login, slotId, description);
-		if (result.isNotOK()) {
-			result.show(this);
+		try {
+			
+			// Save slot description.
+			Middle middle = ProgramBasic.getMiddle();
+			Properties login = ProgramBasic.getLoginProperties();
+	
+			MiddleResult result = middle.updateSlotDescription(login, slotId, description);
+			if (result.isNotOK()) {
+				result.show(this);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On unlink description.
 	 */
 	protected void onUnlink() {
-		
-		// Ask user.
-		if (!Utility.ask(this, "org.multipage.generator.textUnlinkSlotDescription")) {
-			return;
+		try {
+			
+			// Ask user.
+			if (!Utility.ask(this, "org.multipage.generator.textUnlinkSlotDescription")) {
+				return;
+			}
+			
+			saveSlotDescription(slot.getId(), null);
+			
+			Utility.show(this, "org.multipage.generator.messageSlotDescriptionHasBeenUnlinked");
 		}
-		
-		saveSlotDescription(slot.getId(), null);
-		
-		Utility.show(this, "org.multipage.generator.messageSlotDescriptionHasBeenUnlinked");
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setBounds(bounds);
+			}
 		}
-		else {
-			setBounds(bounds);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On cancel.
 	 */
 	private void onCancel() {
+		try {
+			
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
-		saveDialog();
 		dispose();
 	}
 	
@@ -394,12 +464,18 @@ public class SlotDescriptionDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		// Save slot description and exit.
-		String description = editor.getText();
-		saveSlotDescription(slot.getId(), description);
-		
-		saveDialog();
+		try {
+			
+			// Save slot description and exit.
+			String description = editor.getText();
+			saveSlotDescription(slot.getId(), description);
+			
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 }

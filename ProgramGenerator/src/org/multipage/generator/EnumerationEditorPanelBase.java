@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -13,13 +13,15 @@ import javax.swing.JPanel;
 import org.maclan.EnumerationValue;
 import org.maclan.Slot;
 import org.multipage.gui.StringValueEditor;
+import org.multipage.util.Safe;
 
 /**
- * @author
+ * Base class for enumeration editor.
+ * @author vakol
  *
  */
 public class EnumerationEditorPanelBase extends JPanel implements SlotValueEditorPanelInterface {
-
+	
 	/**
 	 * Version.
 	 */
@@ -50,8 +52,14 @@ public class EnumerationEditorPanelBase extends JPanel implements SlotValueEdito
 	@Override
 	public Object getValue() {
 		
-		// Return selected enumeration value.
-		return comboEnumerationValue.getSelectedItem();
+		try {
+			// Return selected enumeration value.
+			return comboEnumerationValue.getSelectedItem();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -59,14 +67,18 @@ public class EnumerationEditorPanelBase extends JPanel implements SlotValueEdito
 	 */
 	@Override
 	public void setValue(Object value) {
-		
-		if (value instanceof EnumerationValue) {
+		try {
 			
-			EnumerationValue enumerationValue = (EnumerationValue) value;
-			
-			// Select enumeration type and value.
-			selectEnumerationValue(enumerationValue.getId());
+			if (value instanceof EnumerationValue) {
+				EnumerationValue enumerationValue = (EnumerationValue) value;
+				
+				// Select enumeration type and value.
+				selectEnumerationValue(enumerationValue.getId());
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -74,18 +86,23 @@ public class EnumerationEditorPanelBase extends JPanel implements SlotValueEdito
 	 * @param valueId
 	 */
 	protected void selectEnumerationValue(long valueId) {
-		
-		for (int index = 0; index < comboEnumerationValue.getItemCount();
-				index++) {
+		try {
 			
-			EnumerationValue enumerationValue = comboEnumerationValue.getItemAt(index);
-			if (enumerationValue.getId() == valueId) {
+			for (int index = 0; index < comboEnumerationValue.getItemCount();
+					index++) {
 				
-				// Select combo box item.
-				comboEnumerationValue.setSelectedIndex(index);
-				break;
+				EnumerationValue enumerationValue = comboEnumerationValue.getItemAt(index);
+				if (enumerationValue.getId() == valueId) {
+					
+					// Select combo box item.
+					comboEnumerationValue.setSelectedIndex(index);
+					break;
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -102,8 +119,13 @@ public class EnumerationEditorPanelBase extends JPanel implements SlotValueEdito
 	 * On reset.
 	 */
 	protected void onReset() {
-		
-		comboEnumerationValue.setSelectedIndex(-1);
+		try {
+			
+			comboEnumerationValue.setSelectedIndex(-1);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -111,8 +133,13 @@ public class EnumerationEditorPanelBase extends JPanel implements SlotValueEdito
 	 * @param ref
 	 */
 	public void setEnumerationValue(EnumerationValue enumerationValue) {
-		
-		setValue(enumerationValue);
+		try {
+			
+			setValue(enumerationValue);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -121,8 +148,14 @@ public class EnumerationEditorPanelBase extends JPanel implements SlotValueEdito
 	 */
 	public EnumerationValue getEnumerationValue() {
 		
-		// Return selected enumeration value.
-		return (EnumerationValue) getValue();
+		try {
+			// Return selected enumeration value.
+			return (EnumerationValue) getValue();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -140,6 +173,12 @@ public class EnumerationEditorPanelBase extends JPanel implements SlotValueEdito
 	@Override
 	public String getValueMeaning() {
 		
-		return StringValueEditor.meansEnumeration;
+		try {
+			return StringValueEditor.meansEnumeration;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 }

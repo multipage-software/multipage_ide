@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -24,16 +24,17 @@ import java.io.IOException;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
 import org.multipage.gui.Images;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * @author
+ * Splitter panel for area properties.
+ * @author vakol
  *
  */
 public class SplitProperties extends JPanel {
@@ -158,135 +159,209 @@ public class SplitProperties extends JPanel {
 	 * @param properties
 	 */
 	public SplitProperties(JComponent tabPanel, JComponent properties) {
-
-		this.main = tabPanel;
-		this.properties = properties;
-		
-		// Load images.
-		minimizeButton.setIcon(Images.getIcon("org/multipage/generator/images/minimize.png"));
-		maximizeButton.setIcon(Images.getIcon("org/multipage/generator/images/maximize.png"));
-
-		// Set tool tips.
-		minimizeButton.setToolTipText(Resources.getString("org.multipage.generator.tooltipMinimize"));
-		maximizeButton.setToolTipText(Resources.getString("org.multipage.generator.tooltipMaximize"));
-		
-		setLayout(null);
-		
-		add(tabPanel);
-		add(properties);
-		add(topPadding);
-		minimizeButton.setSize(22, 22);
-		add(minimizeButton);
-		maximizeButton.setSize(22, 22);
-		add(maximizeButton);
-		
-		// Set listeners.
-		addComponentListener(new ComponentAdapter() {
-			@Override
-			public void componentResized(ComponentEvent e) {
-				onResized();
-			}
-		});
-		addMouseMotionListener(new MouseMotionAdapter() {
-			@Override
-			public void mouseDragged(MouseEvent e) {
-				onMouseDragged(e);
-			}
-		});
-		addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent e) {
-				onMousePressed(e);
-			}
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				onMouseReleased(e);
-			}
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				onMouseEntered(e);
-			}
-			@Override
-			public void mouseExited(MouseEvent e) {
-				onMouseExited(e);
-			}
-		});
-		minimizeButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				minimize();
-			}
-		});
-		maximizeButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				maximize();
-			}
-		});
-		topPadding.addMouseMotionListener(new MouseMotionAdapter() {
-			@Override
-			public void mouseMoved(MouseEvent e) {
-				setCursor(Cursor.getDefaultCursor());
-			}
-		});
-		
-		// Load dialog.
-		loadDialog();
+		try {
+			
+			this.main = tabPanel;
+			this.properties = properties;
+			
+			// Load images.
+			minimizeButton.setIcon(Images.getIcon("org/multipage/generator/images/minimize.png"));
+			maximizeButton.setIcon(Images.getIcon("org/multipage/generator/images/maximize.png"));
+	
+			// Set tool tips.
+			minimizeButton.setToolTipText(Resources.getString("org.multipage.generator.tooltipMinimize"));
+			maximizeButton.setToolTipText(Resources.getString("org.multipage.generator.tooltipMaximize"));
+			
+			setLayout(null);
+			
+			add(tabPanel);
+			add(properties);
+			add(topPadding);
+			minimizeButton.setSize(22, 22);
+			add(minimizeButton);
+			maximizeButton.setSize(22, 22);
+			add(maximizeButton);
+			
+			// Set listeners.
+			addComponentListener(new ComponentAdapter() {
+				@Override
+				public void componentResized(ComponentEvent e) {
+					try {
+						
+						onResized();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+			addMouseMotionListener(new MouseMotionAdapter() {
+				@Override
+				public void mouseDragged(MouseEvent e) {
+					try {
+						
+						onMouseDragged(e);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+			addMouseListener(new MouseAdapter() {
+				@Override
+				public void mousePressed(MouseEvent e) {
+					try {
+						
+						onMousePressed(e);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void mouseReleased(MouseEvent e) {
+					try {
+						
+						onMouseReleased(e);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void mouseEntered(MouseEvent e) {
+					try {
+						
+						onMouseEntered(e);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void mouseExited(MouseEvent e) {
+					try {
+						
+						onMouseExited(e);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+			minimizeButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						
+						minimize();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+			maximizeButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						
+						maximize();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+			topPadding.addMouseMotionListener(new MouseMotionAdapter() {
+				@Override
+				public void mouseMoved(MouseEvent e) {
+					try {
+						
+						setCursor(Cursor.getDefaultCursor());
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+			
+			// Load dialog.
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Initialize.
 	 */
 	public void init() {
-		
-		if (minimized) {
-			minimize();
+		try {
+			
+			if (minimized) {
+				minimize();
+			}
+			else {
+				maximize();
+			}
 		}
-		else {
-			maximize();
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Maximize.
 	 */
 	public void maximize() {
-		
-		// Set flag.
-		minimized = false;
-		// Show properties.
-		properties.setVisible(true);
-		// Split panels.
-		setSplitter(splitter);
-		// Hide maximize button.
-		maximizeButton.setVisible(false);
-		// Show minimize button.
-		minimizeButton.setVisible(true);
-		// Repaint the panel.
-		SwingUtilities.invokeLater(() -> {
-			repaint();
-		});
+		try {
+			
+			// Set flag.
+			minimized = false;
+			// Show properties.
+			properties.setVisible(true);
+			// Split panels.
+			setSplitter(splitter);
+			// Hide maximize button.
+			maximizeButton.setVisible(false);
+			// Show minimize button.
+			minimizeButton.setVisible(true);
+			// Repaint the panel.
+			Safe.invokeLater(() -> {
+				repaint();
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On minimize.
 	 */
 	public void minimize() {
-
-		// Set flag.
-		minimized = true;
-		// Hide minimize button.
-		minimizeButton.setVisible(false);
-		// Hide properties.
-		properties.setVisible(false);
-		// Show maximize button.
-		maximizeButton.setVisible(true);
-		// Set main panel.
-		main.setBounds(0, 0, getWidth() - minimizedWidth, getHeight());
-		// Repaint the panel.
-		SwingUtilities.invokeLater(() -> {
-			repaint();
-		});
+		try {
+			
+			// Set flag.
+			minimized = true;
+			// Hide minimize button.
+			minimizeButton.setVisible(false);
+			// Hide properties.
+			properties.setVisible(false);
+			// Show maximize button.
+			maximizeButton.setVisible(true);
+			// Set main panel.
+			main.setBounds(0, 0, getWidth() - minimizedWidth, getHeight());
+			// Repaint the panel.
+			Safe.invokeLater(() -> {
+				repaint();
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -303,8 +378,13 @@ public class SplitProperties extends JPanel {
 	 * @param e
 	 */
 	protected void onMousePressed(MouseEvent e) {
-
-		splitterDrag  = isOnSplitter(e.getPoint());
+		try {
+			
+			splitterDrag  = isOnSplitter(e.getPoint());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -312,11 +392,16 @@ public class SplitProperties extends JPanel {
 	 * @param e
 	 */
 	protected void onMouseDragged(MouseEvent e) {
-		
-		// If splitter dragged.
-		if (splitterDrag) {
-			setSplitter((int) (getWidth() - e.getPoint().getX()));
+		try {
+			
+			// If splitter dragged.
+			if (splitterDrag) {
+				setSplitter((int) (getWidth() - e.getPoint().getX()));
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -325,24 +410,30 @@ public class SplitProperties extends JPanel {
 	 */
 	private void setSplitter(int newsplitter) {
 		
-		if (newsplitter < splitterWidth / 2) {
-			newsplitter = splitterWidth / 2;
+		try {
+			
+			if (newsplitter < splitterWidth / 2) {
+				newsplitter = splitterWidth / 2;
+			}
+			else if (newsplitter > getWidth() - splitterWidth / 2) {
+				newsplitter = getWidth() - splitterWidth / 2;
+			}
+			
+			splitter = newsplitter;
+			
+			int splitterStart = getWidth() - newsplitter - splitterWidth / 2,
+		    splitterEnd = splitterStart + splitterWidth + 1;
+		
+			main.setSize(splitterStart, getHeight());
+			properties.setBounds(splitterEnd, controlHeight, getWidth() - splitterEnd, getHeight() - controlHeight);
+			topPadding.setBounds(splitterEnd, 0, getWidth() - splitterEnd - 22, controlHeight);
+			
+			revalidate();
+			Utility.repaintLater(this);
 		}
-		else if (newsplitter > getWidth() - splitterWidth / 2) {
-			newsplitter = getWidth() - splitterWidth / 2;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		splitter = newsplitter;
-		
-		int splitterStart = getWidth() - newsplitter - splitterWidth / 2,
-	    splitterEnd = splitterStart + splitterWidth + 1;
-	
-		main.setSize(splitterStart, getHeight());
-		properties.setBounds(splitterEnd, controlHeight, getWidth() - splitterEnd, getHeight() - controlHeight);
-		topPadding.setBounds(splitterEnd, 0, getWidth() - splitterEnd - 22, controlHeight);
-		
-		revalidate();
-		Utility.repaintLater(this);
 	}
 
 	/**
@@ -350,10 +441,15 @@ public class SplitProperties extends JPanel {
 	 * @param e
 	 */
 	protected void onMouseEntered(MouseEvent e) {
-
-		if (!minimized) {
-			setCursor(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
+		try {
+			
+			if (!minimized) {
+				setCursor(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -361,8 +457,13 @@ public class SplitProperties extends JPanel {
 	 * @param e
 	 */
 	protected void onMouseExited(MouseEvent e) {
-		
-		setCursor(Cursor.getDefaultCursor());
+		try {
+			
+			setCursor(Cursor.getDefaultCursor());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -371,31 +472,42 @@ public class SplitProperties extends JPanel {
 	 * @return
 	 */
 	private boolean isOnSplitter(Point point) {
-
-		int splitterStart = getWidth() - splitter - splitterWidth / 2;
-		Rectangle rect = new Rectangle(splitterStart, 0, splitterWidth, getHeight());
 		
-		return rect.contains(point);
+		try {
+			int splitterStart = getWidth() - splitter - splitterWidth / 2;
+			Rectangle rect = new Rectangle(splitterStart, 0, splitterWidth, getHeight());
+			
+			return rect.contains(point);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
 	 * On resized.
 	 */
 	protected void onResized() {
-
-		if (minimized) {
-			main.setBounds(0, 0, getWidth() - minimizedWidth, getHeight());
-		}
-		else {
-			int splitterStart = getWidth() - splitter - splitterWidth / 2,
-			    splitterEnd = splitterStart + splitterWidth + 1;
+		try {
 			
-			main.setBounds(0, 0, splitterStart, getHeight());
-			properties.setBounds(splitterEnd, controlHeight, getWidth() - splitterEnd, getHeight() - controlHeight);
-			topPadding.setBounds(splitterEnd, 0, getWidth() - splitterEnd - 22, controlHeight);
+			if (minimized) {
+				main.setBounds(0, 0, getWidth() - minimizedWidth, getHeight());
+			}
+			else {
+				int splitterStart = getWidth() - splitter - splitterWidth / 2,
+				    splitterEnd = splitterStart + splitterWidth + 1;
+				
+				main.setBounds(0, 0, splitterStart, getHeight());
+				properties.setBounds(splitterEnd, controlHeight, getWidth() - splitterEnd, getHeight() - controlHeight);
+				topPadding.setBounds(splitterEnd, 0, getWidth() - splitterEnd - 22, controlHeight);
+			}
+			minimizeButton.setLocation(getWidth() - 22, 0);
+			maximizeButton.setLocation(getWidth() - 22, 0);
 		}
-		minimizeButton.setLocation(getWidth() - 22, 0);
-		maximizeButton.setLocation(getWidth() - 22, 0);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -403,16 +515,22 @@ public class SplitProperties extends JPanel {
 	 */
 	@Override
 	public void paint(Graphics g) {
-		super.paint(g);
 		
-		Graphics2D g2 = (Graphics2D) g;
-		if (!minimized) {
-			int splitterStart = getWidth() - splitter - splitterWidth / 2,
-			    splitterEnd = splitterStart + splitterWidth;
+		try {
+			super.paint(g);
 			
-			// Draw splitter.
-			g2.drawLine(splitterStart, 0, splitterStart, getHeight());
-			g2.drawLine(splitterEnd, 0, splitterEnd, getHeight());
+			Graphics2D g2 = (Graphics2D) g;
+			if (!minimized) {
+				int splitterStart = getWidth() - splitter - splitterWidth / 2,
+				    splitterEnd = splitterStart + splitterWidth;
+				
+				// Draw splitter.
+				g2.drawLine(splitterStart, 0, splitterStart, getHeight());
+				g2.drawLine(splitterEnd, 0, splitterEnd, getHeight());
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 	}
 
@@ -421,12 +539,10 @@ public class SplitProperties extends JPanel {
 	 */
 	public void redraw() {
 
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				revalidate();
-				repaint();
-			}
+		Safe.invokeLater(() -> {
+
+			revalidate();
+			repaint();
 		});
 	}
 
@@ -434,8 +550,13 @@ public class SplitProperties extends JPanel {
 	 * Dispose splitter.
 	 */
 	public void dispose() {
-
-		// Save dialog.
-		saveDialog();
+		try {
+			
+			// Save dialog.
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

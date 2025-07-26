@@ -1,14 +1,17 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
+import org.multipage.util.Safe;
+
 /**
- * @author
+ * CSS 3D transformation matrix.
+ * @author vakol
  *
  */
 public class CssTransformMatrix3d extends CssTransform {
@@ -47,24 +50,30 @@ public class CssTransformMatrix3d extends CssTransform {
 	@Override
 	public String toString() {
 		
-		return String.format("matrix3d(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-				Utility.removeFloatNulls(String.valueOf(a1)),
-				Utility.removeFloatNulls(String.valueOf(b1)),
-				Utility.removeFloatNulls(String.valueOf(c1)),
-				Utility.removeFloatNulls(String.valueOf(d1)),
-				Utility.removeFloatNulls(String.valueOf(a2)),
-				Utility.removeFloatNulls(String.valueOf(b2)),
-				Utility.removeFloatNulls(String.valueOf(c2)),
-				Utility.removeFloatNulls(String.valueOf(d2)),
-				Utility.removeFloatNulls(String.valueOf(a3)),
-				Utility.removeFloatNulls(String.valueOf(b3)),
-				Utility.removeFloatNulls(String.valueOf(c3)),
-				Utility.removeFloatNulls(String.valueOf(d3)),
-				Utility.removeFloatNulls(String.valueOf(a4)),
-				Utility.removeFloatNulls(String.valueOf(b4)),
-				Utility.removeFloatNulls(String.valueOf(c4)),
-				Utility.removeFloatNulls(String.valueOf(d4))
-				);
+		try {
+			return String.format("matrix3d(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+					Utility.removeFloatNulls(String.valueOf(a1)),
+					Utility.removeFloatNulls(String.valueOf(b1)),
+					Utility.removeFloatNulls(String.valueOf(c1)),
+					Utility.removeFloatNulls(String.valueOf(d1)),
+					Utility.removeFloatNulls(String.valueOf(a2)),
+					Utility.removeFloatNulls(String.valueOf(b2)),
+					Utility.removeFloatNulls(String.valueOf(c2)),
+					Utility.removeFloatNulls(String.valueOf(d2)),
+					Utility.removeFloatNulls(String.valueOf(a3)),
+					Utility.removeFloatNulls(String.valueOf(b3)),
+					Utility.removeFloatNulls(String.valueOf(c3)),
+					Utility.removeFloatNulls(String.valueOf(d3)),
+					Utility.removeFloatNulls(String.valueOf(a4)),
+					Utility.removeFloatNulls(String.valueOf(b4)),
+					Utility.removeFloatNulls(String.valueOf(c4)),
+					Utility.removeFloatNulls(String.valueOf(d4))
+					);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -72,22 +81,27 @@ public class CssTransformMatrix3d extends CssTransform {
 	 * @param matrix
 	 */
 	public void setFrom(CssTransformMatrix3d matrix) {
-		
-		this.a1 = matrix.a1;
-		this.b1 = matrix.b1;
-		this.c1 = matrix.c1;
-		this.d1 = matrix.d1;
-		this.a2 = matrix.a2;
-		this.b2 = matrix.b2;
-		this.c2 = matrix.c2;
-		this.d2 = matrix.d2;
-		this.a3 = matrix.a3;
-		this.b3 = matrix.b3;
-		this.c3 = matrix.c3;
-		this.d3 = matrix.d3;
-		this.a4 = matrix.a4;
-		this.b4 = matrix.b4;
-		this.c4 = matrix.c4;
-		this.d4 = matrix.d4;
+		try {
+			
+			this.a1 = matrix.a1;
+			this.b1 = matrix.b1;
+			this.c1 = matrix.c1;
+			this.d1 = matrix.d1;
+			this.a2 = matrix.a2;
+			this.b2 = matrix.b2;
+			this.c2 = matrix.c2;
+			this.d2 = matrix.d2;
+			this.a3 = matrix.a3;
+			this.b3 = matrix.b3;
+			this.c3 = matrix.c3;
+			this.d3 = matrix.d3;
+			this.a4 = matrix.a4;
+			this.b4 = matrix.b4;
+			this.c4 = matrix.c4;
+			this.d4 = matrix.d4;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -35,7 +35,7 @@ import com.thoughtworks.xstream.security.NullPermission;
 import com.thoughtworks.xstream.security.PrimitiveTypePermission;
 
 /**
- * State serializer is useful for storing and retrieving application settings to and from defined file.
+ * State serializer for storing and retrieving application settings to and from given file.
  * @author vakol
  */
 public class StateSerializer {

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -10,8 +10,8 @@ package org.multipage.gui;
 import java.util.LinkedList;
 
 /**
- * 
- * @author
+ * Tree node with identifier.
+ * @author vakol
  *
  */
 public interface IdentifiedTreeNode {
@@ -26,5 +26,5 @@ public interface IdentifiedTreeNode {
 	 * Get list of children.
 	 * @return
 	 */
-	LinkedList getChildren();
+	LinkedList<? extends Object> getChildren();
 }

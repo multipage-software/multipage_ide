@@ -1,24 +1,40 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.translator;
 
-import javax.swing.*;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 
-import org.multipage.gui.*;
-import org.multipage.util.*;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JTextField;
+import javax.swing.SpringLayout;
+import javax.swing.SwingConstants;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.*;
+import org.multipage.gui.Images;
+import org.multipage.gui.TextFieldEx;
+import org.multipage.gui.Utility;
+import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays editor of the language.
+ * @author vakol
  *
  */
 public class LanguageEditor extends JDialog {
@@ -84,13 +100,19 @@ public class LanguageEditor extends JDialog {
 	 */
 	public LanguageEditor(Window parentWindow) {
 		super(parentWindow, ModalityType.APPLICATION_MODAL);
-		// Initialize components.
-		initComponents();
-		// $hide>>$
-		// Post creation.
-		this.parentWindow = parentWindow;
-		postCreate();
-		// $hide<<$
+		
+		try {
+			// Initialize components.
+			initComponents();
+			// $hide>>$
+			// Post creation.
+			this.parentWindow = parentWindow;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -244,34 +266,45 @@ public class LanguageEditor extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		// Localize dialog components.
-		localize();
-		// Center dialog.
-		Utility.centerOnScreen(this);
-		// Set icons.
-		setIcons();
-		// Initialize description.
-		textDescription.setText(Resources.getString("org.multipage.translator.textNewLanguage"));
-		textDescription.selectAll();
-		// Initialize identifier.
-		textIdentifier.setText(Resources.getString("org.multipage.translator.textUnknown"));
-		textIdentifier.setEditable(false);
-		// Initialize is start checkbox.
-		checkBoxStartLanguage.setSelected(isSart);
+		try {
+			
+			// Localize dialog components.
+			localize();
+			// Center dialog.
+			Utility.centerOnScreen(this);
+			// Set icons.
+			setIcons();
+			// Initialize description.
+			textDescription.setText(Resources.getString("org.multipage.translator.textNewLanguage"));
+			textDescription.selectAll();
+			// Initialize identifier.
+			textIdentifier.setText(Resources.getString("org.multipage.translator.textUnknown"));
+			textIdentifier.setEditable(false);
+			// Initialize is start checkbox.
+			checkBoxStartLanguage.setSelected(isSart);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize dialog components.
 	 */
 	private void localize() {
-
-		Utility.localize(this);
-		Utility.localize(buttonCancel);
-		Utility.localize(buttonOk);
-		Utility.localize(labelDescription);
-		Utility.localize(labelAlias);
-		Utility.localize(labelId);
-		Utility.localize(checkBoxStartLanguage);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonCancel);
+			Utility.localize(buttonOk);
+			Utility.localize(labelDescription);
+			Utility.localize(labelAlias);
+			Utility.localize(labelId);
+			Utility.localize(checkBoxStartLanguage);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -279,7 +312,7 @@ public class LanguageEditor extends JDialog {
 	 * @return
 	 */
 	public boolean isConfirmed() {
-
+		
 		return confirmed;
 	}
 
@@ -287,21 +320,26 @@ public class LanguageEditor extends JDialog {
 	 * Set icons.
 	 */
 	private void setIcons() {
-
-		setIconImage(Images.getImage("org/multipage/translator/images/main_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/translator/images/cancel_icon.png"));
-		buttonOk.setIcon(Images.getIcon("org/multipage/translator/images/ok_icon.png"));
-		labelIcon.setIcon(Images.getIcon("org/multipage/translator/images/unknown.png"));
-		buttonLoadFromFile.setIcon(Images.getIcon("org/multipage/translator/images/open.png"));
-		buttonLoadImage.setIcon(Images.getIcon("org/multipage/translator/images/load_icon.png"));
-		buttonResetImage.setIcon(Images.getIcon("org/multipage/translator/images/unknown_icon.png"));
+		try {
+			
+			setIconImage(Images.getImage("org/multipage/translator/images/main_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/translator/images/cancel_icon.png"));
+			buttonOk.setIcon(Images.getIcon("org/multipage/translator/images/ok_icon.png"));
+			labelIcon.setIcon(Images.getIcon("org/multipage/translator/images/unknown.png"));
+			buttonLoadFromFile.setIcon(Images.getIcon("org/multipage/translator/images/open.png"));
+			buttonLoadImage.setIcon(Images.getIcon("org/multipage/translator/images/load_icon.png"));
+			buttonResetImage.setIcon(Images.getIcon("org/multipage/translator/images/unknown_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
-
+		
 		confirmed = false;
 		dispose();
 	}
@@ -310,22 +348,28 @@ public class LanguageEditor extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		// Check description and alias.
-		description = textDescription.getText();
-		alias = textAlias.getText();
-		
-		if (description.isEmpty()) {
-			Utility.show(this, "org.multipage.translator.messageDescriptionCannotBeEmpty");
-			return;
+		try {
+			
+			// Check description and alias.
+			description = textDescription.getText();
+			alias = textAlias.getText();
+			
+			if (description.isEmpty()) {
+				Utility.show(this, "org.multipage.translator.messageDescriptionCannotBeEmpty");
+				return;
+			}
+			
+			if (alias.isEmpty()) {
+				Utility.show(this, "org.multipage.translator.messageAliasCannotBeEmpty");
+				return;
+			}
+			
+			confirmed = true;
 		}
-		
-		if (alias.isEmpty()) {
-			Utility.show(this, "org.multipage.translator.messageAliasCannotBeEmpty");
-			return;
-		}
-		
-		confirmed = true;
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -334,8 +378,13 @@ public class LanguageEditor extends JDialog {
 	 * @param alias
 	 */
 	public void setAlias(String alias) {
-
-		textAlias.setText(alias);
+		try {
+			
+			textAlias.setText(alias);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -360,30 +409,40 @@ public class LanguageEditor extends JDialog {
 	 * Load icon.
 	 */
 	protected void onLoadIconFromFile() {
-		
-		// Load icon from disk.
-		image = TranslatorUtilities.loadImageFromDisk(this);
-		if (image == null) {
-			return;
+		try {
+			
+			// Load icon from disk.
+			image = TranslatorUtilities.loadImageFromDisk(this);
+			if (image == null) {
+				return;
+			}
+			// Set icon.
+			labelIcon.setIcon(new ImageIcon(image));
 		}
-		// Set icon.
-		labelIcon.setIcon(new ImageIcon(image));
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Reset icon.
 	 */
 	protected void onResetIcon() {
-
-		// Ask user.
-		if (JOptionPane.showConfirmDialog(this,
-				Resources.getString("org.multipage.translator.messageRemoveLanguageIcon"))
-				!= JOptionPane.YES_OPTION) {
-			return;
+		try {
+			
+			// Ask user.
+			if (JOptionPane.showConfirmDialog(this,
+					Resources.getString("org.multipage.translator.messageRemoveLanguageIcon"))
+					!= JOptionPane.YES_OPTION) {
+				return;
+			}
+			
+			image = null;
+			labelIcon.setIcon(Images.getIcon("org/multipage/translator/images/unknown.png"));
 		}
-		
-		image = null;
-		labelIcon.setIcon(Images.getIcon("org/multipage/translator/images/unknown.png"));
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -399,13 +458,18 @@ public class LanguageEditor extends JDialog {
 	 * On load icon.
 	 */
 	protected void onLoadIcon() {
-		
-		image = LoadFlagDialog.showDialog(parentWindow);
-		if (image == null) {
-			return;
+		try {
+			
+			image = LoadFlagDialog.showDialog(parentWindow);
+			if (image == null) {
+				return;
+			}
+			// Set icon.
+			labelIcon.setIcon(new ImageIcon(image));
 		}
-		// Set icon.
-		labelIcon.setIcon(new ImageIcon(image));
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -413,8 +477,13 @@ public class LanguageEditor extends JDialog {
 	 * @param text
 	 */
 	public void setDescription(String text) {
-
-		textDescription.setText(text);
+		try {
+			
+			textDescription.setText(text);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -422,9 +491,14 @@ public class LanguageEditor extends JDialog {
 	 * @param id
 	 */
 	public void setId(long id) {
-
-		this.id = id;
-		textIdentifier.setText(String.valueOf(id));
+		try {
+			
+			this.id = id;
+			textIdentifier.setText(String.valueOf(id));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -432,35 +506,46 @@ public class LanguageEditor extends JDialog {
 	 * @param image
 	 */
 	public void setImage(BufferedImage image) {
-
-		this.image = image;
-		if (image != null) {
-			labelIcon.setIcon(new ImageIcon(image));
+		try {
+			
+			this.image = image;
+			if (image != null) {
+				labelIcon.setIcon(new ImageIcon(image));
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On start check box.
 	 */
 	protected void onStartCheckBox() {
-
-		boolean isStart = checkBoxStartLanguage.isSelected();
-		
-		// If it is default language and the start flag
-		// should be removed, inform user and exit.
-		if (id == 0L && !isStart) {
-			checkBoxStartLanguage.setSelected(true);
-			Utility.show(this, "org.multipage.translator.textCannotResetDefaultLanguageStartFlag");
-			return;
+		try {
+			
+			boolean isStart = checkBoxStartLanguage.isSelected();
+			
+			// If it is default language and the start flag
+			// should be removed, inform user and exit.
+			if (id == 0L && !isStart) {
+				checkBoxStartLanguage.setSelected(true);
+				Utility.show(this, "org.multipage.translator.textCannotResetDefaultLanguageStartFlag");
+				return;
+			}
+			
+			this.isSart = isStart;
 		}
-		
-		this.isSart = isStart;
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * @return the isSart
 	 */
 	public boolean isSart() {
+		
 		return isSart;
 	}
 
@@ -468,7 +553,13 @@ public class LanguageEditor extends JDialog {
 	 * @param isSart the isSart to set
 	 */
 	public void setSart(boolean isSart) {
-		this.isSart = isSart;
-		checkBoxStartLanguage.setSelected(isSart);
+		try {
+			
+			this.isSart = isSart;
+			checkBoxStartLanguage.setSelected(isSart);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

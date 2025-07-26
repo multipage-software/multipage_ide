@@ -1,19 +1,19 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.maclan.server;
 
-import java.util.*;
+import java.util.LinkedList;
 
-import org.maclan.*;
+import org.maclan.Language;
 
 /**
- * 
- * @author
+ * Language block descriptor.
+ * @author vakol
  *
  */
 public class LanguagesBlockDescriptor extends BlockDescriptor {

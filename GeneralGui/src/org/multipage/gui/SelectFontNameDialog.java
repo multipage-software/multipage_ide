@@ -1,26 +1,48 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import java.awt.*;
-
-import javax.swing.*;
-
-import org.multipage.util.*;
-
-import java.awt.event.*;
-import java.io.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.text.Collator;
-import java.util.*;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.LinkedList;
+
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
+import javax.swing.ListSelectionModel;
+import javax.swing.SpringLayout;
+
+import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that can select font name. 
+ * @author vakol
  *
  */
 public class SelectFontNameDialog extends JDialog {
@@ -138,12 +160,17 @@ public class SelectFontNameDialog extends JDialog {
 	 */
 	public static String showDialog(Component parent) {
 		
-		SelectFontNameDialog dialog = new SelectFontNameDialog(parent);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			SelectFontNameDialog dialog = new SelectFontNameDialog(parent);
+			dialog.setVisible(true);
 			
-			return dialog.outputName;
+			if (dialog.confirm) {
+				
+				return dialog.outputName;
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -154,12 +181,16 @@ public class SelectFontNameDialog extends JDialog {
 	 */
 	public SelectFontNameDialog(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -266,73 +297,88 @@ public class SelectFontNameDialog extends JDialog {
 	 * On remove.
 	 */
 	protected void onRemove() {
-		
-		int index = list.getSelectedIndex();
-		FontName fontName = list.getSelectedValue();
-		
-		if (fontName == null) {
-			Utility.show(this, "org.multipage.gui.messageSelectSingleFontName");
-			return;
+		try {
+			
+			int index = list.getSelectedIndex();
+			FontName fontName = list.getSelectedValue();
+			
+			if (fontName == null) {
+				Utility.show(this, "org.multipage.gui.messageSelectSingleFontName");
+				return;
+			}
+			
+			if (fontName.type == GENERIC_NAME) {
+				Utility.show(this, "org.multipage.gui.messageCannotRemoveGenericFontName");
+				return;
+			}
+			
+			// Remove item.
+			if (Utility.askParam(this, "org.multipage.gui.messageRemoveSelectedFontName", fontName.name)) {
+				model.remove(index);
+			}
 		}
-		
-		if (fontName.type == GENERIC_NAME) {
-			Utility.show(this, "org.multipage.gui.messageCannotRemoveGenericFontName");
-			return;
-		}
-		
-		// Remove item.
-		if (Utility.askParam(this, "org.multipage.gui.messageRemoveSelectedFontName", fontName.name)) {
-			model.remove(index);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On rename.
 	 */
 	protected void onRename() {
-		
-		FontName fontName = list.getSelectedValue();
-		if (fontName == null) {
+		try {
 			
-			Utility.show(this, "org.multipage.gui.messageSelectSingleFontName");
-			return;
-		}
-		
-		if (fontName.type == GENERIC_NAME) {
-			Utility.show(this, "org.multipage.gui.messageCannotRenameGenericFontName");
-			return;
-		}
-		
-		// Get new font name.
-		String name = Utility.input(this, "org.multipage.gui.messageInsertNewFontName", fontName.name);
-		if (name != null && !name.isEmpty()) {
+			FontName fontName = list.getSelectedValue();
+			if (fontName == null) {
+				
+				Utility.show(this, "org.multipage.gui.messageSelectSingleFontName");
+				return;
+			}
 			
-			fontName.name = name;
+			if (fontName.type == GENERIC_NAME) {
+				Utility.show(this, "org.multipage.gui.messageCannotRenameGenericFontName");
+				return;
+			}
 			
-			scrollPane.revalidate();
-			scrollPane.repaint();
+			// Get new font name.
+			String name = Utility.input(this, "org.multipage.gui.messageInsertNewFontName", fontName.name);
+			if (name != null && !name.isEmpty()) {
+				
+				fontName.name = name;
+				
+				scrollPane.revalidate();
+				scrollPane.repaint();
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On add font.
 	 */
 	protected void onAddFont() {
-		
-		String name = textFontName.getText();
-		if (name.isEmpty()) {
-			Utility.show(this, "org.multipage.gui.messageInsertFontName");
-			return;
+		try {
+			
+			String name = textFontName.getText();
+			if (name.isEmpty()) {
+				Utility.show(this, "org.multipage.gui.messageInsertFontName");
+				return;
+			}
+			
+			if (existsFont(name, FAMILY_NAME)) {
+				Utility.show(this, "org.multipage.gui.messageFontNameAlreadyExists");
+				return;
+			}
+			
+			addFont(name);
+			
+			list.ensureIndexIsVisible(model.getSize() - 1);
 		}
-		
-		if (existsFont(name, FAMILY_NAME)) {
-			Utility.show(this, "org.multipage.gui.messageFontNameAlreadyExists");
-			return;
-		}
-		
-		addFont(name);
-		
-		list.ensureIndexIsVisible(model.getSize() - 1);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -342,16 +388,22 @@ public class SelectFontNameDialog extends JDialog {
 	 */
 	private boolean addFont(String name) {
 		
-		if (name.isEmpty()) {
-			return false;
+		try {
+			if (name.isEmpty()) {
+				return false;
+			}
+			
+			// Add new element.
+			if (!existsFont(name, FAMILY_NAME)) {
+				model.addElement(new FontName(name, FAMILY_NAME));
+			}
+	
+			return true;
 		}
-		
-		// Add new element.
-		if (!existsFont(name, FAMILY_NAME)) {
-			model.addElement(new FontName(name, FAMILY_NAME));
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-
-		return true;
+		return false;
 	}
 
 	/**
@@ -362,14 +414,19 @@ public class SelectFontNameDialog extends JDialog {
 	 */
 	private boolean existsFont(String name, int type) {
 		
-		Enumeration<FontName> fontNames = model.elements();
-		while (fontNames.hasMoreElements()) {
-			
-			FontName fontName = fontNames.nextElement();
-			if (fontName.name.equals(name) && fontName.type == type) {
+		try {
+			Enumeration<FontName> fontNames = model.elements();
+			while (fontNames.hasMoreElements()) {
 				
-				return true;
+				FontName fontName = fontNames.nextElement();
+				if (fontName.name.equals(name) && fontName.type == type) {
+					
+					return true;
+				}
 			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return false;
 	}
@@ -378,123 +435,166 @@ public class SelectFontNameDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		localize();
-		setIcons();
-		setToolTips();
-		
-		initList();
-		loadGenericNames();
-		loadFamilyNames();
-		
-		loadDialog();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			localize();
+			setIcons();
+			setToolTips();
+			
+			initList();
+			loadGenericNames();
+			loadFamilyNames();
+			
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Initialize list.
 	 */
 	private void initList() {
-		
-		// Create and set model.
-		model = new DefaultListModel<FontName>();
-		list.setModel(model);
-		
-		// Create and set renderer.
-		list.setCellRenderer(new ListCellRenderer<FontName>() {
-
-			// Define renderer.
-			@SuppressWarnings("serial")
-			final RendererJLabel renderer = new RendererJLabel() {
-				{
-					setOpaque(true);
-				}
-			};
+		try {
+			
+			// Create and set model.
+			model = new DefaultListModel<FontName>();
+			list.setModel(model);
+			
+			// Create and set renderer.
+			list.setCellRenderer(new ListCellRenderer<FontName>() {
+	
+				// Define renderer.
+				@SuppressWarnings("serial")
+				final RendererJLabel renderer = new RendererJLabel() {
+					{
+						try {
+							setOpaque(true);
+						}
+						catch(Throwable expt) {
+							Safe.exception(expt);
+						};
+					}
+				};
+							
+				@Override
+				public Component getListCellRendererComponent(
+						JList<? extends FontName> list, FontName value, int index,
+						boolean isSelected, boolean cellHasFocus) {
+					
+					try {
+						if (value == null) {
+							return null;
+						}
 						
-			@Override
-			public Component getListCellRendererComponent(
-					JList<? extends FontName> list, FontName value, int index,
-					boolean isSelected, boolean cellHasFocus) {
-				
-				if (value == null) {
-					return null;
+						FontName fontName = (FontName) value;
+						
+						// Set renderer.
+						renderer.set(isSelected, cellHasFocus, index);
+						
+						if (fontName.type == GENERIC_NAME) {
+							renderer.setForeground(Color.DARK_GRAY);
+							renderer.setText("<html>[<span style='font-family:" + fontName.name + ";font-size:12px'>" + fontName.name + "</span>]</html>");
+						}
+						else {
+							renderer.setForeground(Color.BLACK);
+							renderer.setText("<html><span style='font-family:" + fontName.name + ";font-size:12px'>" + fontName.name + "</span></html>");
+						}
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return renderer;
 				}
-				
-				FontName fontName = (FontName) value;
-				
-				// Set renderer.
-				renderer.set(isSelected, cellHasFocus, index);
-				
-				if (fontName.type == GENERIC_NAME) {
-					renderer.setForeground(Color.DARK_GRAY);
-					renderer.setText("<html>[<span style='font-family:" + fontName.name + ";font-size:12px'>" + fontName.name + "</span>]</html>");
-				}
-				else {
-					renderer.setForeground(Color.BLACK);
-					renderer.setText("<html><span style='font-family:" + fontName.name + ";font-size:12px'>" + fontName.name + "</span></html>");
-				}
-				
-				return renderer;
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load generic font names.
 	 */
 	private void loadGenericNames() {
-		
-		final String [] genericNames = { "serif", "sans-serif", "monospace", "cursive", "fantasy" };
-		
-		for (String genericName : genericNames) {
+		try {
 			
-			model.addElement(new FontName(genericName, GENERIC_NAME));
+			final String [] genericNames = { "serif", "sans-serif", "monospace", "cursive", "fantasy" };
+			
+			for (String genericName : genericNames) {
+				model.addElement(new FontName(genericName, GENERIC_NAME));
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set tool tips.
 	 */
 	private void setToolTips() {
-		
-		buttonAddFont.setToolTipText(Resources.getString("org.multipage.gui.tooltipAddFontToList"));
+		try {
+			
+			buttonAddFont.setToolTipText(Resources.getString("org.multipage.gui.tooltipAddFontToList"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
-		buttonAddFont.setIcon(Images.getIcon("org/multipage/gui/images/insert.png"));
-		menuRename.setIcon(Images.getIcon("org/multipage/gui/images/edit.png"));
-		menuRemove.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+			buttonAddFont.setIcon(Images.getIcon("org/multipage/gui/images/insert.png"));
+			menuRename.setIcon(Images.getIcon("org/multipage/gui/images/edit.png"));
+			menuRemove.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(labelFontNames);
-		Utility.localize(labelNewFont);
-		Utility.localize(menuRename);
-		Utility.localize(menuRemove);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(labelFontNames);
+			Utility.localize(labelNewFont);
+			Utility.localize(menuRename);
+			Utility.localize(menuRemove);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
-		
-		saveDialog();
-		
-		confirm = false;
+		try {
+			
+			saveDialog();
+			confirm = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -502,10 +602,125 @@ public class SelectFontNameDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
+		try {
+			
+			// Get chosen font.
+			outputName = textFontName.getText();
+			if (outputName.isEmpty()) {
+				
+				FontName fontName = list.getSelectedValue();
+				if (fontName == null) {
+					
+					Utility.show(this, "org.multipage.gui.messageTypeNewOrSelectListFont");
+					return;
+				}
+				
+				outputName = fontName.name;
+			}
+			else {
+				// Try to save new list.
+				addFont(outputName);
+			}
+			
+			saveDialog();
+			confirm = true;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
-		// Get chosen font.
-		outputName = textFontName.getText();
-		if (outputName.isEmpty()) {
+		dispose();
+	}
+
+	/**
+	 * Load dialog.
+	 */
+	private void loadDialog() {
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setBounds(bounds);
+			}
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+	}
+	
+	/**
+	 * Save dialog.
+	 */
+	private void saveDialog() {
+		try {
+			
+			saveFamilyFonts();
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+	}
+
+	/**
+	 * Save family fonts.
+	 */
+	private void saveFamilyFonts() {
+		try {
+			
+			familyFonts.clear();
+			
+			Enumeration<FontName> fontNames = model.elements();
+			while (fontNames.hasMoreElements()) {
+				
+				FontName fontName = fontNames.nextElement();
+				if (fontName.type == FAMILY_NAME) {
+					
+					familyFonts.add(fontName.name);
+				}
+			}
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+	}
+
+	/**
+	 * Load family font names.
+	 */
+	private void loadFamilyNames() {
+		try {
+			
+			// Sort font names.
+			familyFonts.sort(new Comparator<String>() {
+				@Override
+				public int compare(String o1, String o2) {
+					
+					try {
+						return Collator.getInstance().compare(o1,o2);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return 0;
+				}});
+			
+			for (String name : familyFonts) {
+				model.addElement(new FontName(name, FAMILY_NAME));
+			}
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+	}
+
+	/**
+	 * On double click list.
+	 */
+	private void onDoubleClickList() {
+		try {
 			
 			FontName fontName = list.getSelectedValue();
 			if (fontName == null) {
@@ -515,95 +730,14 @@ public class SelectFontNameDialog extends JDialog {
 			}
 			
 			outputName = fontName.name;
-		}
-		else {
-			// Try to save new list.
-			addFont(outputName);
-		}
-		
-		saveDialog();
-		
-		confirm = true;
-		dispose();
-	}
-
-	/**
-	 * Load dialog.
-	 */
-	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
-		}
-		else {
-			setBounds(bounds);
-		}
-	}
-	
-	/**
-	 * Save dialog.
-	 */
-	private void saveDialog() {
-		
-		saveFamilyFonts();
-		
-		bounds = getBounds();
-	}
-
-	/**
-	 * Save family fonts.
-	 */
-	private void saveFamilyFonts() {
-		
-		familyFonts.clear();
-		
-		Enumeration<FontName> fontNames = model.elements();
-		while (fontNames.hasMoreElements()) {
 			
-			FontName fontName = fontNames.nextElement();
-			if (fontName.type == FAMILY_NAME) {
-				
-				familyFonts.add(fontName.name);
-			}
+			saveDialog();
+			confirm = true;
 		}
-	}
-
-	/**
-	 * Load family font names.
-	 */
-	private void loadFamilyNames() {
-		
-		// Sort font names.
-		familyFonts.sort(new Comparator<String>() {
-			@Override
-			public int compare(String o1, String o2) {
-				
-				return Collator.getInstance().compare(o1,o2);
-			}});
-		
-		for (String name : familyFonts) {
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 			
-			model.addElement(new FontName(name, FAMILY_NAME));
-		}
-	}
-
-	/**
-	 * On double click list.
-	 */
-	private void onDoubleClickList() {
-		
-		FontName fontName = list.getSelectedValue();
-		if (fontName == null) {
-			
-			Utility.show(this, "org.multipage.gui.messageTypeNewOrSelectListFont");
-			return;
-		}
-		
-		outputName = fontName.name;
-		
-		saveDialog();
-		
-		confirm = true;
 		dispose();
 	}
 
@@ -612,10 +746,15 @@ public class SelectFontNameDialog extends JDialog {
 	 * @param e
 	 */
 	protected void onClickList(MouseEvent e) {
-		
-		if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
-			onDoubleClickList();
+		try {
+			
+			if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
+				onDoubleClickList();
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -624,24 +763,55 @@ public class SelectFontNameDialog extends JDialog {
 	 * @param popup
 	 */
 	private void addPopup(Component component, final JPopupMenu popup) {
-		component.addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e);
+		try {
+			
+			component.addMouseListener(new MouseAdapter() {
+				public void mousePressed(MouseEvent e) {
+					try {
+						
+						if (e.isPopupTrigger()) {
+							showMenu(e);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-			public void mouseReleased(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e);
+				public void mouseReleased(MouseEvent e) {
+					try {
+						
+						if (e.isPopupTrigger()) {
+							showMenu(e);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+						
 				}
-			}
-			private void showMenu(MouseEvent e) {
-				popup.show(e.getComponent(), e.getX(), e.getY());
-			}
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				onClickList(e);
-			}
-		});
+				private void showMenu(MouseEvent e) {
+					try {
+						
+						popup.show(e.getComponent(), e.getX(), e.getY());
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					try {
+						
+						onClickList(e);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

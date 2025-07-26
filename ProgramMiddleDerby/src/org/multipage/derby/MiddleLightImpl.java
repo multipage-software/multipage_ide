@@ -1,6 +1,7 @@
 /*
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -61,15 +62,11 @@ import org.multipage.util.Obj;
 import org.multipage.util.Resources;
 
 /**
- * @author
+ * Middle layer implementation for the Derby DB.
+ * @author vakol
  *
  */
 public class MiddleLightImpl implements MiddleLight {
-	
-	/**
-	 * Default database name
-	 */
-	private static final String databaseName = "Database";
 	
 	/**
 	 * Write buffer length.
@@ -2515,8 +2512,7 @@ public class MiddleLightImpl implements MiddleLight {
 	 * @param loadValue
 	 * @return
 	 */
-	@Override
-	public MiddleResult loadSlotPrivate(Area area, String alias,
+	private MiddleResult loadSlotPrivate(Area area, String alias,
 			boolean inherit, boolean skipDefault, Obj<Slot> slot,
 			Obj<Slot> lastFoundDefaultSlot, int hint, boolean isInheritance,
 			Long inheritanceLevel, boolean skipCurrentArea, boolean loadValue) {
@@ -2524,7 +2520,7 @@ public class MiddleLightImpl implements MiddleLight {
 		MiddleResult result;
 		
 		// If not to skip current area...
-		if (((LoadSlotHint.area & hint) != 0) || skipCurrentArea) {
+		if (((LoadSlotHint.area & hint) != 0) && !skipCurrentArea) {
 			
 			result = loadAreaSlotsRefData(area);
 			if (result.isNotOK()) {
@@ -2651,16 +2647,18 @@ public class MiddleLightImpl implements MiddleLight {
 	}
 	
 	/**
-	 * Check if the input slot changes.
+	 * Load slot.
+	 * @param slotId
 	 * @param slot
-	 * @param slotChanges
-	 * @return
+	 * @param found
 	 */
 	@Override
-	public MiddleResult loadSlotChanges(Slot slot, Obj<Boolean> slotChanges) {
+	public MiddleResult loadSlot(long slotId, Slot slot, Obj<Boolean> found) {
 		
-		// Initialize output value. (Not known if changed/unchanged.)
-		slotChanges.ref = null;
+		// Initialize.
+		if (found != null) {
+			found.ref = false;
+		}
 		
 		// Check connection.
 		MiddleResult result = checkConnection();
@@ -2670,23 +2668,25 @@ public class MiddleLightImpl implements MiddleLight {
 		
 		PreparedStatement statement = null;
 		ResultSet set = null;
+		
 		Long areaId = null;
 		Long enumValueId = null;
 		
-		Slot loadedSlot = new Slot();
-		
 		try {
-			
 			statement = connection.prepareStatement(selectSlot);
-			
-			long slotId = slot.getId();
 			statement.setLong(1, slotId);
 			
 			set = statement.executeQuery();
 			if (set.next()) {
 				
+				if (found != null) {
+					found.ref = true;
+				}
+				
+				slot.setId(slotId);
+				
 				String alias = set.getString("alias");
-				loadedSlot.setAlias(alias);
+				slot.setAlias(alias);
 
 				areaId = set.getLong("area_id");
 
@@ -2695,79 +2695,79 @@ public class MiddleLightImpl implements MiddleLight {
 				if (localizedTextId != null) {
 					textValue = getText(localizedTextId);
 					if (textValue != null) {
-						loadedSlot.setLocalizedTextValue(textValue);
+						slot.setLocalizedTextValue(textValue);
 					}
 				}
 				else {
 					textValue = set.getString("text_value");
 					if (textValue != null) {
-						loadedSlot.setTextValue(textValue);
+						slot.setTextValue(textValue);
 					}
 				}
 				
 				Long integerValue = (Long) set.getObject("integer_value");
 				if (integerValue != null) {
-					loadedSlot.setIntegerValue(integerValue);
+					slot.setIntegerValue(integerValue);
 				}
 				
 				Double doubleValue = (Double) set.getObject("real_value");
 				if (doubleValue != null) {
-					loadedSlot.setRealValue(doubleValue);
+					slot.setRealValue(doubleValue);
 				}	
 				
 				String accessText = set.getString("access");
 				if (accessText == null) {
 					accessText = String.valueOf(Slot.privateAccess);
 				}
-				loadedSlot.setAccess(accessText);
+				slot.setAccess(accessText);
 				
 				boolean hidden = set.getBoolean("hidden");
-				loadedSlot.setHidden(hidden);
+				slot.setHidden(hidden);
 				
 				Boolean booleanValue = (Boolean) set.getObject("boolean_value");
 				if (booleanValue != null) {
-					loadedSlot.setBooleanValue(booleanValue);
+					slot.setBooleanValue(booleanValue);
 				}
 				
 				Long color = (Long) set.getObject("color");
 				if (color != null) {
-					loadedSlot.setColorValueLong(color);
+					slot.setColorValueLong(color);
 				}
 				
 				Long descriptionId = (Long) set.getObject("description_id");
-				loadedSlot.setDescriptionId(descriptionId);
+				slot.setDescriptionId(descriptionId);
 				
 				boolean isDefault = set.getBoolean("is_default");
-				loadedSlot.setDefault(isDefault);
+				slot.setDefault(isDefault);
 					
 				String name = set.getString("name");
-				loadedSlot.setName(name);
+				slot.setName(name);
 				
 				String valueMeaning = set.getString("value_meaning");
-				loadedSlot.setValueMeaning(valueMeaning);
+				slot.setValueMeaning(valueMeaning);
 				
 				boolean userDefined = set.getBoolean("user_defined");
-				loadedSlot.setUserDefined(userDefined);
+				slot.setUserDefined(userDefined);
 				
 				boolean preferred = set.getBoolean("preferred");
-				loadedSlot.setPreferred(preferred);
+				slot.setPreferred(preferred);
 				
 				String specialValue = set.getString("special_value");
-				loadedSlot.setSpecialValue(specialValue);
+				slot.setSpecialValue(specialValue);
 				
 				Long areaValue = (Long) set.getObject("area_value");
 				if (areaValue != null) {
-					loadedSlot.setAreaValue(areaValue);
+					slot.setAreaValue(areaValue);
 				}
 				
 				String externalProvider = set.getString("external_provider");
-				loadedSlot.setExternalProvider(externalProvider);
+				slot.setExternalProvider(externalProvider);
 				
 				Boolean readsInput = (Boolean) set.getObject("reads_input");
-				loadedSlot.setReadsInput(readsInput);
+				slot.setReadsInput(readsInput);
 				
 				Boolean writesOutput = (Boolean) set.getObject("writes_output");
-				loadedSlot.setWritesOutput(writesOutput);
+				slot.setWritesOutput(writesOutput);
 				
 				enumValueId = (Long) set.getObject("enumeration_value_id");
 				
@@ -2806,21 +2806,75 @@ public class MiddleLightImpl implements MiddleLight {
 				return result;
 			}
 			
-			loadedSlot.setHolder(area.ref);
+			slot.setHolder(area.ref);
 		}
-			
 		
 		// Load and set enumeration value.
 		if (result.isOK() && enumValueId != null) {
 			try {
 				Obj<EnumerationValue> enumValue = new Obj<EnumerationValue>();
 				result = loadEnumerationValue(enumValueId, enumValue);
+				
+				if (result.isOK()) {
+					slot.setEnumerationValue(enumValue.ref);
+                }
 			}
 			catch (Exception e) {
 				result = MiddleResult.exceptionToResult(e);
 			}
 		}
+		return result;
+	}
+	
+	/**
+	 * Check if the input slot changes.
+	 * @param slot
+	 * @param slotChanges
+	 * @param aliasChange
+	 * @return
+	 */
+	@Override
+	public MiddleResult loadSlotChanges(Slot slot, Obj<Boolean> slotChanges, Obj<Boolean> aliasChange) {
 		
+		// Initialize output value.
+		slotChanges.ref = null;
+		if (aliasChange != null) {
+			aliasChange.ref = null;
+		}
+		
+		// Check connection.
+		MiddleResult result = checkConnection();
+		if (result.isNotOK()) {
+			return result;
+		}
+		
+		long slotId = slot.getId();
+		Slot loadedSlot = new Slot();
+		
+		Obj<Boolean> found = new Obj<>(false);
+		// Load slot properties.
+		result = loadSlot(slotId, loadedSlot, found);
+		if (result.isNotOK()) {
+			return result;
+		}
+		
+		if (!found.ref) {
+			return MiddleResult.ELEMENT_DOESNT_EXIST;
+		}
+		
+		// Check if alias has changed.
+		if (aliasChange != null) {
+			
+			String newAlias = slot.getAlias();
+			String oldAlias = loadedSlot.getAlias();
+			
+			if (newAlias == null || oldAlias == null) {
+	           return MiddleResult.NULL_SLOT_ALIAS;
+	        }
+			
+			aliasChange.ref = !newAlias.equals(oldAlias);
+		}
+				
 		// Compare loaded slot with the input slot.
 		slotChanges.ref = !slot.equalsDeep(loadedSlot);
 		
@@ -5319,8 +5373,7 @@ public class MiddleLightImpl implements MiddleLight {
 	 */
 	private String getConnectionString(String databaseDirectory) {
 		
-		String databaseHome = getDatabaseHomeDirectory(databaseDirectory);
-		return "jdbc:derby:;databaseName=directory:" + databaseHome + ";create=true";
+		return "jdbc:derby:;databaseName=directory:" + databaseDirectory + ";create=true";
 	}
 	
 	/**
@@ -5333,20 +5386,9 @@ public class MiddleLightImpl implements MiddleLight {
 	@SuppressWarnings("unused")
 	private String getConnectionString(String databaseDirectory, String user, String password) {
 		
-		String databaseHome = getDatabaseHomeDirectory(databaseDirectory);
-		return "jdbc:derby:;databaseName=directory:" + databaseHome + ";user=" + user + ";password=" + password + ";create=false";
+		return "jdbc:derby:;databaseName=directory:" + databaseDirectory + ";user=" + user + ";password=" + password + ";create=false";
 	}
 	
-	/**
-	 * Get database home directory.
-	 * @param databaseDirectory
-	 * @return
-	 */
-	private String getDatabaseHomeDirectory(String databaseDirectory) {
-		
-		return databaseDirectory + File.separator + databaseName ;
-	}
-
 	/**
 	 * Create new database driver instance.
 	 */
@@ -5400,7 +5442,7 @@ public class MiddleLightImpl implements MiddleLight {
 			}
 			
 			// Write message that informs user about database directory on standard error output
-			System.err.println("Derby Database home directory: " + getDatabaseHomeDirectory(databaseDirectory));
+			System.err.println("Derby Database home directory: " + databaseDirectory);
 			
 			System.setProperty("derby.locks.deadlockTimeout", "60");
 			System.setProperty("derby.locks.waitTimeout", "90");

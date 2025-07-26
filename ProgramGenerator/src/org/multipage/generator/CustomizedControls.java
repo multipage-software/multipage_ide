@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -22,15 +22,14 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.multipage.gui.ApplicationEvents;
-import org.multipage.gui.GuiSignal;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays editor for GUI control's properties.
+ * @author vakol
  *
  */
 public class CustomizedControls extends JDialog {
@@ -77,7 +76,7 @@ public class CustomizedControls extends JDialog {
 		arcSizePercent = inputStream.readInt();
 		
 		focusedAreaWidth = inputStream.readInt();
-		AreasDiagram.focusAreaShapeWidth = focusedAreaWidth;
+		AreaDiagramPanel.focusAreaShapeWidth = focusedAreaWidth;
 	}
 		
 	/**
@@ -110,25 +109,35 @@ public class CustomizedControls extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-
-		// Set tool width and height.
-		Tool.setWidth(toolSizeState);
-		Tool.setHeight(toolSizeState);
-		// Set slider position.
-		toolsSlider.setValue(toolSizeState);
-		// Set slider position.
-		arcSlider.setValue(arcSizePercent);
-		
-		sliderFocusedAreaWidth.setValue((int) focusedAreaWidth);
+		try {
+			
+			// Set tool width and height.
+			Tool.setWidth(toolSizeState);
+			Tool.setHeight(toolSizeState);
+			// Set slider position.
+			toolsSlider.setValue(toolSizeState);
+			// Set slider position.
+			arcSlider.setValue(arcSizePercent);
+			
+			sliderFocusedAreaWidth.setValue((int) focusedAreaWidth);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 		
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		// Write tool size.
-		toolSizeState = Tool.getWidth();
+		try {
+			
+			// Write tool size.
+			toolSizeState = Tool.getWidth();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	// $hide<<$
@@ -150,22 +159,19 @@ public class CustomizedControls extends JDialog {
 	public CustomizedControls(Window owner) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		
-		// Initialize components.
-		initComponents();
-		// $hide>>$
-		// Post creation.
-		initializeComponentsExt();
-		postCreation();
-		// $hide<<$
+		try {
+			// Initialize components.
+			initComponents();
+			// $hide>>$
+			// Post creation.
+			postCreation();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
  	}
-
-	/**
-	 * Initialize extended components.
-	 */
-    protected void initializeComponentsExt() {
-		
-	}
-
+	
 	/**
      * Initialize components.
      */
@@ -261,31 +267,34 @@ public class CustomizedControls extends JDialog {
 	 * Localizes components.
 	 */
 	private void localize() {
-
-		Utility.localize(this);
-		Utility.localize(labelToolsSize);
-		Utility.localize(labelAreaArcSize);
-		Utility.localize(labelFocusedAreaWidth);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(labelToolsSize);
+			Utility.localize(labelAreaArcSize);
+			Utility.localize(labelFocusedAreaWidth);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
-
-	/**
-	 * Loacalize extension.
-	 */
-	protected void localizeExtension() {
-		
-	}
-
+	
 	/**
 	 * Post creation.
 	 */
 	private void postCreation() {
-
-		// Localize components.
-		localize();
-		// Set icons.
-		setIcons();
-		// Load dialog.
-        loadDialog();
+		try {
+			
+			// Localize components.
+			localize();
+			// Set icons.
+			setIcons();
+			// Load dialog.
+	        loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -294,73 +303,78 @@ public class CustomizedControls extends JDialog {
 	private void setIcons() {
 
 	}
-
-	/**
-	 * Set icons extension.
-	 */
-	protected void setIconsExtension() {
-		
-	}
-
-	/**
-	 * On reload button.
-	 */
-	protected void onReloadButton() {
-		
-	}
-
+	
 	/**
 	 * On tools size changed event.
 	 */
 	protected void onToolsSizeChanged() {
-
-		// Set tools width and height.
-		int newSize = toolsSlider.getValue();
-		Tool.setWidth(newSize);
-		Tool.setHeight(newSize);
-		// Repaint main window.
-		GeneratorMainFrame mainFrame = GeneratorMainFrame.getFrame();
-		if (mainFrame != null) {
-
-			mainFrame.repaintAfterToolsChanged();
+		try {
+			
+			// Set tools width and height.
+			int newSize = toolsSlider.getValue();
+			Tool.setWidth(newSize);
+			Tool.setHeight(newSize);
+			// Repaint main window.
+			GeneratorMainFrame mainFrame = GeneratorMainFrame.getFrame();
+			if (mainFrame != null) {
+	
+				mainFrame.repaintAfterToolsChanged();
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On arc changed.
 	 */
 	protected void onArcChanged() {
-		
-		// Set new value.
-		arcSizePercent = arcSlider.getValue();
-
-		// Repaint main window.
-		GeneratorMainFrame mainFrame = GeneratorMainFrame.getFrame();
-		if (mainFrame != null) {
-
-			mainFrame.repaintAfterToolsChanged();
+		try {
+			
+			// Set new value.
+			arcSizePercent = arcSlider.getValue();
+	
+			// Repaint main window.
+			GeneratorMainFrame mainFrame = GeneratorMainFrame.getFrame();
+			if (mainFrame != null) {
+				mainFrame.repaintAfterToolsChanged();
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On focused area width changed.
 	 */
 	protected void onFocusedAreaWidthChaged() {
-		
-		// Set and save slider value.
-		focusedAreaWidth = sliderFocusedAreaWidth.getValue();
-		AreasDiagram.focusAreaShapeWidth = focusedAreaWidth;
-		
-		GeneratorMainFrame.getVisibleAreasDiagram().setNotAnimateNextFocus();
-		GeneratorMainFrame.getVisibleAreasDiagram().focusBasicArea();
+		try {
+			
+			// Set and save slider value.
+			focusedAreaWidth = sliderFocusedAreaWidth.getValue();
+			AreaDiagramPanel.focusAreaShapeWidth = focusedAreaWidth;
+			
+			GeneratorMainFrame.getVisibleAreasDiagram().setNotAnimateNextFocus();
+			GeneratorMainFrame.getVisibleAreasDiagram().focusBasicArea();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Dispose dialog.
 	 */
 	public void disposeDialog() {
-
-		saveDialog();
+		try {
+			
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

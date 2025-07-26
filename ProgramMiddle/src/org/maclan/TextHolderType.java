@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -10,7 +10,8 @@ package org.maclan;
 import org.multipage.util.Resources;
 
 /**
- * @author
+ * Types of text holders.
+ * @author vakol
  *
  */
 public enum TextHolderType {

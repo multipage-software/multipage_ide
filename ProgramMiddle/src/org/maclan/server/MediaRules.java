@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 10-03-2020
+ * Created on : 2020-03-10
  *
  */
 package org.maclan.server;
@@ -10,7 +10,7 @@ import java.util.LinkedList;
 
 /**
  * Media rules.
- * @author user
+ * @author vakol
  *
  */
 class MediaRules {

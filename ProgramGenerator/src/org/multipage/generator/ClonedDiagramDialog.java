@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 package org.multipage.generator;
@@ -29,10 +29,11 @@ import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
+import org.multipage.util.Safe;
 
 /**
- * Cloned diagram dialog.
- * @author user
+ * Cloned diagram dialog window.
+ * @author vakol
  *
  */
 public class ClonedDiagramDialog extends JDialog {
@@ -102,14 +103,19 @@ public class ClonedDiagramDialog extends JDialog {
 	 */
 	public static String showDialog(Component parent, String caption, Obj<TabType> type) {
 		
-		ClonedDiagramDialog dialog = new ClonedDiagramDialog(Utility.findWindow(parent));
-		dialog.setProperties(caption);
-		dialog.setVisible(true);
-		
-		if (dialog.confirmed) {
-			type.ref = dialog.getCloneType();
-			String captionResult = dialog.getCaption();
-			return captionResult;
+		try {
+			ClonedDiagramDialog dialog = new ClonedDiagramDialog(Utility.findWindow(parent));
+			dialog.setProperties(caption);
+			dialog.setVisible(true);
+			
+			if (dialog.confirmed) {
+				type.ref = dialog.getCloneType();
+				String captionResult = dialog.getCaption();
+				return captionResult;
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -121,11 +127,15 @@ public class ClonedDiagramDialog extends JDialog {
 	public ClonedDiagramDialog(Window window) {
 		super(window, ModalityType.DOCUMENT_MODAL);
 		
-		// Initialize components.
-		initComponents();
-		
-		// Post creation.
-		postCreate(); //$hide$
+		try {
+			// Initialize components.
+			initComponents();
+			// Post creation.
+			postCreate(); //$hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -198,47 +208,66 @@ public class ClonedDiagramDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		localize();
-		setIcons();
-		initSelection();
-		
-		Utility.centerOnScreen(this);
-		
-		loadDialog();
+		try {
+			
+			localize();
+			setIcons();
+			initSelection();
+			
+			Utility.centerOnScreen(this);
+			
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		switch (windowTypeState) {
-		
-		case areasDiagram:
-			radioDiagram.setSelected(true);
-			break;
+		try {
 			
-		case areasTree:
-		default:
-			radioAreaTree.setSelected(true);
+			switch (windowTypeState) {
+			case areasDiagram:
+				radioDiagram.setSelected(true);
+				break;
+				
+			case areasTree:
+			default:
+				radioAreaTree.setSelected(true);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		windowTypeState = getCloneType();
+		try {
+			
+			windowTypeState = getCloneType();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Initialize selection.
 	 */
 	private void initSelection() {
-		
-		radioDiagram.setSelected(true);
+		try {
+			
+			radioDiagram.setSelected(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -246,31 +275,46 @@ public class ClonedDiagramDialog extends JDialog {
 	 * @param caption
 	 */
 	private void setProperties(String caption) {
-		
-		textCaption.setText(caption);
+		try {
+			
+			textCaption.setText(caption);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(labelName);
-		Utility.localize(radioDiagram);
-		Utility.localize(radioAreaTree);
-		Utility.localize(buttonCancel);
-		Utility.localize(buttonOk);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(labelName);
+			Utility.localize(radioDiagram);
+			Utility.localize(radioAreaTree);
+			Utility.localize(buttonCancel);
+			Utility.localize(buttonOk);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 		
 	/**
 	 * Set components icons.
 	 */
 	private void setIcons() {
-		
-		setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -279,11 +323,16 @@ public class ClonedDiagramDialog extends JDialog {
 	 */
 	private TabType getCloneType() {
 		
-		if (radioDiagram.isSelected()) {
-			return TabType.areasDiagram;
+		try {
+			if (radioDiagram.isSelected()) {
+				return TabType.areasDiagram;
+			}
+			else if (radioAreaTree.isSelected()) {
+				return TabType.areasTree;
+			}
 		}
-		else if (radioAreaTree.isSelected()) {
-			return TabType.areasTree;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return TabType.unknown;
 	}
@@ -294,19 +343,30 @@ public class ClonedDiagramDialog extends JDialog {
 	 */
 	private String getCaption() {
 		
-		String caption = textCaption.getText();
-		return caption;
+		try {
+			String caption = textCaption.getText();
+			return caption;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 	
 	/**
 	 * On OK button.
 	 */
 	protected void onOK() {
+		try {
+			
+			confirmed = true;
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
-		confirmed = true;
 		dispose();
-		
-		saveDialog();
 	}
 	
 	/**
@@ -314,8 +374,14 @@ public class ClonedDiagramDialog extends JDialog {
 	 */
 	protected void onCancel() {
 		
-		dispose();
+		try {
+			
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
-		saveDialog();
+		dispose();
 	}
 }

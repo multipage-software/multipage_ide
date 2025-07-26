@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 02-04-2020
+ * Created on : 2020-04-02
  *
  */
 package org.multipage.generator;
@@ -13,9 +13,11 @@ import javax.swing.JPanel;
 import org.multipage.gui.StringValueEditor;
 import org.multipage.gui.TextEditorPane;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * @author user
+ * Pnale that displays external slot properties.
+ * @author vakol
  *
  */
 public class ExternalSlotEditorPanel extends JPanel implements SlotValueEditorPanelInterface {
@@ -35,8 +37,13 @@ public class ExternalSlotEditorPanel extends JPanel implements SlotValueEditorPa
 	 */
 	public ExternalSlotEditorPanel() {
 		
-		// Initialize components.
-		initComponents();
+		try {
+			// Initialize components.
+			initComponents();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -55,7 +62,13 @@ public class ExternalSlotEditorPanel extends JPanel implements SlotValueEditorPa
 	@Override
 	public Object getValue() {
 		
-		return textEditorPanel.getText();
+		try {
+			return textEditorPanel.getText();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 	
 	/**
@@ -64,10 +77,15 @@ public class ExternalSlotEditorPanel extends JPanel implements SlotValueEditorPa
 	@Override
 	public void setValue(Object value) {
 		
-		if (value == null) {
-			value = "";
+		try {
+			if (value == null) {
+				value = "";
+			}
+			textEditorPanel.setText(value.toString());
 		}
-		textEditorPanel.setText(value.toString());
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -84,6 +102,12 @@ public class ExternalSlotEditorPanel extends JPanel implements SlotValueEditorPa
 	@Override
 	public String getValueMeaning() {
 		
-		return StringValueEditor.meansExternalProvider;
+		try {
+			return StringValueEditor.meansExternalProvider;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 }

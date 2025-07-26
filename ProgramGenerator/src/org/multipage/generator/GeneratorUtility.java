@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -39,9 +39,11 @@ import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
+import org.multipage.util.Safe;
 
 /**
- * @author
+ * Utility functions for Generator.
+ * @author vakol
  *
  */
 public class GeneratorUtility {
@@ -92,20 +94,25 @@ public class GeneratorUtility {
 	 * @param resourceName 
 	 */
 	public static void loadMimeAndSelect(String resourceName, JComboBox comboBoxMime) {
-		
-		// Load combobox.
-		ArrayList<MimeType> mimeTypes = ProgramGenerator.getAreasModel().getMimeTypes();
-		
-		// Load MIMEs.
-		if (!loadMime(comboBoxMime, mimeTypes)) {
-			return;
+		try {
+			
+			// Load combobox.
+			ArrayList<MimeType> mimeTypes = ProgramGenerator.getAreasModel().getMimeTypes();
+			
+			// Load MIMEs.
+			if (!loadMime(comboBoxMime, mimeTypes)) {
+				return;
+			}
+			
+			// Get resource extension.
+			String extension = Utility.getExtension(resourceName);
+			// Set selection.
+			MimeType selectedMimeType = MimeType.getMimeWithExtension(mimeTypes, extension);
+			comboBoxMime.getModel().setSelectedItem(selectedMimeType);
 		}
-		
-		// Get resource extension.
-		String extension = Utility.getExtension(resourceName);
-		// Set selection.
-		MimeType selectedMimeType = MimeType.getMimeWithExtension(mimeTypes, extension);
-		comboBoxMime.getModel().setSelectedItem(selectedMimeType);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -114,21 +121,26 @@ public class GeneratorUtility {
 	 * @param mimeType
 	 */
 	public static void selectMime(JComboBox comboBoxMime, MimeType mimeType) {
-
-		ComboBoxModel model = comboBoxMime.getModel();
-		int size = model.getSize();
-		
-		// Do loop for all model items.
-		for (int index = 0; index < size; index++) {
+		try {
 			
-			MimeType mimeTypeItem = (MimeType) model.getElementAt(index);
-			if (mimeTypeItem.equals(mimeType)) {
+			ComboBoxModel model = comboBoxMime.getModel();
+			int size = model.getSize();
+			
+			// Do loop for all model items.
+			for (int index = 0; index < size; index++) {
 				
-				// Select the item and exit the method.
-				comboBoxMime.setSelectedIndex(index);
-				break;
+				MimeType mimeTypeItem = (MimeType) model.getElementAt(index);
+				if (mimeTypeItem.equals(mimeType)) {
+					
+					// Select the item and exit the method.
+					comboBoxMime.setSelectedIndex(index);
+					break;
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -137,35 +149,40 @@ public class GeneratorUtility {
 	 * @param comboBoxMime
 	 */
 	public static void loadMimeAndSelect(long mimeTypeId, JComboBox comboBoxMime) {
-
-		// Load combo box.
-		ArrayList<MimeType> mimeTypes = ProgramGenerator.getAreasModel().getMimeTypes();
-		
-		// Load MIMEs.
-		if (!loadMime(comboBoxMime, mimeTypes)) {
-			return;
-		}
-		
-		// Find and select given MIME.
-		MimeType defaultMimeType = null;
-		
-		for (MimeType mimeType : mimeTypes) {
+		try {
 			
-			if (mimeType.id == mimeTypeId) {
-				comboBoxMime.getModel().setSelectedItem(mimeType);
+			// Load combo box.
+			ArrayList<MimeType> mimeTypes = ProgramGenerator.getAreasModel().getMimeTypes();
+			
+			// Load MIMEs.
+			if (!loadMime(comboBoxMime, mimeTypes)) {
 				return;
 			}
 			
-			// Get default MIME with ID = 0L.
-			if (mimeType.id == 0L) {
-				defaultMimeType = mimeType;
+			// Find and select given MIME.
+			MimeType defaultMimeType = null;
+			
+			for (MimeType mimeType : mimeTypes) {
+				
+				if (mimeType.id == mimeTypeId) {
+					comboBoxMime.getModel().setSelectedItem(mimeType);
+					return;
+				}
+				
+				// Get default MIME with ID = 0L.
+				if (mimeType.id == 0L) {
+					defaultMimeType = mimeType;
+				}
+			}
+			
+			// If MIME not found, select default.
+			if (defaultMimeType != null) {
+				comboBoxMime.getModel().setSelectedItem(defaultMimeType);
 			}
 		}
-		
-		// If MIME not found, select default.
-		if (defaultMimeType != null) {
-			comboBoxMime.getModel().setSelectedItem(defaultMimeType);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -173,48 +190,54 @@ public class GeneratorUtility {
 	 * @param mimeTypes 
 	 * @param mimeTypes
 	 */
+	@SuppressWarnings("unchecked")
 	private static boolean loadMime(JComboBox comboBoxMime, ArrayList<MimeType> mimeTypes) {
 
-		
-		DefaultComboBoxModel modelMimeTypes;
-		modelMimeTypes = new DefaultComboBoxModel(mimeTypes.toArray());
-		comboBoxMime.setModel(modelMimeTypes);
-
-		
-		// Set renderer.
-		comboBoxMime.setRenderer(new ListCellRenderer() {
-			/**
-			 * Rendering component.
-			 */
-			private JLabel renderingComponent = new JLabel();
+		try {
+			DefaultComboBoxModel modelMimeTypes;
+			modelMimeTypes = new DefaultComboBoxModel(mimeTypes.toArray());
+			comboBoxMime.setModel(modelMimeTypes);
+	
 			
-			@Override
-			public Component getListCellRendererComponent(JList list, Object value,
-					int index, boolean isSelected, boolean cellHasFocus) {
+			// Set renderer.
+			comboBoxMime.setRenderer(new ListCellRenderer() {
+				/**
+				 * Rendering component.
+				 */
+				private JLabel renderingComponent = new JLabel();
 				
-				// Set opaque.
-				renderingComponent.setOpaque(true);
-				// Check parameters.
-				if (value == null || !(value instanceof MimeType)) {
-					renderingComponent.setText("");
+				@Override
+				public Component getListCellRendererComponent(JList list, Object value,
+						int index, boolean isSelected, boolean cellHasFocus) {
+					
+					// Set opaque.
+					renderingComponent.setOpaque(true);
+					// Check parameters.
+					if (value == null || !(value instanceof MimeType)) {
+						renderingComponent.setText("");
+					}
+					else {
+						// Get MIME type.
+						MimeType mimeType = (MimeType) value;
+						// Set renderer.
+						renderingComponent.setText(mimeType.type + " [" + mimeType.extension + "]");
+						// Set color.
+						Color color = mimeType.preference ? Color.RED : Color.BLACK;
+						renderingComponent.setForeground(color);
+						renderingComponent.setBackground(isSelected ? list.getSelectionBackground()
+			            		: list.getBackground());
+					}
+					
+					return renderingComponent;
 				}
-				else {
-					// Get MIME type.
-					MimeType mimeType = (MimeType) value;
-					// Set renderer.
-					renderingComponent.setText(mimeType.type + " [" + mimeType.extension + "]");
-					// Set color.
-					Color color = mimeType.preference ? Color.RED : Color.BLACK;
-					renderingComponent.setForeground(color);
-					renderingComponent.setBackground(isSelected ? list.getSelectionBackground()
-		            		: list.getBackground());
-				}
-				
-				return renderingComponent;
-			}
-		});
-		
-		return true;
+			});
+			
+			return true;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -225,45 +248,51 @@ public class GeneratorUtility {
 	public static File chooseFile(Component parentComponent, String pathName,
 			boolean useDefaultFirstSelectedFilter) {
 		
-		// If the path name is null, set current path name.
-		if (pathName == null) {
-			pathName = currentResourcePathName;
+		try {
+			// If the path name is null, set current path name.
+			if (pathName == null) {
+				pathName = currentResourcePathName;
+			}
+			
+			// Select resource file.
+			JFileChooser dialog = new JFileChooser(pathName);
+			
+			// List filters.
+			String [][] filters = {{"org.multipage.generator.textHtmlFile", "htm", "html", "htmls", "shtml"},
+					               {"org.multipage.generator.textJavaScriptFile", "js"},
+					               {"org.multipage.generator.textCssFile", "css"},
+					               {"org.multipage.generator.textTextFile", "txt", "text"},
+					               {"org.multipage.generator.textXmlFiles", "xml"},
+					               {"org.multipage.generator.textIconFile", "ico"},
+					               {"org.multipage.generator.textBmpFile", "bmp"},
+					               {"org.multipage.generator.textGifFile", "gif"},
+					               {"org.multipage.generator.textJpegFile", "jpg", "jpeg"},
+					               {"org.multipage.generator.textPngFile", "png"},
+					               {"org.multipage.generator.textTiffFile", "tif", "tiff"},
+					               {"org.multipage.generator.textJavaClassFile", "class"}};
+			
+			// Add filters.
+			Utility.addFileChooserFilters(dialog, pathName, filters, useDefaultFirstSelectedFilter);
+							
+			// Open dialog.
+		    if(dialog.showOpenDialog(parentComponent) != JFileChooser.APPROVE_OPTION) {
+		       return null;
+		    }
+		    
+		    // Get selected file.
+		    File file = dialog.getSelectedFile();
+		    
+		    // Set current path name.
+		    if (file != null) {
+		    	currentResourcePathName = file.getParent();
+		    }
+	
+		    return file;
 		}
-		
-		// Select resource file.
-		JFileChooser dialog = new JFileChooser(pathName);
-		
-		// List filters.
-		String [][] filters = {{"org.multipage.generator.textHtmlFile", "htm", "html", "htmls", "shtml"},
-				               {"org.multipage.generator.textJavaScriptFile", "js"},
-				               {"org.multipage.generator.textCssFile", "css"},
-				               {"org.multipage.generator.textTextFile", "txt", "text"},
-				               {"org.multipage.generator.textXmlFiles", "xml"},
-				               {"org.multipage.generator.textIconFile", "ico"},
-				               {"org.multipage.generator.textBmpFile", "bmp"},
-				               {"org.multipage.generator.textGifFile", "gif"},
-				               {"org.multipage.generator.textJpegFile", "jpg", "jpeg"},
-				               {"org.multipage.generator.textPngFile", "png"},
-				               {"org.multipage.generator.textTiffFile", "tif", "tiff"},
-				               {"org.multipage.generator.textJavaClassFile", "class"}};
-		
-		// Add filters.
-		Utility.addFileChooserFilters(dialog, pathName, filters, useDefaultFirstSelectedFilter);
-						
-		// Open dialog.
-	    if(dialog.showOpenDialog(parentComponent) != JFileChooser.APPROVE_OPTION) {
-	       return null;
-	    }
-	    
-	    // Get selected file.
-	    File file = dialog.getSelectedFile();
-	    
-	    // Set current path name.
-	    if (file != null) {
-	    	currentResourcePathName = file.getParent();
-	    }
-
-	    return file;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -273,19 +302,25 @@ public class GeneratorUtility {
 	public static File chooseFileAndSaveMethod(Component parentComponent,
 			Obj<Boolean> saveAsText, Obj<String> encoding) {
 	    
-	    // Get selected file.
-	    File file = chooseFile(parentComponent, null, false);
-	    if (file == null) {
-	    	return null;
-	    }
-
-	    // Select saving method.
-	    if (!SelectResourceSavingMethod.showDialog(parentComponent,
-	    		file, saveAsText, encoding)) {
-	    	return null;
-	    }
-
-	    return file;
+		try {
+		    // Get selected file.
+		    File file = chooseFile(parentComponent, null, false);
+		    if (file == null) {
+		    	return null;
+		    }
+	
+		    // Select saving method.
+		    if (!SelectResourceSavingMethod.showDialog(parentComponent,
+		    		file, saveAsText, encoding)) {
+		    	return null;
+		    }
+	
+		    return file;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -295,40 +330,46 @@ public class GeneratorUtility {
 	 */
 	public static BufferedImage loadImageFromDisk(Component parentComponent) {
 		
-		// Select resource file.
-		JFileChooser dialog = new JFileChooser(currentImagePathName);
-		
-		// List filters.
-		String [][] filters = {{"org.multipage.generator.textIconFile", "ico"},
-				               {"org.multipage.generator.textBmpFile", "bmp"},
-				               {"org.multipage.generator.textGifFile", "gif"},
-				               {"org.multipage.generator.textJpegFile", "jpg", "jpeg"},
-				               {"org.multipage.generator.textPngFile", "png"},
-				               {"org.multipage.generator.textTiffFile", "tif", "tiff"}};
-		
-		// Add filters.
-		Utility.addFileChooserFilters(dialog, currentImagePathName, filters, false);
-						
-		// Open dialog.
-	    if(dialog.showOpenDialog(parentComponent) != JFileChooser.APPROVE_OPTION) {
-	       return null;
-	    }
-	    
-	    // Get selected file.
-	    File file = dialog.getSelectedFile();
-	    
-	    // Set current path name.
-	    currentImagePathName = file.getParent();
-	    
-	    BufferedImage image;
 		try {
-			image = Imaging.getBufferedImage(file);
+			// Select resource file.
+			JFileChooser dialog = new JFileChooser(currentImagePathName);
+			
+			// List filters.
+			String [][] filters = {{"org.multipage.generator.textIconFile", "ico"},
+					               {"org.multipage.generator.textBmpFile", "bmp"},
+					               {"org.multipage.generator.textGifFile", "gif"},
+					               {"org.multipage.generator.textJpegFile", "jpg", "jpeg"},
+					               {"org.multipage.generator.textPngFile", "png"},
+					               {"org.multipage.generator.textTiffFile", "tif", "tiff"}};
+			
+			// Add filters.
+			Utility.addFileChooserFilters(dialog, currentImagePathName, filters, false);
+							
+			// Open dialog.
+		    if(dialog.showOpenDialog(parentComponent) != JFileChooser.APPROVE_OPTION) {
+		       return null;
+		    }
+		    
+		    // Get selected file.
+		    File file = dialog.getSelectedFile();
+		    
+		    // Set current path name.
+		    currentImagePathName = file.getParent();
+		    
+		    BufferedImage image;
+			try {
+				image = Imaging.getBufferedImage(file);
+			}
+			catch (Exception e) {
+				return null;
+			}
+		    
+		    return image;
 		}
-		catch (Exception e) {
-			return null;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-	    
-	    return image;
+		return null;
 	}
 
 	/**
@@ -338,30 +379,36 @@ public class GeneratorUtility {
 	 * @return
 	 */
 	public static MimeType getMimeType(String type, String extension) {
-
-		// Get MIME types.
-		ArrayList<MimeType> mimeTypes = ProgramGenerator.getAreasModel().getMimeTypes();
-		MimeType defaultMimeType = null;
 		
-		// Try to find corresponding MIME type.
-		for (MimeType mimeType : mimeTypes) {
+		try {
+			// Get MIME types.
+			ArrayList<MimeType> mimeTypes = ProgramGenerator.getAreasModel().getMimeTypes();
+			MimeType defaultMimeType = null;
 			
-			// Return found MIME type.
-			if (mimeType.equals(type, extension)) {
-				return mimeType;
+			// Try to find corresponding MIME type.
+			for (MimeType mimeType : mimeTypes) {
+				
+				// Return found MIME type.
+				if (mimeType.equals(type, extension)) {
+					return mimeType;
+				}
+				
+				if (defaultMimeType == null && mimeType.type.equals("def")) {
+					defaultMimeType = mimeType;
+				}
 			}
 			
-			if (defaultMimeType == null && mimeType.type.equals("def")) {
-				defaultMimeType = mimeType;
+			// Use default MIME type.
+			if (defaultMimeType == null) {
+				defaultMimeType = mimeTypes.isEmpty() ? new MimeType() : mimeTypes.get(0);
 			}
+			
+			return defaultMimeType;
 		}
-		
-		// Use default MIME type.
-		if (defaultMimeType == null) {
-			defaultMimeType = mimeTypes.isEmpty() ? new MimeType() : mimeTypes.get(0);
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		return defaultMimeType;
+		return null;
 	}
 
 	/**
@@ -484,53 +531,85 @@ public class GeneratorUtility {
 	 * @param comboSlotType
 	 */
 	public static void loadSlotTypesCombo(JComboBox<SlotType> comboSlotType) {
-		
-		SlotType.getAll().stream().filter(slotType -> slotType.known())
-		 .sorted((slotType1, slotType2) -> { return slotType1.compareTextTo(slotType2); })
-		 .forEach(sloType -> { comboSlotType.addItem(sloType); });
+		try {
+			
+			SlotType.getAll().stream().filter(slotType -> slotType.known())
+				.sorted((slotType1, slotType2) -> {
+					try {
+						return slotType1.compareTextTo(slotType2);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return 0;
+				})
+				.forEach(sloType -> {
+					try {
+						
+						comboSlotType.addItem(sloType);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load program paths combo box.
 	 * @param comboProgramPaths
 	 */
+	@SuppressWarnings("unchecked")
 	public static void loadProgramPaths(JComboBox comboProgramPaths) {
-		
-		// Load combo box list.
-		comboProgramPaths.addItem(ProgramPaths.webInterfaceDirectorySupplier);
-		comboProgramPaths.addItem(ProgramPaths.userDirectorySupplier);
-		comboProgramPaths.addItem(ProgramPaths.phpDirectorySupplier);
-		comboProgramPaths.addItem(ProgramPaths.databaseDirectorySupplier);
-		comboProgramPaths.addItem(ProgramPaths.temporaryDirectory);
-		
-		// Initialize renderer.
-		comboProgramPaths.setRenderer(new ListCellRenderer<ProgramPaths.PathSupplier>() {
+		try {
 			
-			/**
-			 * Renderer.
-			 */
-			RendererPathItem renderer = new RendererPathItem();
+			// Load combo box list.
+			comboProgramPaths.addItem(ProgramPaths.webInterfaceDirectorySupplier);
+			comboProgramPaths.addItem(ProgramPaths.userDirectorySupplier);
+			comboProgramPaths.addItem(ProgramPaths.phpDirectorySupplier);
+			comboProgramPaths.addItem(ProgramPaths.databaseDirectorySupplier);
+			comboProgramPaths.addItem(ProgramPaths.temporaryDirectory);
 			
-			/**
-			 * Get renderer.
-			 */
-			@Override
-			public Component getListCellRendererComponent(JList<? extends PathSupplier> list, PathSupplier pathSupplier,
-					int index, boolean isSelected, boolean cellHasFocus) {
+			// Initialize renderer.
+			comboProgramPaths.setRenderer(new ListCellRenderer<ProgramPaths.PathSupplier>() {
 				
-				if (pathSupplier == null) {
-					return null;
+				/**
+				 * Renderer.
+				 */
+				RendererPathItem renderer = new RendererPathItem();
+				
+				/**
+				 * Get renderer.
+				 */
+				@Override
+				public Component getListCellRendererComponent(JList<? extends PathSupplier> list, PathSupplier pathSupplier,
+						int index, boolean isSelected, boolean cellHasFocus) {
+					
+					try {
+						if (pathSupplier == null) {
+							return null;
+						}
+						
+						// Is combo enabled?
+						boolean enabled = comboProgramPaths.isEnabled();
+						
+						// Get path.
+						String path = pathSupplier.supplier.get();
+						
+						renderer.set(enabled, isSelected, cellHasFocus, index, pathSupplier.caption, path);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return renderer;
 				}
-				
-				// Is combo enabled?
-				boolean enabled = comboProgramPaths.isEnabled();
-				
-				// Get path.
-				String path = pathSupplier.supplier.get();
-				
-				renderer.set(enabled, isSelected, cellHasFocus, index, pathSupplier.caption, path);
-				return renderer;
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

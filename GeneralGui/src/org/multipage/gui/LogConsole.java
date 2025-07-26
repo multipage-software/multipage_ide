@@ -1,7 +1,7 @@
 /**
- * Copyright 2010-2024 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 04-04-2024
+ * Created on : 2024-04-04
  *
  */
 package org.multipage.gui;
@@ -22,9 +22,10 @@ import javax.swing.JViewport;
 import javax.swing.border.Border;
 
 import org.multipage.util.Obj;
+import org.multipage.util.Safe;
 
 /**
- * Log console object.
+ * Log console main object.
  * @author vakol
  */
 public class LogConsole {
@@ -100,29 +101,35 @@ public class LogConsole {
 	public LogConsole(String consoleName, JSplitPane splitPane, int port)
 			throws Exception {
 		
-		this.name = consoleName;
-		this.splitPane = splitPane;
-		this.port = port;
-		
-		// Create panel components.
-		Component leftComponent = splitPane.getLeftComponent();
-		if (!(leftComponent instanceof JScrollPane)) {
-			throw new IllegalArgumentException();
+		try {
+			this.name = consoleName;
+			this.splitPane = splitPane;
+			this.port = port;
+			
+			// Create panel components.
+			Component leftComponent = splitPane.getLeftComponent();
+			if (!(leftComponent instanceof JScrollPane)) {
+				throw new IllegalArgumentException();
+			}
+			
+			this.scrollPane = (JScrollPane) leftComponent;
+			
+			JViewport viewport = this.scrollPane.getViewport();
+			Component scrollComponent = viewport.getView();
+			if (!(scrollComponent instanceof JTextPane)) {
+				throw new IllegalArgumentException();
+			}
+			
+			JTextPane textPane = (JTextPane) scrollComponent;
+			this.textPane = textPane;
+	
+			// Reset selection.
+			setSelected(false); //$hide$
 		}
-		
-		this.scrollPane = (JScrollPane) leftComponent;
-		
-		JViewport viewport = this.scrollPane.getViewport();
-		Component scrollComponent = viewport.getView();
-		if (!(scrollComponent instanceof JTextPane)) {
-			throw new IllegalArgumentException();
+		catch (Throwable e) {
+			Safe.exception(e);
+			throw e;
 		}
-		
-		JTextPane textPane = (JTextPane) scrollComponent;
-		this.textPane = textPane;
-
-		// Reset selection.
-		setSelected(false); //$hide$
 	}
 	
 	/**
@@ -132,16 +139,43 @@ public class LogConsole {
 	public void openInputSocket()
 			throws Exception {
 		
-		packetChannel = new PacketChannel() {
+		try {
+			packetChannel = new PacketChannel() {
+				
+				// Create log packet reader when accepting socket connection.
+				@Override
+				protected PacketSession onStartSession(AsynchronousSocketChannel client) {
+					
+					try {
+						LogReader logReader = new LogReader(LogConsole.this);
+						return logReader;
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return null;
+				}
+			};
+			packetChannel.listen("localhost", port);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+			throw e;
+		}
+	}
+	
+	/**
+	 * Close input socket channel.
+	 * @throws Exception
+	 */
+	public void closeInputSocket() {
+		try {
 			
-			// Create log packet reader when accepting socket connection.
-			@Override
-			protected PacketSession onStartListening(AsynchronousSocketChannel client) {
-				LogReader logReader = new LogReader(LogConsole.this);
-				return logReader;
-			}
+			packetChannel.closeServer();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
 		};
-		packetChannel.listen("localhost", port);
 	}
 	
 	/**
@@ -150,8 +184,14 @@ public class LogConsole {
 	 */
 	public InetSocketAddress getSocketAddress() {
 		
-		InetSocketAddress socketAddress = packetChannel.getSocketAddress();
-		return socketAddress;
+		try {
+			InetSocketAddress socketAddress = packetChannel.getSocketAddress();
+			return socketAddress;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -159,10 +199,15 @@ public class LogConsole {
 	 * @param isSelected
 	 */
 	public void setSelected(boolean isSelected) {
-		
-		// Set border depending on selection.
-		Border border = (isSelected ? selectionBorder : simpleBorder);
-		scrollPane.setBorder(border);
+		try {
+			
+			// Set border depending on selection.
+			Border border = (isSelected ? selectionBorder : simpleBorder);
+			scrollPane.setBorder(border);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -171,8 +216,14 @@ public class LogConsole {
 	 */
 	public synchronized int getRecordsCount() {
 		
-		int recordsCount = consoleRecords.size();
-		return recordsCount;
+		try {
+			int recordsCount = consoleRecords.size();
+			return recordsCount;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return 0;
 	}
 	
 	/**
@@ -182,25 +233,31 @@ public class LogConsole {
 	 */
 	public boolean runStatement(LogMessageRecord messageRecord) {
 		
-		boolean isStatement = false;
-		
-		// On clear console.
-		if ("CLEAR".equalsIgnoreCase(messageRecord.statment)) {
+		try {
+			boolean isStatement = false;
 			
-			// Clear console contents.
-			clear();
+			// On clear console.
+			if ("CLEAR".equalsIgnoreCase(messageRecord.statment)) {
+				
+				// Clear console contents.
+				clear();
+				
+				// Set output flag.
+				isStatement = true;
+			}
 			
-			// Set output flag.
-			isStatement = true;
+			// Display statement in the log view.
+			if (isStatement) {
+				
+				// Append new record to the end of the list.
+				consoleRecords.add(messageRecord);
+			}
+			return isStatement;
 		}
-		
-		// Display statement in the log view.
-		if (isStatement) {
-			
-			// Append new record to the end of the list.
-			consoleRecords.add(messageRecord);
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		return isStatement;
+		return false;
 	}
 	
 	/**
@@ -208,80 +265,95 @@ public class LogConsole {
 	 * @param messageRecord
 	 */
 	public synchronized void cacheMessageRecord(LogMessageRecord messageRecord) {
-		
-		// Try to run console statement..
-		boolean success = runStatement(messageRecord);
-		if (success) {
-			return;
-		}
-
-		// Get current time.
-		LocalTime timeNow = LocalTime.now();
-		
-		messageRecord.consoleWriteTime = timeNow;
-
-		// Set maximum and minimum timestamp.
-		if (minimumTimestamp == null) {
-			minimumTimestamp = timeNow;
-		}
-		if (maximumTimestamp == null || maximumTimestamp.compareTo(timeNow) < 0) {
-			maximumTimestamp = timeNow;
-		}
-
-		// If number of records exceeds the maximum, remove 10 records from the beginning of the list.
-		int recordCount = consoleRecords.size();
-		if (recordCount > MAXIMUM_RECORDS) {
+		try {
 			
-			for (int index = 0; index < 10; index++) {
-				consoleRecords.poll();
+			// Try to run console statement..
+			boolean success = runStatement(messageRecord);
+			if (success) {
+				return;
 			}
+	
+			// Get current time.
+			LocalTime timeNow = LocalTime.now();
+			
+			messageRecord.consoleWriteTime = timeNow;
+	
+			// Set maximum and minimum timestamp.
+			if (minimumTimestamp == null) {
+				minimumTimestamp = timeNow;
+			}
+			if (maximumTimestamp == null || maximumTimestamp.compareTo(timeNow) < 0) {
+				maximumTimestamp = timeNow;
+			}
+	
+			// If number of records exceeds the maximum, remove 10 records from the beginning of the list.
+			int recordCount = consoleRecords.size();
+			if (recordCount > MAXIMUM_RECORDS) {
+				
+				for (int index = 0; index < 10; index++) {
+					consoleRecords.poll();
+				}
+			}
+			
+			// Append new record to the end of the list.
+			consoleRecords.add(messageRecord);
+			
+			update();
 		}
-		
-		// Append new record to the end of the list.
-		consoleRecords.add(messageRecord);
-		
-		update();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Update the text panel contents.
 	 */
 	protected synchronized void update() {
-		
-		// Check timestamps for null values.
-		if (maximumTimestamp == null || minimumTimestamp == null) {
-			return;
-		}
-
-		// Compile text contents.
-		Obj<String> contents = new Obj<String>("<html>");
-		
-		// TODO: <---FIX Concurrent modification error.
-		consoleRecords.forEach(messageRecord -> {
+		try {
 			
-			String messageText = Utility.htmlSpecialChars(messageRecord.messageText);
-			String colorString = Utility.getCssColor(messageRecord.color);
-			String messageHtml = String.format("<div style='color: %s; font-family: Consolas; font-size: 14pt; white-space:nowrap;'>%s</div>", colorString, messageText);
-			contents.ref += messageHtml;
-		});
-		
-		// Set text of the text view.
-		textPane.setText(contents.ref);
-		
-		// Move caret to the end of the view.
-		int endPosition = textPane.getDocument().getLength();
-		textPane.setCaretPosition(endPosition);
+			// Check timestamps for null values.
+			if (maximumTimestamp == null || minimumTimestamp == null) {
+				return;
+			}
+	
+			// Compile text contents.
+			Obj<String> contents = new Obj<String>("<html>");
+			
+			// TODO: <---FIX Concurrent modification error.
+			consoleRecords.forEach(messageRecord -> {
+				
+				String messageText = Utility.htmlSpecialChars(messageRecord.messageText);
+				String colorString = Utility.getCssColor(messageRecord.color);
+				String messageHtml = String.format("<div style='color: %s; font-family: Consolas; font-size: 14pt; white-space:nowrap;'>%s</div>", colorString, messageText);
+				contents.ref += messageHtml;
+			});
+			
+			// Set text of the text view.
+			textPane.setText(contents.ref);
+			
+			// Move caret to the end of the view.
+			int endPosition = textPane.getDocument().getLength();
+			textPane.setCaretPosition(endPosition);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Clear console content.
 	 */
 	public synchronized void clear() {
-		
-		consoleRecords.clear();
-		maximumTimestamp = null;
-		minimumTimestamp = null;
-		textPane.setText("");
+		try {
+			
+			consoleRecords.clear();
+			maximumTimestamp = null;
+			minimumTimestamp = null;
+			textPane.setText("");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -289,9 +361,16 @@ public class LogConsole {
 	 */
 	@Override
 	public String toString() {
-		if (name == null) {
-			return "null " + super.toString();
+		
+		try {
+			if (name == null) {
+				return "null " + super.toString();
+			}
+			return name + ' ' + super.toString();
 		}
-		return name + ' ' + super.toString();
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 }

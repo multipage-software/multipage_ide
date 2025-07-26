@@ -1,10 +1,16 @@
+/*
+ * Copyright 2010-2025 (C) vakol
+ * 
+ * Created on : 2017-04-26
+ *
+ */
 package org.maclan.expression;
 
 import org.multipage.util.Resources;
 
 /**
- * Operand.
- * @author
+ * Calss for operands.
+ * @author vakol
  *
  */
 public class Operand implements ExpressionElement, ObjectElement {

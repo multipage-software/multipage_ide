@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -25,10 +25,11 @@ import javax.swing.SpringLayout;
 
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays editor for CSS border image.
+ * @author vakol
  *
  */
 public class CssBorderImagePanel extends InsertPanel implements StringValueEditor {
@@ -149,16 +150,21 @@ public class CssBorderImagePanel extends InsertPanel implements StringValueEdito
 	 */
 	public CssBorderImagePanel(String string) {
 
-		initComponents();
-		
-		// $hide>>$
-		postCreate();
-		
-		if (string != null) {
-			initialString = string;
-			setFromInitialString();
+		try {
+			initComponents();
+			
+			// $hide>>$
+			postCreate();
+			
+			if (string != null) {
+				initialString = string;
+				setFromInitialString();
+			}
+			// $hide<<$
 		}
-		// $hide<<$
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -477,119 +483,151 @@ public class CssBorderImagePanel extends InsertPanel implements StringValueEdito
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		localize();
-		setIcons();
-		
-		loadEnumerations();
-		loadUnits();
+		try {
+			
+			localize();
+			setIcons();
+			
+			loadEnumerations();
+			loadUnits();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(labelImageName);
-		Utility.localize(labelSlice);
-		Utility.localize(labelSliceBottom);
-		Utility.localize(labelSliceLeft);
-		Utility.localize(labelSliceRight);
-		Utility.localize(labelSliceTop);
-		Utility.localize(labelWidth);
-		Utility.localize(labelWidthBottom);
-		Utility.localize(labelWidthLeft);
-		Utility.localize(labelWidthRight);
-		Utility.localize(labelWidthTop);
-		Utility.localize(labelOutset);
-		Utility.localize(labelOutsetBottom);
-		Utility.localize(labelOutsetLeft);
-		Utility.localize(labelOutsetRight);
-		Utility.localize(labelOutsetTop);
-		Utility.localize(labelRepeatHorizontal);
-		Utility.localize(labelRepeatVertical);
+		try {
+			
+			Utility.localize(labelImageName);
+			Utility.localize(labelSlice);
+			Utility.localize(labelSliceBottom);
+			Utility.localize(labelSliceLeft);
+			Utility.localize(labelSliceRight);
+			Utility.localize(labelSliceTop);
+			Utility.localize(labelWidth);
+			Utility.localize(labelWidthBottom);
+			Utility.localize(labelWidthLeft);
+			Utility.localize(labelWidthRight);
+			Utility.localize(labelWidthTop);
+			Utility.localize(labelOutset);
+			Utility.localize(labelOutsetBottom);
+			Utility.localize(labelOutsetLeft);
+			Utility.localize(labelOutsetRight);
+			Utility.localize(labelOutsetTop);
+			Utility.localize(labelRepeatHorizontal);
+			Utility.localize(labelRepeatVertical);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonGetResources.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
+		try {
+			
+			buttonGetResources.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load enumerations.
 	 */
 	private void loadEnumerations() {
-		
-		Utility.loadEmptyItem(comboSlice);
-		Utility.loadNamedItems(comboSlice, new String [][] {
-				{"fill", "org.multipage.gui.textCssBorderImageSliceFill"}
-				});
-		
-		Utility.loadNamedItems(comboRepeatVertical, new String [][] {
-				{"stretch", "org.multipage.gui.textCssBorderImageStretch"},
-				{"repeat", "org.multipage.gui.textCssBorderImageRepeat"},
-				{"round", "org.multipage.gui.textCssBorderImageRound"},
-				{"space", "org.multipage.gui.textCssBorderImageSpace"}
-				});
-		
-		Utility.loadNamedItems(comboRepeatHorizontal, new String [][] {
-				{"stretch", "org.multipage.gui.textCssBorderImageStretch"},
-				{"repeat", "org.multipage.gui.textCssBorderImageRepeat"},
-				{"round", "org.multipage.gui.textCssBorderImageRound"},
-				{"space", "org.multipage.gui.textCssBorderImageSpace"}
-				});
+		try {
+			
+			Utility.loadEmptyItem(comboSlice);
+			Utility.loadNamedItems(comboSlice, new String [][] {
+					{"fill", "org.multipage.gui.textCssBorderImageSliceFill"}
+					});
+			
+			Utility.loadNamedItems(comboRepeatVertical, new String [][] {
+					{"stretch", "org.multipage.gui.textCssBorderImageStretch"},
+					{"repeat", "org.multipage.gui.textCssBorderImageRepeat"},
+					{"round", "org.multipage.gui.textCssBorderImageRound"},
+					{"space", "org.multipage.gui.textCssBorderImageSpace"}
+					});
+			
+			Utility.loadNamedItems(comboRepeatHorizontal, new String [][] {
+					{"stretch", "org.multipage.gui.textCssBorderImageStretch"},
+					{"repeat", "org.multipage.gui.textCssBorderImageRepeat"},
+					{"round", "org.multipage.gui.textCssBorderImageRound"},
+					{"space", "org.multipage.gui.textCssBorderImageSpace"}
+					});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Load units.
 	 */
+	@SuppressWarnings("unchecked")
 	private void loadUnits() {
+		try {
+			
+			comboSliceTopUnits.addItem(" ");
+			comboSliceBottomUnits.addItem(" ");
+			comboSliceLeftUnits.addItem(" ");
+			comboSliceRightUnits.addItem(" ");
+			
+			comboSliceTopUnits.addItem("%");
+			comboSliceBottomUnits.addItem("%");
+			comboSliceLeftUnits.addItem("%");
+			comboSliceRightUnits.addItem("%");
+			
+			Utility.loadCssUnits(comboWidthTopUnits);
+			Utility.loadCssUnits(comboWidthRightUnits);
+			Utility.loadCssUnits(comboWidthBottomUnits);
+			Utility.loadCssUnits(comboWidthLeftUnits);
+			
+			Utility.loadCssUnits(comboOutsetTopUnits);
+			Utility.loadCssUnits(comboOutsetRightUnits);
+			Utility.loadCssUnits(comboOutsetBottomUnits);
+			Utility.loadCssUnits(comboOutsetLeftUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
-		comboSliceTopUnits.addItem(" ");
-		comboSliceBottomUnits.addItem(" ");
-		comboSliceLeftUnits.addItem(" ");
-		comboSliceRightUnits.addItem(" ");
-		
-		comboSliceTopUnits.addItem("%");
-		comboSliceBottomUnits.addItem("%");
-		comboSliceLeftUnits.addItem("%");
-		comboSliceRightUnits.addItem("%");
-		
-		Utility.loadCssUnits(comboWidthTopUnits);
-		Utility.loadCssUnits(comboWidthRightUnits);
-		Utility.loadCssUnits(comboWidthBottomUnits);
-		Utility.loadCssUnits(comboWidthLeftUnits);
-		
-		Utility.loadCssUnits(comboOutsetTopUnits);
-		Utility.loadCssUnits(comboOutsetRightUnits);
-		Utility.loadCssUnits(comboOutsetBottomUnits);
-		Utility.loadCssUnits(comboOutsetLeftUnits);
 	}
 
 	/**
 	 * On find resource.
 	 */
 	protected void onFindResource() {
-		
-		if (getResourceName == null) {
+		try {
 			
-			Utility.show(this, "org.multipage.gui.messageNoResourcesAssociated");
-			return;
+			if (getResourceName == null) {
+				
+				Utility.show(this, "org.multipage.gui.messageNoResourcesAssociated");
+				return;
+			}
+			
+			// Use callback to obtain resource name.
+			Object outputValue = getResourceName.run(null);
+			if (!(outputValue instanceof String)) {
+				return;
+			}
+			
+			String imageName = (String) outputValue;
+			
+			// Set image name text control.
+			textImageName.setText(imageName);
 		}
-		
-		// Use callback to obtain resource name.
-		Object outputValue = getResourceName.run(null);
-		if (!(outputValue instanceof String)) {
-			return;
-		}
-		
-		String imageName = (String) outputValue;
-		
-		// Set image name text control.
-		textImageName.setText(imageName);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -599,90 +637,101 @@ public class CssBorderImagePanel extends InsertPanel implements StringValueEdito
 	@Override
 	public String getSpecification() {
 		
-		String imageName = textImageName.getText();
-		if (imageName.isEmpty()) {
-			return "none 100% 1 0s stretch";
+		try {
+			String imageName = textImageName.getText();
+			if (imageName.isEmpty()) {
+				return "none 100% 1 0s stretch";
+			}
+			
+			String specification = String.format("url(\"[@URL thisArea, res=\"#%s\"]\")", imageName);
+			
+			specification += " " + Utility.getCssValueAndUnits(textSliceTop, comboSliceTopUnits, "100%");
+			specification += " " + Utility.getCssValueAndUnits(textSliceRight, comboSliceRightUnits, "100%");
+			specification += " " + Utility.getCssValueAndUnits(textSliceBottom, comboSliceBottomUnits, "100%");
+			specification += " " + Utility.getCssValueAndUnits(textSliceLeft, comboSliceLeftUnits, "100%");
+			specification += " " + Utility.getSelectedNamedItem(comboSlice);
+			
+			specification += "/" + Utility.getCssValueAndUnits(textWidthTop, comboWidthTopUnits, "auto");
+			specification += " " + Utility.getCssValueAndUnits(textWidthRight, comboWidthRightUnits, "auto");
+			specification += " " + Utility.getCssValueAndUnits(textWidthBottom, comboWidthBottomUnits, "auto");
+			specification += " " + Utility.getCssValueAndUnits(textWidthLeft, comboWidthLeftUnits, "auto");
+			
+			specification += "/" + Utility.getCssValueAndUnits(textOutsetTop, comboOutsetTopUnits, "0");
+			specification += " " + Utility.getCssValueAndUnits(textOutsetRight, comboOutsetRightUnits, "0");
+			specification += " " + Utility.getCssValueAndUnits(textOutsetBottom, comboOutsetBottomUnits, "0");
+			specification += " " + Utility.getCssValueAndUnits(textOutsetLeft, comboOutsetLeftUnits, "0");
+			
+			specification += " " + Utility.getSelectedNamedItem(comboRepeatHorizontal);
+			specification += " " + Utility.getSelectedNamedItem(comboRepeatVertical);
+			
+			return specification;
 		}
-		
-		String specification = String.format("url(\"[@URL thisArea, res=\"#%s\"]\")", imageName);
-		
-		specification += " " + Utility.getCssValueAndUnits(textSliceTop, comboSliceTopUnits, "100%");
-		specification += " " + Utility.getCssValueAndUnits(textSliceRight, comboSliceRightUnits, "100%");
-		specification += " " + Utility.getCssValueAndUnits(textSliceBottom, comboSliceBottomUnits, "100%");
-		specification += " " + Utility.getCssValueAndUnits(textSliceLeft, comboSliceLeftUnits, "100%");
-		specification += " " + Utility.getSelectedNamedItem(comboSlice);
-		
-		specification += "/" + Utility.getCssValueAndUnits(textWidthTop, comboWidthTopUnits, "auto");
-		specification += " " + Utility.getCssValueAndUnits(textWidthRight, comboWidthRightUnits, "auto");
-		specification += " " + Utility.getCssValueAndUnits(textWidthBottom, comboWidthBottomUnits, "auto");
-		specification += " " + Utility.getCssValueAndUnits(textWidthLeft, comboWidthLeftUnits, "auto");
-		
-		specification += "/" + Utility.getCssValueAndUnits(textOutsetTop, comboOutsetTopUnits, "0");
-		specification += " " + Utility.getCssValueAndUnits(textOutsetRight, comboOutsetRightUnits, "0");
-		specification += " " + Utility.getCssValueAndUnits(textOutsetBottom, comboOutsetBottomUnits, "0");
-		specification += " " + Utility.getCssValueAndUnits(textOutsetLeft, comboOutsetLeftUnits, "0");
-		
-		specification += " " + Utility.getSelectedNamedItem(comboRepeatHorizontal);
-		specification += " " + Utility.getSelectedNamedItem(comboRepeatVertical);
-		
-		return specification;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
 	 * Set components from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		clear();
-		
-		if (initialString != null) {
+		try {
 			
-			try {
+			clear();
+			
+			if (initialString != null) {
 				
-				Obj<Integer> position = new Obj<Integer>(0);
-
-				// Get image name.
-				String imageName = getImageName(position);
-				if (imageName == null) {
-					return;
+				try {
+					
+					Obj<Integer> position = new Obj<Integer>(0);
+	
+					// Get image name.
+					String imageName = getImageName(position);
+					if (imageName == null) {
+						return;
+					}
+					
+					textImageName.setText(imageName);
+					
+					// Parse slice definition.
+					if (!parseSliceTextSetControls(position)) {
+						return;
+					}
+					
+					// Get next backslash.
+					String nextMatch = Utility.getNextMatch(initialString, position, "/");
+					if (!nextMatch.equals("/")) {
+						return;
+					}
+					
+					// Parse widths.
+					if (!parseWidthTextSetControls(position)) {
+						return;
+					}
+					
+					// Get next backslash.
+					nextMatch = Utility.getNextMatch(initialString, position, "/");
+					if (!nextMatch.equals("/")) {
+						return;
+					}
+					
+					// Parse widths.
+					if (!parseOutsetTextSetControls(position)) {
+						return;
+					}
+					
+					// Parse repeat.
+					parseRepeatTextSetControls(position);
 				}
-				
-				textImageName.setText(imageName);
-				
-				// Parse slice definition.
-				if (!parseSliceTextSetControls(position)) {
-					return;
+				catch (Exception e) {
+					
 				}
-				
-				// Get next backslash.
-				String nextMatch = Utility.getNextMatch(initialString, position, "/");
-				if (!nextMatch.equals("/")) {
-					return;
-				}
-				
-				// Parse widths.
-				if (!parseWidthTextSetControls(position)) {
-					return;
-				}
-				
-				// Get next backslash.
-				nextMatch = Utility.getNextMatch(initialString, position, "/");
-				if (!nextMatch.equals("/")) {
-					return;
-				}
-				
-				// Parse widths.
-				if (!parseOutsetTextSetControls(position)) {
-					return;
-				}
-				
-				// Parse repeat.
-				parseRepeatTextSetControls(position);
-			}
-			catch (Exception e) {
-				
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -690,22 +739,28 @@ public class CssBorderImagePanel extends InsertPanel implements StringValueEdito
 	 * @param position
 	 */
 	private boolean parseRepeatTextSetControls(Obj<Integer> position) {
-
-		// Enumerate controls.
-		final JComboBox [] comboBoxes = {comboRepeatHorizontal, comboRepeatVertical};
 		
-		for (int index = 0; index < 2; index++) {
+		try {
+			// Enumerate controls.
+			final JComboBox [] comboBoxes = {comboRepeatHorizontal, comboRepeatVertical};
 			
-			// Get repeat value.
-			String repeatValue = Utility.getNextMatch(initialString, position, "[\\w]+");
-			if (!checkRepeatValue(repeatValue)) {
-				return false;
+			for (int index = 0; index < 2; index++) {
+				
+				// Get repeat value.
+				String repeatValue = Utility.getNextMatch(initialString, position, "[\\w]+");
+				if (!checkRepeatValue(repeatValue)) {
+					return false;
+				}
+				
+				Utility.selectComboNamedItem(comboBoxes[index], repeatValue);
 			}
 			
-			Utility.selectComboNamedItem(comboBoxes[index], repeatValue);
+			return true;
 		}
-		
-		return true;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -715,16 +770,20 @@ public class CssBorderImagePanel extends InsertPanel implements StringValueEdito
 	 */
 	private boolean checkRepeatValue(String repeatValue) {
 		
-		final String [] repeatValues = {"stretch", "repeat", "round", "space"};
-		
-		// Try to find repeat value.
-		for (String acceptedValue : repeatValues) {
+		try {
+			final String [] repeatValues = {"stretch", "repeat", "round", "space"};
 			
-			if (repeatValue.equals(acceptedValue)) {
-				return true;
+			// Try to find repeat value.
+			for (String acceptedValue : repeatValues) {
+				
+				if (repeatValue.equals(acceptedValue)) {
+					return true;
+				}
 			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return false;
 	}
 
@@ -735,32 +794,38 @@ public class CssBorderImagePanel extends InsertPanel implements StringValueEdito
 	 */
 	private boolean parseOutsetTextSetControls(Obj<Integer> position) {
 		
-		Obj<String> number = new Obj<String>();
-		Obj<String> unit = new Obj<String>();
-		
-		// Enumerate outset controls.
-		final JTextField [] textFields = {textOutsetTop, textOutsetRight, textOutsetBottom, textOutsetLeft};
-		final JComboBox [] comboBoxes = {comboOutsetTopUnits, comboOutsetRightUnits, comboOutsetBottomUnits, comboOutsetLeftUnits};
-		
-		for (int index = 0; index < 4; index++) {
+		try {
+			Obj<String> number = new Obj<String>();
+			Obj<String> unit = new Obj<String>();
 			
-			// Get outset value.
-			String numberUnits = Utility.getNextMatch(initialString, position, "[\\w\\d\\.%-]+");
-			if (numberUnits == null) {
-				return false;
+			// Enumerate outset controls.
+			final JTextField [] textFields = {textOutsetTop, textOutsetRight, textOutsetBottom, textOutsetLeft};
+			final JComboBox [] comboBoxes = {comboOutsetTopUnits, comboOutsetRightUnits, comboOutsetBottomUnits, comboOutsetLeftUnits};
+			
+			for (int index = 0; index < 4; index++) {
+				
+				// Get outset value.
+				String numberUnits = Utility.getNextMatch(initialString, position, "[\\w\\d\\.%-]+");
+				if (numberUnits == null) {
+					return false;
+				}
+				
+				// Convert string to number and units.
+				if (!Utility.convertCssStringToNumberUnit(numberUnits, number, unit)) {
+					return false;
+				}
+				
+				// Set appropriate controls.
+				textFields[index].setText(number.ref);
+				Utility.selectComboItem(comboBoxes[index], unit.ref);
 			}
 			
-			// Convert string to number and units.
-			if (!Utility.convertCssStringToNumberUnit(numberUnits, number, unit)) {
-				return false;
-			}
-			
-			// Set appropriate controls.
-			textFields[index].setText(number.ref);
-			Utility.selectComboItem(comboBoxes[index], unit.ref);
+			return true;
 		}
-		
-		return true;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -770,45 +835,51 @@ public class CssBorderImagePanel extends InsertPanel implements StringValueEdito
 	 */
 	private boolean parseWidthTextSetControls(Obj<Integer> position) {
 		
-		Obj<String> number = new Obj<String>();
-		Obj<String> unit = new Obj<String>();
-		
-		// Enumerate width controls.
-		final JTextField [] textFields = {textWidthTop, textWidthRight, textWidthBottom, textWidthLeft};
-		final JComboBox [] comboBoxes = {comboWidthTopUnits, comboWidthRightUnits, comboWidthBottomUnits, comboWidthLeftUnits};
-		
-		for (int index = 0; index < 4; index++) {
+		try {
+			Obj<String> number = new Obj<String>();
+			Obj<String> unit = new Obj<String>();
 			
-			// Try to get auto flag.
-			int savedPosition = position.ref;
-			String nextMatch = Utility.getNextMatch(initialString, position, "[\\w]+");
-			if (nextMatch.equals("auto")) {
+			// Enumerate width controls.
+			final JTextField [] textFields = {textWidthTop, textWidthRight, textWidthBottom, textWidthLeft};
+			final JComboBox [] comboBoxes = {comboWidthTopUnits, comboWidthRightUnits, comboWidthBottomUnits, comboWidthLeftUnits};
+			
+			for (int index = 0; index < 4; index++) {
 				
-				textFields[index].setText("");
-				Utility.selectComboItem(comboBoxes[index], "");
-				continue;
-			}
-			else {
-				position.ref = savedPosition;
-			}
+				// Try to get auto flag.
+				int savedPosition = position.ref;
+				String nextMatch = Utility.getNextMatch(initialString, position, "[\\w]+");
+				if (nextMatch.equals("auto")) {
 					
-			// Get width value.
-			String numberUnits = Utility.getNextMatch(initialString, position, "[\\w\\d\\.%-]+");
-			if (numberUnits == null) {
-				return false;
+					textFields[index].setText("");
+					Utility.selectComboItem(comboBoxes[index], "");
+					continue;
+				}
+				else {
+					position.ref = savedPosition;
+				}
+						
+				// Get width value.
+				String numberUnits = Utility.getNextMatch(initialString, position, "[\\w\\d\\.%-]+");
+				if (numberUnits == null) {
+					return false;
+				}
+				
+				// Convert string to number and units.
+				if (!Utility.convertCssStringToNumberUnit(numberUnits, number, unit)) {
+					return false;
+				}
+				
+				// Set appropriate controls.
+				textFields[index].setText(number.ref);
+				Utility.selectComboItem(comboBoxes[index], unit.ref);
 			}
-			
-			// Convert string to number and units.
-			if (!Utility.convertCssStringToNumberUnit(numberUnits, number, unit)) {
-				return false;
-			}
-			
-			// Set appropriate controls.
-			textFields[index].setText(number.ref);
-			Utility.selectComboItem(comboBoxes[index], unit.ref);
+	
+			return true;
 		}
-
-		return true;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -818,43 +889,49 @@ public class CssBorderImagePanel extends InsertPanel implements StringValueEdito
 	 */
 	private boolean parseSliceTextSetControls(Obj<Integer> position) {
 		
-		Obj<String> number = new Obj<String>();
-		Obj<String> unit = new Obj<String>();
-		
-		// Enumerate slice controls.
-		final JTextField [] textFields = {textSliceTop, textSliceRight, textSliceBottom, textSliceLeft};
-		final JComboBox [] comboBoxes = {comboSliceTopUnits, comboSliceRightUnits, comboSliceBottomUnits, comboSliceLeftUnits};
-		
-		for (int index = 0; index < 4; index++) {
+		try {
+			Obj<String> number = new Obj<String>();
+			Obj<String> unit = new Obj<String>();
 			
-			// Get number and units.
-			String numberUnits = Utility.getNextMatch(initialString, position, "[\\w\\d\\.%-]+");
-			if (numberUnits == null) {
-				return false;
+			// Enumerate slice controls.
+			final JTextField [] textFields = {textSliceTop, textSliceRight, textSliceBottom, textSliceLeft};
+			final JComboBox [] comboBoxes = {comboSliceTopUnits, comboSliceRightUnits, comboSliceBottomUnits, comboSliceLeftUnits};
+			
+			for (int index = 0; index < 4; index++) {
+				
+				// Get number and units.
+				String numberUnits = Utility.getNextMatch(initialString, position, "[\\w\\d\\.%-]+");
+				if (numberUnits == null) {
+					return false;
+				}
+				
+				// Convert string to number and units.
+				if (!Utility.convertCssStringToNumberUnit(numberUnits, number, unit)) {
+					return false;
+				}
+				
+				// Set appropriate controls.
+				textFields[index].setText(number.ref);
+				Utility.selectComboItem(comboBoxes[index], unit.ref);
 			}
 			
-			// Convert string to number and units.
-			if (!Utility.convertCssStringToNumberUnit(numberUnits, number, unit)) {
-				return false;
+			// Get fill flag.
+			int savedPosition = position.ref;
+			String nextMatch = Utility.getNextMatch(initialString, position, "[\\w]+");
+			if (nextMatch.equals("fill")) {
+				
+				Utility.selectComboNamedItem(comboSlice, "fill");
+			}
+			else {
+				position.ref = savedPosition;
 			}
 			
-			// Set appropriate controls.
-			textFields[index].setText(number.ref);
-			Utility.selectComboItem(comboBoxes[index], unit.ref);
+			return true;
 		}
-		
-		// Get fill flag.
-		int savedPosition = position.ref;
-		String nextMatch = Utility.getNextMatch(initialString, position, "[\\w]+");
-		if (nextMatch.equals("fill")) {
-			
-			Utility.selectComboNamedItem(comboSlice, "fill");
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		else {
-			position.ref = savedPosition;
-		}
-		
-		return true;
+		return false;
 	}
 
 	/**
@@ -864,74 +941,85 @@ public class CssBorderImagePanel extends InsertPanel implements StringValueEdito
 	 */
 	private String getImageName(Obj<Integer> position) {
 		
-		// Get next match.
-		String url = Utility.getNextMatch(initialString, position, "url");
-		if (url == null) {
-			return null;
-		}
-		
-		// Get opening parenthesis.
-		String leftParenthesis = Utility.getNextMatch(initialString, position, "\\(");
-		if (leftParenthesis == null) {
-			return null;
-		}
-		
-		String imageName = null;
-		
-		// Get name start.
-		String nameStart = Utility.getNextMatch(initialString, position, "res=\"#");
-		if (nameStart != null) {
+		try {
+			// Get next match.
+			String url = Utility.getNextMatch(initialString, position, "url");
+			if (url == null) {
+				return null;
+			}
 			
-			// Get image name.
-			imageName = Utility.getNextMatch(initialString, position, "[^\\\"]*");
+			// Get opening parenthesis.
+			String leftParenthesis = Utility.getNextMatch(initialString, position, "\\(");
+			if (leftParenthesis == null) {
+				return null;
+			}
+			
+			String imageName = null;
+			
+			// Get name start.
+			String nameStart = Utility.getNextMatch(initialString, position, "res=\"#");
+			if (nameStart != null) {
+				
+				// Get image name.
+				imageName = Utility.getNextMatch(initialString, position, "[^\\\"]*");
+			}
+			
+			// Get closing parenthesis.
+			String rightParenthesis = Utility.getNextMatch(initialString, position, "\\)");
+			if (rightParenthesis == null) {
+				return null;
+			}
+			
+			return imageName;
 		}
-		
-		// Get closing parenthesis.
-		String rightParenthesis = Utility.getNextMatch(initialString, position, "\\)");
-		if (rightParenthesis == null) {
-			return null;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		return imageName;
+		return "";
 	}
 
 	/**
 	 * Clear components.
 	 */
 	private void clear() {
-		
-		textImageName.setText("");
-		
-		Utility.selectFirst(comboSlice);
-		textSliceTop.setText("");
-		Utility.selectFirst(comboSliceTopUnits);
-		textSliceRight.setText("");
-		Utility.selectFirst(comboSliceRightUnits);
-		textSliceBottom.setText("");
-		Utility.selectFirst(comboSliceBottomUnits);
-		textSliceLeft.setText("");
-		Utility.selectFirst(comboSliceLeftUnits);
-		
-		textWidthTop.setText("");
-		Utility.selectFirst(comboWidthTopUnits);
-		textWidthRight.setText("");
-		Utility.selectFirst(comboWidthRightUnits);
-		textWidthBottom.setText("");
-		Utility.selectFirst(comboWidthBottomUnits);
-		textWidthLeft.setText("");
-		Utility.selectFirst(comboWidthLeftUnits);
-		
-		textOutsetTop.setText("");
-		Utility.selectFirst(comboOutsetTopUnits);
-		textOutsetRight.setText("");
-		Utility.selectFirst(comboOutsetRightUnits);
-		textOutsetBottom.setText("");
-		Utility.selectFirst(comboOutsetBottomUnits);
-		textOutsetLeft.setText("");
-		Utility.selectFirst(comboOutsetLeftUnits);
-		
-		Utility.selectFirst(comboRepeatHorizontal);
-		Utility.selectFirst(comboRepeatVertical);
+		try {
+			
+			textImageName.setText("");
+			
+			Utility.selectFirst(comboSlice);
+			textSliceTop.setText("");
+			Utility.selectFirst(comboSliceTopUnits);
+			textSliceRight.setText("");
+			Utility.selectFirst(comboSliceRightUnits);
+			textSliceBottom.setText("");
+			Utility.selectFirst(comboSliceBottomUnits);
+			textSliceLeft.setText("");
+			Utility.selectFirst(comboSliceLeftUnits);
+			
+			textWidthTop.setText("");
+			Utility.selectFirst(comboWidthTopUnits);
+			textWidthRight.setText("");
+			Utility.selectFirst(comboWidthRightUnits);
+			textWidthBottom.setText("");
+			Utility.selectFirst(comboWidthBottomUnits);
+			textWidthLeft.setText("");
+			Utility.selectFirst(comboWidthLeftUnits);
+			
+			textOutsetTop.setText("");
+			Utility.selectFirst(comboOutsetTopUnits);
+			textOutsetRight.setText("");
+			Utility.selectFirst(comboOutsetRightUnits);
+			textOutsetBottom.setText("");
+			Utility.selectFirst(comboOutsetBottomUnits);
+			textOutsetLeft.setText("");
+			Utility.selectFirst(comboOutsetLeftUnits);
+			
+			Utility.selectFirst(comboRepeatHorizontal);
+			Utility.selectFirst(comboRepeatVertical);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -949,7 +1037,13 @@ public class CssBorderImagePanel extends InsertPanel implements StringValueEdito
 	@Override
 	public String getStringValue() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -957,9 +1051,14 @@ public class CssBorderImagePanel extends InsertPanel implements StringValueEdito
 	 */
 	@Override
 	public void setStringValue(String string) {
-		
-		initialString = string;
-		setFromInitialString();
+		try {
+			
+			initialString = string;
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -977,7 +1076,13 @@ public class CssBorderImagePanel extends InsertPanel implements StringValueEdito
 	@Override
 	public String getResultText() {
 		
-		return getStringValue();
+		try {
+			return getStringValue();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -995,7 +1100,13 @@ public class CssBorderImagePanel extends InsertPanel implements StringValueEdito
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.gui.BorderImageBuilder");
+		try {
+			return Resources.getString("org.multipage.gui.BorderImageBuilder");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -16,10 +16,11 @@ import javax.swing.JPanel;
 import javax.swing.SpringLayout;
 
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays information about ambiguous files.
+ * @author vakol
  *
  */
 public class AmbiguousRenderedFilePanel extends JPanel {
@@ -47,11 +48,16 @@ public class AmbiguousRenderedFilePanel extends JPanel {
 	 * @param fileName 
 	 */
 	public AmbiguousRenderedFilePanel(AmbiguousFileName fileName) {
-
-		this.fileName = fileName;
-		initComponents();
 		
-		postCreate(); // $hide$
+		try {
+			this.fileName = fileName;
+			initComponents();
+			
+			postCreate(); // $hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -79,36 +85,46 @@ public class AmbiguousRenderedFilePanel extends JPanel {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		// Set file name.
-		labelFullFileName.setText(fileName.fileName);
-		
-		// Set list of items.
-		setListOfItems();
+		try {
+			
+			// Set file name.
+			labelFullFileName.setText(fileName.fileName);
+			
+			// Set list of items.
+			setListOfItems();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set list of items.
 	 */
 	private void setListOfItems() {
-		
-		LinkedList<AmbiguousFileNameItem> items = fileName.items;
-		
-		int count = items.size();
-		
-		// Set list panel layout.
-		panelListItems.setLayout(new GridLayout(count, 0));
-
-		
-		// Populate list panel.
-		for (int index = 0; index < count; index++) {
+		try {
 			
-			AmbiguousFileNameItem item = items.get(index);
+			LinkedList<AmbiguousFileNameItem> items = fileName.items;
 			
-			AmbiguousFileItemPanel itemPanel = new AmbiguousFileItemPanel(item);
-			panelListItems.add(itemPanel);
+			int count = items.size();
+			
+			// Set list panel layout.
+			panelListItems.setLayout(new GridLayout(count, 0));
+	
+			
+			// Populate list panel.
+			for (int index = 0; index < count; index++) {
+				
+				AmbiguousFileNameItem item = items.get(index);
+				
+				AmbiguousFileItemPanel itemPanel = new AmbiguousFileItemPanel(item);
+				panelListItems.add(itemPanel);
+			}
+			
+			Utility.forceDoLayout(this, 20);
 		}
-		
-		Utility.forceDoLayout(this, 20);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

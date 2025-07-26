@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -28,10 +28,11 @@ import org.multipage.gui.RendererJLabel;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays editor for enumerated value.
+ * @author vakol
  *
  */
 public class EnumerationEditorPanel extends EnumerationEditorPanelBase {
@@ -90,13 +91,18 @@ public class EnumerationEditorPanel extends EnumerationEditorPanelBase {
 	 * Create the dialog.
 	 */
 	public EnumerationEditorPanel() {
-
-		initComponents();
 		
-		// $hide>>$
-		postCreate();
-		setComponentsReferences(comboEnumerationValue);
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			postCreate();
+			setComponentsReferences(comboEnumerationValue);
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -135,90 +141,117 @@ public class EnumerationEditorPanel extends EnumerationEditorPanelBase {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		localize();
-		
-		checkDisplayValues.setSelected(displayEnumerationValuesState);
-		
-		initializeComboBox();
+		try {
+			
+			localize();
+			checkDisplayValues.setSelected(displayEnumerationValuesState);
+			initializeComboBox();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(labelSelectValue);
-		Utility.localize(checkDisplayValues);
+		try {
+			
+			Utility.localize(labelSelectValue);
+			Utility.localize(checkDisplayValues);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Initialize combo box.
 	 */
+	@SuppressWarnings("unchecked")
 	private void initializeComboBox() {
-		
-		comboEnumerationValue.setRenderer(new ListCellRenderer() {
+		try {
 			
-			// Renderer object.
-			RendererJLabel renderer = new RendererJLabel();
-			
-			// Overridden method.
-			@Override
-			public Component getListCellRendererComponent(JList list,
-					Object value, int index, boolean isSelected,
-					boolean cellHasFocus) {
+			comboEnumerationValue.setRenderer(new ListCellRenderer() {
 				
-				if (value instanceof EnumerationValue) {
+				// Renderer object.
+				RendererJLabel renderer = new RendererJLabel();
+				
+				// Overridden method.
+				@Override
+				public Component getListCellRendererComponent(JList list,
+						Object value, int index, boolean isSelected,
+						boolean cellHasFocus) {
 					
-					EnumerationValue enumerationValue = (EnumerationValue) value;
-					String textValue = checkDisplayValues.isSelected() ? 
-							enumerationValue.getValueDescriptionBuilder()
-							: enumerationValue.getValueDescriptionGenerator();
+					try {
+						if (value instanceof EnumerationValue) {
 							
-					renderer.setText(textValue);
+							EnumerationValue enumerationValue = (EnumerationValue) value;
+							String textValue = checkDisplayValues.isSelected() ? 
+									enumerationValue.getValueDescriptionBuilder()
+									: enumerationValue.getValueDescriptionGenerator();
+									
+							renderer.setText(textValue);
+						}
+						else {
+							renderer.setText(value.toString());
+						}
+						
+						renderer.set(isSelected, cellHasFocus, index);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return renderer;
 				}
-				else {
-					renderer.setText(value.toString());
-				}
-				
-				renderer.set(isSelected, cellHasFocus, index);
-				
-				return renderer;
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On display enumaration values.
 	 */
 	protected void onDisplayEnumerationValues() {
-		
-		displayEnumerationValuesState = checkDisplayValues.isSelected();
-		comboEnumerationValue.updateUI();
+		try {
+			
+			displayEnumerationValuesState = checkDisplayValues.isSelected();
+			comboEnumerationValue.updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load enumeration value combo box.
 	 */
 	private void loadValueComboBox() {
-		
-		comboEnumerationValue.removeAllItems();
-		
-		EnumerationValue slotEnumerationValue = slot.getEnumerationValue();
-		if (slotEnumerationValue == null) {
-			return;
-		}
-		
-		EnumerationObj enumeration = slotEnumerationValue.getEnumeration();
-
-		// Load enumeration values.
-		for (EnumerationValue enumerationValue : enumeration.getValues()) {
+		try {
 			
-			comboEnumerationValue.addItem(enumerationValue);
+			comboEnumerationValue.removeAllItems();
+			
+			EnumerationValue slotEnumerationValue = slot.getEnumerationValue();
+			if (slotEnumerationValue == null) {
+				return;
+			}
+			
+			EnumerationObj enumeration = slotEnumerationValue.getEnumeration();
+	
+			// Load enumeration values.
+			for (EnumerationValue enumerationValue : enumeration.getValues()) {
+				comboEnumerationValue.addItem(enumerationValue);
+			}
+			
+			// Select enumeration value.
+			comboEnumerationValue.setSelectedItem(slotEnumerationValue);
 		}
-		
-		// Select enumeration value.
-		comboEnumerationValue.setSelectedItem(slotEnumerationValue);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -227,10 +260,14 @@ public class EnumerationEditorPanel extends EnumerationEditorPanelBase {
 	 */
 	@Override
 	public void setSlot(Slot slot) {
-		
-		this.slot = slot;
-		
-		loadValueComboBox();
+		try {
+			
+			this.slot = slot;
+			loadValueComboBox();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -17,13 +17,14 @@ import java.awt.event.MouseEvent;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
 import org.multipage.gui.Images;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
  * Tab content.
+ * @author vakol
  */
 public class TabLabel extends JPanel {
 
@@ -81,76 +82,92 @@ public class TabLabel extends JPanel {
 	 */
 	public TabLabel(String text, Long topAreaId, final TabPanel tabPanel, Component component, TabType type) {
 		
-		this.tabPanel = tabPanel;
-		this.component = component;
-		this.labelText = text;
-		
-		// Try to set reference to this object and save area ID in the input component
-		if (component instanceof TabItemInterface) {
-			TabItemInterface tabItem = (TabItemInterface) component;
+		try {
+			this.tabPanel = tabPanel;
+			this.component = component;
+			this.labelText = text;
 			
-			tabItem.setTabLabel(this);
-			tabItem.setAreaId(topAreaId);
-		}
-		
-		// Add components.
-		setLayout(null);
-		setOpaque(false);
-		setPreferredSize(new Dimension(labelWidth + 6 + size, size));
-		close = new JButton();
-		label = new JLabel(text);
-		label.setOpaque(false);
-		add(label);
-		add(close);
-		label.setBounds(0, 0, labelWidth, size);
-		close.setBounds(labelWidth + 10, 2, size - 4, size - 4);
-		close.setToolTipText(Resources.getString("org.multipage.generator.tooltipCloseTab"));
-		
-		// Set close button.
-		close.setIcon(Images.getIcon("org/multipage/generator/images/cancel_grey.png"));
-		close.setOpaque(false);
-		close.setContentAreaFilled(false);
-		close.setBorderPainted(false);
-		
-		// Set listener.
-		close.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+			// Try to set reference to this object and save area ID in the input component
+			if (component instanceof TabItemInterface) {
+				TabItemInterface tabItem = (TabItemInterface) component;
 				
-				// Remove tab.
-				onRemoveTab();
-				
-				// Invoke tab panel method.
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
+				tabItem.setTabLabel(this);
+				tabItem.setAreaId(topAreaId);
+			}
+			
+			// Add components.
+			setLayout(null);
+			setOpaque(false);
+			setPreferredSize(new Dimension(labelWidth + 6 + size, size));
+			close = new JButton();
+			label = new JLabel(text);
+			label.setOpaque(false);
+			add(label);
+			add(close);
+			label.setBounds(0, 0, labelWidth, size);
+			close.setBounds(labelWidth + 10, 2, size - 4, size - 4);
+			close.setToolTipText(Resources.getString("org.multipage.generator.tooltipCloseTab"));
+			
+			// Set close button.
+			close.setIcon(Images.getIcon("org/multipage/generator/images/cancel_grey.png"));
+			close.setOpaque(false);
+			close.setContentAreaFilled(false);
+			close.setBorderPainted(false);
+			
+			// Set listener.
+			close.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					
+					try {
+						// Remove tab.
+						onRemoveTab();
 						
-						tabPanel.onRemoveTab();
+						// Invoke tab panel method.
+						Safe.invokeLater(() -> {
+							tabPanel.onRemoveTab();
+						});
 					}
-				});
-			}
-		});
-		
-		close.addMouseListener(new MouseAdapter() {
+					catch (Throwable exc) {
+						Safe.exception(exc);
+					}
+				}
+			});
 			
-			@Override
-			public void mouseExited(MouseEvent arg0) {
+			close.addMouseListener(new MouseAdapter() {
 				
-				close.setOpaque(false);
-				close.setContentAreaFilled(false);
-				close.setBorderPainted(false);
-				close.setIcon(Images.getIcon("org/multipage/generator/images/cancel_grey.png"));
-			}
-			
-			@Override
-			public void mouseEntered(MouseEvent arg0) {
+				@Override
+				public void mouseExited(MouseEvent arg0) {
+					try {
+						
+						close.setOpaque(false);
+						close.setContentAreaFilled(false);
+						close.setBorderPainted(false);
+						close.setIcon(Images.getIcon("org/multipage/generator/images/cancel_grey.png"));
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
 				
-				close.setOpaque(true);
-				close.setContentAreaFilled(true);
-				close.setBorderPainted(true);
-				close.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
-			}
-		});
+				@Override
+				public void mouseEntered(MouseEvent arg0) {
+					try {
+						
+						close.setOpaque(true);
+						close.setContentAreaFilled(true);
+						close.setBorderPainted(true);
+						close.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -158,28 +175,44 @@ public class TabLabel extends JPanel {
 	 */
 	public String getDescription() {
 		
-		return label.getText();
+		try {
+			return label.getText();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "error";
 	}
 	
 	/**
 	 * Set description.
 	 */
 	public void setDescription(String description) {
-		
-		label.setText(description);
+		try {
+			
+			label.setText(description);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On remove tab.
 	 */
 	protected void onRemoveTab() {
-		
-		if (component instanceof TabItemInterface) {
-			TabItemInterface tabComponent = (TabItemInterface) component;
-			tabComponent.beforeTabPanelRemoved();
+		try {
+			
+			if (component instanceof TabItemInterface) {
+				TabItemInterface tabComponent = (TabItemInterface) component;
+				tabComponent.beforeTabPanelRemoved();
+			}
+	
+			tabPanel.remove(component);
 		}
-
-		tabPanel.remove(component);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

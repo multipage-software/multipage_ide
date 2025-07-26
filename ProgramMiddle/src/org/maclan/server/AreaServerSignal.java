@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2022 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 31-10-2022
+ * Created on : 2022-10-31
  *
  */
 package org.maclan.server;

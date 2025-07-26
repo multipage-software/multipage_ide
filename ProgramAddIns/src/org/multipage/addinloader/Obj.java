@@ -1,18 +1,18 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.addinloader;
 
-/**
- * @author
- * 
- * Use this class as a parameter to a method. Method than sets ref property.
- * After the method returns the ref property is set and you can use it.
+import org.multipage.util.Safe;
+
+/** 
  * This class is a wrapper of T type object.
+ * @author vakol
+ * 
  */
 public class Obj<T> {
 
@@ -43,7 +43,16 @@ public class Obj<T> {
 	 */
 	@Override
 	public String toString() {
-
-		return ref.toString();
+		
+		if (ref == null) {
+            return "null";
+        }
+		try {
+			return ref.toString();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+			return "error";
+		}
 	}
 }

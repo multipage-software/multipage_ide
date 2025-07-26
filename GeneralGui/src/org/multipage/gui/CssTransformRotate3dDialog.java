@@ -1,20 +1,33 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import java.awt.*;
-import javax.swing.*;
-import java.awt.event.*;
-import java.io.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.SpringLayout;
+
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays 3D rotation editor. 
+ * @author vakol
  *
  */
 public class CssTransformRotate3dDialog extends JDialog {
@@ -90,12 +103,17 @@ public class CssTransformRotate3dDialog extends JDialog {
 	 */
 	public static CssTransformRotate3d showDialog(Component parent) {
 		
-		CssTransformRotate3dDialog dialog = new CssTransformRotate3dDialog(parent);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			CssTransformRotate3dDialog dialog = new CssTransformRotate3dDialog(parent);
+			dialog.setVisible(true);
 			
-			return dialog.getRotate();
+			if (dialog.confirm) {
+				
+				return dialog.getRotate();
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -109,13 +127,18 @@ public class CssTransformRotate3dDialog extends JDialog {
 	public static boolean editDialog(Component parent,
 			CssTransformRotate3d rotate) {
 		
-		CssTransformRotate3dDialog dialog = new CssTransformRotate3dDialog(parent);
-		dialog.setRotate(rotate);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			CssTransformRotate3dDialog dialog = new CssTransformRotate3dDialog(parent);
+			dialog.setRotate(rotate);
+			dialog.setVisible(true);
 			
-			rotate.setFrom(dialog.getRotate());
+			if (dialog.confirm) {
+				
+				rotate.setFrom(dialog.getRotate());
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return false;
 	}
@@ -125,12 +148,17 @@ public class CssTransformRotate3dDialog extends JDialog {
 	 * @param rotate
 	 */
 	private void setRotate(CssTransformRotate3d rotate) {
-		
-		textX.setText(String.valueOf(rotate.x));
-		textY.setText(String.valueOf(rotate.y));
-		textZ.setText(String.valueOf(rotate.z));
-		textA.setText(String.valueOf(rotate.a));
-		comboUnits.setSelectedItem(rotate.aUnits);
+		try {
+			
+			textX.setText(String.valueOf(rotate.x));
+			textY.setText(String.valueOf(rotate.y));
+			textZ.setText(String.valueOf(rotate.z));
+			textA.setText(String.valueOf(rotate.a));
+			comboUnits.setSelectedItem(rotate.aUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -139,15 +167,21 @@ public class CssTransformRotate3dDialog extends JDialog {
 	 */
 	private CssTransformRotate3d getRotate() {
 		
-		CssTransformRotate3d rotate = new CssTransformRotate3d();
-		
-		rotate.x = Utility.getFloat(textX, 0.0f);
-		rotate.y = Utility.getFloat(textY, 0.0f);
-		rotate.z = Utility.getFloat(textZ, 0.0f);
-		rotate.a = Utility.getFloat(textA, 0.0f);
-		rotate.aUnits = (String) comboUnits.getSelectedItem();
-
-		return rotate;
+		try {
+			CssTransformRotate3d rotate = new CssTransformRotate3d();
+			
+			rotate.x = Utility.getFloat(textX, 0.0f);
+			rotate.y = Utility.getFloat(textY, 0.0f);
+			rotate.z = Utility.getFloat(textZ, 0.0f);
+			rotate.a = Utility.getFloat(textA, 0.0f);
+			rotate.aUnits = (String) comboUnits.getSelectedItem();
+	
+			return rotate;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -156,12 +190,17 @@ public class CssTransformRotate3dDialog extends JDialog {
 	 */
 	public CssTransformRotate3dDialog(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -258,52 +297,76 @@ public class CssTransformRotate3dDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		localize();
-		setIcons();
-		
-		loadUnits();
-		
-		loadDialog();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			localize();
+			setIcons();
+			
+			loadUnits();
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load units.
 	 */
 	private void loadUnits() {
-		
-		Utility.loadCssAngleUnits(comboUnits);
+		try {
+			
+			Utility.loadCssAngleUnits(comboUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(this);
+		try {
+			
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(this);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
-		
-		saveDialog();
-		
-		confirm = false;
+		try {
+			
+			saveDialog();
+			confirm = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -311,10 +374,15 @@ public class CssTransformRotate3dDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		saveDialog();
-		
-		confirm = true;
+		try {
+			
+			saveDialog();
+			confirm = true;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -322,25 +390,36 @@ public class CssTransformRotate3dDialog extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setBounds(bounds);
+			}
+			
+			textX.setText("0.0");
+			textY.setText("0.0");
+			textZ.setText("0.0");
+			textA.setText("0.0");
 		}
-		else {
-			setBounds(bounds);
-		}
-		
-		textX.setText("0.0");
-		textY.setText("0.0");
-		textZ.setText("0.0");
-		textA.setText("0.0");
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

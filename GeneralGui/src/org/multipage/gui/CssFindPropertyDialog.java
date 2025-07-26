@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -13,14 +13,16 @@ import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.border.*;
 
+import org.multipage.util.Safe;
+
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
 import java.util.function.*;
 
 /**
- * 
- * @author
+ * Panel enables to find properties.
+ * @author vakol
  *
  */
 public class CssFindPropertyDialog extends JDialog {
@@ -114,12 +116,16 @@ public class CssFindPropertyDialog extends JDialog {
 	 */
 	public static CssProperty showDialog(Component parent, char type) {
 		
-		CssFindPropertyDialog dialog = new CssFindPropertyDialog(parent, type);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			CssFindPropertyDialog dialog = new CssFindPropertyDialog(parent, type);
+			dialog.setVisible(true);
 			
-			return dialog.getPropertyName();
+			if (dialog.confirm) {
+				return dialog.getPropertyName();
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -130,7 +136,13 @@ public class CssFindPropertyDialog extends JDialog {
 	 */
 	private CssProperty getPropertyName() {
 		
-		return (CssProperty) list.getSelectedValue();
+		try {
+			return (CssProperty) list.getSelectedValue();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -141,12 +153,17 @@ public class CssFindPropertyDialog extends JDialog {
 	public CssFindPropertyDialog(Component parent, char type) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
 
-		initComponents();
-		
-		// $hide>>$
-		this.type = type;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			this.type = type;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -238,179 +255,244 @@ public class CssFindPropertyDialog extends JDialog {
 	 * @param e
 	 */
 	protected void onClickList(MouseEvent e) {
-		
-		if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
-			onOk();
+		try {
+			
+			if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
+				onOk();
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On whole word.
 	 */
 	protected void onWholeWord() {
-		
-		loadList();
+		try {
+			
+			loadList();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		loading = true;
-		
-		localize();
-		setIcons();
-		
-		initList();
-		
-		loadDialog();
-		
-		setListeners();
-		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			loading = true;
+			localize();
+			setIcons();
+			initList();
+			loadDialog();
+			setListeners();
+			
+			Safe.invokeLater(() -> {
+
 				loading = false;
 				loadList();
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set listeners.
 	 */
 	private void setListeners() {
-		
-		timer = new Timer(500, new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				
-				loadList();
-			}
-		});
-		timer.setRepeats(false);
-		
-		Utility.setTextChangeListener(textSearch, new Runnable() {
-			@Override
-			public void run() {
-				
-				if (!timer.isRunning()) {
-					timer.start();
+		try {
+			
+			timer = new Timer(500, new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+			
+						loadList();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-		});
+			});
+			timer.setRepeats(false);
+			
+			Utility.setTextChangeListener(textSearch, () -> {
+				try {
+			
+					if (!timer.isRunning()) {
+						timer.start();
+					}
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Initialize list.
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void initList() {
-		
-		listModel = new DefaultListModel();
-		list.setModel(listModel);
-		
-		// Initialize list item renderer.
-		list.setCellRenderer(new ListCellRenderer<CssProperty>() {
-
-			// Renderer object.
-			@SuppressWarnings("serial")
-			RendererJLabel renderer = new RendererJLabel() {
-				{
-					setBorder(new EmptyBorder(3, 6, 3, 6));
+		try {
+			
+			listModel = new DefaultListModel();
+			list.setModel(listModel);
+			
+			// Initialize list item renderer.
+			list.setCellRenderer(new ListCellRenderer<CssProperty>() {
+	
+				// Renderer object.
+				@SuppressWarnings("serial")
+				RendererJLabel renderer = new RendererJLabel() {
+					{
+						try {
+							setBorder(new EmptyBorder(3, 6, 3, 6));
+						}
+						catch(Throwable expt) {
+							Safe.exception(expt);
+						};
+					}
+				};
+	
+				// Set renderer.
+				@Override
+				public Component getListCellRendererComponent(
+						JList<? extends CssProperty> list, CssProperty property,
+						int index, boolean isSelected, boolean cellHasFocus) {
+					
+					try {
+						if (property == null) {
+							return null;
+						}
+						
+						String propertyText = property.getHtmlText();
+						renderer.setText(propertyText);
+						
+						renderer.set(isSelected, cellHasFocus, index);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return renderer;
 				}
-			};
-
-			// Set renderer.
-			@Override
-			public Component getListCellRendererComponent(
-					JList<? extends CssProperty> list, CssProperty property,
-					int index, boolean isSelected, boolean cellHasFocus) {
-				
-				if (property == null) {
-					return null;
-				}
-				
-				String propertyText = property.getHtmlText();
-				renderer.setText(propertyText);
-				
-				renderer.set(isSelected, cellHasFocus, index);
-				
-				return renderer;
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load list content.
 	 */
 	private void loadList() {
-		
-		if (loading) {
-			return;
-		}
-		
-		listModel.clear();
-		
-		LinkedList<CssProperty> animatedProperties = CssProperty.getProperties(type);
-		
-		// Get filter string.
-		String filterText = textSearch.getText();
-		boolean wholeWords = checkWholeWord.isSelected();
-		
-		FoundAttr findAttributes = new FoundAttr(filterText, false, wholeWords);
-		filterText = filterText.trim();
-		
-		boolean showAll = filterText.isEmpty();
-		
-		// Load list items.
-		animatedProperties.forEach(new Consumer<CssProperty>() {
-			@Override
-			public void accept(CssProperty property) {
-				
-				String primalName = property.getPrimalName();
-				
-				if (Utility.find(primalName, findAttributes) || showAll) {
-					listModel.addElement(property);
-				}
+		try {
+			
+			if (loading) {
+				return;
 			}
-		});
+			
+			listModel.clear();
+			
+			LinkedList<CssProperty> animatedProperties = CssProperty.getProperties(type);
+			if (animatedProperties == null) {
+				return;
+			}
+			
+			// Get filter string.
+			String filterText = textSearch.getText();
+			boolean wholeWords = checkWholeWord.isSelected();
+			
+			FoundAttr findAttributes = new FoundAttr(filterText, false, wholeWords);
+			filterText = filterText.trim();
+			
+			boolean showAll = filterText.isEmpty();
+			
+			// Load list items.
+			animatedProperties.forEach(new Consumer<CssProperty>() {
+				@SuppressWarnings("unchecked")
+				@Override
+				public void accept(CssProperty property) {
+					try {
+			
+						String primalName = property.getPrimalName();
+						
+						if (Utility.find(primalName, findAttributes) || showAll) {
+							listModel.addElement(property);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(labelList);
-		Utility.localize(labelSearch);
-		Utility.localize(checkWholeWord);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(labelList);
+			Utility.localize(labelSearch);
+			Utility.localize(checkWholeWord);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
-		
-		saveDialog();
-		
-		timer.stop();
-		
-		confirm = false;
+		try {
+			
+			saveDialog();
+			timer.stop();
+			
+			confirm = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		dispose();
 	}
 
@@ -418,20 +500,25 @@ public class CssFindPropertyDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		// Get selected item.
-		CssProperty property = (CssProperty) list.getSelectedValue();
-		if (property == null) {
+		try {
 			
-			Utility.show(this, "org.multipage.gui.messageSelectSingleCssProperty");
-			return;
+			// Get selected item.
+			CssProperty property = (CssProperty) list.getSelectedValue();
+			if (property == null) {
+				
+				Utility.show(this, "org.multipage.gui.messageSelectSingleCssProperty");
+				return;
+			}
+			
+			saveDialog();
+			timer.stop();
+			
+			confirm = true;
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
-		saveDialog();
-		
-		timer.stop();
-		
-		confirm = true;
 		dispose();
 	}
 
@@ -439,20 +526,30 @@ public class CssFindPropertyDialog extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setBounds(bounds);
+			}
 		}
-		else {
-			setBounds(bounds);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

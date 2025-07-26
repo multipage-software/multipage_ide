@@ -1,32 +1,34 @@
 /*
- * Copyright 2010-2023 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 18-06-2017
+ * Created on : 2017-06-18
  *
  */
 
 package org.multipage.gui;
 
+import java.awt.Container;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 
 import org.multipage.util.Lock;
 import org.multipage.util.Obj;
+import org.multipage.util.Safe;
 
 /**
- * Class for events that can be used in this application.
+ * Class for events that can be used in the application.
  * @author vakol
  *
  */
@@ -98,7 +100,7 @@ public class ApplicationEvents {
 	/**
 	 * Message queue.
 	 */
-	private static LinkedList<Message> messageQueue = new LinkedList<Message>();
+	private static LinkedList<Message> messageQueue = new LinkedList<>();
 	
 	/**
 	 * Map of all registered receivers in the application.
@@ -162,7 +164,7 @@ public class ApplicationEvents {
 	}
 	
 	/**
-	 * Push message into message queue.
+	 * Push message into the message queue.
 	 * @param message
 	 */
 	private static void pushMessage(Message message) {
@@ -175,7 +177,7 @@ public class ApplicationEvents {
 	}
 
 	/**
-	 * Create queue snapshot.
+	 * Create queue snapshot. For logging purposes.
 	 * @return
 	 */
 	public static LinkedList<Message> getQueueSnapshot() {
@@ -221,7 +223,7 @@ public class ApplicationEvents {
 			}
 			while (incomingMessage.ref == null);
 			
-			// Get current time and save this value in message member.
+			// Get current time and save this value in message field.
 			final Long currentTime = Utility.getNow();
 			incomingMessage.ref.receiveTime = currentTime;
 			
@@ -245,7 +247,7 @@ public class ApplicationEvents {
 				if (signal.isSpecial()) {
 					invokeSpecialEvents(incomingMessage.ref);
 				}
-				// For all other matching receivers invoke theirs actions.
+				// For all other matching receivers invoke their actions.
 				else {
 					synchronized (receivers) {
 						
@@ -260,12 +262,12 @@ public class ApplicationEvents {
 									// Invoke actions for event handles with above priority.
 									receiverObjects.forEach((receiverObject, eventHandles) -> {
 										
-										if (!(signal.isUnnecessary() && stopReceivingUnnecessary)) {  // ... this switch is only for debugging purposes; the condition disables receiving of unnecessary signals
+										if (!(signal.isUnnecessary() && stopReceivingUnnecessary)) {  // ... this switch is only useful for debugging purposes; the condition disables receiving of unnecessary signals
 											
 											// Remember the message's receiver.
 											incomingMessage.ref.receiverObject = receiverObject;
 											
-											// Invoke event actions matching the incoming message.
+											// Invoke event actions for matching incoming message.
 											// Let survive messages for a time spans defined in event handler.
 											invokeActions(currentTime, eventHandles, priority, receiverObject, incomingMessage.ref);
 										}
@@ -306,7 +308,7 @@ public class ApplicationEvents {
 	 */
 	private static void invokeSpecialEvents(Message message) {
 		
-		SwingUtilities.invokeLater(() -> {
+		Safe.invokeLater(() -> {
 			
 			try {
 				// Check the signal and the target function.
@@ -369,8 +371,8 @@ public class ApplicationEvents {
 			LoggingCallback.breakPoint(message.signal);
 			
 			// Invoke event on Swing thread and write to log.
-			SwingUtilities.invokeLater(() -> {
-				
+			Safe.invokeLater(() -> {
+
 				// Invoke action.
 				eventHandle.action.accept(message);
 				long executionTime = Utility.getNow();
@@ -682,7 +684,7 @@ public class ApplicationEvents {
 			Lock.notify(dispatchLock);
 		}
 	}
-
+	
 	/**
 	 * Register message receiver.
 	 * @param receiverObject - object that receives messages
@@ -830,18 +832,26 @@ public class ApplicationEvents {
 		synchronized (receivers) {
 		
 			// Create sorting table for receivers.
-			ReceiversSortingTable receiversSotingTable = ReceiversSortingTable.createFrom(receivers);
+			ReceiversSortingTable receiversSortingTable = ReceiversSortingTable.createFrom(receivers);
 			
 			// Create new event handle and add it to sorting table.
 			EventHandle eventHandle = new EventHandle(messageLambda, priority, timeSpanMs, reflection.ref, identifier);
-			receiversSotingTable.addReceiver(receiverObject, eventCondition, priority, eventHandle);
+			receiversSortingTable.addReceiver(receiverObject, eventCondition, priority, eventHandle);
 			
 			// Retrieve sorted list of receivers.
-			receivers = receiversSotingTable.retrieveSortedReceivers();
+			receivers = receiversSortingTable.retrieveSortedReceivers();
+		}
+		
+		// Get automatic removal of receivers flag.
+		boolean canAutoRemove = true;
+		if (receiverObject instanceof ReceiverAutoRemove) {
+			
+			ReceiverAutoRemove receiverAutoRemove = (ReceiverAutoRemove) receiverObject;
+			canAutoRemove = receiverAutoRemove.canAutoRemove();
 		}
 		
 		// If the key object is a Swing component automatically release receiver if component was removed.
-		if (receiverObject instanceof JComponent) {
+		if (canAutoRemove && receiverObject instanceof JComponent) {
 			JComponent component = (JComponent) receiverObject;
 			
 			component.addAncestorListener(new AncestorListener() {
@@ -855,6 +865,13 @@ public class ApplicationEvents {
 				// When component is removed release all listeners associated with key object.
 				@Override
 				public void ancestorRemoved(AncestorEvent event) {
+					
+					// Check parent component.
+					Container parent = component.getParent();
+					if (parent != null) {
+						return;
+					}
+					
 					ApplicationEvents.removeReceivers(receiverObject);
 				}
 
@@ -870,15 +887,198 @@ public class ApplicationEvents {
 	}
 	
 	/**
-	 * Unregister receivers using key object.
-	 * @param key
+	 * Returns number of receiver objects.
+	 * @param receiverObject 
+	 * @return
 	 */
-	public static void removeReceivers(Object key) {
+	private static int getReceiverObjectsCount(Object receiverObject) {
+		
+		int count = 0;
+		synchronized (receivers) {
+			
+			for (ApplicationEvent event : receivers.keySet()) {
+				LinkedHashMap<Integer, LinkedHashMap<Object, LinkedList<EventHandle>>> priorities = receivers.get(event);
+                
+				for (int priority : priorities.keySet()) {
+					LinkedHashMap<Object, LinkedList<EventHandle>> receiverObjects = priorities.get(priority);
+					
+					// Check receiver objects.
+					Set<Object> receiversSet = receiverObjects.keySet();
+					if (receiverObject != null) {
+						
+						for (Object foundReceiver : receiversSet) {
+						    if (foundReceiver.equals(receiverObject)) {
+                                count++;
+                            }
+						}
+						continue;
+					}
+                    
+	                // Increment count.
+	                count += receiversSet.size();
+                }
+			}
+        }
+		return count;
+	}
+	
+	/**
+	 * Unregister receivers using key object.
+	 * @param receiverObject
+	 */
+	public static void removeReceivers(Object receiverObject) {
+		try {
+			
+			// Check input.
+			if (receiverObject == null) {
+				return;
+			}
+			
+			synchronized (receivers) {
+				
+				// Paths that will be deleted.
+				LinkedList<ReceiverPath> pathsToRemove = new LinkedList<>();
+				
+				LinkedHashMap<Integer, LinkedHashMap<Object, LinkedList<EventHandle>>> priorities = null;
+				LinkedHashMap<Object, LinkedList<EventHandle>> receiverObjects = null;
+	
+				// Find receiver paths that will be removed.
+				for (ApplicationEvent event : receivers.keySet()) {
+	
+					priorities = receivers.get(event);
+					
+					// If priorities are empty then save the path and continue the loop.
+					if (priorities.isEmpty()) {
+						ReceiverPath pathToRemove = new ReceiverPath(event);
+						pathsToRemove.add(pathToRemove);
+						continue;
+					}
+					
+					// Traverse priorities.
+					for (Integer priority : priorities.keySet()) {				
+						receiverObjects = priorities.get(priority);
+						
+						// If receiver objects are empty then save the path and continue the loop.
+						if (receiverObjects.isEmpty()) {
+							ReceiverPath pathToRemove = new ReceiverPath(event, priority);
+	                        pathsToRemove.add(pathToRemove);
+	                        continue;
+	                    }
+						
+						// If receiver object is found save the path.
+	                    if (receiverObjects.containsKey(receiverObject)) {
+	                    	ReceiverPath pathToRemove = new ReceiverPath(event, priority, receiverObject);
+	                    	pathsToRemove.add(pathToRemove);
+	                    }
+					}
+				}
+				
+				// Remove receiver paths.
+				for (ReceiverPath pathToRemove : pathsToRemove) {
+	                
+					// Get event.
+					ApplicationEvent event = pathToRemove.event;
+					priorities = receivers.get(event);
+								
+					// Get priority.
+					Integer priority = pathToRemove.priority;
+					if (priority != null) {
+						
+						// Get receiver objects.
+						receiverObjects = priorities.get(priority);
+						if (receiverObjects != null) {
+							
+							// Remove receiver object.
+							Object receiverObjectToRemove = pathToRemove.receiverObject;
+							if (receiverObjectToRemove != null) {
+								receiverObjects.remove(receiverObject);
+							}
+						}
+						
+						// If receiver objects are empty remove them.
+						if (receiverObjects == null || receiverObjects.isEmpty()) {
+	                        priorities.remove(priority);
+	                    }
+					}
+					
+					// If priorities are empty remove them.
+					if (priorities == null || priorities.isEmpty()) {
+						receivers.remove(event);
+					}
+				}
+			}
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};	
+	}
+	
+	/**
+	 * Dump receivers.
+	 * @param listReceiverObject
+	 * @param receiverObject
+	 */
+	public static void dumpReceivers(boolean listReceiverObjects) {	
+		
+		// Delegate the call.
+		dumpReceivers(listReceiverObjects, null);
+	}
+	
+	/**
+	 * Dump receivers.
+	 * @param listReceiverObject
+	 * @param receiverObject
+	 */
+	public static void dumpReceivers(boolean listReceiverObjects, Object receiverObject) {
 		
 		synchronized (receivers) {
 			
-			// Remove receivers for key.
-			receivers.remove(key);
-		}
+			System.out.format("-----------------------\n");
+			System.out.format("receiver count = %d\n", getReceiverObjectsCount(receiverObject));
+			System.out.format("-----------------------\n");
+			
+			if (!listReceiverObjects) {
+                return;
+            }
+			
+			for (ApplicationEvent event : receivers.keySet()) {
+				
+				boolean eventPrinted = false;
+				LinkedHashMap<Integer, LinkedHashMap<Object, LinkedList<EventHandle>>> priorities = receivers.get(event);
+
+				for (Integer priority : priorities.keySet()) {
+					
+					boolean priorityPrinted = false;
+					LinkedHashMap<Object, LinkedList<EventHandle>> receiverObjects = priorities.get(priority);
+					
+                    for (Object foundReceiverObject : receiverObjects.keySet()) {
+                    	
+                    	// Check receiver object.
+                    	if (receiverObject != null && !receiverObject.equals(foundReceiverObject)) {
+                            continue;
+                        }
+                    	
+                    	// Print event, priority and receiver object.
+                    	if (!eventPrinted) {
+                    		System.out.format("%s\n", event.name());
+                    		eventPrinted = true;
+                    	}
+                    	if (!priorityPrinted) {
+                    		System.out.format("\tprio. %d\n", priority);
+                    		priorityPrinted = true;
+                    	}
+                    	System.out.format("\t\t%s [hash 0x%08x]\n", foundReceiverObject.getClass().getSimpleName(), foundReceiverObject.hashCode());
+                    	
+                    	LinkedList<EventHandle> eventHandles = receiverObjects.get(foundReceiverObject);
+                    	
+                    	for (EventHandle eventHandle : eventHandles) {
+                    		System.out.format("\t\t\t%s\n", eventHandle.reflection);
+                    	}
+                    }
+				}
+			}
+			
+			System.out.format("-----------------------\n");
+		}		
 	}
 }

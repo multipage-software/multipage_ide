@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -34,10 +34,11 @@ import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays parameters for searching.
+ * @author vakol
  *
  */
 public class SearchSlotDialog extends JDialog {
@@ -136,8 +137,14 @@ public class SearchSlotDialog extends JDialog {
 	 * @return
 	 */
 	public static SearchSlotDialog createDialog(String title, Component component) {
-
-		return new SearchSlotDialog(title, component);
+		
+		try {
+			return new SearchSlotDialog(title, component);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -147,24 +154,34 @@ public class SearchSlotDialog extends JDialog {
 	 */
 	public SearchSlotDialog(String title, Component component) {
 		super(Utility.findWindow(component), ModalityType.DOCUMENT_MODAL);
-
-		// Initialize components.
-		initComponents();
-		// $hide>>$
-		setTitle(title);
-		postCreate();
-		// $hide<<$
+		
+		try {
+			// Initialize components.
+			initComponents();
+			// $hide>>$
+			setTitle(title);
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
 	 * Show modal dialog.
 	 */
 	public void showModal() {
-		
-		reset = false;
-		confirm = false;
-		
-		setVisible(true);
+		try {
+			
+			reset = false;
+			confirm = false;
+			
+			setVisible(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -262,11 +279,16 @@ public class SearchSlotDialog extends JDialog {
 	 * On reset.
 	 */
 	protected void onReset() {
-		
-		// Set flag.
-		reset = true;
-		
-		saveDialog();
+		try {
+			
+			// Set flag.
+			reset = true;
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -274,8 +296,14 @@ public class SearchSlotDialog extends JDialog {
 	 * On cancel.
 	 */
 	protected void onCancel() {
+		try {
+			
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
-		saveDialog();
 		dispose();
 	}
 
@@ -283,9 +311,15 @@ public class SearchSlotDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		saveDialog();
-		confirm = true;
+		try {
+			
+			saveDialog();
+			confirm = true;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();		
 	}
 
@@ -293,26 +327,36 @@ public class SearchSlotDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		// Load dialog.
-		loadDialog();
-		// Localize components.
-		localize();
-		// Set icons.
-		setIcons();
-		// Initialize key strokes.
-		initKeyStrokes();
-		// Select text.
-		selectText();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			// Load dialog.
+			loadDialog();
+			// Localize components.
+			localize();
+			// Set icons.
+			setIcons();
+			// Initialize key strokes.
+			initKeyStrokes();
+			// Select text.
+			selectText();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Select text.
 	 */
 	private void selectText() {
-		
-		text.selectAll();
+		try {
+			
+			text.selectAll();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -320,78 +364,115 @@ public class SearchSlotDialog extends JDialog {
 	 */
 	@SuppressWarnings("serial")
 	private void initKeyStrokes() {
-		
-		text.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "ok");
-		text.getActionMap().put("ok", new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				onOk();
-			}}
-		);
-		text.getInputMap().put(KeyStroke.getKeyStroke("ESCAPE"), "cancel");
-		text.getActionMap().put("cancel", new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				onCancel();
-			}
-		});
+		try {
+			
+			text.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "ok");
+			text.getActionMap().put("ok", new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						
+						onOk();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}}
+			);
+			text.getInputMap().put(KeyStroke.getKeyStroke("ESCAPE"), "cancel");
+			text.getActionMap().put("cancel", new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						
+						onCancel();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		text.setText(searchText);
-		checkCaseSensitive.setSelected(isCaseSensitive);
-		checkWholeWords.setSelected(isWholeWords);
-		checkShowCount.setSelected(isShowCount);
-		Utility.setSelected(buttonGroup, radioButtonIndex);
-		if (!bounds.isEmpty()) {
-			setBounds(bounds);
+		try {
+			
+			text.setText(searchText);
+			checkCaseSensitive.setSelected(isCaseSensitive);
+			checkWholeWords.setSelected(isWholeWords);
+			checkShowCount.setSelected(isShowCount);
+			Utility.setSelected(buttonGroup, radioButtonIndex);
+			if (!bounds.isEmpty()) {
+				setBounds(bounds);
+			}
+			else {
+				Utility.centerOnScreen(this);
+			}
 		}
-		else {
-			Utility.centerOnScreen(this);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		searchText = text.getText();
-		isCaseSensitive = checkCaseSensitive.isSelected();
-		isWholeWords = checkWholeWords.isSelected();
-		isShowCount = checkShowCount.isSelected();
-		bounds = getBounds();
-		radioButtonIndex = Utility.getSelected(buttonGroup);
+		try {
+			
+			searchText = text.getText();
+			isCaseSensitive = checkCaseSensitive.isSelected();
+			isWholeWords = checkWholeWords.isSelected();
+			isShowCount = checkShowCount.isSelected();
+			bounds = getBounds();
+			radioButtonIndex = Utility.getSelected(buttonGroup);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonFind.setIcon(Images.getIcon("org/multipage/generator/images/search_icon.png"));
-		buttonReset.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			buttonFind.setIcon(Images.getIcon("org/multipage/generator/images/search_icon.png"));
+			buttonReset.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(labelText);
-		Utility.localize(checkCaseSensitive);
-		Utility.localize(checkWholeWords);
-		Utility.localize(buttonFind);
-		Utility.localize(buttonReset);
-		Utility.localize(checkShowCount);
-		Utility.localize(radioNames);
-		Utility.localize(radioValues);
-		Utility.localize(radioDescriptions);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(labelText);
+			Utility.localize(checkCaseSensitive);
+			Utility.localize(checkWholeWords);
+			Utility.localize(buttonFind);
+			Utility.localize(buttonReset);
+			Utility.localize(checkShowCount);
+			Utility.localize(radioNames);
+			Utility.localize(radioValues);
+			Utility.localize(radioDescriptions);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -400,14 +481,21 @@ public class SearchSlotDialog extends JDialog {
 	 */
 	public FoundAttr getFoundAttr() {
 		
-		return new FoundAttr(text.getText(), checkCaseSensitive.isSelected(),
-				checkWholeWords.isSelected());
+		try {
+			return new FoundAttr(text.getText(), checkCaseSensitive.isSelected(),
+					checkWholeWords.isSelected());
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
 	 * @return the confirm
 	 */
 	public boolean isConfirmed() {
+		
 		return confirm;
 	}
 	
@@ -415,7 +503,14 @@ public class SearchSlotDialog extends JDialog {
 	 * Show result coount.
 	 */
 	public boolean showCount() {
-		return checkShowCount.isSelected();
+		
+		try {
+			return checkShowCount.isSelected();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -424,7 +519,13 @@ public class SearchSlotDialog extends JDialog {
 	 */
 	public boolean isSearchInValues() {
 		
-		return radioValues.isSelected();
+		try {
+			return radioValues.isSelected();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -433,7 +534,13 @@ public class SearchSlotDialog extends JDialog {
 	 */
 	public boolean getSearchInValues() {
 		
-		return radioValues.isSelected();
+		try {
+			return radioValues.isSelected();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -442,7 +549,13 @@ public class SearchSlotDialog extends JDialog {
 	 */
 	public boolean isSearchInDescriptions() {
 		
-		return radioDescriptions.isSelected();
+		try {
+			return radioDescriptions.isSelected();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**

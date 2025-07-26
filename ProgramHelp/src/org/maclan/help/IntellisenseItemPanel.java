@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2021 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 03-07-2021
+ * Created on : 2017-04-26
  *
  */
 package org.maclan.help;
@@ -20,9 +20,10 @@ import javax.swing.UIManager;
 import org.maclan.help.Intellisense.Suggestion;
 import org.multipage.gui.GraphUtility;
 import org.multipage.gui.Images;
+import org.multipage.util.Safe;
 
 /**
- * 
+ * Panel that displays intellisense information.
  * @author vakol
  *
  */
@@ -60,8 +61,13 @@ public class IntellisenseItemPanel extends JPanel {
 	 */
 	public IntellisenseItemPanel(IntellisenseWindow intellisenseWindow) {
 		
-		initComponents();
-		postCreation(intellisenseWindow); //$hide$
+		try {
+			initComponents();
+			postCreation(intellisenseWindow); //$hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -98,15 +104,20 @@ public class IntellisenseItemPanel extends JPanel {
 	 * @param intellisenseWindow 
 	 */
 	private void postCreation(IntellisenseWindow intellisenseWindow) {
-		
-		// Set icons.
-		ImageIcon icon = Images.getIcon("org/maclan/help/images/intellisense_help.png");
-		buttonLink.setIcon(icon);
-		
-		// Set width and height.
-		int verticalScrollBarSize = ((Integer) UIManager.get("ScrollBar.width")).intValue();
-		int width = intellisenseWindow.windowSize.width - verticalScrollBarSize - 2;
-		setPreferredSize(new Dimension(width, 16));
+		try {
+			
+			// Set icons.
+			ImageIcon icon = Images.getIcon("org/maclan/help/images/intellisense_help.png");
+			buttonLink.setIcon(icon);
+			
+			// Set width and height.
+			int verticalScrollBarSize = ((Integer) UIManager.get("ScrollBar.width")).intValue();
+			int width = intellisenseWindow.windowSize.width - verticalScrollBarSize - 2;
+			setPreferredSize(new Dimension(width, 16));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -115,14 +126,19 @@ public class IntellisenseItemPanel extends JPanel {
 	@Override
 	public void paint(Graphics g) {
 		
-		super.paint(g);
-		
-		// Highlight selection.
-		GraphUtility.drawSelection(g, this, isSelected, hasFocus);
-		
-		// Load link buttons size.
-		if (linkButtonSize == null) {
-			linkButtonSize = buttonLink.getSize();
+		try {
+			super.paint(g);
+			
+			// Highlight selection.
+			GraphUtility.drawSelection(g, this, isSelected, hasFocus);
+			
+			// Load link buttons size.
+			if (linkButtonSize == null) {
+				linkButtonSize = buttonLink.getSize();
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 	}
 	
@@ -134,14 +150,19 @@ public class IntellisenseItemPanel extends JPanel {
 	 * @param cellHasFocus 
 	 */
 	public void setSuggestion(Suggestion suggestion, int index, boolean isSelected, boolean cellHasFocus) {
-		
-		// Replaces whitespaces with non-breaking spaces.
-		String suggestionHtml = suggestion.toString();
-		suggestionHtml = suggestionHtml.replaceAll("\\s+", "&nbsp;");
-		
-		// Set the caption and flags.
-		labelCaption.setText(suggestionHtml);
-		this.isSelected = isSelected;
-		this.hasFocus = cellHasFocus;
+		try {
+			
+			// Replaces whitespaces with non-breaking spaces.
+			String suggestionHtml = suggestion.toString();
+			suggestionHtml = suggestionHtml.replaceAll("\\s+", "&nbsp;");
+			
+			// Set the caption and flags.
+			labelCaption.setText(suggestionHtml);
+			this.isSelected = isSelected;
+			this.hasFocus = cellHasFocus;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

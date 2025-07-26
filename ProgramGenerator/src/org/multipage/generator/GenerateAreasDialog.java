@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -38,18 +38,17 @@ import org.maclan.Middle;
 import org.maclan.MiddleResult;
 import org.maclan.MiddleUtility;
 import org.multipage.basic.ProgramBasic;
-import org.multipage.gui.ApplicationEvents;
-import org.multipage.gui.GuiSignal;
 import org.multipage.gui.Images;
 import org.multipage.gui.ProgressDialog;
 import org.multipage.gui.Utility;
 import org.multipage.util.ProgressResult;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 import org.multipage.util.SwingWorkerHelper;
 
 /**
- * 
- * @author
+ * Dialog that displays generated areas' parameters.
+ * @author vakol
  *
  */
 public class GenerateAreasDialog extends JDialog {
@@ -106,12 +105,18 @@ public class GenerateAreasDialog extends JDialog {
 	 * Launch the application.
 	 */
 	public static boolean showDialog(Component parent, Area area) {
-
-		GenerateAreasDialog dialog = new GenerateAreasDialog(Utility.findWindow(parent),
-				area);
-		dialog.setVisible(true);
-
-		return dialog.confirm;
+		
+		try {
+			GenerateAreasDialog dialog = new GenerateAreasDialog(Utility.findWindow(parent),
+					area);
+			dialog.setVisible(true);
+	
+			return dialog.confirm;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -122,9 +127,14 @@ public class GenerateAreasDialog extends JDialog {
 	public GenerateAreasDialog(Window window, Area area) {
 		super(window, ModalityType.APPLICATION_MODAL);
 		
-		// Initialize components.
-		initComponents();
-		postCreation(area); //$hide$
+		try {
+			// Initialize components.
+			initComponents();
+			postCreation(area); //$hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -296,46 +306,61 @@ public class GenerateAreasDialog extends JDialog {
 	 * @param area
 	 */
 	private void postCreation(Area area) {
-		
-		this.containerArea = area;
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		Utility.centerOnScreen(this);
-		localize();
-		setIcons();
-		loadDialog();
-		createTable();
+		try {
+			
+			this.containerArea = area;
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			Utility.centerOnScreen(this);
+			localize();
+			setIcons();
+			loadDialog();
+			createTable();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(labelContainerArea);
-		Utility.localize(labelTreeWidth);
-		Utility.localize(labelTreeDepth);
-		Utility.localize(labelAreasName);
-		Utility.localize(checkUseIndices);
-		Utility.localize(labelAreasSlots);
-		Utility.localize(menuAddSlot);
-		Utility.localize(menuDeleteSlot);
-		Utility.localize(checkVisible);
-		Utility.localize(checkReadOnly);
-		Utility.localize(checkLocalized);
-		Utility.localize(checkInherited);
-		Utility.localize(buttonCount);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(labelContainerArea);
+			Utility.localize(labelTreeWidth);
+			Utility.localize(labelTreeDepth);
+			Utility.localize(labelAreasName);
+			Utility.localize(checkUseIndices);
+			Utility.localize(labelAreasSlots);
+			Utility.localize(menuAddSlot);
+			Utility.localize(menuDeleteSlot);
+			Utility.localize(checkVisible);
+			Utility.localize(checkReadOnly);
+			Utility.localize(checkLocalized);
+			Utility.localize(checkInherited);
+			Utility.localize(buttonCount);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -350,12 +375,17 @@ public class GenerateAreasDialog extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		textContainerArea.setText(containerArea.toString());
-		textTreeWidth.setText("1");
-		textTreeDepth.setText("1");
-		textAreasName.setText("Test area");
-		addPopup(tableSlots, popupMenu);
+		try {
+			
+			textContainerArea.setText(containerArea.toString());
+			textTreeWidth.setText("1");
+			textTreeDepth.setText("1");
+			textAreasName.setText("Test area");
+			addPopup(tableSlots, popupMenu);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -364,168 +394,211 @@ public class GenerateAreasDialog extends JDialog {
 	 * @param popup
 	 */
 	private static void addPopup(Component component, final JPopupMenu popup) {
-		component.addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e);
+		try {
+			
+			component.addMouseListener(new MouseAdapter() {
+				public void mousePressed(MouseEvent e) {
+					try {
+						
+						if (e.isPopupTrigger()) {
+							showMenu(e);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-			public void mouseReleased(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e);
+				public void mouseReleased(MouseEvent e) {
+					try {
+						
+						if (e.isPopupTrigger()) {
+							showMenu(e);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-			private void showMenu(MouseEvent e) {
-				popup.show(e.getComponent(), e.getX(), e.getY());
-			}
-		});
+				private void showMenu(MouseEvent e) {
+					try {
+						
+						popup.show(e.getComponent(), e.getX(), e.getY());
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Create table.
 	 */
 	private void createTable() {
-		
-		slotsTableModel = new DefaultTableModel();
-				
-		slotsTableModel.addColumn(Resources.getString("org.multipage.generator.textSlotAccess"));
-		slotsTableModel.addColumn(Resources.getString("org.multipage.generator.textSlotAlias"));
-		slotsTableModel.addColumn(Resources.getString("org.multipage.generator.textSlotValue"));
-		
-		tableSlots.setModel(slotsTableModel);
-
-		tableSlots.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		TableColumnModel columnModel = tableSlots.getColumnModel();
-		columnModel.getColumn(0).setPreferredWidth(50);
-		columnModel.getColumn(1).setPreferredWidth(230);
-		columnModel.getColumn(2).setPreferredWidth(230);
-
+		try {
+			
+			slotsTableModel = new DefaultTableModel();
+					
+			slotsTableModel.addColumn(Resources.getString("org.multipage.generator.textSlotAccess"));
+			slotsTableModel.addColumn(Resources.getString("org.multipage.generator.textSlotAlias"));
+			slotsTableModel.addColumn(Resources.getString("org.multipage.generator.textSlotValue"));
+			
+			tableSlots.setModel(slotsTableModel);
+	
+			tableSlots.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+			TableColumnModel columnModel = tableSlots.getColumnModel();
+			columnModel.getColumn(0).setPreferredWidth(50);
+			columnModel.getColumn(1).setPreferredWidth(230);
+			columnModel.getColumn(2).setPreferredWidth(230);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On add slot.
 	 */
 	protected void onAddSlot() {
-		
-		int slotsCount = slotsTableModel.getRowCount();
-		String slotName = "slot0";
-		int slotIndex = 0;
-		
-		// Find slot name.
-		if (slotsCount > 0) {
-			while (true) {
-				
-				boolean slotExists = false;
-				
-				for (int index = 0; index < slotsCount; index++) {
-					String existingSlotName = (String) slotsTableModel.getValueAt(index, 1);
-					if (slotName.equals(existingSlotName)) {
-						slotExists = true;
+		try {
+			
+			int slotsCount = slotsTableModel.getRowCount();
+			String slotName = "slot0";
+			int slotIndex = 0;
+			
+			// Find slot name.
+			if (slotsCount > 0) {
+				while (true) {
+					
+					boolean slotExists = false;
+					
+					for (int index = 0; index < slotsCount; index++) {
+						String existingSlotName = (String) slotsTableModel.getValueAt(index, 1);
+						if (slotName.equals(existingSlotName)) {
+							slotExists = true;
+							break;
+						}
+					}
+					
+					if (!slotExists) {
 						break;
 					}
+					// Generate new slot name.
+					slotIndex++;
+					slotName = "slot" + slotIndex;
 				}
-				
-				if (!slotExists) {
-					break;
-				}
-				// Generate new slot name.
-				slotIndex++;
-				slotName = "slot" + slotIndex;
 			}
+			
+			Object [] rowData = {false, slotName, "value"};
+			slotsTableModel.addRow(rowData);
 		}
-		
-		Object [] rowData = {false, slotName, "value"};
-		slotsTableModel.addRow(rowData);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On delete slot.
 	 */
 	protected void onDeleteSlot() {
-		
-		// Delete selected row.
-		int [] selectedRows = tableSlots.getSelectedRows();
-		if (selectedRows.length == 0) {
-			Utility.show(this, "org.multipage.generator.messageSelectTableRow");
-			return;
-		}
-		
-		while (true) {
-			int row = tableSlots.getSelectedRow();
-			if (row == -1) {
-				break;
+		try {
+			
+			// Delete selected row.
+			int [] selectedRows = tableSlots.getSelectedRows();
+			if (selectedRows.length == 0) {
+				Utility.show(this, "org.multipage.generator.messageSelectTableRow");
+				return;
 			}
-			slotsTableModel.removeRow(row);
+			
+			while (true) {
+				int row = tableSlots.getSelectedRow();
+				if (row == -1) {
+					break;
+				}
+				slotsTableModel.removeRow(row);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		// Ask user.
-		if (!confirmCount()) {
-			return;
-		}
-		
-		// Get area properties.
-		String areasName = textAreasName.getText();
-		boolean visible = checkVisible.isSelected();
-		boolean readOnly = checkReadOnly.isSelected();
-		boolean localized = checkLocalized.isSelected();
-		final boolean inherited = checkInherited.isSelected();
-		final boolean useIndices = checkUseIndices.isSelected();
-		
-		// Create new area.
-		final Area newArea = new Area(0L, areasName, visible, "", readOnly);
-		newArea.setLocalized(localized);
-		
-		final int treeWidth = Integer.parseInt(textTreeWidth.getText());
-		final int treeDepth = Integer.parseInt(textTreeDepth.getText());
-		
-		// Get slots properties.
-		int slotCount = slotsTableModel.getRowCount();
-		final Object [][] slots = new Object [slotCount][3];
-		for (int index = 0; index < slotCount; index++) {
-			for (int column = 0; column < 3; column++) {
-				slots[index][column] = slotsTableModel.getValueAt(index, column);
+		try {
+			
+			// Ask user.
+			if (!confirmCount()) {
+				return;
+			}
+			
+			// Get area properties.
+			String areasName = textAreasName.getText();
+			boolean visible = checkVisible.isSelected();
+			boolean readOnly = checkReadOnly.isSelected();
+			boolean localized = checkLocalized.isSelected();
+			final boolean inherited = checkInherited.isSelected();
+			final boolean useIndices = checkUseIndices.isSelected();
+			
+			// Create new area.
+			final Area newArea = new Area(0L, areasName, visible, "", readOnly);
+			newArea.setLocalized(localized);
+			
+			final int treeWidth = Integer.parseInt(textTreeWidth.getText());
+			final int treeDepth = Integer.parseInt(textTreeDepth.getText());
+			
+			// Get slots properties.
+			int slotCount = slotsTableModel.getRowCount();
+			final Object [][] slots = new Object [slotCount][3];
+			for (int index = 0; index < slotCount; index++) {
+				for (int column = 0; column < 3; column++) {
+					slots[index][column] = slotsTableModel.getValueAt(index, column);
+				}
+			}
+			
+			// Create progress dialog.
+			ProgressDialog<MiddleResult> progressDialog = new ProgressDialog<MiddleResult>(
+					this, Resources.getString("org.multipage.generator.textCreatingAreasTree"),
+					Resources.getString("org.multipage.generator.textCreatingAreasTree"));
+			
+			ProgressResult progressResult = progressDialog.execute(new SwingWorkerHelper<MiddleResult>() {
+				// Background process.
+				@Override
+				protected MiddleResult doBackgroundProcess() throws Exception {
+					
+					// Create subtree.
+					Properties login = ProgramBasic.getLoginProperties();
+					Middle middle = ProgramBasic.getMiddle();
+					
+					MiddleResult result = middle.createAreaSubtree(login, containerArea,
+							treeWidth, treeDepth, useIndices, newArea, inherited, slots, this);
+					
+					return result;
+				}
+			});
+	
+			// If execution OK.
+			if (progressResult == ProgressResult.OK) {
+				MiddleResult result = progressDialog.getOutput();
+				if (result.isNotOK()) {
+					result.show(this);
+				}
+			}
+			// If it is an execution exception, show it.
+			else if (progressResult == ProgressResult.EXECUTION_EXCEPTION) {
+				// Show result message.
+				Utility.show2(progressDialog.getException().getLocalizedMessage());
 			}
 		}
-		
-		// Create progress dialog.
-		ProgressDialog<MiddleResult> progressDialog = new ProgressDialog<MiddleResult>(
-				this, Resources.getString("org.multipage.generator.textCreatingAreasTree"),
-				Resources.getString("org.multipage.generator.textCreatingAreasTree"));
-		
-		ProgressResult progressResult = progressDialog.execute(new SwingWorkerHelper<MiddleResult>() {
-			// Background process.
-			@Override
-			protected MiddleResult doBackgroundProcess() throws Exception {
-				
-				// Create subtree.
-				Properties login = ProgramBasic.getLoginProperties();
-				Middle middle = ProgramBasic.getMiddle();
-				
-				MiddleResult result = middle.createAreaSubtree(login, containerArea,
-						treeWidth, treeDepth, useIndices, newArea, inherited, slots, this);
-				
-				return result;
-			}
-		});
-
-		// If execution OK.
-		if (progressResult == ProgressResult.OK) {
-			MiddleResult result = progressDialog.getOutput();
-			if (result.isNotOK()) {
-				result.show(this);
-			}
-		}
-		// If it is an execution exception, show it.
-		else if (progressResult == ProgressResult.EXECUTION_EXCEPTION) {
-			// Show result message.
-			Utility.show2(progressDialog.getException().getLocalizedMessage());
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
 		// Close the window.
 		dispose();
@@ -536,15 +609,21 @@ public class GenerateAreasDialog extends JDialog {
 	 */
 	protected boolean confirmCount() {
 		
-		int width = Integer.parseInt(textTreeWidth.getText());
-		int depth = Integer.parseInt(textTreeDepth.getText());
-		int slotsPerAreaCount = slotsTableModel.getRowCount();
-		
-		double areasCount = MiddleUtility.getTotalTreeAreas(width, depth);
-		double slotsCount = areasCount * slotsPerAreaCount;
-		
-		String message = String.format(Resources.getString("org.multipage.generator.textConfirmAreaAndSlotsCount"), areasCount, slotsCount);
-		
-		return JOptionPane.showConfirmDialog(this, message) == JOptionPane.YES_OPTION;
+		try {
+			int width = Integer.parseInt(textTreeWidth.getText());
+			int depth = Integer.parseInt(textTreeDepth.getText());
+			int slotsPerAreaCount = slotsTableModel.getRowCount();
+			
+			double areasCount = MiddleUtility.getTotalTreeAreas(width, depth);
+			double slotsCount = areasCount * slotsPerAreaCount;
+			
+			String message = String.format(Resources.getString("org.multipage.generator.textConfirmAreaAndSlotsCount"), areasCount, slotsCount);
+			
+			return JOptionPane.showConfirmDialog(this, message) == JOptionPane.YES_OPTION;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 }

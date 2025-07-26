@@ -1,5 +1,8 @@
-/**
+/*
+ * Copyright 2010-2025 (C) vakol
  * 
+ * Created on : 2017-04-26
+ *
  */
 package org.maclan.expression;
 
@@ -7,7 +10,8 @@ import org.maclan.server.AreaServer;
 import org.multipage.util.Resources;
 
 /**
- * @author
+ * Class for identifier solver.
+ * @author vakol
  *
  */
 public class IdentifierSolver {

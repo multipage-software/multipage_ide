@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -24,10 +24,11 @@ import org.multipage.gui.StringValueEditor;
 import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays area reference editor.
+ * @author vakol
  *
  */
 public class AreaReferenceEditorPanel extends JPanel implements SlotValueEditorPanelInterface {
@@ -54,10 +55,16 @@ public class AreaReferenceEditorPanel extends JPanel implements SlotValueEditorP
 	 * Constructor.
 	 */
 	public AreaReferenceEditorPanel() {
-		initComponents();
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		
+		try {
+			initComponents();
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -110,36 +117,56 @@ public class AreaReferenceEditorPanel extends JPanel implements SlotValueEditorP
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		localize();
-		setIcons();
-		setToolTips();
+		try {
+			
+			localize();
+			setIcons();
+			setToolTips();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize.
 	 */
 	private void localize() {
-		
-		Utility.localize(labelAreaReference);
+		try {
+			
+			Utility.localize(labelAreaReference);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonGetArea.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
-		buttonReset.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			buttonGetArea.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
+			buttonReset.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set tool tips.
 	 */
 	private void setToolTips() {
-		
-		buttonGetArea.setToolTipText(Resources.getString("org.multipage.generator.tooltipFindArea"));
-		buttonReset.setToolTipText(Resources.getString("org.multipage.generator.tooltipResetArea"));
+		try {
+			
+			buttonGetArea.setToolTipText(Resources.getString("org.multipage.generator.tooltipFindArea"));
+			buttonReset.setToolTipText(Resources.getString("org.multipage.generator.tooltipResetArea"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -156,18 +183,23 @@ public class AreaReferenceEditorPanel extends JPanel implements SlotValueEditorP
 	 */
 	@Override
 	public void setValue(Object value) {
-		
-		// Set controls.
-		if (value instanceof AreaReference) {
+		try {
 			
-			selectedAreaReference = (AreaReference) value;
-			
-			Area area = ProgramGenerator.getArea(selectedAreaReference.areaId);
-			textAreaName.setText(area.getDescriptionForced(true));
+			// Set controls.
+			if (value instanceof AreaReference) {
+				
+				selectedAreaReference = (AreaReference) value;
+				
+				Area area = ProgramGenerator.getArea(selectedAreaReference.areaId);
+				textAreaName.setText(area.getDescriptionForced(true));
+			}
+			else {
+				onReset();
+			}
 		}
-		else {
-			onReset();
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -192,26 +224,36 @@ public class AreaReferenceEditorPanel extends JPanel implements SlotValueEditorP
 	 * On find resource.
 	 */
 	protected void onFindArea() {
-		
-		// Get area.
-		Area oldSelectedArea = selectedAreaReference != null ? ProgramGenerator.getArea(selectedAreaReference.areaId) : null;
-		
-		Area selectedArea = SelectSubAreaDialog.showDialog(this, null, oldSelectedArea);
-		if (selectedArea == null) {
-			return;
+		try {
+			
+			// Get area.
+			Area oldSelectedArea = selectedAreaReference != null ? ProgramGenerator.getArea(selectedAreaReference.areaId) : null;
+			
+			Area selectedArea = SelectSubAreaDialog.showDialog(this, null, oldSelectedArea);
+			if (selectedArea == null) {
+				return;
+			}
+					
+			// Set image name text control.
+			textAreaName.setText(selectedArea.getDescriptionForced(true));
+			selectedAreaReference = new AreaReference(selectedArea);
 		}
-				
-		// Set image name text control.
-		textAreaName.setText(selectedArea.getDescriptionForced(true));
-		selectedAreaReference = new AreaReference(selectedArea);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On reset.
 	 */
 	protected void onReset() {
-		
-		selectedAreaReference = null;
-		textAreaName.setText("");
+		try {
+			
+			selectedAreaReference = null;
+			textAreaName.setText("");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

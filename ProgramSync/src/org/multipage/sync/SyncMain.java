@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 21-04-2020
+ * Created on : 2017-04-26
  *
  */
 package org.multipage.sync;
@@ -18,10 +18,11 @@ import org.multipage.gui.Utility;
 import org.multipage.util.Lock;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
  * External source code providers watch service.
- * @author user
+ * @author vakol
  *
  */
 public class SyncMain {
@@ -91,12 +92,18 @@ public class SyncMain {
 	 */
 	public static String getMainApplicationTitle() {
 		
-		// Check callback and possibly return a default value.
-		if (mainApplicationTitleCallback == null) {
-			return Resources.getString("org.multipage.sync.messageApplicationTitle");
+		try {
+			// Check callback and possibly return a default value.
+			if (mainApplicationTitleCallback == null) {
+				return Resources.getString("org.multipage.sync.messageApplicationTitle");
+			}
+			
+			return mainApplicationTitleCallback.get();
 		}
-		
-		return mainApplicationTitleCallback.get();
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 	
 	/**
@@ -112,13 +119,17 @@ public class SyncMain {
 	 * Reactivate windows of the main GUI.
 	 */
 	public static void reactivateGui() {
-		
-		// Check the callback.
-		if (reactivateGuiCallback == null) {
-			return;
+		try {
+			
+			// Check the callback.
+			if (reactivateGuiCallback == null) {
+				return;
+			}
+			reactivateGuiCallback.run();
 		}
-		
-		reactivateGuiCallback.run();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -129,9 +140,14 @@ public class SyncMain {
 	 * @param userDirectory 
 	 */
 	public static void setAccessString(String host, String user, String password) {
-		
-		// Delegate the call
-		AreaServerClient.setAccessString(host, user, password);
+		try {
+			
+			// Delegate the call
+			AreaServerClient.setAccessString(host, user, password);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -163,7 +179,6 @@ public class SyncMain {
 		Thread thread = new Thread(() -> {
 			
 			try {
-				
 				// Create tray menu.
 				createTrayMenu();
 				
@@ -196,38 +211,48 @@ public class SyncMain {
 	 * Create tray menu.
 	 */
 	private static void createTrayMenu() {
-		
-		// Load tray icon.
-		BufferedImage image = Images.getImage("org/multipage/gui/images/main.png");
-		if (image == null) {
-			MessageDialog.show("org.multipage.sync.messageCannotLoadTrayIcon");
-		}
-		trayIcon = new TrayIcon(image);
-		
-		// Get system tray.
-		SystemTray tray = SystemTray.getSystemTray();
-		
 		try {
-			// Create and attach popupMenu menu.
-			popupMenu = new PopupMenu();
-			trayIcon.setPopupMenu(popupMenu);
-			tray.add(trayIcon);
 			
-			// Load menu from area server.
-			areaServerClient = AreaServerClient.newInstance(popupMenu);
-			areaServerClient.loadMenu(false);
+			// Load tray icon.
+			BufferedImage image = Images.getImage("org/multipage/gui/images/main.png");
+			if (image == null) {
+				MessageDialog.show("org.multipage.sync.messageCannotLoadTrayIcon");
+			}
+			trayIcon = new TrayIcon(image);
+			
+			// Get system tray.
+			SystemTray tray = SystemTray.getSystemTray();
+			
+			try {
+				// Create and attach popupMenu menu.
+				popupMenu = new PopupMenu();
+				trayIcon.setPopupMenu(popupMenu);
+				tray.add(trayIcon);
+				
+				// Load menu from area server.
+				areaServerClient = AreaServerClient.newInstance(popupMenu);
+				areaServerClient.loadMenu(false);
+			}
+			catch (Exception e) {
+				MessageDialog.showDialog(e.getLocalizedMessage());
+			}
 		}
-		catch (Exception e) {
-			MessageDialog.showDialog(e.getLocalizedMessage());
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Stop watch service.
 	 */
 	public static void stop() {
-		
-		stop(trayIcon);
+		try {
+			
+			stop(trayIcon);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -256,10 +281,15 @@ public class SyncMain {
 	 * Close main application.
 	 */
 	public static void closeMainApplication() {
-		
-		// Delegate the call.
-		if (closeMainApplicationEvent != null) {
-			closeMainApplicationEvent.run();
+		try {
+			
+			// Delegate the call.
+			if (closeMainApplicationEvent != null) {
+				closeMainApplicationEvent.run();
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

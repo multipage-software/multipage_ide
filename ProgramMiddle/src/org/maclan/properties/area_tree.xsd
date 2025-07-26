@@ -4,7 +4,7 @@
 	    <xsd:complexType>
 	    	<xsd:sequence>
 	    		<xsd:element name="RootAreaId" maxOccurs="1"
-	    			minOccurs="1">
+	    			minOccurs="0">
 	    			<xsd:complexType>
 	    				<xsd:attribute name="id" type="xsd:long"
 	    					use="required">
@@ -12,6 +12,18 @@
 	    			</xsd:complexType>
 	    		</xsd:element>
 
+	    		<xsd:element name="RootAreaIds" minOccurs="0" maxOccurs="1">
+	    			<xsd:complexType>
+	    				<xsd:sequence>
+	    					<xsd:element name="Record" minOccurs="0" maxOccurs="unbounded">
+                                <xsd:complexType>
+                                	<xsd:attribute name="id"
+                                		type="xsd:long" use="required">
+                                	</xsd:attribute>
+                                </xsd:complexType>
+	    					</xsd:element>
+	    				</xsd:sequence>
+	    			</xsd:complexType></xsd:element>
 	    		<xsd:element name="HomeAreaId" maxOccurs="1"
 	    			minOccurs="0">
 	    			<xsd:complexType>
@@ -205,6 +217,9 @@
 	    							</xsd:attribute>
 	    							<xsd:attribute name="revision"
 	    								type="xsd:long">
+	    							</xsd:attribute>
+	    							<xsd:attribute name="revisionDescription"
+	    								type="xsd:string" use="optional">
 	    							</xsd:attribute>
 	    							<xsd:attribute name="created"
 	    								type="xsd:string">
@@ -427,22 +442,22 @@
 	    			maxOccurs="1">
 	    			<xsd:complexType>
 	    				<xsd:sequence>
-	    					<xsd:element name="Record"
-	    						minOccurs="0" maxOccurs="unbounded">
-                                <xsd:complexType>
-                                	<xsd:attribute name="versionId"
-                                		type="xsd:long" use="required">
-                                	</xsd:attribute>
-                                	<xsd:attribute name="areaId"
-                                		type="xsd:long" use="required">
-                                	</xsd:attribute>
-                                	<xsd:attribute name="resourceId"
-                                		type="xsd:long" use="required">
-                                	</xsd:attribute>
-                                	<xsd:attribute name="notLocalized"
-                                		type="xsd:boolean" use="required">
-                                	</xsd:attribute>
-                                </xsd:complexType>
+	    					<xsd:element name="Record" minOccurs="0"
+	    						maxOccurs="unbounded">
+	    						<xsd:complexType>
+	    							<xsd:attribute name="versionId"
+	    								type="xsd:long" use="required">
+	    							</xsd:attribute>
+	    							<xsd:attribute name="areaId"
+	    								type="xsd:long" use="required">
+	    							</xsd:attribute>
+	    							<xsd:attribute name="resourceId"
+	    								type="xsd:long" use="required">
+	    							</xsd:attribute>
+	    							<xsd:attribute name="notLocalized"
+	    								type="xsd:boolean" use="required">
+	    							</xsd:attribute>
+	    						</xsd:complexType>
 	    					</xsd:element>
 	    				</xsd:sequence>
 	    			</xsd:complexType>
@@ -558,6 +573,8 @@
     	<xsd:attribute name="extensionAreaId" type="xsd:long"></xsd:attribute>
     	<xsd:attribute name="alias" type="xsd:string"></xsd:attribute>
     </xsd:complexType>
+
+
 
 
 </xsd:schema>

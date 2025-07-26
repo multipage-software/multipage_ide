@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -32,10 +32,11 @@ import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays file and folder for selected area.
+ * @author vakol
  *
  */
 public class AreaNameFileFolderDialog extends JDialog {
@@ -92,41 +93,52 @@ public class AreaNameFileFolderDialog extends JDialog {
 			boolean isLastDialog, Obj<String> areaDescription, Obj<String> subName,
 			Obj<String> areaFile, Obj<String> areaFolder) {
 		
-		AreaNameFileFolderDialog dialog = new AreaNameFileFolderDialog(Utility.findWindow(parent), isLastDialog);
-		dialog.parentArea = parentArea;
-		
-		// Load description, file and folder name.
-		if (areaDescription.ref != null) {
-			dialog.textDescription.setText(areaDescription.ref);
-			dialog.textDescription.selectAll();
+		try {
+			AreaNameFileFolderDialog dialog = new AreaNameFileFolderDialog(Utility.findWindow(parent), isLastDialog);
+			dialog.parentArea = parentArea;
+			
+			// Load description, file and folder name.
+			if (areaDescription.ref != null) {
+				dialog.textDescription.setText(areaDescription.ref);
+				dialog.textDescription.selectAll();
+			}
+			if (subName.ref != null) {
+				dialog.textSubName.setText(subName.ref);
+			}
+			if (areaFile.ref != null) {
+				dialog.textFile.setText(areaFile.ref);
+			}
+			if (areaFolder.ref != null) {
+				dialog.textFolder.setText(areaFolder.ref);
+			}
+			
+			dialog.setVisible(true);
+			
+			// Save description, file and folder name.
+			areaDescription.ref = dialog.textDescription.getText();
+			subName.ref = dialog.textSubName.getText();
+			areaFile.ref = dialog.textFile.getText();
+			areaFolder.ref = dialog.textFolder.getText();
+			
+			return dialog.returned;
 		}
-		if (subName.ref != null) {
-			dialog.textSubName.setText(subName.ref);
+		catch (Throwable e) {
+			Safe.exception(e);
+			return WizardReturned.UNKNOWN;
 		}
-		if (areaFile.ref != null) {
-			dialog.textFile.setText(areaFile.ref);
-		}
-		if (areaFolder.ref != null) {
-			dialog.textFolder.setText(areaFolder.ref);
-		}
-		
-		dialog.setVisible(true);
-		
-		// Save description, file and folder name.
-		areaDescription.ref = dialog.textDescription.getText();
-		subName.ref = dialog.textSubName.getText();
-		areaFile.ref = dialog.textFile.getText();
-		areaFolder.ref = dialog.textFolder.getText();
-		
-		return dialog.returned;
 	}
 
 	/**
 	 * Set inherited folders.
 	 */
 	private void onShowInheritedFolders() {
-		
-		AreaInheritedFoldersDialog.showDialog(this, parentArea);
+		try {
+			
+			AreaInheritedFoldersDialog.showDialog(this, parentArea);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -136,12 +148,16 @@ public class AreaNameFileFolderDialog extends JDialog {
 	 */
 	public AreaNameFileFolderDialog(Window parentWindow, boolean isLastDialog) {
 		super(parentWindow, ModalityType.DOCUMENT_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		postCreate(isLastDialog);
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			postCreate(isLastDialog);
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -301,16 +317,21 @@ public class AreaNameFileFolderDialog extends JDialog {
 	 * @param isLastDialog 
 	 */
 	private void postCreate(boolean isLastDialog) {
-		
-		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-		
-		Utility.centerOnScreen(this);
-		
-		localize(isLastDialog);
-		setIcons();
-		
-		// If there is no builder extension, hide skip button.
-		buttonSkip.setVisible(ProgramGenerator.isExtensionToBuilder());
+		try {
+			
+			setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+			
+			Utility.centerOnScreen(this);
+			
+			localize(isLastDialog);
+			setIcons();
+			
+			// If there is no builder extension, hide skip button.
+			buttonSkip.setVisible(ProgramGenerator.isExtensionToBuilder());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -318,30 +339,40 @@ public class AreaNameFileFolderDialog extends JDialog {
 	 * @param isLastDialog 
 	 */
 	private void localize(boolean isLastDialog) {
-		
-		Utility.localize(this);
-		buttonNext.setText(Resources.getString(isLastDialog ? "textOk" : "org.multipage.generator.textNext"));
-		Utility.localize(buttonCancel);
-		Utility.localize(buttonPrevious);
-		Utility.localize(buttonSkip);
-		Utility.localize(labelInsertFileFolder);
-		Utility.localize(labelFileName);
-		Utility.localize(labelFolderName);
-		Utility.localize(buttonShowInheritedFolders);
-		Utility.localize(labelDescription);
-		Utility.localize(labelSubName);
+		try {
+			
+			Utility.localize(this);
+			buttonNext.setText(Resources.getString(isLastDialog ? "textOk" : "org.multipage.generator.textNext"));
+			Utility.localize(buttonCancel);
+			Utility.localize(buttonPrevious);
+			Utility.localize(buttonSkip);
+			Utility.localize(labelInsertFileFolder);
+			Utility.localize(labelFileName);
+			Utility.localize(labelFolderName);
+			Utility.localize(buttonShowInheritedFolders);
+			Utility.localize(labelDescription);
+			Utility.localize(labelSubName);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonNext.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
-		buttonPrevious.setIcon(Images.getIcon("org/multipage/generator/images/previous_icon.png"));
-		buttonSkip.setIcon(Images.getIcon("org/multipage/generator/images/skip.png"));
-		buttonShowInheritedFolders.setIcon(Images.getIcon("org/multipage/generator/images/folder.png"));
+		try {
+			
+			buttonNext.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+			buttonPrevious.setIcon(Images.getIcon("org/multipage/generator/images/previous_icon.png"));
+			buttonSkip.setIcon(Images.getIcon("org/multipage/generator/images/skip.png"));
+			buttonShowInheritedFolders.setIcon(Images.getIcon("org/multipage/generator/images/folder.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -366,16 +397,22 @@ public class AreaNameFileFolderDialog extends JDialog {
 	 * On Next.
 	 */
 	protected void onNext() {
-
-		// Check alias.
-		String typedAlias = textSubName.getText();
-		if (ProgramGenerator.getAreasModel().existsAreaAlias(typedAlias)) {
+		try {
 			
-			Utility.show(this, "org.multipage.generator.messageAreaWithAliasAlreadyExists", typedAlias);
-			return;
+			// Check alias.
+			String typedAlias = textSubName.getText();
+			if (ProgramGenerator.getAreasModel().existsAreaAlias(typedAlias)) {
+				
+				Utility.show(this, "org.multipage.generator.messageAreaWithAliasAlreadyExists", typedAlias);
+				return;
+			}
+			
+			returned = WizardReturned.NEXT;
 		}
-		
-		returned = WizardReturned.NEXT;
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 	

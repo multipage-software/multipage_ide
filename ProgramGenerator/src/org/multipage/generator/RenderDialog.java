@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -52,10 +52,11 @@ import org.multipage.gui.ToolBarKit;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays information about rendering.
+ * @author vakol
  *
  */
 public class RenderDialog extends JDialog {
@@ -260,14 +261,20 @@ public class RenderDialog extends JDialog {
 			Obj<Boolean> showTextIds, Obj<BrowserParameters> browserParameters,
 			Obj<Boolean> generateList, Obj<Boolean> generateIndex, Obj<Boolean> runBrowser,
 			Obj<Boolean> removeOldFiles, LinkedList<VersionObj> versions, Obj<Boolean> relatedAreas) {
-
-		RenderDialog dialog = new RenderDialog(Utility.findWindow(component),
-				languages, selectAllLanguages, target, coding, showTextIds,
-				browserParameters, generateList, generateIndex, runBrowser, removeOldFiles,
-				versions, relatedAreas);
-		dialog.setVisible(true);
-
-		return dialog.confirm;
+		
+		try {
+			RenderDialog dialog = new RenderDialog(Utility.findWindow(component),
+					languages, selectAllLanguages, target, coding, showTextIds,
+					browserParameters, generateList, generateIndex, runBrowser, removeOldFiles,
+					versions, relatedAreas);
+			dialog.setVisible(true);
+	
+			return dialog.confirm;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -291,11 +298,16 @@ public class RenderDialog extends JDialog {
 		
 		super(window, ModalityType.APPLICATION_MODAL);
 		
-		initComponents();
-		// $hide>>$
-		postCreation(languages, selectAllLanguages, target, coding, showTextIds,
-				browserParameters, generateList, generateIndex, runBrowser, removeOldFiles, versions, relatedAreas);
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			postCreation(languages, selectAllLanguages, target, coding, showTextIds,
+						browserParameters, generateList, generateIndex, runBrowser, removeOldFiles, versions, relatedAreas);
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -528,65 +540,75 @@ public class RenderDialog extends JDialog {
 	 * On remove old files.
 	 */
 	protected void onRemoveOldFiles() {
-		
-		if (textTarget.getForeground() == Color.RED) {
-			Utility.show(this, "org.multipage.generator.messageTargetDoesntExist");
-			return;
-		}
-		
-		if (Utility.ask(this, "org.multipage.generator.textRemoveOldRenderedFiles2")) {
-	
+		try {
+			
+			if (textTarget.getForeground() == Color.RED) {
+				Utility.show(this, "org.multipage.generator.messageTargetDoesntExist");
+				return;
+			}
+			
+			if (Utility.ask(this, "org.multipage.generator.textRemoveOldRenderedFiles2")) {
 				Utility.deleteFolderContent(textTarget.getText());
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On OK button.
 	 */
 	protected void onOk() {
-		
-		if (textTarget.getForeground() == Color.RED) {
-			Utility.show(this, "org.multipage.generator.messageTargetDoesntExist");
-			return;
-		}
-		
-		target.ref = textTarget.getText();
-		coding.ref = (String) comboCoding.getSelectedItem();
-		showTextIds.ref = checkShowIds.isSelected();
-		
-		if (browserParameters != null) {
-			if (checkRenderBrowser.isSelected()) {
-				browserParameters.ref = BrowserParametersDialog.getParameters();
+		try {
+			
+			if (textTarget.getForeground() == Color.RED) {
+				Utility.show(this, "org.multipage.generator.messageTargetDoesntExist");
+				return;
 			}
-			else {
-				browserParameters.ref = null;
+			
+			target.ref = textTarget.getText();
+			coding.ref = (String) comboCoding.getSelectedItem();
+			showTextIds.ref = checkShowIds.isSelected();
+			
+			if (browserParameters != null) {
+				if (checkRenderBrowser.isSelected()) {
+					browserParameters.ref = BrowserParametersDialog.getParameters();
+				}
+				else {
+					browserParameters.ref = null;
+				}
 			}
+			
+			if (generateList != null) {
+				generateList.ref = checkCreateList.isSelected();
+			}
+			
+			if (runBrowser != null) {
+				runBrowser.ref = checkRunBrowser.isSelected();
+			}
+			
+			removeOldFiles.ref = checkRemoveOldFiles.isSelected();
+			
+			if (generatedIndex != null) {
+				generatedIndex.ref = checkCreateIndex.isSelected();
+			}
+			
+			if (relatedAreas != null) {
+				relatedAreas.ref = checkRelatedAreas.isSelected();
+			}
+	
+			outputSelectedLanguagesIds();
+			outputSelectedVersionsIds();
+			
+			saveDialog();
+			
+			confirm = true;
 		}
-		
-		if (generateList != null) {
-			generateList.ref = checkCreateList.isSelected();
-		}
-		
-		if (runBrowser != null) {
-			runBrowser.ref = checkRunBrowser.isSelected();
-		}
-		
-		removeOldFiles.ref = checkRemoveOldFiles.isSelected();
-		
-		if (generatedIndex != null) {
-			generatedIndex.ref = checkCreateIndex.isSelected();
-		}
-		
-		if (relatedAreas != null) {
-			relatedAreas.ref = checkRelatedAreas.isSelected();
-		}
-
-		outputSelectedLanguagesIds();
-		outputSelectedVersionsIds();
-		
-		saveDialog();
-		
-		confirm = true;
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -610,87 +632,107 @@ public class RenderDialog extends JDialog {
 			Obj<BrowserParameters> browserParameters, Obj<Boolean> generateList,
 			Obj<Boolean> generatedIndex, Obj<Boolean> runBrowser, Obj<Boolean> removeOldFiles,
 			LinkedList<VersionObj> versions, Obj<Boolean> relatedAreas) {
-		
-		this.languages = languages;
-		this.target = target;
-		this.coding = coding;
-		this.showTextIds = showTextIds;
-		this.browserParameters = browserParameters;
-		this.generateList = generateList;
-		this.generatedIndex = generatedIndex;
-		this.runBrowser = runBrowser;
-		this.removeOldFiles = removeOldFiles;
-		this.versions = versions;
-		this.relatedAreas = relatedAreas;
-		
-		setTartgetField(target.ref);
-		
-		Utility.centerOnScreen(this);
-		
-		localize();
-		setIcons();
-		createLanguagesList(selectAllLanguages);
-		createVersionsList();
-		createToolBars();
-		createCodingsList();
-		
-		loadDialog();
-		
-		// On display disable controls.
-		disableControls();
+		try {
+			
+			this.languages = languages;
+			this.target = target;
+			this.coding = coding;
+			this.showTextIds = showTextIds;
+			this.browserParameters = browserParameters;
+			this.generateList = generateList;
+			this.generatedIndex = generatedIndex;
+			this.runBrowser = runBrowser;
+			this.removeOldFiles = removeOldFiles;
+			this.versions = versions;
+			this.relatedAreas = relatedAreas;
+			
+			setTartgetField(target.ref);
+			
+			Utility.centerOnScreen(this);
+			
+			localize();
+			setIcons();
+			createLanguagesList(selectAllLanguages);
+			createVersionsList();
+			createToolBars();
+			createCodingsList();
+			
+			loadDialog();
+			
+			// On display disable controls.
+			disableControls();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Disable controls on display.
 	 */
 	private void disableControls() {
-		
-		if (browserParameters == null) {
-			checkRenderBrowser.setEnabled(false);
-			buttonBrowserProperties.setEnabled(false);
-			checkRunBrowser.setEnabled(false);
+		try {
+			
+			if (browserParameters == null) {
+				checkRenderBrowser.setEnabled(false);
+				buttonBrowserProperties.setEnabled(false);
+				checkRunBrowser.setEnabled(false);
+			}
+			
+			if (generateList == null) {
+				checkCreateList.setEnabled(false);
+				checkCreateIndex.setEnabled(false);
+			}
 		}
-		
-		if (generateList == null) {
-			checkCreateList.setEnabled(false);
-			checkCreateIndex.setEnabled(false);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
-		buttonTarget.setIcon(Images.getIcon("org/multipage/generator/images/open.png"));
-		buttonBrowserProperties.setIcon(Images.getIcon("org/multipage/generator/images/properties.png"));
-		buttonRemoveFiles.setIcon(Images.getIcon("org/multipage/generator/images/bin.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+			buttonTarget.setIcon(Images.getIcon("org/multipage/generator/images/open.png"));
+			buttonBrowserProperties.setIcon(Images.getIcon("org/multipage/generator/images/properties.png"));
+			buttonRemoveFiles.setIcon(Images.getIcon("org/multipage/generator/images/bin.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(labelSelectLanguages);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(labelTarget);
-		Utility.localize(labelCoding);
-		Utility.localize(checkShowIds);
-		Utility.localize(checkRenderBrowser);
-		Utility.localize(checkCreateList);
-		Utility.localize(buttonBrowserProperties);
-		Utility.localize(checkRunBrowser);
-		Utility.localize(checkRemoveOldFiles);
-		Utility.localize(buttonRemoveFiles);
-		Utility.localize(checkCreateIndex);
-		Utility.localize(tabbedPane);
-		Utility.localize(labelSelectVersions);
-		Utility.localize(checkRelatedAreas);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(labelSelectLanguages);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(labelTarget);
+			Utility.localize(labelCoding);
+			Utility.localize(checkShowIds);
+			Utility.localize(checkRenderBrowser);
+			Utility.localize(checkCreateList);
+			Utility.localize(buttonBrowserProperties);
+			Utility.localize(checkRunBrowser);
+			Utility.localize(checkRemoveOldFiles);
+			Utility.localize(buttonRemoveFiles);
+			Utility.localize(checkCreateIndex);
+			Utility.localize(tabbedPane);
+			Utility.localize(labelSelectVersions);
+			Utility.localize(checkRelatedAreas);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -698,35 +740,51 @@ public class RenderDialog extends JDialog {
 	 * @param selectAllLanguages 
 	 */
 	private void createLanguagesList(boolean selectAllLanguages) {
-		
-		// Set model.
-		createLanguagesListModel(selectAllLanguages);
-		// Set renderer.
-		createLanguagesListRenderer();
+		try {
+			
+			// Set model.
+			createLanguagesListModel(selectAllLanguages);
+			// Set renderer.
+			createLanguagesListRenderer();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Create list renderer.
 	 */
+	@SuppressWarnings("unchecked")
 	private void createLanguagesListRenderer() {
-		
-		listLanguages.setCellRenderer(new ListCellRenderer() {
+		try {
 			
-			private final LanguageListItem renderer = new LanguageListItem();
-			private final JLabel defaultRenderer = new JLabel();
-			
-			@Override
-			public Component getListCellRendererComponent(JList list, Object value,
-					int index, boolean isSelected, boolean cellHasFocus) {
+			listLanguages.setCellRenderer(new ListCellRenderer() {
 				
-				if (!(value instanceof Language)) {
-					return defaultRenderer;
+				private final LanguageListItem renderer = new LanguageListItem();
+				private final JLabel defaultRenderer = new JLabel();
+				
+				@Override
+				public Component getListCellRendererComponent(JList list, Object value,
+						int index, boolean isSelected, boolean cellHasFocus) {
+					
+					try {
+						if (!(value instanceof Language)) {
+							return defaultRenderer;
+						}
+						
+						renderer.setProperties((Language) value, index);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return renderer;
 				}
-				
-				renderer.setProperties((Language) value, index);
-				return renderer;
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -734,91 +792,106 @@ public class RenderDialog extends JDialog {
 	 * @param selectAllLanguages 
 	 */
 	private void createLanguagesListModel(boolean selectAllLanguages) {
-		
-		modelLanguages = new DefaultListModel();
-		listLanguages.setModel(modelLanguages);
-
-		// Load languages.
-		LinkedList<Language> languages = new LinkedList<Language>();
-		
-		MiddleResult result;
-		
-		// Login to the database.
-		Middle middle = ProgramBasic.getMiddle();
-		Properties login = ProgramBasic.getLoginProperties();
-		
-		result = middle.login(login);
-		if (result.isOK()) {
+		try {
 			
-			result = middle.loadLanguages(languages);
+			modelLanguages = new DefaultListModel();
+			listLanguages.setModel(modelLanguages);
+	
+			// Load languages.
+			LinkedList<Language> languages = new LinkedList<Language>();
+			
+			MiddleResult result;
+			
+			// Login to the database.
+			Middle middle = ProgramBasic.getMiddle();
+			Properties login = ProgramBasic.getLoginProperties();
+			
+			result = middle.login(login);
 			if (result.isOK()) {
 				
-				// Load start language ID.
-				Obj<Long> startLanguageId = new Obj<Long>();
-				result = middle.loadStartLanguageId(startLanguageId);
-				
-				this.startLanguageId = startLanguageId.ref;
-				
-				// Load into the list model.
-				for (Language language : languages) {
+				result = middle.loadLanguages(languages);
+				if (result.isOK()) {
 					
-					if (selectAllLanguages) {
-						language.user = true;
-					}
-					else {
-						language.user = language.id == this.startLanguageId;
-					}
+					// Load start language ID.
+					Obj<Long> startLanguageId = new Obj<Long>();
+					result = middle.loadStartLanguageId(startLanguageId);
 					
-					if (language.id != 0L) {
-
-						modelLanguages.addElement(language);
-					}
-					else {
-						defaultLanguage = language;
+					this.startLanguageId = startLanguageId.ref;
+					
+					// Load into the list model.
+					for (Language language : languages) {
 						
-						modelLanguages.add(0, language);
+						if (selectAllLanguages) {
+							language.user = true;
+						}
+						else {
+							language.user = language.id == this.startLanguageId;
+						}
+						
+						if (language.id != 0L) {
+	
+							modelLanguages.addElement(language);
+						}
+						else {
+							defaultLanguage = language;
+							
+							modelLanguages.add(0, language);
+						}
 					}
 				}
+	
+				// Logout from the database.
+				MiddleResult logoutResult = middle.logout(result);
+				if (result.isOK()) {
+					result = logoutResult;
+				}
 			}
-
-			// Logout from the database.
-			MiddleResult logoutResult = middle.logout(result);
-			if (result.isOK()) {
-				result = logoutResult;
+			
+			if (result.isNotOK()) {
+				result.show(this);
+				return;
 			}
 		}
-		
-		if (result.isNotOK()) {
-			result.show(this);
-			return;
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Create tool bars.
 	 */
 	private void createToolBars() {
-		
-		ToolBarKit.addToolBarButton(toolBarLanguages, "org/multipage/generator/images/select_all.png",
-				this, "onSelectAllLanguages", "org.multipage.generator.tooltipSelectAllLanguages");
-		ToolBarKit.addToolBarButton(toolBarLanguages, "org/multipage/generator/images/deselect_all.png",
-				this, "onUnselectAllLanguages", "org.multipage.generator.tooltipUnselectAllLanguages");
-		
-		ToolBarKit.addToolBarButton(toolBarVersions, "org/multipage/generator/images/select_all.png",
-				this, "onSelectAllVersions", "org.multipage.generator.tooltipSelectAllVersions");
-		ToolBarKit.addToolBarButton(toolBarVersions, "org/multipage/generator/images/deselect_all.png",
-				this, "onUnselectAllVersions", "org.multipage.generator.tooltipUnselectAllVersions");
+		try {
+			
+			ToolBarKit.addToolBarButton(toolBarLanguages, "org/multipage/generator/images/select_all.png",
+					"org.multipage.generator.tooltipSelectAllLanguages", () -> onSelectAllLanguages());
+			ToolBarKit.addToolBarButton(toolBarLanguages, "org/multipage/generator/images/deselect_all.png",
+					"org.multipage.generator.tooltipUnselectAllLanguages", () -> onUnselectAllLanguages());
+			
+			ToolBarKit.addToolBarButton(toolBarVersions, "org/multipage/generator/images/select_all.png",
+					"org.multipage.generator.tooltipSelectAllVersions", () -> onSelectAllVersions());
+			ToolBarKit.addToolBarButton(toolBarVersions, "org/multipage/generator/images/deselect_all.png",
+					"org.multipage.generator.tooltipUnselectAllVersions", () -> onUnselectAllVersions());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Create codings list.
 	 */
 	private void createCodingsList() {
-		
-		comboCoding.addItem("UTF-16");
-		comboCoding.addItem("UTF-8");
-		
-		comboCoding.setSelectedItem(coding.ref);
+		try {
+			
+			comboCoding.addItem("UTF-16");
+			comboCoding.addItem("UTF-8");
+			
+			comboCoding.setSelectedItem(coding.ref);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -826,25 +899,30 @@ public class RenderDialog extends JDialog {
 	 * @param e 
 	 */
 	protected void onLanguagesListClicked(MouseEvent e) {
-		
-		int index = listLanguages.locationToIndex(e.getPoint());
-		Rectangle rectangle = listLanguages.getCellBounds(index, index);
-		if (rectangle != null) {
-			if (rectangle.contains(e.getPoint())) {
-				
-				// Select language.
-				Object object = modelLanguages.get(index);
-				if (object instanceof Language) {
+		try {
+			
+			int index = listLanguages.locationToIndex(e.getPoint());
+			Rectangle rectangle = listLanguages.getCellBounds(index, index);
+			if (rectangle != null) {
+				if (rectangle.contains(e.getPoint())) {
 					
-					Language language = (Language) object;
-					if (language.user instanceof Boolean) {
-						language.user = !(Boolean) language.user;
+					// Select language.
+					Object object = modelLanguages.get(index);
+					if (object instanceof Language) {
 						
-						listLanguages.updateUI();
+						Language language = (Language) object;
+						if (language.user instanceof Boolean) {
+							language.user = !(Boolean) language.user;
+							
+							listLanguages.updateUI();
+						}
 					}
 				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -852,57 +930,82 @@ public class RenderDialog extends JDialog {
 	 * @param e
 	 */
 	protected void onVersionsListClicked(MouseEvent e) {
-		
-		int index = listVersions.locationToIndex(e.getPoint());
-		Rectangle rectangle = listVersions.getCellBounds(index, index);
-		if (rectangle != null) {
-			if (rectangle.contains(e.getPoint())) {
-				
-				// Select language.
-				Object object = modelVersions.get(index);
-				if (object instanceof VersionObj) {
+		try {
+			
+			int index = listVersions.locationToIndex(e.getPoint());
+			Rectangle rectangle = listVersions.getCellBounds(index, index);
+			if (rectangle != null) {
+				if (rectangle.contains(e.getPoint())) {
 					
-					VersionObj version = (VersionObj) object;
-					if (version.getUser() instanceof Boolean) {
-						version.setUser(!(Boolean) version.getUser());
+					// Select language.
+					Object object = modelVersions.get(index);
+					if (object instanceof VersionObj) {
 						
-						listVersions.updateUI();
+						VersionObj version = (VersionObj) object;
+						if (version.getUser() instanceof Boolean) {
+							version.setUser(!(Boolean) version.getUser());
+							
+							listVersions.updateUI();
+						}
 					}
 				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On select all languages.
 	 */
 	public void onSelectAllLanguages() {
-		
-		selectAllLanguages(true);
+		try {
+			
+			selectAllLanguages(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On unselect all languages.
 	 */
 	public void onUnselectAllLanguages() {
-		
-		selectAllLanguages(false);
+		try {
+			
+			selectAllLanguages(false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On select all versions.
 	 */
 	public void onSelectAllVersions() {
-		
-		selectAllVersions(true);
+		try {
+			
+			selectAllVersions(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On unselect all versions.
 	 */
 	public void onUnselectAllVersions() {
-		
-		selectAllVersions(false);
+		try {
+			
+			selectAllVersions(false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -910,16 +1013,21 @@ public class RenderDialog extends JDialog {
 	 * @param select
 	 */
 	private void selectAllLanguages(boolean select) {
-		
-		for (int index = 0; index < modelLanguages.getSize(); index++) {
-			Object object = modelLanguages.get(index);
-			if (object instanceof Language) {
-				Language language = (Language) object;
-				language.user = select;
+		try {
+			
+			for (int index = 0; index < modelLanguages.getSize(); index++) {
+				Object object = modelLanguages.get(index);
+				if (object instanceof Language) {
+					Language language = (Language) object;
+					language.user = select;
+				}
 			}
+			
+			listLanguages.updateUI();
 		}
-		
-		listLanguages.updateUI();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -927,31 +1035,41 @@ public class RenderDialog extends JDialog {
 	 * @param select
 	 */
 	private void selectAllVersions(boolean select) {
-		
-		for (int index = 0; index < modelVersions.getSize(); index++) {
-			Object object = modelVersions.get(index);
-			if (object instanceof VersionObj) {
-				VersionObj version = (VersionObj) object;
-				version.setUser(select);
+		try {
+			
+			for (int index = 0; index < modelVersions.getSize(); index++) {
+				Object object = modelVersions.get(index);
+				if (object instanceof VersionObj) {
+					VersionObj version = (VersionObj) object;
+					version.setUser(select);
+				}
 			}
+			
+			listVersions.updateUI();
 		}
-		
-		listVersions.updateUI();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On select target.
 	 */
 	protected void onTarget() {
-		
-		// Get rendering target.
-		String target = Utility.chooseDirectory(this, Resources.getString("org.multipage.generator.textSelectRenderingTarget"));
-		if (target == null) {
-			return;
+		try {
+			
+			// Get rendering target.
+			String target = Utility.chooseDirectory(this, Resources.getString("org.multipage.generator.textSelectRenderingTarget"));
+			if (target == null) {
+				return;
+			}
+			
+			// Set target field.
+			setTartgetField(target);
 		}
-		
-		// Set target field.
-		setTartgetField(target);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -960,15 +1078,21 @@ public class RenderDialog extends JDialog {
 	 */
 	private void setTartgetField(String target) {
 		
-		if (!existsTarget(target)) {
-			target = Resources.getString("org.multipage.generator.textTargetDoesntExist");
-			textTarget.setForeground(Color.RED);
+		try {
+			
+			if (!existsTarget(target)) {
+				target = Resources.getString("org.multipage.generator.textTargetDoesntExist");
+				textTarget.setForeground(Color.RED);
+			}
+			else {
+				textTarget.setForeground(Color.BLACK);
+			}
+			
+			textTarget.setText(target);
 		}
-		else {
-			textTarget.setForeground(Color.BLACK);
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		textTarget.setText(target);
 	}
 
 	/**
@@ -978,207 +1102,270 @@ public class RenderDialog extends JDialog {
 	 */
 	private boolean existsTarget(String target) {
 		
-		return new File(target).exists();
+		try {
+			return new File(target).exists();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
 	 * Output selected languages' IDs.
 	 */
 	private void outputSelectedLanguagesIds() {
-		
-		languages.clear();
-		
-		for (int index = 0; index < modelLanguages.getSize(); index++) {
-			Object object = modelLanguages.get(index);
-			if (object instanceof Language) {
-				Language language = (Language) object;
-				
-				if (language.user instanceof Boolean) {
-					boolean selected = (Boolean) language.user;
+		try {
+			
+			languages.clear();
+			
+			for (int index = 0; index < modelLanguages.getSize(); index++) {
+				Object object = modelLanguages.get(index);
+				if (object instanceof Language) {
+					Language language = (Language) object;
 					
-					if (selected) {
-						languages.add(language);
+					if (language.user instanceof Boolean) {
+						boolean selected = (Boolean) language.user;
+						
+						if (selected) {
+							languages.add(language);
+						}
 					}
 				}
 			}
-		}
-		
-		// If nothing selected use the default language.
-		if (languages.isEmpty()) {
-			// Get default language.
-			if (defaultLanguage != null) {
-				languages.add(defaultLanguage);
+			
+			// If nothing selected use the default language.
+			if (languages.isEmpty()) {
+				// Get default language.
+				if (defaultLanguage != null) {
+					languages.add(defaultLanguage);
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Output selected versions' IDs.
 	 */
 	private void outputSelectedVersionsIds() {
-		
-		versions.clear();
-		
-		VersionObj defaultVersion = null;
-		
-		for (int index = 0; index < modelVersions.getSize(); index++) {
-			Object object = modelVersions.get(index);
-			if (object instanceof VersionObj) {
-				VersionObj version = (VersionObj) object;
-				
-				if (version.getUser() instanceof Boolean) {
-					boolean selected = (Boolean) version.getUser();
+		try {
+			
+			versions.clear();
+			
+			VersionObj defaultVersion = null;
+			
+			for (int index = 0; index < modelVersions.getSize(); index++) {
+				Object object = modelVersions.get(index);
+				if (object instanceof VersionObj) {
+					VersionObj version = (VersionObj) object;
 					
-					if (selected) {
-						versions.add(version);
+					if (version.getUser() instanceof Boolean) {
+						boolean selected = (Boolean) version.getUser();
+						
+						if (selected) {
+							versions.add(version);
+						}
+					}
+					
+					if (version.getId() == 0L) {
+						defaultVersion = version;
 					}
 				}
-				
-				if (version.getId() == 0L) {
-					defaultVersion = version;
+			}
+			
+			// If nothing selected use the default version.
+			if (versions.isEmpty()) {
+				// Get default version.
+				if (defaultVersion != null) {
+					versions.add(defaultVersion);
 				}
 			}
 		}
-		
-		// If nothing selected use the default version.
-		if (versions.isEmpty()) {
-			// Get default version.
-			if (defaultVersion != null) {
-				versions.add(defaultVersion);
-			}
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On render browser flag changed.
 	 */
 	protected void onRenderBrowserFlag() {
-		
-		buttonBrowserProperties.setEnabled(checkRenderBrowser.isSelected());
-		checkRunBrowser.setEnabled(checkRenderBrowser.isSelected());
+		try {
+			
+			buttonBrowserProperties.setEnabled(checkRenderBrowser.isSelected());
+			checkRunBrowser.setEnabled(checkRenderBrowser.isSelected());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On set browser properties.
 	 */
 	protected void onSetBrowserProperties() {
-		
-		BrowserParametersDialog.showDialog(this);
+		try {
+			
+			BrowserParametersDialog.showDialog(this);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On create list flag.
 	 */
 	protected void onCreateListFlag() {
-		
-		checkCreateIndex.setEnabled(checkCreateList.isSelected());
+		try {
+			
+			checkCreateIndex.setEnabled(checkCreateList.isSelected());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		checkCreateList.setSelected(serializedCreateList);
-		checkRenderBrowser.setSelected(serializedRenderBrowser);
-		checkRunBrowser.setSelected(serializedRunBrowser);
-		checkRemoveOldFiles.setSelected(serializedRemoveOldFiles);
-		checkCreateIndex.setSelected(serializedCreateIndexFlag);
-		checkRelatedAreas.setSelected(serializedRelatedAreasFlag);
-		
-		// Set list and index file controls.
-		checkCreateIndex.setEnabled(checkCreateList.isSelected());
-		
-		// Set browser controls.
-		boolean isBrowserRendered = checkRenderBrowser.isSelected();
-		buttonBrowserProperties.setEnabled(isBrowserRendered);
-		checkRunBrowser.setEnabled(isBrowserRendered);
+		try {
+			
+			checkCreateList.setSelected(serializedCreateList);
+			checkRenderBrowser.setSelected(serializedRenderBrowser);
+			checkRunBrowser.setSelected(serializedRunBrowser);
+			checkRemoveOldFiles.setSelected(serializedRemoveOldFiles);
+			checkCreateIndex.setSelected(serializedCreateIndexFlag);
+			checkRelatedAreas.setSelected(serializedRelatedAreasFlag);
+			
+			// Set list and index file controls.
+			checkCreateIndex.setEnabled(checkCreateList.isSelected());
+			
+			// Set browser controls.
+			boolean isBrowserRendered = checkRenderBrowser.isSelected();
+			buttonBrowserProperties.setEnabled(isBrowserRendered);
+			checkRunBrowser.setEnabled(isBrowserRendered);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		serializedCreateList = checkCreateList.isSelected();
-		serializedRenderBrowser = checkRenderBrowser.isSelected();
-		serializedRunBrowser = checkRunBrowser.isSelected();
-		serializedRemoveOldFiles = checkRemoveOldFiles.isSelected();
-		serializedCreateIndexFlag = checkCreateIndex.isSelected();
-		serializedRelatedAreasFlag = checkRelatedAreas.isSelected();
+		try {
+			
+			serializedCreateList = checkCreateList.isSelected();
+			serializedRenderBrowser = checkRenderBrowser.isSelected();
+			serializedRunBrowser = checkRunBrowser.isSelected();
+			serializedRemoveOldFiles = checkRemoveOldFiles.isSelected();
+			serializedCreateIndexFlag = checkCreateIndex.isSelected();
+			serializedRelatedAreasFlag = checkRelatedAreas.isSelected();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Create versions list.
 	 */
 	private void createVersionsList() {
-		
-		createVersionsModel();
-		createVersionsListRenderer();
+		try {
+			
+			createVersionsModel();
+			createVersionsListRenderer();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Create versions model.
 	 */
 	private void createVersionsModel() {
-		
-		modelVersions = new DefaultListModel();
-		
-		// Load versions.
-		Middle middle = ProgramBasic.getMiddle();
-		Properties login = ProgramBasic.getLoginProperties();
-		
-		LinkedList<VersionObj> versions = new LinkedList<VersionObj>();
-		
-		MiddleResult result = middle.loadVersions(login, 0L, versions);
-		
-		if (result.isNotOK()) {
-			result.show(this);
-			return;
-		}
-		
-		VersionObj defaultVersion = null;
-		
-		// Put versions into the list model.
-		for (VersionObj version : versions) {
+		try {
 			
-			version.setUser(false);
-			modelVersions.addElement(version);
+			modelVersions = new DefaultListModel();
 			
-			if (version.getId() == 0L) {
-				defaultVersion = version;
+			// Load versions.
+			Middle middle = ProgramBasic.getMiddle();
+			Properties login = ProgramBasic.getLoginProperties();
+			
+			LinkedList<VersionObj> versions = new LinkedList<VersionObj>();
+			
+			MiddleResult result = middle.loadVersions(login, 0L, versions);
+			
+			if (result.isNotOK()) {
+				result.show(this);
+				return;
 			}
+			
+			VersionObj defaultVersion = null;
+			
+			// Put versions into the list model.
+			for (VersionObj version : versions) {
+				
+				version.setUser(false);
+				modelVersions.addElement(version);
+				
+				if (version.getId() == 0L) {
+					defaultVersion = version;
+				}
+			}
+			
+			if (defaultVersion != null) {
+				defaultVersion.setUser(true);
+			}
+			
+			listVersions.setModel(modelVersions);
 		}
-		
-		if (defaultVersion != null) {
-			defaultVersion.setUser(true);
-		}
-		
-		listVersions.setModel(modelVersions);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 
 	/**
 	 * Create versions list renderer.
 	 */
+	@SuppressWarnings("unchecked")
 	private void createVersionsListRenderer() {
-		
-		listVersions.setCellRenderer(new ListCellRenderer() {
+		try {
 			
-			private final VersionsListItem renderer = new VersionsListItem();
-			private final JLabel defaultRenderer = new JLabel();
-			
-			@Override
-			public Component getListCellRendererComponent(JList list, Object value,
-					int index, boolean isSelected, boolean cellHasFocus) {
+			listVersions.setCellRenderer(new ListCellRenderer() {
 				
-				if (!(value instanceof VersionObj)) {
+				private final VersionsListItem renderer = new VersionsListItem();
+				private final JLabel defaultRenderer = new JLabel();
+				
+				@Override
+				public Component getListCellRendererComponent(JList list, Object value,
+						int index, boolean isSelected, boolean cellHasFocus) {
+					
+					try {
+						if (!(value instanceof VersionObj)) {
+							return defaultRenderer;
+						}
+						
+						renderer.setProperties((VersionObj) value, index);
+						return renderer;
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
 					return defaultRenderer;
 				}
-				
-				renderer.setProperties((VersionObj) value, index);
-				return renderer;
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

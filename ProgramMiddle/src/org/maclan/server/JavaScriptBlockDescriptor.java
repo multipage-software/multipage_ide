@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-03-2020
+ * Created on : 2020-03-26
  *
  */
 package org.maclan.server;
@@ -9,7 +9,8 @@ package org.maclan.server;
 import org.multipage.util.TextOutputCapturer;
 
 /**
- * @author user
+ * JavaScript block descriptor.
+ * @author vakol
  *
  */
 public class JavaScriptBlockDescriptor extends BlockDescriptor {

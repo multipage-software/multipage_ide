@@ -1,14 +1,14 @@
 Minimum Operating System:
-	- Windows 10
+	- Windows 11
 Integrated Development Environment:
-	- Eclipse IDE for Java Developers Version 2019-06 (4.12.0)
-Java Runtime:
-	- Java 11 based GraalVM, Community Edition 21.0.0.2
+	- Eclipse IDE for Enterprise Java and Web Developers Version: 2023-09 (4.29.0)
+Java Runtime Environment:
+	- Java 17 based GraalVM, Community Edition 21.3.0
 Area Templates:
-	- Basic Template 1.1.29.14
+	- Basic Template 5.1
 Embedded Web Sever:
 	- Eclipse Jetty 9.4.7.v20170914
 Embedded Database:
-	- Apache Derby 10.14.2.0 Release
+	- Apache Derby 10.15.2.0 Release
 Shared Database:
-	- PostgreSQL 13.1
+	- PostgreSQL 42.2.18

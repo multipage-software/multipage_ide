@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -17,17 +17,23 @@ import java.util.LinkedList;
 import javax.swing.JPanel;
 
 import org.maclan.Area;
+import org.multipage.addinloader.j;
 import org.multipage.gui.ApplicationEvents;
 import org.multipage.gui.GuiSignal;
+import org.multipage.gui.ReceiverAutoRemove;
+import org.multipage.gui.UpdatableComponent;
 import org.multipage.gui.Utility;
+import org.multipage.util.Closable;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 
 /**
- * @author
+ * Panel with area properties.
+ * @author vakol
  *
  */
-public class PropertiesPanel extends JPanel {
+public class PropertiesPanel extends JPanel implements ReceiverAutoRemove, UpdatableComponent, Closable {
 
 	/**
 	 * Version.
@@ -49,20 +55,26 @@ public class PropertiesPanel extends JPanel {
 	/**
 	 * Message panel.
 	 */
-	private MessagePanel message = new MessagePanel();
+	private MessagePanel messagePanel = new MessagePanel();
 
 	/**
 	 * Areas editor.
 	 */
-	private AreasPropertiesBase areaEditor;
+	private AreaPropertiesBasePanel areasPropertiesPanel;
 	
 	/**
 	 * Constructor.
 	 */
 	public PropertiesPanel() {
-		
-		initComponents();
-		postCreate();
+		try {
+			
+			initComponents();
+			postCreate();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 	}
 
 	/**
@@ -71,7 +83,7 @@ public class PropertiesPanel extends JPanel {
 	private void initComponents() {
 
 		// Create area editor.
-		areaEditor = newAreasProperties(true);
+		areasPropertiesPanel = newAreasProperties(true);
 		setLayout(new BorderLayout());
 	}
 	
@@ -79,37 +91,62 @@ public class PropertiesPanel extends JPanel {
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		// Initialize.
-		setNoProperties();
-		setListeners();
+		try {
+			
+			// Initialize.
+			setNoProperties();
+			setListeners();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set listeners.
 	 */
 	private void setListeners() {
-		
-		// Set listener.
-		addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				setCursor(Cursor.getDefaultCursor());
-			}
-		});
-		
-		// Receive the "display area properties" messages.
-		ApplicationEvents.receiver(this, GuiSignal.displayAreaProperties, message -> {
+		try {
 			
-			HashSet<Long> selectedAreaIds = message.getRelatedInfo();
+			// Set listener.
+			addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseEntered(MouseEvent e) {
+					try {
+						
+						setCursor(Cursor.getDefaultCursor());
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
 			
-			if (!selectedAreaIds.isEmpty()) {
-				setAreas(selectedAreaIds);
+			// Register for updates.
+			GeneratorMainFrame.registerForUpdate(this);
+			
+			if (areasPropertiesPanel != null && areasPropertiesPanel.isInPropertiesPanel) {
+				// Receive the "display area properties" messages.
+				ApplicationEvents.receiver(this, GuiSignal.displayAreaProperties, message -> {
+					try {
+						
+						HashSet<Long> selectedAreaIds = message.getRelatedInfo();
+						if (selectedAreaIds != null && !selectedAreaIds.isEmpty()) {
+							setAreas(selectedAreaIds);
+						}
+						else {
+							setNoProperties();
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				});
 			}
-			else {
-				setNoProperties();
-			}
-		});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -117,9 +154,15 @@ public class PropertiesPanel extends JPanel {
 	 * @param isPropertiesPanel
 	 * @return
 	 */
-	protected AreasPropertiesBase newAreasProperties(boolean isPropertiesPanel) {
+	protected AreaPropertiesBasePanel newAreasProperties(boolean isPropertiesPanel) {
 		
-		return ProgramGenerator.newAreasProperties(isPropertiesPanel);
+		try {
+			return ProgramGenerator.newAreasProperties(isPropertiesPanel);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -127,80 +170,150 @@ public class PropertiesPanel extends JPanel {
 	 * @param selectedAreaIds
 	 */
 	public void setAreas(HashSet<Long> selectedAreaIds) {
-		
-		LinkedList<Area> areas = new LinkedList<Area>();
-		selectedAreaIds.forEach(areaId -> {
+		try {
 			
-			Area area = ProgramGenerator.getArea(areaId);
-			if (area == null) {
-				return;
-			}
+			LinkedList<Area> areas = new LinkedList<Area>();
+			selectedAreaIds.forEach(areaId -> {
+				
+				Area area = ProgramGenerator.getArea(areaId);
+				if (area == null) {
+					return;
+				}
+				
+				areas.add(area);
+			});
 			
-			areas.add(area);
-		});
-		
-		// Delegate call.
-		setAreas(areas);
+			// Delegate call.
+			setAreas(areas);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Edit areas.
 	 */
 	public void setAreas(LinkedList<Area> areas) {
-
-		// Delegate call.
-		areaEditor.setAreas(areas);
-		viewAreaEditor();
+		try {
+			
+			// Delegate call.
+			areasPropertiesPanel.setAreas(areas);
+			viewAreaEditor();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set no properties.
 	 */
 	public void setNoProperties() {
-		
-		// Set message.
-		message.setText(Resources.getString("org.multipage.generator.textNoAreaSelected"));
-		viewMessage();
+		try {
+			
+			// Set message.
+			messagePanel.setText(Resources.getString("org.multipage.generator.textNoAreaSelected"));
+			viewMessage();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * View message.
 	 */
 	private void viewMessage() {
-
-		removeAll();
-		add(message, BorderLayout.CENTER);
-		
-		revalidate();
-		Utility.repaintLater(this);
+		try {
+			
+			removeAll();
+			add(messagePanel, BorderLayout.CENTER);
+			
+			revalidate();
+			Utility.repaintLater(this);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * View area properties editor.
 	 */
 	private void viewAreaEditor() {
-	
-		removeAll();
-		add(areaEditor, BorderLayout.CENTER);
-		
-		revalidate();
-		Utility.repaintLater(this);
+		try {
+			
+			removeAll();
+			add(areasPropertiesPanel, BorderLayout.CENTER);
+			
+			revalidate();
+			Utility.repaintLater(this);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Get the properties editor.
 	 * @return the areaEditor
 	 */
-	public AreasPropertiesBase getPropertiesEditor() {
-		return areaEditor;
+	public AreaPropertiesBasePanel getPropertiesEditor() {
+		
+		return areasPropertiesPanel;
+	}
+	
+	/**
+     * This receiver objects cannot be removed automatically.
+     * @return false
+     */
+	@Override
+	public boolean canAutoRemove() {
+		
+		return false;
+	}
+	
+	/**
+	 * Update GUI components.
+	 */
+	@Override
+	public void updateComponents() {
+		try {
+			
+			// Check panel.
+			if (areasPropertiesPanel == null) {
+				setNoProperties();
+				return;
+			}
+			
+			// Update areas.
+			LinkedList<Area> areas = areasPropertiesPanel.getAreas();
+			areas = ProgramGenerator.getAreas(areas);
+			if (!areas.isEmpty()) {
+				setAreas(areas);
+			}
+			else {
+				setNoProperties();
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
-	 * Dispose.
+	 * Close panel.
 	 */
-	public void dispose() {
-
-		ApplicationEvents.removeReceivers(this);
-		areaEditor.dispose();
+	@Override
+	public void close() {
+		try {
+			ApplicationEvents.removeReceivers(this);
+			GeneratorMainFrame.unregisterFromUpdate(this);
+			areasPropertiesPanel.close();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

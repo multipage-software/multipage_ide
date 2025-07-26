@@ -1,20 +1,25 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.maclan.server;
 
-import java.io.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 
-import org.maclan.*;
-import org.multipage.util.*;
+import org.maclan.Language;
+import org.maclan.MiddleLight;
+import org.maclan.MiddleResult;
+import org.multipage.util.Obj;
 
 /**
- * @author
+ * Class for language tag processors.
+ * @author vakol
  *
  */
 public class LanguageServer {

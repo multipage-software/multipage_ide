@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -22,10 +22,11 @@ import org.multipage.gui.Images;
 import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays ambiguous file information.
+ * @author vakol
  *
  */
 public class AmbiguousFileItemPanel extends JPanel {
@@ -56,11 +57,16 @@ public class AmbiguousFileItemPanel extends JPanel {
 	 * @param item 
 	 */
 	public AmbiguousFileItemPanel(AmbiguousFileNameItem item) {
-
-		this.item = item; // $hide$
-		initComponents();
 		
-		postCreate(); // $hide$
+		try {
+			this.item = item; // $hide$
+			initComponents();
+			
+			postCreate(); // $hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -119,66 +125,94 @@ public class AmbiguousFileItemPanel extends JPanel {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		localize();
-		
-		setIcons();
-		
-		setToolTips();
-		
-		// Set area name.
-		textArea.setText(item.area.getDescriptionForced(true));
-		textArea.setCaretPosition(0);
-		
-		// Set version.
-		labelVersion.setText(String.format(
-				Resources.getString("org.multipage.generator.textAreaVersionLabel"), item.version.toString()));
+		try {
+			
+			localize();
+			setIcons();
+			setToolTips();
+			
+			// Set area name.
+			textArea.setText(item.area.getDescriptionForced(true));
+			textArea.setCaretPosition(0);
+			
+			// Set version.
+			labelVersion.setText(String.format(
+					Resources.getString("org.multipage.generator.textAreaVersionLabel"), item.version.toString()));	
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(labelArea);
+		try {
+			
+			Utility.localize(labelArea);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonAreaEditor.setIcon(Images.getIcon("org/multipage/generator/images/edit.png"));
-		buttonFocus.setIcon(Images.getIcon("org/multipage/generator/images/search_icon.png"));
+		try {
+			
+			buttonAreaEditor.setIcon(Images.getIcon("org/multipage/generator/images/edit.png"));
+			buttonFocus.setIcon(Images.getIcon("org/multipage/generator/images/search_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set tool tips.
 	 */
 	private void setToolTips() {
-		
-		String areaName = item.area.toString();
-		
-		buttonAreaEditor.setToolTipText(String.format(
-				Resources.getString("org.multipage.generator.tooltipEditArea"), areaName));
-		buttonFocus.setToolTipText(String.format(
-				Resources.getString("org.multipage.generator.tooltipFocusOnArea"), areaName));
+		try {
+			
+			String areaName = item.area.toString();
+			
+			buttonAreaEditor.setToolTipText(String.format(
+					Resources.getString("org.multipage.generator.tooltipEditArea"), areaName));
+			buttonFocus.setToolTipText(String.format(
+					Resources.getString("org.multipage.generator.tooltipFocusOnArea"), areaName));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On edit area.
 	 */
 	protected void onEditArea() {
-		
-		// Execute area editor.
-		AreaEditorFrame.showDialog(null, item.area);
+		try {
+			
+			// Execute area editor.
+			AreaEditorFrame.showDialog(null, item.area);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Focus on area.
 	 */
 	protected void onFocusArea() {
-		
-		GeneratorMainFrame.getFrame().getAreaDiagramEditor().focusArea(item.area.getId());
+		try {
+			
+			GeneratorMainFrame.getFrame().getAreaDiagramEditor().focusArea(item.area.getId());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

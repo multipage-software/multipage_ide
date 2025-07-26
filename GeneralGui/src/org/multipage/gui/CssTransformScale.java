@@ -1,14 +1,17 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
+import org.multipage.util.Safe;
+
 /**
- * @author
+ * Class for scale transformation object.
+ * @author vakol
  *
  */
 public class CssTransformScale extends CssTransform {
@@ -32,11 +35,17 @@ public class CssTransformScale extends CssTransform {
 	 */
 	@Override
 	public String toString() {
-				
-		return String.format("scale(%s, %s)",
-				Utility.removeFloatNulls(String.valueOf(sx)),
-				Utility.removeFloatNulls(String.valueOf(sy))
-				);
+		
+		try {
+			return String.format("scale(%s, %s)",
+					Utility.removeFloatNulls(String.valueOf(sx)),
+					Utility.removeFloatNulls(String.valueOf(sy))
+					);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -44,8 +53,13 @@ public class CssTransformScale extends CssTransform {
 	 * @param scale
 	 */
 	public void setFrom(CssTransformScale scale) {
-
-		this.sx = scale.sx;
-		this.sy = scale.sy;
+		try {
+			
+			this.sx = scale.sx;
+			this.sy = scale.sy;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

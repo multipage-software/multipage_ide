@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 package build_number;
@@ -9,7 +9,8 @@ package build_number;
 import java.io.*;
 
 /**
- * @author
+ * Object that gets build number and version of current application.
+ * @author vakol
  *
  */
 public class BuildNumber {

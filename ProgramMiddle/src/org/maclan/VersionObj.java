@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -10,9 +10,9 @@ package org.maclan;
 import org.multipage.gui.Utility;
 
 /**
- * @author
- *
- */
+ * Area version object.
+ * @author vakol
+  */
 public class VersionObj implements Element {
 
 	/**
@@ -75,13 +75,25 @@ public class VersionObj implements Element {
 	}
 
 	/**
+	 * Get description.
 	 * @return the description
 	 */
 	public String getDescription() {
 		return description;
 	}
+	
+	/**
+	 * Set description with ID.
+	 * @return
+	 */
+	public String getDescriptionWithId() {
+		
+		String text = String.format("%s (%d)", description, id);
+		return text;
+	}
 
 	/**
+	 * Set alias.
 	 * @param alias the alias to set
 	 */
 	public void setAlias(String alias) {
@@ -89,6 +101,7 @@ public class VersionObj implements Element {
 	}
 
 	/**
+	 * Set description.
 	 * @param description the description to set
 	 */
 	public void setDescription(String description) {
@@ -96,6 +109,7 @@ public class VersionObj implements Element {
 	}
 
 	/**
+	 * Set ID.
 	 * @param id the id to set
 	 */
 	public void setId(long id) {
@@ -152,7 +166,7 @@ public class VersionObj implements Element {
 		return user;
 	}
 
-	/* (non-Javadoc)
+	/* Get string representation.
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -160,7 +174,7 @@ public class VersionObj implements Element {
 		return description;
 	}
 
-	/* (non-Javadoc)
+	/* Get hash code.
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
@@ -171,7 +185,7 @@ public class VersionObj implements Element {
 		return result;
 	}
 
-	/* (non-Javadoc)
+	/* Check if parameter equals to this object.
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override

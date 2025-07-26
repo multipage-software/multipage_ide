@@ -1,26 +1,35 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.util.Scanner;
 
-import java.awt.*;
-import java.io.*;
-import java.util.*;
-import javax.swing.border.*;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SpringLayout;
+import javax.swing.border.LineBorder;
 
-import org.multipage.util.*;
-
-import java.awt.event.*;
+import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays editor for CSS box shadow.
+ * @author vakol
  *
  */
 public class CssBoxShadowPanel extends InsertPanel implements StringValueEditor {
@@ -111,12 +120,17 @@ public class CssBoxShadowPanel extends InsertPanel implements StringValueEditor 
 	 */
 	public CssBoxShadowPanel(String initialString) {
 
-		initComponents();
-		
-		// $hide>>$
-		this.initialString = initialString;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			this.initialString = initialString;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -226,22 +240,32 @@ public class CssBoxShadowPanel extends InsertPanel implements StringValueEditor 
 	 * On select color.
 	 */
 	protected void onSelectColor() {
-		
-		Color newColor = Utility.chooseColor(this, color);
-		
-		if (newColor != null) {
-			color = newColor;
+		try {
 			
-			panelColor.setBackground(color);
+			Color newColor = Utility.chooseColor(this, color);
+			
+			if (newColor != null) {
+				color = newColor;
+				
+				panelColor.setBackground(color);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-
-		setFromInitialString();
+		try {
+			
+			setFromInitialString();	
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -249,10 +273,14 @@ public class CssBoxShadowPanel extends InsertPanel implements StringValueEditor 
 	 * @param color
 	 */
 	private void setColor(Color color) {
-		
-		this.color = color;
-		
-		panelColor.setBackground(color);
+		try {
+			
+			this.color = color;
+			panelColor.setBackground(color);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -268,23 +296,31 @@ public class CssBoxShadowPanel extends InsertPanel implements StringValueEditor 
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		localize();
-		
-		loadUnits();
-		
-		loadDialog();
+		try {
+			
+			localize();
+			loadUnits();
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load units.
 	 */
 	private void loadUnits() {
-		
-		Utility.loadCssUnits(comboHorizontalUnits);
-		Utility.loadCssUnits(comboVerticalUnits);
-		Utility.loadCssUnits(comboBlurUnits);
-		Utility.loadCssUnits(comboSpreadUnits);
+		try {
+			
+			Utility.loadCssUnits(comboHorizontalUnits);
+			Utility.loadCssUnits(comboVerticalUnits);
+			Utility.loadCssUnits(comboBlurUnits);
+			Utility.loadCssUnits(comboSpreadUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -294,11 +330,17 @@ public class CssBoxShadowPanel extends InsertPanel implements StringValueEditor 
 	@Override
 	public String getSpecification() {
 		
-		String inset = getInset();
-		if (!inset.isEmpty()) {
-			inset = " " + inset;
+		try {
+			String inset = getInset();
+			if (!inset.isEmpty()) {
+				inset = " " + inset;
+			}
+			return getHorizontal()  + " " + getVertical() + " " + getBlur() + " " + getSpread() + " " + getColor() + inset;
 		}
-		return getHorizontal()  + " " + getVertical() + " " + getBlur() + " " + getSpread() + " " + getColor() + inset;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -307,7 +349,13 @@ public class CssBoxShadowPanel extends InsertPanel implements StringValueEditor 
 	 */
 	private String getInset() {
 		
-		return checkInset.isSelected() ? "inset" : "";
+		try {
+			return checkInset.isSelected() ? "inset" : "";
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -316,7 +364,13 @@ public class CssBoxShadowPanel extends InsertPanel implements StringValueEditor 
 	 */
 	private String getColor() {
 		
-		return Utility.getCssColor(color);
+		try {
+			return Utility.getCssColor(color);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -325,7 +379,13 @@ public class CssBoxShadowPanel extends InsertPanel implements StringValueEditor 
 	 */
 	private String getSpread() {
 		
-		return Utility.getCssValueAndUnits(textSpread, comboSpreadUnits);
+		try {
+			return Utility.getCssValueAndUnits(textSpread, comboSpreadUnits);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -334,7 +394,13 @@ public class CssBoxShadowPanel extends InsertPanel implements StringValueEditor 
 	 */
 	private String getBlur() {
 		
-		return Utility.getCssValueAndUnits(textBlur, comboBlurUnits);
+		try {
+			return Utility.getCssValueAndUnits(textBlur, comboBlurUnits);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -343,7 +409,13 @@ public class CssBoxShadowPanel extends InsertPanel implements StringValueEditor 
 	 */
 	private String getVertical() {
 		
-		return Utility.getCssValueAndUnits(textVertical, comboVerticalUnits);
+		try {
+			return Utility.getCssValueAndUnits(textVertical, comboVerticalUnits);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -352,43 +424,54 @@ public class CssBoxShadowPanel extends InsertPanel implements StringValueEditor 
 	 */
 	private String getHorizontal() {
 		
-		return Utility.getCssValueAndUnits(textHorizontal, comboHorizontalUnits);
+		try {
+			return Utility.getCssValueAndUnits(textHorizontal, comboHorizontalUnits);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
 	 * Set from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		setColor(colorState);
-		setHorizontal("0px");
-		setVertical("0px");
-		setBlur("0px");
-		setSpread("0px");
-		setInset(false);
-
-		if (initialString != null) {
-		
-			Scanner scanner = new Scanner(initialString.trim());
+		try {
 			
-			try {
-				// Set values.
-				setHorizontal(scanner.next().trim());
-				setVertical(scanner.next().trim());
-				setBlur(scanner.next().trim());
-				setSpread(scanner.next().trim());
-				setColor(scanner.next().trim());
-
-				String inset = scanner.nextLine().trim();
-				if (inset.equals("inset")) {
-					setInset(true);
+			setColor(colorState);
+			setHorizontal("0px");
+			setVertical("0px");
+			setBlur("0px");
+			setSpread("0px");
+			setInset(false);
+	
+			if (initialString != null) {
+			
+				Scanner scanner = new Scanner(initialString.trim());
+				
+				try {
+					// Set values.
+					setHorizontal(scanner.next().trim());
+					setVertical(scanner.next().trim());
+					setBlur(scanner.next().trim());
+					setSpread(scanner.next().trim());
+					setColor(scanner.next().trim());
+	
+					String inset = scanner.nextLine().trim();
+					if (inset.equals("inset")) {
+						setInset(true);
+					}
 				}
+				catch (Exception e) {
+				}
+				
+			    scanner.close();
 			}
-			catch (Exception e) {
-			}
-			
-		    scanner.close();
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -396,8 +479,13 @@ public class CssBoxShadowPanel extends InsertPanel implements StringValueEditor 
 	 * @param string
 	 */
 	private void setHorizontal(String string) {
-		
-		Utility.setCssValueAndUnits(string, textHorizontal, comboHorizontalUnits);
+		try {
+			
+			Utility.setCssValueAndUnits(string, textHorizontal, comboHorizontalUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -405,8 +493,13 @@ public class CssBoxShadowPanel extends InsertPanel implements StringValueEditor 
 	 * @param string
 	 */
 	private void setVertical(String string) {
-		
-		Utility.setCssValueAndUnits(string, textVertical, comboVerticalUnits);
+		try {
+			
+			Utility.setCssValueAndUnits(string, textVertical, comboVerticalUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -414,8 +507,13 @@ public class CssBoxShadowPanel extends InsertPanel implements StringValueEditor 
 	 * @param string
 	 */
 	private void setBlur(String string) {
-		
-		Utility.setCssValueAndUnits(string, textBlur, comboBlurUnits);
+		try {
+			
+			Utility.setCssValueAndUnits(string, textBlur, comboBlurUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -423,8 +521,13 @@ public class CssBoxShadowPanel extends InsertPanel implements StringValueEditor 
 	 * @param string
 	 */
 	private void setSpread(String string) {
-		
-		Utility.setCssValueAndUnits(string, textSpread, comboSpreadUnits);
+		try {
+			
+			Utility.setCssValueAndUnits(string, textSpread, comboSpreadUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -432,8 +535,13 @@ public class CssBoxShadowPanel extends InsertPanel implements StringValueEditor 
 	 * @param string
 	 */
 	private void setColor(String string) {
-		
-		setColor(Utility.getColorFromCss(string));
+		try {
+			
+			setColor(Utility.getColorFromCss(string));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -441,21 +549,31 @@ public class CssBoxShadowPanel extends InsertPanel implements StringValueEditor 
 	 * @param set
 	 */
 	private void setInset(boolean set) {
-		
-		checkInset.setSelected(set);
+		try {
+			
+			checkInset.setSelected(set);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(labelHorizontal);
-		Utility.localize(labelVertical);
-		Utility.localize(labelBlur);
-		Utility.localize(labelSpread);
-		Utility.localize(labelColor);
-		Utility.localize(checkInset);
+		try {
+			
+			Utility.localize(labelHorizontal);
+			Utility.localize(labelVertical);
+			Utility.localize(labelBlur);
+			Utility.localize(labelSpread);
+			Utility.localize(labelColor);
+			Utility.localize(checkInset);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -464,7 +582,13 @@ public class CssBoxShadowPanel extends InsertPanel implements StringValueEditor 
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.gui.textCssShadowBuilder");
+		try {
+			return Resources.getString("org.multipage.gui.textCssShadowBuilder");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -473,7 +597,13 @@ public class CssBoxShadowPanel extends InsertPanel implements StringValueEditor 
 	@Override
 	public String getResultText() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -527,7 +657,13 @@ public class CssBoxShadowPanel extends InsertPanel implements StringValueEditor 
 	@Override
 	public String getStringValue() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -535,9 +671,14 @@ public class CssBoxShadowPanel extends InsertPanel implements StringValueEditor 
 	 */
 	@Override
 	public void setStringValue(String string) {
-		
-		initialString = string;
-		setFromInitialString();
+		try {
+			
+			initialString = string;
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

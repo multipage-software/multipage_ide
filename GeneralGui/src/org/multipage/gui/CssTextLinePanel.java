@@ -1,24 +1,31 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2025-04-26
  *
  */
 
 package org.multipage.gui;
 
-import javax.swing.*;
-
-import org.multipage.util.*;
-
-import java.awt.*;
-import java.io.*;
-import java.awt.event.ActionListener;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.SpringLayout;
+
+import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays editor of text line.
+ * @author vakol
  *
  */
 public class CssTextLinePanel extends InsertPanel implements StringValueEditor {
@@ -88,13 +95,18 @@ public class CssTextLinePanel extends InsertPanel implements StringValueEditor {
 	 * @param parentWindow 
 	 */
 	public CssTextLinePanel(String initialString) {
-
-		initComponents();
 		
-		// $hide>>$
-		this.initialString = initialString;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			this.initialString = initialString;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -158,30 +170,45 @@ public class CssTextLinePanel extends InsertPanel implements StringValueEditor {
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		localize();
+		try {
+			
+			localize();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On escape quotes.
 	 */
 	protected void onEscapeQuotes() {
-		
-		String text = textField.getText();
-		text = text.replace("\"", "\\\"");
-		
-		textField.setText(text);
+		try {
+			
+			String text = textField.getText();
+			text = text.replace("\"", "\\\"");
+			
+			textField.setText(text);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On unescape quotes.
 	 */
 	protected void onUnescapeQuotes() {
-		
-		String text = textField.getText();
-		text = text.replace("\\\"", "\"");
-		
-		textField.setText(text);
+		try {
+			
+			String text = textField.getText();
+			text = text.replace("\\\"", "\"");
+			
+			textField.setText(text);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -190,31 +217,45 @@ public class CssTextLinePanel extends InsertPanel implements StringValueEditor {
 	 */
 	@Override
 	public String getSpecification() {
-		
-		String specification = textField.getText();
-		
-		return specification;
+
+		try {
+			String specification = textField.getText();
+			return specification;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
 	 * Set from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		if (initialString != null) {
+		try {
 			
-			textField.setText(initialString);
+			if (initialString != null) {
+				textField.setText(initialString);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(labelText);
-		Utility.localize(buttonEscapeQuotes);
-		Utility.localize(buttonUnescapeQuotes);
+		try {
+			
+			Utility.localize(labelText);
+			Utility.localize(buttonEscapeQuotes);
+			Utility.localize(buttonUnescapeQuotes);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -223,7 +264,13 @@ public class CssTextLinePanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.gui.textCssUrlBuilder");
+		try {
+			return Resources.getString("org.multipage.gui.textCssUrlBuilder");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -232,7 +279,13 @@ public class CssTextLinePanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getResultText() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -286,7 +339,13 @@ public class CssTextLinePanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getStringValue() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -294,9 +353,14 @@ public class CssTextLinePanel extends InsertPanel implements StringValueEditor {
 	 */
 	@Override
 	public void setStringValue(String string) {
-		
-		initialString = string;
-		setFromInitialString();
+		try {
+			
+			initialString = string;
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

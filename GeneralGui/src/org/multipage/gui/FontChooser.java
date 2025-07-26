@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -52,6 +52,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
  * <code>FontChooser</code> provides a pane of controls designed to allow
@@ -114,24 +115,41 @@ public class FontChooser extends JComponent {
     private class LabelUpdater implements ChangeListener {
 
         public void stateChanged(ChangeEvent e) {
-            updateComponents();
+        	try {
+				
+				 updateComponents();
+			}
+			catch(Throwable expt) {
+				Safe.exception(expt);
+			};
         }
-
     }
 
     /** Listener class used to update the font of the preview label. */
     private class SelectionUpdater implements ChangeListener, ListSelectionListener {
 
         public void stateChanged(ChangeEvent e) {
-            if (!updatingComponents) {
-                setFont(buildFont());
-            }
+        	try {
+				
+				if (!updatingComponents) {
+	                setFont(buildFont());
+	            }
+			}
+			catch(Throwable expt) {
+				Safe.exception(expt);
+			};
         }
 
         public void valueChanged(ListSelectionEvent e) {
-            if (!updatingComponents) {
-                setFont(buildFont());
-            }
+        	try {
+				
+				if (!updatingComponents) {
+	                setFont(buildFont());
+	            }
+			}
+			catch(Throwable expt) {
+				Safe.exception(expt);
+			};
         }
     }
 
@@ -151,18 +169,24 @@ public class FontChooser extends JComponent {
      * @see java.awt.GraphicsEnvironment#isHeadless
      */
     public Font showDialog(Component component, Font textFont) {
-
-        FontTracker ok = new FontTracker(this);
-        JDialog dialog = createDialog(component,
-        		Resources.getString("org.multipage.gui.textSelectFont"), true, ok, null,
-        		textFont);
-        dialog.addWindowListener(new FontChooserDialog.Closer());
-        dialog.addComponentListener(new FontChooserDialog.DisposeOnClose());
-        dialog.setIconImage(Images.getImage("org/multipage/gui/images/font_icon.png"));
-
-        dialog.setVisible(true); // blocks until user brings dialog down...
-
-        return ok.getFont();
+    	
+    	try {
+	        FontTracker ok = new FontTracker(this);
+	        JDialog dialog = createDialog(component,
+	        		Resources.getString("org.multipage.gui.textSelectFont"), true, ok, null,
+	        		textFont);
+	        dialog.addWindowListener(new FontChooserDialog.Closer());
+	        dialog.addComponentListener(new FontChooserDialog.DisposeOnClose());
+	        dialog.setIconImage(Images.getImage("org/multipage/gui/images/font_icon.png"));
+	
+	        dialog.setVisible(true); // blocks until user brings dialog down...
+	
+	        return ok.getFont();
+	    }
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
     }
 
 
@@ -190,9 +214,15 @@ public class FontChooser extends JComponent {
     public JDialog createDialog(Component c, String title, boolean modal,
         ActionListener okListener, ActionListener cancelListener,
         Font textFont) {
-
-        return new FontChooserDialog(c, title, modal, this,
-                okListener, cancelListener, textFont);
+    	
+    	try {
+	        return new FontChooserDialog(c, title, modal, this,
+	                okListener, cancelListener, textFont);
+	    }
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
     }
 
     /**
@@ -219,112 +249,137 @@ public class FontChooser extends JComponent {
      * @param model the font selection model used by this component
      */
     public FontChooser(FontSelectionModel model) {
-        selectionModel = model;
-        init(model.getSelectedFont());
-        selectionModel.addChangeListener(labelUpdater);
+    	try {
+			
+			selectionModel = model;
+	        init(model.getSelectedFont());
+	        selectionModel.addChangeListener(labelUpdater);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
     }
 
     private void init(Font font) {
-        setLayout(new GridBagLayout());
-
-        Insets ins = new Insets(2, 2, 2, 2);
-
-        fontList = new JList(FONTS);
-        fontList.setVisibleRowCount(10);
-        fontList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        add(new JScrollPane(fontList), new GridBagConstraints(0, 0, 1, 1, 2, 2,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                ins, 0, 0));
-
-        sizeList = new JList(SIZES);
-        ((JLabel)sizeList.getCellRenderer()).setHorizontalAlignment(JLabel.RIGHT);
-        sizeList.setVisibleRowCount(10);
-        sizeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        add(new JScrollPane(sizeList), new GridBagConstraints(1, 0, 1, 1, 1, 2,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                ins, 0, 0));
-
-        boldCheckBox = new JCheckBox("Bold");
-        add(boldCheckBox, new GridBagConstraints(0, 1, 2, 1, 1, 0,
-                GridBagConstraints.WEST, GridBagConstraints.NONE,
-                ins, 0, 0));
-
-        italicCheckBox = new JCheckBox("Italic");
-        add(italicCheckBox, new GridBagConstraints(0, 2, 2, 1, 1, 0,
-                GridBagConstraints.WEST, GridBagConstraints.NONE,
-                ins, 0, 0));
-
-        previewLabel = new JLabel("");
-        previewLabel.setHorizontalAlignment(JLabel.CENTER);
-        previewLabel.setVerticalAlignment(JLabel.CENTER);
-        add(new JScrollPane(previewLabel), new GridBagConstraints(0, 3, 2, 1, 1, 1,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                ins, 0, 0));
-
-        setFont(font == null ? previewLabel.getFont() : font);
-
-        fontList.addListSelectionListener(selectionUpdater);
-        sizeList.addListSelectionListener(selectionUpdater);
-        boldCheckBox.addChangeListener(selectionUpdater);
-        italicCheckBox.addChangeListener(selectionUpdater);
+    	
+    	try {
+	        setLayout(new GridBagLayout());
+	
+	        Insets ins = new Insets(2, 2, 2, 2);
+	
+	        fontList = new JList(FONTS);
+	        fontList.setVisibleRowCount(10);
+	        fontList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+	        add(new JScrollPane(fontList), new GridBagConstraints(0, 0, 1, 1, 2, 2,
+	                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+	                ins, 0, 0));
+	
+	        sizeList = new JList(SIZES);
+	        ((JLabel)sizeList.getCellRenderer()).setHorizontalAlignment(JLabel.RIGHT);
+	        sizeList.setVisibleRowCount(10);
+	        sizeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+	        add(new JScrollPane(sizeList), new GridBagConstraints(1, 0, 1, 1, 1, 2,
+	                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+	                ins, 0, 0));
+	
+	        boldCheckBox = new JCheckBox("Bold");
+	        add(boldCheckBox, new GridBagConstraints(0, 1, 2, 1, 1, 0,
+	                GridBagConstraints.WEST, GridBagConstraints.NONE,
+	                ins, 0, 0));
+	
+	        italicCheckBox = new JCheckBox("Italic");
+	        add(italicCheckBox, new GridBagConstraints(0, 2, 2, 1, 1, 0,
+	                GridBagConstraints.WEST, GridBagConstraints.NONE,
+	                ins, 0, 0));
+	
+	        previewLabel = new JLabel("");
+	        previewLabel.setHorizontalAlignment(JLabel.CENTER);
+	        previewLabel.setVerticalAlignment(JLabel.CENTER);
+	        add(new JScrollPane(previewLabel), new GridBagConstraints(0, 3, 2, 1, 1, 1,
+	                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+	                ins, 0, 0));
+	
+	        setFont(font == null ? previewLabel.getFont() : font);
+	
+	        fontList.addListSelectionListener(selectionUpdater);
+	        sizeList.addListSelectionListener(selectionUpdater);
+	        boldCheckBox.addChangeListener(selectionUpdater);
+	        italicCheckBox.addChangeListener(selectionUpdater);
+	    }
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
     }
 
     private Font buildFont() {
-//        Font labelFont = previewLabel.getFont();
-
-        String fontName = (String)fontList.getSelectedValue();
-        if (fontName == null) {
-            return null;
-//            fontName = labelFont.getName();
-        }
-        Integer sizeInt = (Integer)sizeList.getSelectedValue();
-        if (sizeInt == null) {
-//            size = labelFont.getSize();
-            return null;
-        }
-
-        // create the font
-//        // first create the font attributes
-//        HashMap map = new HashMap();
-//        map.put(TextAttribute.BACKGROUND, Color.white);
-//        map.put(TextAttribute.FAMILY, fontName);
-//        map.put(TextAttribute.FOREGROUND, Color.black);
-//        map.put(TextAttribute.SIZE , new Float(size));
-//        map.put(TextAttribute.UNDERLINE, italicCheckBox.isSelected() ? TextAttribute.UNDERLINE_LOW_ONE_PIXEL : TextAttribute.UNDERLINE_LOW_TWO_PIXEL);
-//        map.put(TextAttribute.STRIKETHROUGH, italicCheckBox.isSelected() ? TextAttribute.STRIKETHROUGH_ON : Boolean.FALSE);
-//        map.put(TextAttribute.WEIGHT, boldCheckBox.isSelected() ? TextAttribute.WEIGHT_BOLD : TextAttribute.WEIGHT_REGULAR);
-//        map.put(TextAttribute.POSTURE,
-//                italicCheckBox.isSelected() ? TextAttribute.POSTURE_OBLIQUE : TextAttribute.POSTURE_REGULAR);
-//
-//        return new Font(map);
-
-        return new Font(fontName,
-                (italicCheckBox.isSelected() ? Font.ITALIC : Font.PLAIN)
-                | (boldCheckBox.isSelected() ? Font.BOLD : Font.PLAIN),
-                sizeInt);
+    	
+    	try {
+	//        Font labelFont = previewLabel.getFont();
+	
+	        String fontName = (String)fontList.getSelectedValue();
+	        if (fontName == null) {
+	            return null;
+	//            fontName = labelFont.getName();
+	        }
+	        Integer sizeInt = (Integer)sizeList.getSelectedValue();
+	        if (sizeInt == null) {
+	//            size = labelFont.getSize();
+	            return null;
+	        }
+	
+	        // create the font
+	//        // first create the font attributes
+	//        HashMap map = new HashMap();
+	//        map.put(TextAttribute.BACKGROUND, Color.white);
+	//        map.put(TextAttribute.FAMILY, fontName);
+	//        map.put(TextAttribute.FOREGROUND, Color.black);
+	//        map.put(TextAttribute.SIZE , new Float(size));
+	//        map.put(TextAttribute.UNDERLINE, italicCheckBox.isSelected() ? TextAttribute.UNDERLINE_LOW_ONE_PIXEL : TextAttribute.UNDERLINE_LOW_TWO_PIXEL);
+	//        map.put(TextAttribute.STRIKETHROUGH, italicCheckBox.isSelected() ? TextAttribute.STRIKETHROUGH_ON : Boolean.FALSE);
+	//        map.put(TextAttribute.WEIGHT, boldCheckBox.isSelected() ? TextAttribute.WEIGHT_BOLD : TextAttribute.WEIGHT_REGULAR);
+	//        map.put(TextAttribute.POSTURE,
+	//                italicCheckBox.isSelected() ? TextAttribute.POSTURE_OBLIQUE : TextAttribute.POSTURE_REGULAR);
+	//
+	//        return new Font(map);
+	
+	        return new Font(fontName,
+	                (italicCheckBox.isSelected() ? Font.ITALIC : Font.PLAIN)
+	                | (boldCheckBox.isSelected() ? Font.BOLD : Font.PLAIN),
+	                sizeInt);
+	    }
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
     }
 
     /** Updates the font in the preview component according to the selected values. */
     private void updateComponents() {
-        updatingComponents = true;
-
-        Font font = getFont();
-
-        fontList.setSelectedValue(font.getName(), true);
-        sizeList.setSelectedValue(font.getSize(), true);
-        boldCheckBox.setSelected(font.isBold());
-        italicCheckBox.setSelected(font.isItalic());
-
-        if (previewText == null) {
-            previewLabel.setText(font.getName());
-        }
-
-        // set the font and fire a property change
-        Font oldValue = previewLabel.getFont();
-        previewLabel.setFont(font);
-        firePropertyChange("font", oldValue, font);
-
-        updatingComponents = false;
+    	try {
+			
+			updatingComponents = true;
+	
+	        Font font = getFont();
+	
+	        fontList.setSelectedValue(font.getName(), true);
+	        sizeList.setSelectedValue(font.getSize(), true);
+	        boldCheckBox.setSelected(font.isBold());
+	        italicCheckBox.setSelected(font.isItalic());
+	
+	        if (previewText == null) {
+	            previewLabel.setText(font.getName());
+	        }
+	
+	        // set the font and fire a property change
+	        Font oldValue = previewLabel.getFont();
+	        previewLabel.setFont(font);
+	        firePropertyChange("font", oldValue, font);
+	
+	        updatingComponents = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
     }
 
     /**
@@ -343,11 +398,17 @@ public class FontChooser extends JComponent {
      * @param newModel   the new FontSelectionModel object
      */
     public void setSelectionModel(FontSelectionModel newModel ) {
-        FontSelectionModel oldModel = selectionModel;
-        selectionModel = newModel;
-        oldModel.removeChangeListener(labelUpdater);
-        newModel.addChangeListener(labelUpdater);
-        firePropertyChange("selectionModel", oldModel, newModel);
+    	try {
+			
+			FontSelectionModel oldModel = selectionModel;
+	        selectionModel = newModel;
+	        oldModel.removeChangeListener(labelUpdater);
+	        newModel.addChangeListener(labelUpdater);
+	        firePropertyChange("selectionModel", oldModel, newModel);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
     }
 
     /**
@@ -356,7 +417,14 @@ public class FontChooser extends JComponent {
      * @return the current font value of the font chooser
      */
     public Font getFont() {
-        return selectionModel.getSelectedFont();
+    	
+    	try {
+    		return selectionModel.getSelectedFont();
+    	}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
     }
 
     /**
@@ -366,7 +434,13 @@ public class FontChooser extends JComponent {
      * @see JComponent#addPropertyChangeListener
      */
     public void setFont(Font font) {
-        selectionModel.setSelectedFont(font);
+    	try {
+			
+			selectionModel.setSelectedFont(font);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
     }
 
     /** Returns the preview text displayed in the preview component.
@@ -380,11 +454,16 @@ public class FontChooser extends JComponent {
      * @param previewText the preview text, if null the font name will be displayed
      */
     public void setPreviewText(String previewText) {
-        this.previewText = previewText;
-        previewLabel.setText("");
-        updateComponents();
+    	try {
+			
+			this.previewText = previewText;
+	        previewLabel.setText("");
+	        updateComponents();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
     }
-
 }
 
 
@@ -407,130 +486,177 @@ class FontChooserDialog extends JDialog {
               ActionListener okListener, ActionListener cancelListener,
               Font textFont) {
         super(JOptionPane.getFrameForComponent(c), title, modal);
-
-        String okString = Resources.getString("textOk");
-        String cancelString = Resources.getString("textCancel");
-        String resetString = Resources.getString("textReset");
-
-        /*
-         * Create Lower button panel
-         */
-        JPanel buttonPane = new JPanel();
-        buttonPane.setLayout(new FlowLayout(FlowLayout.CENTER));
-        JButton okButton = new JButton(okString);
-        getRootPane().setDefaultButton(okButton);
-        okButton.setActionCommand("OK");
-        if (okListener != null) {
-            okButton.addActionListener(okListener);
-        }
-        okButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setVisible(false);
-            }
-        });
-        okButton.setPreferredSize(buttonDimension);
-        okButton.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-        okButton.setMargin(buttonMargin);
-        buttonPane.add(okButton);
-
-        JButton cancelButton = new JButton(cancelString);
-        cancelButton.setPreferredSize(buttonDimension);
-        cancelButton.setMargin(buttonMargin);
-        cancelButton.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
-
-        // The following few lines are used to register esc to close the dialog
-        Action cancelKeyAction = new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                // todo make it in 1.3
-//                ActionListener[] listeners
-//                        = ((AbstractButton) e.getSource()).getActionListeners();
-//                for (int i = 0; i < listeners.length; i++) {
-//                    listeners[i].actionPerformed(e);
-//                }
-            }
-        };
-        KeyStroke cancelKeyStroke = KeyStroke.getKeyStroke((char) KeyEvent.VK_ESCAPE);
-        InputMap inputMap = cancelButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-        ActionMap actionMap = cancelButton.getActionMap();
-        if (inputMap != null && actionMap != null) {
-            inputMap.put(cancelKeyStroke, "cancel");
-            actionMap.put("cancel", cancelKeyAction);
-        }
-        // end esc handling
-
-        cancelButton.setActionCommand("cancel");
-        if (cancelListener != null) {
-            cancelButton.addActionListener(cancelListener);
-        }
-        cancelButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setVisible(false);
-            }
-        });
-        buttonPane.add(cancelButton);
-
-        JButton resetButton = new JButton(resetString);
-        resetButton.setPreferredSize(buttonDimension);
-        resetButton.setMargin(buttonMargin);
-        resetButton.setIcon(Images.getIcon("org/multipage/gui/images/reset_icon.png"));
         
-        resetButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                reset();
-            }
-        });
-        int mnemonic = UIManager.getInt("ColorChooser.resetMnemonic");
-        if (mnemonic != -1) {
-            resetButton.setMnemonic(mnemonic);
-        }
-        buttonPane.add(resetButton);
-
-
-        // initialiase the content pane
-        this.chooserPane = chooserPane;
-
-        Container contentPane = getContentPane();
-        contentPane.setLayout(new BorderLayout());
-        contentPane.add(chooserPane, BorderLayout.CENTER);
-
-        contentPane.add(buttonPane, BorderLayout.SOUTH);
-
-        pack();
-        setLocationRelativeTo(c);
-        
-        setBounds(new Rectangle(0, 0, 350, 400));
-        setResizable(false);
-        
-        // Center dialog.
-        Utility.centerOnScreen(this);
-        // Set font.
-        chooserPane.setFont(textFont);
+        try {
+			
+			String okString = Resources.getString("textOk");
+	        String cancelString = Resources.getString("textCancel");
+	        String resetString = Resources.getString("textReset");
+	
+	        /*
+	         * Create Lower button panel
+	         */
+	        JPanel buttonPane = new JPanel();
+	        buttonPane.setLayout(new FlowLayout(FlowLayout.CENTER));
+	        JButton okButton = new JButton(okString);
+	        getRootPane().setDefaultButton(okButton);
+	        okButton.setActionCommand("OK");
+	        if (okListener != null) {
+	            okButton.addActionListener(okListener);
+	        }
+	        okButton.addActionListener(new ActionListener() {
+	            public void actionPerformed(ActionEvent e) {
+	            	try {
+						
+						setVisible(false);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+	            }
+	        });
+	        okButton.setPreferredSize(buttonDimension);
+	        okButton.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+	        okButton.setMargin(buttonMargin);
+	        buttonPane.add(okButton);
+	
+	        JButton cancelButton = new JButton(cancelString);
+	        cancelButton.setPreferredSize(buttonDimension);
+	        cancelButton.setMargin(buttonMargin);
+	        cancelButton.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+	
+	        // The following few lines are used to register esc to close the dialog
+	        Action cancelKeyAction = new AbstractAction() {
+	            public void actionPerformed(ActionEvent e) {
+	                // todo make it in 1.3
+	//                ActionListener[] listeners
+	//                        = ((AbstractButton) e.getSource()).getActionListeners();
+	//                for (int i = 0; i < listeners.length; i++) {
+	//                    listeners[i].actionPerformed(e);
+	//                }
+	            }
+	        };
+	        KeyStroke cancelKeyStroke = KeyStroke.getKeyStroke((char) KeyEvent.VK_ESCAPE);
+	        InputMap inputMap = cancelButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+	        ActionMap actionMap = cancelButton.getActionMap();
+	        if (inputMap != null && actionMap != null) {
+	            inputMap.put(cancelKeyStroke, "cancel");
+	            actionMap.put("cancel", cancelKeyAction);
+	        }
+	        // end esc handling
+	
+	        cancelButton.setActionCommand("cancel");
+	        if (cancelListener != null) {
+	            cancelButton.addActionListener(cancelListener);
+	        }
+	        cancelButton.addActionListener(new ActionListener() {
+	            public void actionPerformed(ActionEvent e) {
+	            	try {
+						
+						setVisible(false);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+	            }
+	        });
+	        buttonPane.add(cancelButton);
+	
+	        JButton resetButton = new JButton(resetString);
+	        resetButton.setPreferredSize(buttonDimension);
+	        resetButton.setMargin(buttonMargin);
+	        resetButton.setIcon(Images.getIcon("org/multipage/gui/images/reset_icon.png"));
+	        
+	        resetButton.addActionListener(new ActionListener() {
+	            public void actionPerformed(ActionEvent e) {
+	            	try {
+						
+						reset();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+	            }
+	        });
+	        int mnemonic = UIManager.getInt("ColorChooser.resetMnemonic");
+	        if (mnemonic != -1) {
+	            resetButton.setMnemonic(mnemonic);
+	        }
+	        buttonPane.add(resetButton);
+	
+	        // initialiase the content pane
+	        this.chooserPane = chooserPane;
+	
+	        Container contentPane = getContentPane();
+	        contentPane.setLayout(new BorderLayout());
+	        contentPane.add(chooserPane, BorderLayout.CENTER);
+	
+	        contentPane.add(buttonPane, BorderLayout.SOUTH);
+	
+	        pack();
+	        setLocationRelativeTo(c);
+	        
+	        setBounds(new Rectangle(0, 0, 350, 400));
+	        setResizable(false);
+	        
+	        // Center dialog.
+	        Utility.centerOnScreen(this);
+	        // Set font.
+	        chooserPane.setFont(textFont);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
     }
 
     public void setVisible(boolean visible) {
-        if (visible)
-            initialFont = chooserPane.getFont();
-        super.setVisible(visible);
+    	try {
+			
+			if (visible)
+	            initialFont = chooserPane.getFont();
+	        super.setVisible(visible);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
     }
 
     public void reset() {
-        chooserPane.setFont(initialFont);
+    	try {
+			
+			chooserPane.setFont(initialFont);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
     }
 
     static class Closer extends WindowAdapter implements Serializable {
         public void windowClosing(WindowEvent e) {
-            Window w = e.getWindow();
-            w.setVisible(false);
+        	try {
+				
+				Window w = e.getWindow();
+	            w.setVisible(false);
+			}
+			catch(Throwable expt) {
+				Safe.exception(expt);
+			};
         }
     }
 
     static class DisposeOnClose extends ComponentAdapter implements Serializable {
         public void componentHidden(ComponentEvent e) {
-            Window w = (Window) e.getComponent();
-            w.dispose();
+        	
+        	try {
+			
+        		Window w = (Window) e.getComponent();
+	            w.dispose();
+        	}
+        	catch(Throwable expt) {
+        		Safe.exception(expt);
+        	};
         }
     }
-
 }
 
 @SuppressWarnings("serial")
@@ -543,7 +669,13 @@ class FontTracker implements ActionListener, Serializable {
     }
 
     public void actionPerformed(ActionEvent e) {
-        color = chooser.getFont();
+    	try {
+			
+			color = chooser.getFont();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
     }
 
     public Font getFont() {
@@ -599,27 +731,51 @@ class DefaultFontSelectionModel implements FontSelectionModel {
     }
 
     public void setSelectedFont(Font selectedFont) {
-        if (selectedFont != null) {
-            this.selectedFont = selectedFont;
-            fireChangeListeners();
-        }
+    	try {
+			
+			if (selectedFont != null) {
+	            this.selectedFont = selectedFont;
+	            fireChangeListeners();
+	        }
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
     }
 
     public void addChangeListener(ChangeListener listener) {
-        listeners.add(ChangeListener.class, listener);
+    	try {
+			
+			listeners.add(ChangeListener.class, listener);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
     }
 
     public void removeChangeListener(ChangeListener listener) {
-        listeners.remove(ChangeListener.class, listener);
+    	try {
+			
+			listeners.remove(ChangeListener.class, listener);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
     }
 
     /** Fires the listeners registered with this model. */
     protected void fireChangeListeners() {
-        ChangeEvent ev = new ChangeEvent(this);
-        Object[] l = listeners.getListeners(ChangeListener.class);
-        for (Object listener : l) {
-            ((ChangeListener) listener).stateChanged(ev);
-        }
+    	try {
+			
+			ChangeEvent ev = new ChangeEvent(this);
+	        Object[] l = listeners.getListeners(ChangeListener.class);
+	        for (Object listener : l) {
+	            ((ChangeListener) listener).stateChanged(ev);
+	        }
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
     }
 }
 

@@ -1,16 +1,19 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import javax.swing.*;
+import javax.swing.JTextField;
+
+import org.multipage.util.Safe;
 
 /**
- * @author
+ * Extended text field with popup menu.
+ * @author vakol
  *
  */
 public class TextFieldEx extends JTextField {
@@ -29,10 +32,14 @@ public class TextFieldEx extends JTextField {
 	 * Constructor.
 	 */
 	public TextFieldEx() {
-		
-		popupMenu = new TextPopupMenu(this);
-		
-		setDragEnabled(true);
+		try {
+			
+			popupMenu = new TextPopupMenu(this);
+			setDragEnabled(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**

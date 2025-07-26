@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2023 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 08-08-2023
+ * Created on : 2023-08-08
  *
  */
 package org.multipage.gui;
@@ -13,6 +13,8 @@ import java.time.format.DateTimeFormatter;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SpringLayout;
+
+import org.multipage.util.Safe;
 
 /**
  * Panel with information about selected console.
@@ -44,8 +46,13 @@ public class ConsoleProperties extends JPanel {
 	 * Create the panel.
 	 */
 	public ConsoleProperties() {
-
-		initComponents();
+		
+		try {
+			initComponents();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -128,51 +135,61 @@ public class ConsoleProperties extends JPanel {
 	 * @param name
 	 */
 	public void displayProperties(LogConsole console) {
-		
-		// Display console name.
-		textConsoleName.setText(console.name);
-		
-		// Display input socket address.
-		String socketAddressText = null;
-		InetSocketAddress socketAddress = console.getSocketAddress();
-		if (socketAddress != null) {
-			socketAddressText = socketAddress.getHostString() + ":" + socketAddress.getPort();
+		try {
+			
+			// Display console name.
+			textConsoleName.setText(console.name);
+			
+			// Display input socket address.
+			String socketAddressText = null;
+			InetSocketAddress socketAddress = console.getSocketAddress();
+			if (socketAddress != null) {
+				socketAddressText = socketAddress.getHostString() + ":" + socketAddress.getPort();
+			}
+			else {
+				socketAddressText = "unknown";
+			}
+			textInputSocket.setText(socketAddressText);
+			
+			// Display timestamp spanning.
+			String timestampText = null;
+			if (console.minimumTimestamp != null) {
+				timestampText = console.minimumTimestamp.format(TIMESTAMP_SPANNING_FORMAT);
+			}
+			else {
+				timestampText = "unknown";
+			}
+			textMinimumTimestamp.setText(timestampText);
+			
+			timestampText = null;
+			if (console.maximumTimestamp != null) {
+				timestampText = console.maximumTimestamp.format(TIMESTAMP_SPANNING_FORMAT);
+			}
+			else {
+				timestampText = "unknown";
+			}
+			textMaximumTimestamp.setText(timestampText);
+			
+			// Display the number of logged records.
+			int recordsCount = console.getRecordsCount();
+			String recordsCountText = String.valueOf(recordsCount);
+			textMessageCount.setText(recordsCountText);
 		}
-		else {
-			socketAddressText = "unknown";
-		}
-		textInputSocket.setText(socketAddressText);
-		
-		// Display timestamp spanning.
-		String timestampText = null;
-		if (console.minimumTimestamp != null) {
-			timestampText = console.minimumTimestamp.format(TIMESTAMP_SPANNING_FORMAT);
-		}
-		else {
-			timestampText = "unknown";
-		}
-		textMinimumTimestamp.setText(timestampText);
-		
-		timestampText = null;
-		if (console.maximumTimestamp != null) {
-			timestampText = console.maximumTimestamp.format(TIMESTAMP_SPANNING_FORMAT);
-		}
-		else {
-			timestampText = "unknown";
-		}
-		textMaximumTimestamp.setText(timestampText);
-		
-		// Display the number of logged records.
-		int recordsCount = console.getRecordsCount();
-		String recordsCountText = String.valueOf(recordsCount);
-		textMessageCount.setText(recordsCountText);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 		
 	/**
 	 * Reset console components.
 	 */
 	public void resetComponents() {
-		
-		textConsoleName.setText("");
+		try {
+			
+			textConsoleName.setText("");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

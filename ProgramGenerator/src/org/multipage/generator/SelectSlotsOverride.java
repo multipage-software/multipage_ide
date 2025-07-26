@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -31,10 +31,11 @@ import org.multipage.gui.Images;
 import org.multipage.gui.ToolBarKit;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays slot override information.
+ * @author vakol
  *
  */
 public class SelectSlotsOverride extends JDialog {
@@ -82,40 +83,46 @@ public class SelectSlotsOverride extends JDialog {
 	public static boolean showDialog(Window parentWindow, List<Slot> allSlots,
 			List<Slot> clipboardSlots, List<Slot> slotsToDelete,
 			List<Slot> slotsToPaste) {
-
-		slotsToDelete.clear();
-		slotsToPaste.clear();
 		
-		// Get overridden slots.
-		List<Slot> overriddenSlots = new LinkedList<Slot>();
-		for (Slot slot : clipboardSlots) {
-			if (Slot.containsAlias(allSlots, slot.getAlias())) {
-				overriddenSlots.add(slot);
-			}
-			else {
-				slotsToPaste.add(slot);
-			}
-		}
-		
-		if (overriddenSlots.isEmpty()) {
-			return true;
-		}
-		
-		SelectSlotsOverride dialog = new SelectSlotsOverride(parentWindow);
-		dialog.setSlotList(overriddenSlots);
-		dialog.setVisible(true);
-		if (dialog.confirm) {
+		try {
+			slotsToDelete.clear();
+			slotsToPaste.clear();
 			
-			// Delete confirmed slots.
-			for (Slot slot : dialog.confirmedSlots) {
-				Slot originalSlot = Slot.getSlot(allSlots, slot.getAlias());
-				slotsToDelete.add(originalSlot);
+			// Get overridden slots.
+			List<Slot> overriddenSlots = new LinkedList<Slot>();
+			for (Slot slot : clipboardSlots) {
+				if (Slot.containsAlias(allSlots, slot.getAlias())) {
+					overriddenSlots.add(slot);
+				}
+				else {
+					slotsToPaste.add(slot);
+				}
 			}
-			// Paste deleted slots.
-			slotsToPaste.addAll(dialog.confirmedSlots);
+			
+			if (overriddenSlots.isEmpty()) {
+				return true;
+			}
+			
+			SelectSlotsOverride dialog = new SelectSlotsOverride(parentWindow);
+			dialog.setSlotList(overriddenSlots);
+			dialog.setVisible(true);
+			if (dialog.confirm) {
+				
+				// Delete confirmed slots.
+				for (Slot slot : dialog.confirmedSlots) {
+					Slot originalSlot = Slot.getSlot(allSlots, slot.getAlias());
+					slotsToDelete.add(originalSlot);
+				}
+				// Paste deleted slots.
+				slotsToPaste.addAll(dialog.confirmedSlots);
+			}
+			
+			return dialog.confirm;
 		}
-		
-		return dialog.confirm;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -124,12 +131,17 @@ public class SelectSlotsOverride extends JDialog {
 	 */
 	public SelectSlotsOverride(Window parentWindow) {
 		super(parentWindow, ModalityType.APPLICATION_MODAL);
-
-		// Initialize components.
-		initComponents();
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		
+		try {
+			// Initialize components.
+			initComponents();
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	private void initComponents() {
@@ -187,43 +199,63 @@ public class SelectSlotsOverride extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		Utility.centerOnScreen(this);
-		localize();
-		setIcons();
-		createToolBar();
-		setComboList();
+		try {
+			
+			Utility.centerOnScreen(this);
+			localize();
+			setIcons();
+			createToolBar();
+			setComboList();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(labelSelectSlots);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(labelSelectSlots);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Create toolbar.
 	 */
 	private void createToolBar() {
-		
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/select_all.png",
-				this, "selectAll", "org.multipage.generator.tooltipSelectAllSlots");
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/deselect_all.png",
-				this, "unselectAll", "org.multipage.generator.tooltipUnselectAllSlots");
+		try {
+			
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/select_all.png",
+					"org.multipage.generator.tooltipSelectAllSlots", () -> selectAll());
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/deselect_all.png",
+					"org.multipage.generator.tooltipUnselectAllSlots", () -> unselectAll());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_iconp.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_iconp.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_iconp.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_iconp.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -248,9 +280,14 @@ public class SelectSlotsOverride extends JDialog {
 	 * Set combo list.
 	 */
 	private void setComboList() {
-		
-		slotList = new CheckBoxList<Slot>();
-		scrollPane.setViewportView(slotList);
+		try {
+			
+			slotList = new CheckBoxList<Slot>();
+			scrollPane.setViewportView(slotList);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -258,51 +295,78 @@ public class SelectSlotsOverride extends JDialog {
 	 * @param overrideSlots
 	 */
 	private void setSlotList(List<Slot> overrideSlots) {
-		
-		confirmedSlots = new HashSet<Slot>();
-		slotList.setContentManager(new CheckBoxListManager<Slot>() {
-			// Load item.
-			@Override
-			protected boolean loadItem(int index, Obj<Slot> object,
-					Obj<String> text, Obj<Boolean> selected) {
-				
-				if (index >= overrideSlots.size()) {
+		try {
+			
+			confirmedSlots = new HashSet<Slot>();
+			slotList.setContentManager(new CheckBoxListManager<Slot>() {
+				// Load item.
+				@Override
+				protected boolean loadItem(int index, Obj<Slot> object,
+						Obj<String> text, Obj<Boolean> selected) {
+					
+					try {
+						if (index >= overrideSlots.size()) {
+							return false;
+						}
+						Slot slot = overrideSlots.get(index);
+						object.ref = slot;
+						text.ref = slot.getAlias();
+						selected.ref = false;
+						return true;
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
 					return false;
 				}
-				Slot slot = overrideSlots.get(index);
-				object.ref = slot;
-				text.ref = slot.getAlias();
-				selected.ref = false;
-				return true;
-			}
-			// Process change.
-			@Override
-			protected boolean processChange(Slot slot, boolean selected) {
-				
-				if (selected) {
-					confirmedSlots.add(slot);
+				// Process change.
+				@Override
+				protected boolean processChange(Slot slot, boolean selected) {
+					
+					try {
+						if (selected) {
+							confirmedSlots.add(slot);
+						}
+						else {
+							confirmedSlots.remove(slot);
+						}
+						return true;
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return false;
 				}
-				else {
-					confirmedSlots.remove(slot);
-				}
-				return true;
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Select all items.
 	 */
 	public void selectAll() {
-		
-		slotList.selectAll(true);
+		try {
+			
+			slotList.selectAll(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Unselect all items.
 	 */
 	public void unselectAll() {
-		
-		slotList.selectAll(false);
+		try {
+			
+			slotList.selectAll(false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

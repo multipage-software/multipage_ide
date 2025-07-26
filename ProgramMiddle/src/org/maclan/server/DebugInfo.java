@@ -1,22 +1,19 @@
 /**
- * Copyright 2010-2024 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 01-05-2024
+ * Created on : 2024-05-01
  *
  */
 package org.maclan.server;
 
-import java.awt.Color;
-
+import org.multipage.gui.PacketChannel;
 import org.multipage.gui.Utility;
 import org.multipage.util.Lock;
 import org.multipage.util.Obj;
 import org.multipage.util.RepeatedTask;
-import org.multipage.util.Resources;
-import org.multipage.util.j;
 
 /**
- * Debug information .
+ * Debugger related information.
  * @author vakol
  */
 public class DebugInfo {
@@ -59,7 +56,17 @@ public class DebugInfo {
 	/**
 	 * Xdebug opration.
 	 */
-	private XdebugOperation debugOperation = XdebugOperation.no_operation;
+	private XdebugOperation debugOperation = XdebugOperation.skip;
+	
+	/**
+	 * Flag is true if debugger can debug current Area Server state.
+	 */
+	private boolean canDebug = false;
+	
+	/**
+	 * Flag is true if debugger has debugged current Area Server state.
+	 */
+	private boolean debugged = false;
 
 	/**
 	 * Get tag information.
@@ -167,7 +174,8 @@ public class DebugInfo {
 			throws Exception {
 		
 		// Check if the server is debugged.
-		if (!server.isDebugged()) {
+		boolean success = server.isDebuggerEnabled();
+		if (!success) {
 			return null;
 		}
 		
@@ -188,11 +196,39 @@ public class DebugInfo {
 	}
 	
 	/**
+	 * Set debug information about Xdebug client.
+	 * @param server
+	 * @param debugClient
+	 */
+	public static void setBreakDebugInfo(AreaServer server, XdebugClient debugClient) {
+		
+		// Check if the server is debugged.
+		boolean success = server.isDebuggerEnabled();
+		if (!success) {
+			return;
+		}
+		
+		// Check if debug information exists. If not, create a new one.
+		DebugInfo debugInfo = server.state.getDebugInfo();
+		if (debugInfo == null) {
+			debugInfo = new DebugInfo();
+			server.state.setDebugInfo(debugInfo);
+		}
+		
+		// Set debug client reference.
+		debugInfo.setDebugClient(debugClient);
+		
+		// Set initial operation and "can isit" flag.
+		debugInfo.debugOperation = XdebugOperation.step_into;
+		debugInfo.setCanDebug(true);
+	}
+	
+	/**
 	 * Set information for Xdebug.
 	 * @param server
-	 * @param source 
+	 * @param sourceInfo 
 	 */
-	public static void setDebugInfo(AreaServer server, TagsSource source) {
+	public static void setDebugInfo(AreaServer server, DebugSourceInfo sourceInfo) {
 		
 		// Create debug information.
 		DebugInfo debugInfo = server.state.getDebugInfo();
@@ -202,17 +238,7 @@ public class DebugInfo {
 		}
 		
 		// Create information about source of the code.
-		DebugSourceInfo sourceInfo = debugInfo.getSourceInfo();
-		if (sourceInfo == null) {
-			sourceInfo = new DebugSourceInfo();
-			debugInfo.setSourceInfo(sourceInfo);
-		}
-		
-		Long sourceResourceId = source.resourceId;
-		Long sourceSlotId = source.slotId;
-		
-		sourceInfo.setSourceResourceId(sourceResourceId);
-		sourceInfo.setSourceSlotId(sourceSlotId);
+		debugInfo.setSourceInfo(sourceInfo);
 		
 		// Create information about process and thread.
 		DebugThreadInfo threadinfo = debugInfo.getThreadInfo();
@@ -242,13 +268,13 @@ public class DebugInfo {
 	 * @param cmdBegin
 	 * @param cmdEnd
 	 * @param innerText
-	 * @param replace
 	 */
 	public static void setDebugInfo(AreaServer server, String tagName, TagProperties properties, int cmdBegin, int cmdEnd,
-			String innerText, String replace) {
+			String innerText) {
 
 		// Check if the server is debugged.
-		if (!server.isDebugged()) {
+		boolean success = server.isDebuggerEnabled();
+		if (!success) {
 			return;
 		}
 		
@@ -269,30 +295,23 @@ public class DebugInfo {
 		tagInfo.setCmdBegin(cmdBegin);
 		tagInfo.setCmdEnd(cmdEnd);
 		tagInfo.setInnerText(innerText);
-		tagInfo.setReplacement(replace);
 	}
 	
 	/**
-	 * Set debug information about Xdebug client.
+	 * Set final debugger information after all Area Server tags have been processed.
 	 * @param server
-	 * @param debugClient
 	 */
-	public static void setDebugInfo(AreaServer server, XdebugClient debugClient) {
+	public static void setFinalDebugInfo(AreaServer server) {
 		
-		// Check if the server is debugged.
-		if (!server.isDebugged()) {
-			return;
-		}
+		String innerText = server.state.text.toString();
+		int cmdEnd = innerText.length();
+		TagProperties properties = new TagProperties();
 		
-		// Check if debug information exists. If not, create a new one.
-		DebugInfo debugInfo = server.state.getDebugInfo();
-		if (debugInfo == null) {
-			debugInfo = new DebugInfo();
-			server.state.setDebugInfo(debugInfo);
-		}
+		// Delegate the call.
+		setDebugInfo(server, "", properties, cmdEnd, cmdEnd, innerText);
 		
-		// Set debug client reference.
-		debugInfo.setDebugClient(debugClient);
+		// Set the "can visit" flag to true.
+		server.setDebuggerCanVisit(true);
 	}
 	
 	/**
@@ -302,13 +321,19 @@ public class DebugInfo {
 			throws Exception {
 		
 		// Check if the server is debugged.
-		if (!server.isDebugged()) {
+		boolean success = server.isDebuggerEnabled();
+		if (!success) {
 			return;
 		}
 		
 		AreaServerState state = server.state;
 		DebugInfo debugInfo = state.debugInfo;
 		if (debugInfo == null) {
+			return;
+		}
+		
+		boolean canVisit = debugInfo.canDebug();
+		if (!canVisit) {
 			return;
 		}
 		
@@ -328,7 +353,6 @@ public class DebugInfo {
 		debugClient.setAcceptCommands(command -> {
 			
 			try {
-				
 				// Process incoming Xdebug commands with Xdebug client. Return result packet.
 				XdebugClientResponse resultPacket = debugClient.xdebugClient(server, command);
 				return resultPacket;
@@ -352,26 +376,37 @@ public class DebugInfo {
 		long threadId = Thread.currentThread().getId();
 		String threadIdText = String.valueOf(threadId);
 		
-		// Wait for server ready.
-		RepeatedTask.loopBlocking("WaitDebuggerReady" + threadIdText, 0L, 200L, (isRunning, exception) -> {
+		// Set timeouts.
+		long startDelayMs = 0L;
+		long idleTimeMs = 200L;
+		long timeoutMs = 3000L;
+		
+		// Wait for initialized server. Send "break point resolved" notification.
+		RepeatedTask.loopBlocking("WaitDebuggerReady" + threadIdText, startDelayMs, idleTimeMs, timeoutMs, (isRunning, exception) -> {
 			
+			// If server is not ready, continue loop.
 			boolean serverReady = debugClient.isServerReady();
-			if (serverReady) {
-				
-				// Send notification about resolving the breakpoint.
-				try {
-					debugClient.notifyBreakpointResolved();
-				}
-				catch (Exception e) {
-					e.printStackTrace();
-				}
-				return false;
+			if (!serverReady) {
+				return true;
 			}
-			return true;
+				
+			// Send notification about resolving the breakpoint.
+			try {
+				debugClient.notifyBreakpointResolved();
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
+			return false;
 		});
 		
+		// Set timeouts.
+		startDelayMs = 0L;
+		idleTimeMs = 1L;
+		timeoutMs = -1L;
+
 		// Wait for the continuation command.
-		RepeatedTask.loopBlocking("DebuggerLock" + threadIdText, 0L, 0L, (isRunning, exception) -> {
+		RepeatedTask.loopBlocking("DebuggerLock" + threadIdText, startDelayMs, idleTimeMs, timeoutMs, (isRunning, exception) -> {
 			
 			if (!isRunning || exitDebugger) {
 				return false;
@@ -380,15 +415,69 @@ public class DebugInfo {
 			if (isTimeout) {
 				return true;
 			}
+			
 			return false;
 		});
 		
-		// On debugger stop command throw stop Area Server exception.
-		XdebugOperation debugOperation = debugInfo.debugOperation;
-		
-		if (XdebugOperation.stop.equals(debugOperation)) {
-			throwError2("org.maclan.server.messageDebuggerStoppedAreaServer");
+		// On stop command, throw Area Server exception.
+		XdebugOperation operation = debugInfo.getDebugOperation();
+		if (XdebugOperation.stop.equals(operation)) {
+			
+			AreaServer.throwError("org.maclan.server.messageDebuggerStopOperation");
 		}
+	}
+	
+	/**
+	 * Final debug operation.
+	 * @param server
+	 * @throws Exception 
+	 */
+	public static void finalDebugPoint(AreaServer server)
+			throws Exception {
+		
+		// Check if the server is debugged.
+		boolean success = server.isDebuggerEnabled();
+		if (!success) {
+			return;
+		}
+		
+		AreaServerState state = server.state;
+		DebugInfo debugInfo = state.debugInfo;
+		if (debugInfo == null) {
+			return;
+		}
+		
+		XdebugClient debugClient = debugInfo.debugClient;
+		if (debugClient == null) {
+			return;
+		}
+		
+		boolean isConnected = debugClient.isConnected();
+		if (!isConnected) {
+			return;
+		}
+		
+		// Get current thread ID.
+		long threadId = Thread.currentThread().getId();
+		String threadIdText = String.valueOf(threadId);
+		
+		// Set timeouts.
+		long startDelayMs = 0L;
+		long idleTimeMs = 200L;
+		long timeoutMs = 30000L;
+		
+		// Wait for server final operations.
+		debugClient.notifyFinalDebugInfo(server);
+
+		RepeatedTask.loopBlocking("WaitDebuggerFinished" + threadIdText, startDelayMs, idleTimeMs, timeoutMs, (isRunning, exception) -> {
+			
+			boolean serverFinished = debugClient.isServerFinished();
+			if (serverFinished) {
+				
+				return false;
+			}
+			return true;
+		});
 	}
 
 	/**
@@ -411,27 +500,62 @@ public class DebugInfo {
 	public static void setExitDebugger(boolean exit) {
 		
 		exitDebugger = exit;
+		PacketChannel.setExitFlag();
 	}
 	
 	/**
-	 * Throw error message.
-	 * @param textId
+	 * Clone debug information.
+	 * @return
 	 */
-	private static void throwError(String textId, Object ... parameters)
-			throws Exception {
+	public DebugInfo cloneDebugInfo() {
 		
-		String text = Resources.getString(textId);
-		throw new Exception(String.format(text, parameters));
+		DebugInfo clonedDebugInfo = new DebugInfo();
+		
+		// Clone debug info parts.
+		clonedDebugInfo.tagInfo = tagInfo.cloneTagInfo();
+		clonedDebugInfo.sourceInfo = sourceInfo.cloneSourceInfo();
+		clonedDebugInfo.threadInfo = threadInfo.cloneThreadInfo();
+		
+		// Set debugger client connection.
+		clonedDebugInfo.debugClient = debugClient;
+		
+		// Set the debugger operation.
+		clonedDebugInfo.debugOperation = debugOperation;
+		
+		// Set if debgger can visit sub level.
+		boolean canVisitSubLevel = debugOperation.canStepSubLevel();
+		clonedDebugInfo.setCanDebug(canVisitSubLevel);
+				 
+		return clonedDebugInfo;
 	}
 	
 	/**
-	 * Throw error text.
-	 * @param text
+	 * Propagate debug information from sub info.
+	 * @param debugSubInfo
 	 */
-	private static void throwError2(String text, Object ... parameters)
-			throws Exception {
-
-		throw new Exception(String.format(text, parameters));
+	public void progateFromSubInfo(DebugInfo debugSubInfo) {
+		
+		// Copy debug client and debug operation.
+		debugClient = debugSubInfo.debugClient;
+		debugOperation = debugSubInfo.debugOperation;
+		
+		// Set if debugger can visit super level.
+		boolean wasDebugged = wasDebugged();
+		if (XdebugOperation.step_over.equals(debugOperation)) {
+			
+			setCanDebug(wasDebugged);
+			return;
+		}
+		
+		wasDebugged = wasDebugged();
+		if (XdebugOperation.step_out.equals(debugOperation)) {
+			
+			debugSubInfo.setCanDebug(wasDebugged);
+			return;
+		}
+		
+		boolean canVisitSuperLevel = debugSubInfo.debugOperation.canStepSuperLevel();
+		setCanDebug(canVisitSuperLevel);
 	}
 	
 	/**
@@ -543,7 +667,7 @@ public class DebugInfo {
 		if (sourceInfo == null) {
 			return -1L;
 		}
-		long resourceId = sourceInfo.getSourceResourceId();
+		long resourceId = sourceInfo.getResourceId();
 		return resourceId;
 	}
 	
@@ -556,7 +680,7 @@ public class DebugInfo {
 		if (sourceInfo == null) {
 			return;
 		}
-		sourceInfo.setSourceResourceId(resourceId);
+		sourceInfo.setResourceId(resourceId);
 	}
 	
 	/**
@@ -568,7 +692,7 @@ public class DebugInfo {
 		if (sourceInfo == null) {
 			return -1L;
 		}
-		Long slotId = sourceInfo.getSourceSlotId();
+		Long slotId = sourceInfo.getSlotId();
 		return slotId;
 	}
 	
@@ -581,7 +705,7 @@ public class DebugInfo {
 		if (sourceInfo == null) {
 			return;
 		}
-		sourceInfo.setSourceSlotId(slotId);
+		sourceInfo.setSlotId(slotId);
 	}
 	
 	/**
@@ -632,5 +756,41 @@ public class DebugInfo {
 			return;
 		}
 		tagInfo.setCmdEnd(cmdEnd);
+	}
+	
+	/**
+	 * Get flag that indicates whether debugger can debug current Area Server state
+	 * @return
+	 */
+	public boolean canDebug() {
+		
+		return canDebug;
+	}
+	
+	/**
+	 * Set flag that indicates whether debugger can debug current Area Server state.
+	 * @param canDebug
+	 */
+	public void setCanDebug(boolean canDebug) {
+		
+		this.canDebug = canDebug;
+	}
+	
+	/**
+	 * Get flag that indicates whether current Area Server state was debugged.
+	 * @return
+	 */
+	public boolean wasDebugged() {
+		
+		return debugged;
+	}
+
+	/**
+	 * Set flag that indicates whether current Area Server state was debugged.
+	 * @param debugged
+	 */
+	public void setDebugged(boolean debugged) {
+		
+		this.debugged = debugged;
 	}
 }

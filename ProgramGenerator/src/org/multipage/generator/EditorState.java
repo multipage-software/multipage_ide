@@ -1,8 +1,16 @@
+/*
+ * Copyright 2010-2025 (C) vakol
+ * 
+ * Created on : 2017-04-26
+ *
+ */
 package org.multipage.generator;
 
+import org.multipage.util.Safe;
+
 /**
- * 
- * @author user
+ * List of editor states.
+ * @author vakol
  *
  */
 public enum EditorState {
@@ -30,8 +38,13 @@ public enum EditorState {
 	 * @param cssRule
 	 */
 	EditorState(String cssRule) {
-		
-		cssRule = cssRule.replaceAll("@debugColor@", debugColor);
-		this.cssRule = cssRule.replaceAll("@linenoColor@", linenoColor);
+		try {
+			
+			cssRule = cssRule.replaceAll("@debugColor@", debugColor);
+			this.cssRule = cssRule.replaceAll("@linenoColor@", linenoColor);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 }

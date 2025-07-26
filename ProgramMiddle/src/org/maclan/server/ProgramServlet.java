@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2024 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -36,7 +36,8 @@ import php.java.servlet.ServletUtil;
 import php.java.servlet.fastcgi.FastCGIServlet;
 
 /**
- * @author
+ * Servlet implementation.
+ * @author vakol
  *
  */
 public class ProgramServlet extends FastCGIServlet {
@@ -47,7 +48,7 @@ public class ProgramServlet extends FastCGIServlet {
 	private static final long serialVersionUID = 1L;
 	
 	/**
-	 * URL parameter for displaying home area
+	 * URL parameter for displaying home area.
 	 */
 	public static final String displayHomeArea = "a";
 	
@@ -59,7 +60,7 @@ public class ProgramServlet extends FastCGIServlet {
 	/**
 	 * Login parameters.
 	 */
-	static Properties login;
+	private static Properties login;
 	
 	/**
 	 * Set login.
@@ -107,7 +108,7 @@ public class ProgramServlet extends FastCGIServlet {
 
 	
 	/**
-	 * Sets listener that determines if the servlet has to interpret PHP
+	 * Sets listener that determines if the servlet has to interpret PHP.
 	 * @param listener
 	 */
 	public static void setInterpretPhpListener(CallbackNoArg listener) {
@@ -116,7 +117,7 @@ public class ProgramServlet extends FastCGIServlet {
 	}
 	
 	/**
-	 * Sets listener that determines if the servlet is used for developing web application
+	 * Sets listener that determines if the servlet is used for developing web application.
 	 * @param listener
 	 */
 	public static void setDevelopingWebAppListener(CallbackNoArg listener) {
@@ -125,7 +126,7 @@ public class ProgramServlet extends FastCGIServlet {
 	}
 	
 	/**
-	 * Sets listener that determines if the servlet is used for running web application
+	 * Sets listener that determines if the servlet is used for running web application.
 	 * @param listener
 	 */
 	public static void setRunningWebAppListener(CallbackNoArg listener) {
@@ -166,7 +167,7 @@ public class ProgramServlet extends FastCGIServlet {
 	}
 	
 	/**
-	 * Returns true value if the PHP should be interpreted
+	 * Returns true value if the PHP should be interpreted.
 	 */
 	public static boolean interpretPhp() {
 		
@@ -200,7 +201,7 @@ public class ProgramServlet extends FastCGIServlet {
 	}
 	
 	/**
-	 * Create listening script data socket
+	 * Create listening script data socket.
 	 * @param port
 	 */
 	public static void createScriptDataSocket(int port) {
@@ -417,7 +418,7 @@ public class ProgramServlet extends FastCGIServlet {
 						
 						// Initialize debugging.
 						boolean isDebugged = isDebuggingEnabled();
-						areaServer.setDebugged(isDebugged);
+						areaServer.setDebuggerEnabled(isDebugged);
 						
 						// Set listener.
 						areaServer.setListener(new AreaServerListener() {
@@ -695,7 +696,10 @@ public class ProgramServlet extends FastCGIServlet {
 				pageError += error;
 				
 				if (!pageError.isEmpty()) {
-					_response.getOutputStream().write(String.format("<html><body><span style=\"color: red\">%s</span></body></html>", pageError).getBytes("UTF-8"));
+					_response.getOutputStream().write(
+								String.format("<html><body><span style=\"color: red\">%s</span></body></html>", pageError)
+								.getBytes("UTF-8")
+							);
 				}
 			}
 			

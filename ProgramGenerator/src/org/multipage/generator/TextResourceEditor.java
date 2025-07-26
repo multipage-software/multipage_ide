@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -22,7 +22,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.Properties;
 
 import javax.swing.JButton;
@@ -32,8 +31,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SpringLayout;
 
+import org.maclan.Area;
 import org.maclan.Middle;
 import org.maclan.MiddleResult;
+import org.maclan.VersionObj;
 import org.maclan.help.HelpUtility;
 import org.maclan.help.Intellisense;
 import org.multipage.basic.ProgramBasic;
@@ -42,13 +43,15 @@ import org.multipage.gui.Images;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.TextEditorPane;
+import org.multipage.gui.TopMostButton;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Text resource editor.
+ * @author vakol
  *
  */
 public class TextResourceEditor extends JFrame {
@@ -70,33 +73,38 @@ public class TextResourceEditor extends JFrame {
 	private static Font fontState;
 	
 	/**
-	 * Created editors.
-	 */
-	private static LinkedList<TextResourceEditor> createdTextEditors = new LinkedList<TextResourceEditor>();
-	
-	/**
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			// Center the dialog.
-			Utility.centerOnScreen(this);
+		try {
+			
+			if (bounds.isEmpty()) {
+				// Center the dialog.
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setBounds(bounds);
+			}
+			
+			editor.setTextFont(fontState);
 		}
-		else {
-			setBounds(bounds);
-		}
-		
-		editor.setTextFont(fontState);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
-		fontState = editor.getTextFont();
+		try {
+			
+			bounds = getBounds();
+			fontState = editor.getTextFont();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -134,7 +142,22 @@ public class TextResourceEditor extends JFrame {
 	 * Resource ID.
 	 */
 	private long resourceId;
-
+	
+	/**
+	 * Flag that is true if it is a start resource.
+	 */
+	private boolean isStartResource = false;
+	
+	/**
+	 * Version ID.
+	 */
+	private long versionId = 0L;
+	
+	/**
+	 * Resource area description.
+	 */
+	private String areaDescription = "";
+	
 	/**
 	 * Safe text.
 	 */
@@ -158,113 +181,130 @@ public class TextResourceEditor extends JFrame {
 	private JButton buttonSave;
 	private JPanel editorPanel;
 	private JButton buttonSaveAndClose;
-
+	
 	/**
-	 * Dispose not visible editors.
+	 * Launch the dialog.
+	 * @param component
+	 * @param resource 
+	 * @param isSavedAsText
+	 * @param modal
 	 */
-	private static void disposeNotVisibleEditors() {
-		
-		LinkedList<TextResourceEditor> editorsToRemove = new LinkedList<TextResourceEditor>();
-		
-		// Do loop for all created slot editors.
-		for (TextResourceEditor slotEditor : createdTextEditors) {
+	public static void showDialog(Component component, long resource,
+			boolean isSavedAsText, boolean modal) {
+		try {
 			
-			if (!slotEditor.isVisible()) {
-				
-				slotEditor.dispose();
-				editorsToRemove.add(slotEditor);
-			}
+			showDialog(component, resource, "", isSavedAsText, null, false, 0L, modal);
 		}
-		
-		// Remove editors from list.
-		createdTextEditors.removeAll(editorsToRemove);
-	}
-
-	/**
-	 * Show existing dialog.
-	 * @param resourceId
-	 * @return
-	 */
-	private static boolean showExisting(long resourceId) {
-		
-		// Dispose not visible editors.
-		disposeNotVisibleEditors();
-		
-		// Do loop for all created editors.
-		for (TextResourceEditor textEditor : createdTextEditors) {
-						
-			if (textEditor.resourceId == resourceId) {
-				
-				textEditor.setVisible(true);
-				textEditor.setExtendedState(NORMAL);
-				textEditor.toFront();
-				
-				return true;
-			}
-		}
-		
-		return false;
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Launch the dialog.
+	 * @param component
 	 * @param resource 
+	 * @param isSavedAsText
+	 * @param area
+	 * @param isStartResource
+	 * @param versionId
+	 * @param modal
 	 */
 	public static void showDialog(Component component, long resource,
-			boolean isSavedAsText, boolean modal) {
-		
-		showDialog(component, resource, "", isSavedAsText, null, modal);
+			boolean isSavedAsText, Area area, boolean isStartResource, long versionId,
+			boolean modal) {
+		try {
+			
+			String areaDescription = "";
+			if (area != null) {
+				areaDescription = area.getDescription();
+			}
+			showDialog(component, resource, areaDescription, isSavedAsText, null,
+					isStartResource, versionId, modal);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Launch dialog.
 	 * @param component
 	 * @param resourceId
+	 * @param areaDescription
 	 * @param isSavedAsText
 	 * @param foundAttributes
+	 * @param isStartResource
+	 * @param versionId
 	 * @param modal
 	 */
 	public static void showDialog(Component component, long resourceId, String areaDescription,
-			boolean isSavedAsText, FoundAttr foundAttributes, boolean modal) {
+			boolean isSavedAsText, FoundAttr foundAttributes, boolean isStartResource,
+			long versionId, boolean modal) {
 		
-		if (showExisting(resourceId)) {
-			return;
+		try {
+			
+			// Get already opened editor.
+			TextResourceEditor dialog = null;
+			if (isStartResource) {
+				dialog = DialogNavigator.getStartResourceEditor(resourceId, versionId);
+			}
+			else {
+				dialog = DialogNavigator.getResourceEditor(resourceId);
+			}
+			
+			if (dialog == null) {
+				Window parentWindow = Utility.findWindow(component);
+		
+				// If the resource is not set as text, inform user and exit
+				// the method.
+				if (!isSavedAsText) {
+					Utility.show(parentWindow, "org.multipage.generator.messageResourceNotSavedAsText");
+					return;
+				}
+				
+				// Create new dialog
+				dialog = new TextResourceEditor(null, resourceId, isStartResource, versionId,
+												areaDescription, modal);
+				if (isStartResource) {
+					DialogNavigator.addStartResourceEditor(versionId, dialog);
+				}
+				else {
+					DialogNavigator.addResourceEditor(dialog);
+				}
+			}
+			
+			dialog.setFoundAttributes(foundAttributes);
+			dialog.setVisible(true);
 		}
-		
-		Window parentWindow = Utility.findWindow(component);
-
-		// If the resource is not set as text, inform user and exit
-		// the method.
-		if (!isSavedAsText) {
-			Utility.show(parentWindow, "org.multipage.generator.messageResourceNotSavedAsText");
-			return;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		TextResourceEditor dialog = new TextResourceEditor(null,
-				resourceId, areaDescription, modal);
-		dialog.setFoundAttributes(foundAttributes);
-		
-		dialog.setVisible(true);
 	}
 
 	/**
 	 * Create the dialog.
-	 * @param resource 
-	 * @param parentWindow 
+	 * @param parentWindow
+	 * @param resourceId
+	 * @param isStartResource
+	 * @param versionId
 	 * @param areaDescription 
 	 * @param modal 
 	 */
-	public TextResourceEditor(Window parentWindow, long resourceId,
-			String areaDescription, boolean modal) {
+	public TextResourceEditor(Window parentWindow, long resourceId, boolean isStartResource,
+			long versionId, String areaDescription, boolean modal) {
 		
-		createdTextEditors.add(this);
-		
-		// Initialize components.
-		initComponents();
-		// $hide>>$
-		// Post creation.
-		postCreate(resourceId, areaDescription);
-		// $hide<<$
+		try {
+			// Initialize components.
+			initComponents();
+			// $hide>>$
+			// Post creation.
+			postCreate(resourceId, isStartResource, versionId, areaDescription);
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -312,7 +352,7 @@ public class TextResourceEditor extends JFrame {
 		getContentPane().add(buttonSave);
 		
 		editorPanel = new JPanel();
-		springLayout.putConstraint(SpringLayout.NORTH, editorPanel, 0, SpringLayout.NORTH, getContentPane());
+		springLayout.putConstraint(SpringLayout.NORTH, editorPanel, 26, SpringLayout.NORTH, getContentPane());
 		springLayout.putConstraint(SpringLayout.WEST, editorPanel, 0, SpringLayout.WEST, getContentPane());
 		springLayout.putConstraint(SpringLayout.SOUTH, editorPanel, -6, SpringLayout.NORTH, buttonClose);
 		springLayout.putConstraint(SpringLayout.EAST, editorPanel, 0, SpringLayout.EAST, getContentPane());
@@ -332,160 +372,271 @@ public class TextResourceEditor extends JFrame {
 		springLayout.putConstraint(SpringLayout.EAST, buttonSaveAndClose, -6, SpringLayout.WEST, buttonClose);
 		getContentPane().add(buttonSaveAndClose);
 	}
-
+	
+	/**
+	 * Get resource ID.
+	 * @return
+	 */
+	public long getResourceId() {
+		
+		return resourceId;
+	}
+	
+	/**
+	 * Get version ID.
+	 * @return
+	 */
+	public long getVersionId() {
+		
+		return versionId;
+	}
+	
+	/**
+	 * Get area description.
+	 * @return
+	 */
+	public String getAreaDescription() {
+		
+		if (areaDescription == null) {
+			return "";
+		}
+		return areaDescription;
+	}
+	
 	/**
 	 * On close.
 	 */
 	protected void onClose() {
-		
-		close();
+		try {
+			
+			close();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Close dialog.
 	 */
 	private void close() {
-		
-		// Process possible new content.
-		processNewContent();
-		// Save dialog data.
-		saveDialog();
+		try {
+			// Remove editor from the navigator window.
+			if (isStartResource) {
+				DialogNavigator.removeStartResourceEditor(resourceId, versionId);
+			}
+			else {
+				DialogNavigator.removeResourceEditor(resourceId);
+			}
+			// Process possible new content.
+			processNewContent();
+			// Save dialog data.
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		// Dispose window.
 		dispose();
-		
-		createdTextEditors.remove(this);
 	}
 
 	/**
 	 * Post creation.
+	 * @param resourceId
+	 * @param isStartResource
+	 * @param versionId
 	 * @param areaDescription 
-	 * @param resource 
 	 */
-	private void postCreate(long resourceId, String areaDescription) {
-		
-		this.resourceId = resourceId;
-		// Create editor.
-		createEditor();
-		// Localize.
-		localize();
-		// Set icons.
-		setIcons();
-		// Set title.
-		setTitle2(areaDescription);
-		// Initialize intellisens.
-		intellisense();
-		// Load resource data.
-		load();
-		// Set editor listeners.
-		setEditorListeners();
-		// Load dialog data.
-		loadDialog();
-		// Add builder popup trayMenu add-in.
-		popupMenuAddIn = new GeneratorTextPopupMenuAddIn();
-		editor.addPopupMenusPlain(popupMenuAddIn);
+	private void postCreate(long resourceId, boolean isStartResource,
+							long versionId, String areaDescription) {
+		try {
+			
+			this.resourceId = resourceId;
+			this.isStartResource = isStartResource;
+			this.versionId = versionId;
+			this.areaDescription = areaDescription;
+			
+			// Create editor.
+			createEditor();
+			// Add top most window toggle button.
+			TopMostButton.add(this, getContentPane());
+			// Localize.
+			localize();
+			// Set icons.
+			setIcons();
+			// Set title.
+			String title = createTitle();
+			setTitle(title);
+			// Initialize intellisens.
+			intellisense();
+			// Load resource data.
+			load();
+			// Set editor listeners.
+			setEditorListeners();
+			// Load dialog data.
+			loadDialog();
+			// Add builder popup trayMenu add-in.
+			popupMenuAddIn = new GeneratorTextPopupMenuAddIn();
+			editor.addPopupMenusPlain(popupMenuAddIn);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
-	 * Set title.
+	 * Create title text.
 	 * @param areaDescription 
 	 */
-	private void setTitle2(String areaDescription) {
+	public String createTitle() {
 		
-		// Load resource name.
-		Properties login = ProgramBasic.getLoginProperties();
-		Middle middle = ProgramBasic.getMiddle();
-		
-		Obj<String> name = new Obj<String>();
-		Obj<String> type = new Obj<String>();
-		
-		MiddleResult result = middle.loadResourceName(login, resourceId,
-				name, type);
-		if (result.isNotOK()) {
-			result.show(this);
-			return;
+		try {
+			// Load resource name.
+			Obj<String> name = new Obj<String>();
+			Obj<String> type = new Obj<String>();
+			MiddleResult result = ProgramGenerator.getResourceNameType(resourceId, name, type);
+			if (result.isNotOK()) {
+				result.show(this);
+				return "";
+			}
+			
+			// Trim area description.
+			if (areaDescription == null) {
+				areaDescription = "";
+			}
+			
+			// Set dialog title.
+			String title = "";
+			if (isStartResource) {
+				
+				// Get version.
+				VersionObj version = ProgramGenerator.getVersion(versionId);
+				String versionName = "";
+				if (version != null) {
+					versionName = version.getDescription();
+				}
+				
+				String titleFormat = Resources.getString("org.multipage.generator.titleStartResourceEditorTitle");
+				title = String.format(titleFormat, name.ref, versionName, type.ref, areaDescription);
+			}
+			else {
+				String titleFormat = Resources.getString("org.multipage.generator.titleTextResourceEditorTitle");
+				title = String.format(titleFormat, name.ref, type.ref, areaDescription);
+			}
+			return title;
 		}
-		
-		// Set dialog title.
-		String title = getTitle() + "-" + name.ref + " (" + type.ref + ")"
-				+ (!areaDescription.isEmpty() ? " of area \"" + areaDescription + "\"" : "");
-		setTitle(title);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
 	 * Create editor.
 	 */
 	private void createEditor() {
-
-		editor = new TextEditorPane(this, false);
-		editor.setExtractBody(false);
-		editorPanel.add(editor);
+		try {
+			
+			editor = new TextEditorPane(this, false);
+			editor.setExtractBody(false);
+			editorPanel.add(editor);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(this);
-		Utility.localize(buttonClose);
-		Utility.localize(buttonSave);
-		Utility.localize(buttonSaveAndClose);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonClose);
+			Utility.localize(buttonSave);
+			Utility.localize(buttonSaveAndClose);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-
-		setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
-		buttonClose.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
-		buttonSave.setIcon(Images.getIcon("org/multipage/generator/images/save_icon.png"));
-		buttonSaveAndClose.setIcon(Images.getIcon("org/multipage/generator/images/save_icon.png"));
+		try {
+			
+			setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
+			buttonClose.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+			buttonSave.setIcon(Images.getIcon("org/multipage/generator/images/save_icon.png"));
+			buttonSaveAndClose.setIcon(Images.getIcon("org/multipage/generator/images/save_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load resource data.
 	 */
 	private void load() {
-
-		Middle middle = ProgramBasic.getMiddle();
-		Properties login = ProgramBasic.getLoginProperties();
-		MiddleResult result;
-		
-		Obj<String> text = new Obj<String>();
-		
-		// Load resource text.
-		result = middle.loadResourceTextToString(login, resourceId, text);
-		if (result.isNotOK()) {
-			result.show(this);
+		try {
+			
+			Middle middle = ProgramBasic.getMiddle();
+			Properties login = ProgramBasic.getLoginProperties();
+			MiddleResult result;
+			
+			Obj<String> text = new Obj<String>();
+			
+			// Load resource text.
+			result = middle.loadResourceTextToString(login, resourceId, text);
+			if (result.isNotOK()) {
+				result.show(this);
+			}
+			
+			// Get old scroll position.
+			Point oldScrollPosition = editor.getScrollPosition();
+			// Set safe text.
+			safeText = text.ref;
+			// Set editor text.
+			editor.setText(text.ref);
+			
+			// Scroll to the old position.
+			editor.scrollToPosition(oldScrollPosition);
 		}
-		
-		// Get old scroll position.
-		Point oldScrollPosition = editor.getScrollPosition();
-		// Set safe text.
-		safeText = text.ref;
-		// Set editor text.
-		editor.setText(text.ref);
-		
-		// Scroll to the old position.
-		editor.scrollToPosition(oldScrollPosition);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On save.
 	 */
 	private void onSave() {
-		
-		save();
+		try {
+			
+			save();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On save and close.
 	 */
 	protected void onSaveAndClose() {
-
-		save();
-		close();
+		try {
+			
+			save();
+			close();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -493,32 +644,51 @@ public class TextResourceEditor extends JFrame {
 	 */
 	protected boolean save() {
 
-		Middle middle = ProgramBasic.getMiddle();
-		Properties login = ProgramBasic.getLoginProperties();
-		MiddleResult result;
-		
-		// Get text.
-		String text = editor.getText();
-		
-		// Save resource text.
-		result = middle.updateResourceText(login, resourceId, text);
-		if (result.isNotOK()) {
-			result.show(this);
+		try {
+			Middle middle = ProgramBasic.getMiddle();
+			Properties login = ProgramBasic.getLoginProperties();
+			MiddleResult result;
+			
+			// Get text.
+			String text = editor.getText();
+			
+			// Save resource text.
+			result = middle.updateResourceText(login, resourceId, text);
+			if (result.isNotOK()) {
+				result.show(this);
+			}
+			
+			// Set safe text.
+			safeText = text;
+			
+			return result.isOK();
 		}
-		
-		// Set safe text.
-		safeText = text;
-		
-		return result.isOK();
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
 	 * Enable intellisense.
 	 */
 	private void intellisense() {
-		
-		// Use intellisense for the text editor.
-		Intellisense.applyTo(editor, (helpPageAlias, fragmentAlias) -> GeneratorMainFrame.displayOnlineArea(HelpUtility.maclanReference, helpPageAlias, fragmentAlias));
+		try {
+			
+			// Use intellisense for the text editor.
+			Intellisense.applyTo(editor, (helpPageAlias, fragmentAlias) -> {
+				try {
+					
+					GeneratorMainFrame.displayOnlineArea(HelpUtility.maclanReference, helpPageAlias, fragmentAlias);
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -528,9 +698,14 @@ public class TextResourceEditor extends JFrame {
 	 */
 	protected void onLanguageBeforeChange(long currentLanguageId,
 			long oldLanguageId) {
-		
-		// Process new content.
-		processNewContent();
+		try {
+			
+			// Process new content.
+			processNewContent();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -539,52 +714,73 @@ public class TextResourceEditor extends JFrame {
 	 * @param oldLanguageId
 	 */
 	protected void onLanguageAfterChanged(long currentLanguageId, long oldLanguageId) {
-
-		load();
+		try {
+			
+			load();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Process possible new content. 
 	 */
 	private void processNewContent() {
-		
-		if (safeText == null) {
-			return;
+		try {
+			
+			if (safeText == null) {
+				return;
+			}
+			
+			// Get current content.
+			String currentContent = editor.getText();
+			// If the content is not changed, do nothing.
+			if (currentContent.equals(safeText)) {
+				return;
+			}
+			
+			// Ask user if to save the content.
+			if (JOptionPane.showConfirmDialog(this,
+					Resources.getString("org.multipage.generator.messageEditorContentChangedSaveIt"))
+					!= JOptionPane.YES_OPTION) {
+				return;
+			}
+			
+			// Save the content.
+			save();
 		}
-		
-		// Get current content.
-		String currentContent = editor.getText();
-		// If the content is not changed, do nothing.
-		if (currentContent.equals(safeText)) {
-			return;
-		}
-		
-		// Ask user if to save the content.
-		if (JOptionPane.showConfirmDialog(this,
-				Resources.getString("org.multipage.generator.messageEditorContentChangedSaveIt"))
-				!= JOptionPane.YES_OPTION) {
-			return;
-		}
-		
-		// Save the content.
-		save();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set editor listeners.
 	 */
 	private void setEditorListeners() {
-
-		editor.getTextPane().addKeyListener(new KeyAdapter() {
-			// On key pressed.
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_S) {
-					// Save data.
-					save();
+		try {
+			
+			editor.getTextPane().addKeyListener(new KeyAdapter() {
+				// On key pressed.
+				@Override
+				public void keyPressed(KeyEvent e) {
+					try {
+						
+						if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_S) {
+							// Save data.
+							save();
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -592,9 +788,14 @@ public class TextResourceEditor extends JFrame {
 	 * @param foundAttributes
 	 */
 	private void setFoundAttributes(FoundAttr foundAttributes) {
-		
-		if (foundAttributes != null) {
-			editor.highlightFound(foundAttributes);
+		try {
+			
+			if (foundAttributes != null) {
+				editor.highlightFound(foundAttributes);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

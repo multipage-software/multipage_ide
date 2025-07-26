@@ -1,14 +1,17 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
+import org.multipage.util.Safe;
+
 /**
- * @author
+ * CSS transformation matrix.
+ * @author vakol
  *
  */
 public class CssTransformMatrix extends CssTransform {
@@ -36,15 +39,21 @@ public class CssTransformMatrix extends CssTransform {
 	 */
 	@Override
 	public String toString() {
-				
-		return String.format("matrix(%s, %s, %s, %s, %s, %s)",
-				Utility.removeFloatNulls(String.valueOf(a)),
-				Utility.removeFloatNulls(String.valueOf(b)),
-				Utility.removeFloatNulls(String.valueOf(c)),
-				Utility.removeFloatNulls(String.valueOf(d)),
-				Utility.removeFloatNulls(String.valueOf(tx)),
-				Utility.removeFloatNulls(String.valueOf(ty))
-				);
+		
+		try {
+			return String.format("matrix(%s, %s, %s, %s, %s, %s)",
+					Utility.removeFloatNulls(String.valueOf(a)),
+					Utility.removeFloatNulls(String.valueOf(b)),
+					Utility.removeFloatNulls(String.valueOf(c)),
+					Utility.removeFloatNulls(String.valueOf(d)),
+					Utility.removeFloatNulls(String.valueOf(tx)),
+					Utility.removeFloatNulls(String.valueOf(ty))
+					);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -52,12 +61,17 @@ public class CssTransformMatrix extends CssTransform {
 	 * @param matrix
 	 */
 	public void setFrom(CssTransformMatrix matrix) {
-		
-		this.a = matrix.a;
-		this.b = matrix.b;
-		this.c = matrix.c;
-		this.d = matrix.d;
-		this.tx = matrix.tx;
-		this.ty = matrix.ty;
+		try {
+			
+			this.a = matrix.a;
+			this.b = matrix.b;
+			this.c = matrix.c;
+			this.d = matrix.d;
+			this.tx = matrix.tx;
+			this.ty = matrix.ty;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

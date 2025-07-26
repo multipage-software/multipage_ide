@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -15,10 +15,12 @@ import java.io.InputStream;
 import java.net.URL;
 
 import org.apache.commons.imaging.Imaging;
+import org.multipage.util.Safe;
 
 
 /**
- * Tool.
+ * Class for tool
+ * @author vakol
  */
 public class Tool {
 	
@@ -81,35 +83,40 @@ public class Tool {
 	 * Constructor.
 	 */
 	public Tool(ToolList tools, int position, ToolId toolId, String tooltip, String imageFile, String description) {
-		
-		this.tools = tools;
-		this.position = position;
-		this.toolId = toolId;
-		this.tooltip = tooltip;
-		this.description = description;
-		
-		// Try to load image.
-		URL url = ClassLoader.getSystemResource(imageFile);
-		if (url != null) {
+		try {
 			
-			InputStream inputStream = null;
-			try {
-				inputStream = url.openStream();
-				this.image = Imaging.getBufferedImage(inputStream);
-			}
-			catch (Exception e) {
-				e.printStackTrace();
-			}
-			finally {
-				if (inputStream != null	) {
-					try {
-						inputStream.close();
-					}
-					catch (Exception e) {
+			this.tools = tools;
+			this.position = position;
+			this.toolId = toolId;
+			this.tooltip = tooltip;
+			this.description = description;
+			
+			// Try to load image.
+			URL url = ClassLoader.getSystemResource(imageFile);
+			if (url != null) {
+				
+				InputStream inputStream = null;
+				try {
+					inputStream = url.openStream();
+					this.image = Imaging.getBufferedImage(inputStream);
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
+				finally {
+					if (inputStream != null	) {
+						try {
+							inputStream.close();
+						}
+						catch (Exception e) {
+						}
 					}
 				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -117,24 +124,29 @@ public class Tool {
 	 */
 	public void draw(Graphics2D g2) {
 		
-		// Fill rectangle.
-		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC, 1.0f));
-		g2.setColor(CustomizedColors.get(ColorId.TOOLBACKGROUND));
-		int y = tools.getYPos(position);
-		g2.fillRect(1, y, width, height - 1);
-		
-		// Draw selected.
-		if (selected) {
-			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
-			g2.setStroke(new BasicStroke(1));
-			g2.setColor(CustomizedColors.get(ColorId.SELECTION));
-			g2.fillRect(1, y , width - 1, height - 2);
+		try {
+			// Fill rectangle.
 			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC, 1.0f));
-			g2.drawRect(1, y , width - 1, height - 2);
+			g2.setColor(CustomizedColors.get(ColorId.TOOLBACKGROUND));
+			int y = tools.getYPos(position);
+			g2.fillRect(1, y, width, height - 1);
+			
+			// Draw selected.
+			if (selected) {
+				g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
+				g2.setStroke(new BasicStroke(1));
+				g2.setColor(CustomizedColors.get(ColorId.SELECTION));
+				g2.fillRect(1, y , width - 1, height - 2);
+				g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC, 1.0f));
+				g2.drawRect(1, y , width - 1, height - 2);
+			}
+			
+			// Draw icon.
+			drawIcon(g2);
 		}
-		
-		// Draw icon.
-		drawIcon(g2);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -142,14 +154,19 @@ public class Tool {
 	 */
 	private void drawIcon(Graphics2D g2) {
 		
-		// Draw cursor image.
-		if (image != null) {
-			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
-			g2.drawImage(image, 1,
-					tools.getYPos(position),
-					Tool.width,
-					Tool.height,
-					null);
+		try {
+			// Draw cursor image.
+			if (image != null) {
+				g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
+				g2.drawImage(image, 1,
+						tools.getYPos(position),
+						Tool.width,
+						Tool.height,
+						null);
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 	}
 	
@@ -157,18 +174,24 @@ public class Tool {
 	 * Set selected flag.
 	 */
 	public void setSelected(boolean isSelected) {
-
-		selected = isSelected;
-		if (selected == true) {
-			// Set main tool bar text.
-			GeneratorMainFrame.getFrame().setMainToolBarText(description);
+		try {
+			
+			selected = isSelected;
+			if (selected == true) {
+				// Set main tool bar text.
+				GeneratorMainFrame.getFrame().setMainToolBarText(description);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * @param position the position to set
 	 */
 	public void setPosition(int position) {
+		
 		this.position = position;
 	}
 
@@ -176,6 +199,7 @@ public class Tool {
 	 * @return the position
 	 */
 	public int getPosition() {
+		
 		return position;
 	}
 
@@ -183,6 +207,7 @@ public class Tool {
 	 * @return the selected
 	 */
 	public boolean isSelected() {
+		
 		return selected;
 	}
 
@@ -190,6 +215,7 @@ public class Tool {
 	 * @return the toolId
 	 */
 	public ToolId getToolId() {
+		
 		return toolId;
 	}
 
@@ -197,6 +223,7 @@ public class Tool {
 	 * @return the tooltip
 	 */
 	public String getTooltip() {
+		
 		return tooltip;
 	}
 
@@ -204,6 +231,7 @@ public class Tool {
 	 * @return the description
 	 */
 	public String getDescription() {
+		
 		return description;
 	}
 
@@ -211,6 +239,7 @@ public class Tool {
 	 * @param width the width to set
 	 */
 	public static void setWidth(int width) {
+		
 		Tool.width = width;
 	}
 
@@ -218,6 +247,7 @@ public class Tool {
 	 * @param height the height to set
 	 */
 	public static void setHeight(int height) {
+		
 		Tool.height = height;
 	}
 }

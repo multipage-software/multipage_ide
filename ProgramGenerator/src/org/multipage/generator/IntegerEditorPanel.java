@@ -1,3 +1,9 @@
+/*
+ * Copyright 2010-2025 (C) vakol
+ * 
+ * Created on : 2017-04-26
+ *
+ */
 package org.multipage.generator;
 
 import java.awt.Color;
@@ -14,10 +20,11 @@ import javax.swing.event.DocumentListener;
 import org.multipage.gui.StringValueEditor;
 import org.multipage.gui.TextFieldEx;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays editor for integer value.
+ * @author vakol
  *
  */
 public class IntegerEditorPanel extends JPanel implements SlotValueEditorPanelInterface {
@@ -45,12 +52,17 @@ public class IntegerEditorPanel extends JPanel implements SlotValueEditorPanelIn
 	 */
 	public IntegerEditorPanel() {
 		
-		// Initialize components.
-		initComponents();
-		// $hide>>$
-		// Post creation.
-		postCreation();
-		// $hide<<$
+		try {
+			// Initialize components.
+			initComponents();
+			// $hide>>$
+			// Post creation.
+			postCreation();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -82,11 +94,17 @@ public class IntegerEditorPanel extends JPanel implements SlotValueEditorPanelIn
 	 */
 	@Override
 	public Object getValue() {
-
-		if (number == null && !ProgramGenerator.isExtensionToBuilder()) {
-			number = 0L;
+		
+		try {
+			if (number == null && !ProgramGenerator.isExtensionToBuilder()) {
+				number = 0L;
+			}
+			return number;
 		}
-		return number;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return 0L;
 	}
 
 	/**
@@ -94,88 +112,131 @@ public class IntegerEditorPanel extends JPanel implements SlotValueEditorPanelIn
 	 */
 	@Override
 	public void setValue(Object value) {
-		
-		if (value instanceof Long) {
-			number = (Long) value;
+		try {
+			
+			if (value instanceof Long) {
+				number = (Long) value;
+			}
+			else if (value instanceof Integer) {
+				number = (Long) value;
+			}
+			else {
+				number = null;
+			}
+			
+			if (number != null) {
+				textInteger.setText(String.valueOf(number));
+			}
+			else {
+				textInteger.setText("");
+			}
 		}
-		else if (value instanceof Integer) {
-			number = (Long) value;
-		}
-		else {
-			number = null;
-		}
-		
-		if (number != null) {
-			textInteger.setText(String.valueOf(number));
-		}
-		else {
-			textInteger.setText("");
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Post creation.
 	 */
 	private void postCreation() {
-
-		// Set editor listener.
-		setEditorListener();
+		try {
+			
+			// Set editor listener.
+			setEditorListener();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set editor listener.
 	 */
 	private void setEditorListener() {
-
-		textInteger.getDocument().addDocumentListener(new DocumentListener() {
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				onEditorChange();
-			}
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				onEditorChange();
-			}
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				onEditorChange();
-			}
-		});
+		try {
+			
+			textInteger.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					try {
+						
+						onEditorChange();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					try {
+						
+						onEditorChange();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					try {
+						
+						onEditorChange();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On editor change.
 	 */
 	protected void onEditorChange() {
-
-		// Try to convert the value.
-		String text = textInteger.getText();
-		String message = "";
-		
 		try {
-			if (!text.isEmpty()) {
-				number = Long.parseLong(text);
-			}
-			else {
-				number = null;
-			}
-		}
-		catch (NumberFormatException e) {
 			
-			number = null;
-			message = Resources.getString("org.multipage.generator.messageErrorIntegerNumber");
+			// Try to convert the value.
+			String text = textInteger.getText();
+			String message = "";
+			
+			try {
+				if (!text.isEmpty()) {
+					number = Long.parseLong(text);
+				}
+				else {
+					number = null;
+				}
+			}
+			catch (NumberFormatException e) {
+				
+				number = null;
+				message = Resources.getString("org.multipage.generator.messageErrorIntegerNumber");
+			}
+			
+			labelMessage.setText(message);
 		}
-		
-		labelMessage.setText(message);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Clear editor.
 	 */
 	public void clear() {
-
-		number = null;
-		textInteger.setText("");
+		try {
+			
+			number = null;
+			textInteger.setText("");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -200,6 +261,12 @@ public class IntegerEditorPanel extends JPanel implements SlotValueEditorPanelIn
 	@Override
 	public String getValueMeaning() {
 		
-		return StringValueEditor.meansInteger;
+		try {
+			return StringValueEditor.meansInteger;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 }

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -21,10 +21,11 @@ import javax.swing.SpringLayout;
 
 import org.multipage.gui.Images;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays selection of resource editor.
+ * @author vakol
  *
  */
 public class SelectResourcesEditor extends JDialog {
@@ -52,21 +53,25 @@ public class SelectResourcesEditor extends JDialog {
 	 */
 	public static int getSelectedEditor(Component parent) {
 		
-		SelectResourcesEditor dialog = new SelectResourcesEditor(parent);
-		dialog.setVisible(true);
-		
-		if (!dialog.confirm) {
-			return NONE;
+		try {
+			SelectResourcesEditor dialog = new SelectResourcesEditor(parent);
+			dialog.setVisible(true);
+			
+			if (!dialog.confirm) {
+				return NONE;
+			}
+			
+			if (dialog.radioVisibleResources.isSelected()) {
+				return VISIBLE_RESOURCES;
+			}
+			
+			if (dialog.radioAreaResources.isSelected()) {
+				return AREA_RESOURCES;
+			}
 		}
-		
-		if (dialog.radioVisibleResources.isSelected()) {
-			return VISIBLE_RESOURCES;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		if (dialog.radioAreaResources.isSelected()) {
-			return AREA_RESOURCES;
-		}
-		
 		return NONE;
 	}
 	
@@ -83,11 +88,15 @@ public class SelectResourcesEditor extends JDialog {
 	 * Create the dialog.
 	 */
 	public SelectResourcesEditor(Component parent) {
-		
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
-
-		initComponents();
-		postCreate(); // $hide$
+		
+		try {
+			initComponents();
+			postCreate(); // $hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -142,33 +151,48 @@ public class SelectResourcesEditor extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		Utility.centerOnScreen(this);
-		localize();
-		setIcons();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			Utility.centerOnScreen(this);
+			
+			localize();
+			setIcons();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(radioVisibleResources);
-		Utility.localize(radioAreaResources);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(radioVisibleResources);
+			Utility.localize(radioAreaResources);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

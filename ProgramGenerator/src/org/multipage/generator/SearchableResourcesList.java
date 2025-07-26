@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -15,15 +15,28 @@ import javax.swing.JList;
 import org.maclan.MimeType;
 
 /**
- * @author
+ * Interface for list of resources that can be searched.
+ * @author vakol
  *
  */
 public interface SearchableResourcesList {
-
+	
+	/**
+	 * Get window.
+	 * @return
+	 */
 	Window getWindow();
-
+	
+	/**
+     * Get MIME types.
+     * @return
+     */
 	LinkedList<MimeType> getMimeTypes();
-
+	
+	/**
+	 * Get list of resources.
+	 * @return
+	 */
 	JList getList();
 
 }

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2023 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 16-12-2023
+ * Created on : 2023-12-16
  *
  */
 
@@ -11,8 +11,6 @@ import java.awt.Canvas;
 import java.util.HashSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
-import javax.swing.SwingUtilities;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
@@ -24,9 +22,10 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.multipage.util.Lock;
 import org.multipage.util.Obj;
+import org.multipage.util.Safe;
 
 /**
- * Implementation of an AWT that embeds a SWT component.
+ * Implementation of an AWT panel that embeds a SWT component.
  * @author vakol
  */
 public final class SwtBrowserCanvas extends Canvas {
@@ -44,7 +43,7 @@ public final class SwtBrowserCanvas extends Canvas {
 	/**
 	 * Indicates that SWT is available for the OS.
 	 */
-	private static Boolean swtAvailable = false;
+	private static boolean swtAvailable = false;
 	
 	/**
 	 * Set of created shells.
@@ -71,11 +70,6 @@ public final class SwtBrowserCanvas extends Canvas {
      */
     private static class SwtThread extends Thread {
     	
-    	/**
-    	 * SWT thread termination timeout in milliseconds.
-    	 */
-        private static final long SWT_THREAD_TERMINATION_TIMEOUT_MS = 3000;
-    	
 		/**
 		 * Single SWT display that is needed when running SWT thread.
 		 */
@@ -85,58 +79,55 @@ public final class SwtBrowserCanvas extends Canvas {
 		 * This flag terminates the SWT thread.
 		 */
 		private boolean exitThread = false;
-        
-		/**
-		 * SWT thread termination lock.
-		 */
-		private Lock terminationLock = null;
 
         /**
          * Run SWT thread.
          */
 		@Override
         public void run() {
-			
-        	// Create SWT display.
-        	display = new Display();
-        	
-            // Execute the SWT event dispatch loop.
-            try {
-                while (!isInterrupted() && !exitThread) {
-                	
-    				// Set SWT available.
-    				swtAvailable = true;
-    				
-                    if (!display.readAndDispatch()) {
-                        display.sleep();
-                    }
-                }
-            }
-            catch (Exception e) {
-                interrupt();
-            }
-            
-            // Set SWT not available.
-			swtAvailable = false;
-            
-            // Notify about termination of the SWT thread.
-            if (terminationLock != null) {
-            	Lock.notify(terminationLock);
-            }
+			try {
+				
+				// Create SWT display.
+	        	display = new Display();
+	
+	            // Execute the SWT event dispatch loop.
+	            try {
+	                while (!isInterrupted() && !exitThread) {
+	                	
+	    				// Set SWT available.
+	    				swtAvailable = true;
+	    				
+	                    if (!display.readAndDispatch()) {
+	                        display.sleep();
+	                    }
+	                }
+	            }
+	            catch (Exception e) {
+	                interrupt();
+	            }
+	            
+	            // Set SWT not available.
+				swtAvailable = false;
+			}
+			catch(Throwable expt) {
+				Safe.exception(expt);
+			};
 		}
 		
 		/**
 		 * Disposal of thread resources. Must be run at the end of application.
 		 */
 		void terminate() {
-			
-			// Signal SWT thread termination.
-			terminationLock = new Lock();
-			exitThread = true;
-			Lock.waitFor(terminationLock, SWT_THREAD_TERMINATION_TIMEOUT_MS);
-			
-			// Release display.
-			display.dispose();
+			try {
+				
+				// Signal SWT thread termination.
+				exitThread = true;
+				// Release display.
+				display.dispose();
+			}
+			catch(Throwable expt) {
+				Safe.exception(expt);
+			};
 		}
     }
 	
@@ -144,7 +135,13 @@ public final class SwtBrowserCanvas extends Canvas {
      * Static constructor. Required for Linux, harmless for other OS.
      */
     static {
-        System.setProperty("sun.awt.xembedserver", "true");
+    	try {
+			
+			System.setProperty("sun.awt.xembedserver", "true");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
     }
     
     /**
@@ -152,51 +149,76 @@ public final class SwtBrowserCanvas extends Canvas {
      */
     public static boolean startSwtThread() {
     	
-    	boolean runThread = (swtThread == null);
-    	
-    	// Create the background thread if it doesn't already exist.
-    	if (runThread) {
-			swtThread = new SwtThread();
-			swtThread.start();
-    	}
-        return runThread;
+    	try {
+	    	boolean runThread = (swtThread == null);
+	    	
+	    	// Create the background thread if it doesn't already exist.
+	    	if (runThread) {
+				swtThread = new SwtThread();
+				swtThread.start();
+	    	}
+	        return runThread;
+	    }
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
     }
     
     /**
      * Stops SWT thread. Disposes all SWT shells.
      */
     public static void stopSwtThread() {
-    	
-		SwtThread.display.syncExec(new Runnable() {
-			public void run() {
-
-				closeAllShells();
-		    	
-		        if (swtThread != null) {
-		            swtThread.terminate();
-		        }
-			}
-		});
+    	try {
+			
+			SwtThread.display.syncExec(() -> {
+				try {
+					
+					closeAllShells();
+			    	
+			        if (swtThread != null) {
+			            swtThread.terminate();
+			        }
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
     }
     
     /**
      * Close all SWT shells.
      */
     private static void closeAllShells() {
-    	
-    	for (Shell swtShell : swtShells) {
-    		swtShell.dispose();
-    	}
+    	try {
+			
+			for (Shell swtShell : swtShells) {
+				try {
+					
+					swtShell.dispose();
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+	    	}
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
     }
     
     /**
-     * Create browser canvas later on SWT thread.
+     * Create browser canvas.
      * @return
      */
-	public static SwtBrowserCanvas createLater(Function<SwtBrowserCanvas, String> initialUrlLambda, Consumer<String> locationChangedLambda) {
+	public static SwtBrowserCanvas createBrowserCanvas(Function<SwtBrowserCanvas, String> initialUrlLambda, Consumer<String> locationChangedLambda) {
 		
 		// Check if the SWT thread is available (started).
-		if (swtAvailable != null && swtAvailable == false) {
+		if (swtAvailable == false) {
 			return null;
 		}
 		
@@ -209,7 +231,7 @@ public final class SwtBrowserCanvas extends Canvas {
 			}
 		}
 		catch (Throwable e) {
-			e.printStackTrace();
+			Safe.exception(e);
 		}
 		// On failure.
 		return null;
@@ -219,10 +241,10 @@ public final class SwtBrowserCanvas extends Canvas {
      * Close the browser.
      */
 	public void close() {
+		try {
 			
-		SwtThread.display.syncExec(new Runnable() {
-			public void run() {
-				
+			SwtThread.display.syncExec(() -> {
+					
 				// Close the SWT shell on dispatch thread.
 				try {
 					if (browser != null && !browser.isDisposed()) {
@@ -234,11 +256,14 @@ public final class SwtBrowserCanvas extends Canvas {
 					}
 				}
 				catch (Exception e) {
-					e.printStackTrace();
+					Safe.exception(e);
 				}
 				browser = null;
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
     
     /**
@@ -247,11 +272,11 @@ public final class SwtBrowserCanvas extends Canvas {
     private boolean attachBrowser(Function<SwtBrowserCanvas, String> initialUrlLambda, Consumer<String> locationChangedLambda)
     		throws Exception {
     	
-    	Obj<Boolean> success = new Obj<Boolean>(false);
-    	
-    	SwtThread.display.syncExec(new Runnable() {
-    	    public void run() {
-
+    	try {
+	    	Obj<Boolean> success = new Obj<Boolean>(false);
+	    	
+	    	SwtThread.display.syncExec(() -> {
+	    			
 		        try {
 		            // Get initial URL.
 		            initialUrl = initialUrlLambda.apply(SwtBrowserCanvas.this);
@@ -269,20 +294,26 @@ public final class SwtBrowserCanvas extends Canvas {
 		            
 		            setWebEngineListeners(browser, locationChangedLambda);
 		
-		            // This action must be executed on the SWT thread
-		            browser.getDisplay().asyncExec(() -> {
+		            // Set URL must be executed on the SWT thread.
+		            Display display = browser.getDisplay();
+		            
+		            display.asyncExec(() -> {
 		            	browser.setUrl(initialUrl);
 		            });
 		            
 		            success.ref = true;
 		        }
 		        catch (Throwable e) {
-		        	e.printStackTrace();
+		        	Safe.exception(e);
 		        }    	    	
-    	    }
-    	});
-    	
-    	return success.ref;
+	    	});
+	    	
+	    	return success.ref;
+	    }
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
     }
     
 	/**
@@ -291,51 +322,70 @@ public final class SwtBrowserCanvas extends Canvas {
 	 * @param locationChangedLambda 
 	 */
 	public void setWebEngineListeners(Browser browser, Consumer<String> locationChangedLambda) {
-		
-		this.locationChangedLambda = locationChangedLambda;
-		
-		browser.addLocationListener(new LocationListener() {
+		try {
 			
-			@Override
-			public void changing(LocationEvent event) {
-			}
+			this.locationChangedLambda = locationChangedLambda;
 			
-			@Override
-			public void changed(LocationEvent event) {
+			browser.addLocationListener(new LocationListener() {
 				
-				// Run callback.
-				if (locationChangedLambda != null) {
-					
-					String url = event.location;
-					
-					SwingUtilities.invokeLater(() -> 
-						locationChangedLambda.accept(url));
+				@Override
+				public void changing(LocationEvent event) {
 				}
-			}
-		});
+				
+				@Override
+				public void changed(LocationEvent event) {
+					try {
+						
+						// Run callback.
+						if (locationChangedLambda != null) {
+							
+							String url = event.location;
+							
+							Safe.invokeLater(() -> {
+								locationChangedLambda.accept(url);
+							});
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
     
     /**
      * Reload current URL.
      */
 	public void reload() {
-		
-    	SwtThread.display.syncExec(new Runnable() {
-    	    public void run() {
-    	    	
-				// Check browser object.
-				if (browser == null) {
-					return;
+		try {
+			
+			SwtThread.display.syncExec(() -> {
+	    	    try {
+					
+					// Check browser object.
+					if (browser == null) {
+						return;
+					}
+					boolean isDisposed = browser.isDisposed();
+					if (isDisposed) {
+						return;
+					}
+					
+					// Reload browser contents.
+					browser.refresh();
 				}
-				boolean isDisposed = browser.isDisposed();
-				if (isDisposed) {
-					return;
-				}
-				
-				// Reload browser contents.
-				browser.refresh();
-    	    }
-    	});
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+	    	});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
     
     /**
@@ -344,20 +394,26 @@ public final class SwtBrowserCanvas extends Canvas {
      */
     private boolean closeShell(Shell swtShell) {
     	
-    	// Check if the SWT shell exists.
-    	boolean exists = swtShells.contains(swtShell);
-    	if (!exists) {
-    		return false;
-    	}
-    	
-    	// Remove it from the set of SWT shells.
-    	swtShells.remove(swtShell);
-    	
-    	// Close the SWT shells.
-    	if (!swtShell.isDisposed()) {
-    		swtShell.close();
-    	}
-    	return true;
+    	try {
+	    	// Check if the SWT shell exists.
+	    	boolean exists = swtShells.contains(swtShell);
+	    	if (!exists) {
+	    		return false;
+	    	}
+	    	
+	    	// Remove it from the set of SWT shells.
+	    	swtShells.remove(swtShell);
+	    	
+	    	// Close the SWT shells.
+	    	if (!swtShell.isDisposed()) {
+	    		swtShell.close();
+	    	}
+	    	return true;
+	    }
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
     }
     
     /**
@@ -366,33 +422,41 @@ public final class SwtBrowserCanvas extends Canvas {
      */
 	public String getUrl() {
 		
-		Obj<String> currentUrl = new Obj<String>("");
-		
-		final long timeoutMs = 1000;
-		Lock lock = new Lock();
-		
-    	SwtThread.display.syncExec(new Runnable() {
-    		@Override
-    	    public void run() {
-    	    	
-				// Check browser object.
-				if (browser == null) {
-					return;
+		try {
+			Obj<String> currentUrl = new Obj<String>("");
+			
+			final long timeoutMs = 1000;
+			Lock lock = new Lock();
+			
+	    	SwtThread.display.syncExec(() -> {
+	    		try {
+					
+					// Check browser object.
+					if (browser == null) {
+						return;
+					}
+					
+					boolean isDisposed = browser.isDisposed();
+					if (isDisposed) {
+						return;
+					}
+					
+					currentUrl.ref = browser.getUrl();
+					Lock.notify(lock);
 				}
-				
-				boolean isDisposed = browser.isDisposed();
-				if (isDisposed) {
-					return;
-				}
-				
-				currentUrl.ref = browser.getUrl();
-				Lock.notify(lock);
-    	    }
-    	});
-		
-    	Lock.waitFor(lock, timeoutMs);
-		
-		return currentUrl.ref;
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+	    	});
+			
+	    	Lock.waitFor(lock, timeoutMs);
+			
+			return currentUrl.ref;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -400,21 +464,20 @@ public final class SwtBrowserCanvas extends Canvas {
 	 * @param enable
 	 */
 	public void enableSwt(boolean enable) {
-		
-		// Check display objects.
-		boolean isDisposed = SwtThread.display.isDisposed();
-		if (isDisposed) {
-			return;
-		}
-		
-		if (browser == null) {
-			return;
-		}
-		
-		// Enable or disable SWT shells.
-    	SwtThread.display.syncExec(new Runnable() {
-    		@Override
-    	    public void run() {
+		try {
+			
+			// Check display objects.
+			boolean isDisplayDisposed = SwtThread.display.isDisposed();
+			if (isDisplayDisposed) {
+				return;
+			}
+			
+			if (browser == null) {
+				return;
+			}
+			
+			// Enable or disable SWT shells.
+	    	SwtThread.display.syncExec(() -> {
     			
     			try {
     				boolean isDisposed;
@@ -433,9 +496,12 @@ public final class SwtBrowserCanvas extends Canvas {
 	    			}
     			}
     			catch (Exception e) {
-    				e.printStackTrace();
+    				Safe.exception(e);
     			}
-    		}
-    	});
+	    	});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

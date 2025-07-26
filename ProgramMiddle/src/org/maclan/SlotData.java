@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -11,8 +11,8 @@ import java.sql.Timestamp;
 import java.util.Objects;
 
 /**
- * 
- * @author
+ * Slot object that can be imported or exported.
+ * @author vakol
  *
  */
 public class SlotData {
@@ -20,6 +20,7 @@ public class SlotData {
 	public Long areaId;
 	public String alias;
 	public Long revision;
+	public String revisionDescription;
 	public Timestamp created;
 	public Long localizedTextValueId;
 	public String textValue;

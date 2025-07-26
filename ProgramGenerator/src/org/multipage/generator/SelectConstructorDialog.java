@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -35,7 +35,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.SpringLayout;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -50,10 +49,11 @@ import org.multipage.gui.Images;
 import org.multipage.gui.RendererJLabel;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays constructors that can be selected.
+ * @author vakol
  *
  */
 public class SelectConstructorDialog extends JDialog {
@@ -124,28 +124,34 @@ public class SelectConstructorDialog extends JDialog {
 	public static WizardReturned showDialog(Component parent, LinkedList<ConstructorHolder> constructorHolders,
 			Obj<ConstructorHolder> selectedConstructorHolder) {
 		
-		SelectConstructorDialog dialog = new SelectConstructorDialog(Utility.findWindow(parent));
-		
-		dialog.constructorHolders = constructorHolders;
-		dialog.loadConstructorHolderTree();
-		
-		// Set selected constructor holder.
-		if (!isSelected && selectedConstructorHolder.ref != null) {
-			isSelected = dialog.setSelectedConstructorHolder(selectedConstructorHolder.ref);
+		try {
+			SelectConstructorDialog dialog = new SelectConstructorDialog(Utility.findWindow(parent));
+			
+			dialog.constructorHolders = constructorHolders;
+			dialog.loadConstructorHolderTree();
+			
+			// Set selected constructor holder.
+			if (!isSelected && selectedConstructorHolder.ref != null) {
+				isSelected = dialog.setSelectedConstructorHolder(selectedConstructorHolder.ref);
+			}
+			
+			if (!isSelected && constructorHolders.size() == 1) {
+				dialog.tree.setSelectionRow(0);
+			}
+			
+			dialog.setVisible(true);
+			
+			// Get selected constructor holder.
+			if (dialog.returned == WizardReturned.NEXT) {
+				selectedConstructorHolder.ref = dialog.getSelectedConstructorHolder();
+			}
+			
+			return dialog.returned;
 		}
-		
-		if (!isSelected && constructorHolders.size() == 1) {
-			dialog.tree.setSelectionRow(0);
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		dialog.setVisible(true);
-		
-		// Get selected constructor holder.
-		if (dialog.returned == WizardReturned.NEXT) {
-			selectedConstructorHolder.ref = dialog.getSelectedConstructorHolder();
-		}
-		
-		return dialog.returned;
+		return WizardReturned.UNKNOWN;
 	}
 
 	/**
@@ -154,12 +160,16 @@ public class SelectConstructorDialog extends JDialog {
 	 */
 	public SelectConstructorDialog(Window parentWindow) {
 		super(parentWindow, ModalityType.DOCUMENT_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -268,214 +278,269 @@ public class SelectConstructorDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-				
-		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-		
-		Utility.centerOnScreen(this);
-
-		localize();
-		setIcons();
+		try {
 			
-		// Set initial filter text.
-		textFilter.setText(filterText);
-		
-		initializeTree();
-		initializeFilter();
-
-		// If there is no builder extension, hide skip button.
-		buttonSkip.setVisible(ProgramGenerator.isExtensionToBuilder());
-		
-		SwingUtilities.invokeLater(() -> {
-			textFilter.grabFocus();
-		});
+			setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+			
+			Utility.centerOnScreen(this);
+	
+			localize();
+			setIcons();
+				
+			// Set initial filter text.
+			textFilter.setText(filterText);
+			
+			initializeTree();
+			initializeFilter();
+	
+			// If there is no builder extension, hide skip button.
+			buttonSkip.setVisible(ProgramGenerator.isExtensionToBuilder());
+			
+			Safe.invokeLater(() -> {
+				textFilter.grabFocus();
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonNext);
-		Utility.localize(labelSelectConstructor);
-		Utility.localize(buttonCancel);
-		Utility.localize(buttonSkip);
-		Utility.localize(labelFilter);
-		Utility.localize(menuShowHelp);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonNext);
+			Utility.localize(labelSelectConstructor);
+			Utility.localize(buttonCancel);
+			Utility.localize(buttonSkip);
+			Utility.localize(labelFilter);
+			Utility.localize(menuShowHelp);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonNext.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
-		buttonSkip.setIcon(Images.getIcon("org/multipage/generator/images/skip.png"));
-		menuShowHelp.setIcon(Images.getIcon("org/multipage/generator/images/help_small.png"));
+		try {
+			
+			buttonNext.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+			buttonSkip.setIcon(Images.getIcon("org/multipage/generator/images/skip.png"));
+			menuShowHelp.setIcon(Images.getIcon("org/multipage/generator/images/help_small.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Initialize tree.
 	 */
 	private void initializeTree() {
-		
-		// Set tree model.
-		treeModel = new DefaultTreeModel(new DefaultMutableTreeNode());
-		tree.setModel(treeModel);
-		
-		tree.setRowHeight(18);
-		
-		tree.setRootVisible(true);
-		
-		// Set renderer.
-		tree.setCellRenderer(new TreeCellRenderer() {
+		try {
 			
-			RendererJLabel renderer = new RendererJLabel();
+			// Set tree model.
+			treeModel = new DefaultTreeModel(new DefaultMutableTreeNode());
+			tree.setModel(treeModel);
 			
-			final int fontSize = 11;
+			tree.setRowHeight(18);
+			tree.setRootVisible(true);
 			
-			Font folderFont = new Font("Tahoma", Font.PLAIN, fontSize);
-			Font constructorFont = new Font("Tahoma", Font.PLAIN, fontSize);
-
-			@Override
-			public Component getTreeCellRendererComponent(JTree tree, Object value,
-					boolean selected, boolean expanded, boolean leaf, int row,
-					boolean hasFocus) {
+			// Set renderer.
+			tree.setCellRenderer(new TreeCellRenderer() {
 				
-				if (!(value instanceof DefaultMutableTreeNode)) {
-					return null;
-				}
+				RendererJLabel renderer = new RendererJLabel();
 				
-				DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) value;
-				Object userObject = treeNode.getUserObject();
-				renderer.setForeground(Color.GRAY);
-				
-				if (userObject instanceof String) {
-					String folderName = (String) userObject;
+				final int fontSize = 11;
+				Font folderFont = new Font("Tahoma", Font.PLAIN, fontSize);
+				Font constructorFont = new Font("Tahoma", Font.PLAIN, fontSize);
+	
+				@Override
+				public Component getTreeCellRendererComponent(JTree tree, Object value,
+						boolean selected, boolean expanded, boolean leaf, int row,
+						boolean hasFocus) {
 					
-					renderer.setText(folderName);
-					renderer.setIcon(Images.getIcon("org/multipage/generator/images/folder_empty_icon.png"));
-					renderer.setFont(folderFont);
+					try {
+						if (!(value instanceof DefaultMutableTreeNode)) {
+							return null;
+						}
+						
+						DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) value;
+						Object userObject = treeNode.getUserObject();
+						renderer.setForeground(Color.GRAY);
+						
+						if (userObject instanceof String) {
+							String folderName = (String) userObject;
+							
+							renderer.setText(folderName);
+							renderer.setIcon(Images.getIcon("org/multipage/generator/images/folder_empty_icon.png"));
+							renderer.setFont(folderFont);
+						}
+						else if (userObject instanceof ConstructorHolder) {
+							ConstructorHolder constructorHolder = (ConstructorHolder) userObject;
+							
+							renderer.setForeground(Color.BLACK);
+							renderer.setText(constructorHolder.getPathLastName());
+							renderer.setIcon(Images.getIcon("org/multipage/generator/images/constructor.png"));
+							renderer.setFont(constructorFont);
+						}
+						else {
+							renderer.setText("");
+							renderer.setIcon(Images.getIcon("org/multipage/generator/images/tree_root.png"));
+							renderer.setFont(constructorFont);
+						}
+						
+						renderer.set(selected, hasFocus, 0);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return renderer;
 				}
-				else if (userObject instanceof ConstructorHolder) {
-					ConstructorHolder constructorHolder = (ConstructorHolder) userObject;
-					
-					renderer.setForeground(Color.BLACK);
-					renderer.setText(constructorHolder.getPathLastName());
-					renderer.setIcon(Images.getIcon("org/multipage/generator/images/constructor.png"));
-					renderer.setFont(constructorFont);
-				}
-				else {
-					renderer.setText("");
-					renderer.setIcon(Images.getIcon("org/multipage/generator/images/tree_root.png"));
-					renderer.setFont(constructorFont);
-				}
-				
-				renderer.set(selected, hasFocus, 0);
-				return renderer;
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Initialize filter.
 	 */
 	private void initializeFilter() {
-
-		// Set timer
-		final Timer timer = new Timer(500, (e) -> {
+		try {
 			
-			// Reload constructors.
-			if (isVisible()) {
-				loadConstructorHolderTree();
-			}
-		});
-		
-		// Set timer properties.
-		timer.setCoalesce(true);
-		timer.setRepeats(false);
-		
-		// Text change listener.
-		Utility.setTextChangeListener(textFilter, () -> {
-			timer.start();
-		});
-		
-		// ESC key listener.
-		KeyAdapter keyAdapter = new KeyAdapter() {
-			@Override
-			public void keyReleased(KeyEvent e) {
-				super.keyReleased(e);
-				if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-					textFilter.setText("");
+			// Set timer
+			final Timer timer = new Timer(500, e -> {
+				try {
+					
+					// Reload constructors.
+					if (isVisible()) {
+						loadConstructorHolderTree();
+					}
 				}
-			}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+			
+			// Set timer properties.
+			timer.setCoalesce(true);
+			timer.setRepeats(false);
+			
+			// Text change listener.
+			Utility.setTextChangeListener(textFilter, () -> {
+				try {
+					
+					timer.start();
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+			
+			// ESC key listener.
+			KeyAdapter keyAdapter = new KeyAdapter() {
+				@Override
+				public void keyReleased(KeyEvent e) {
+					try {
+						
+						super.keyReleased(e);
+						if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+							textFilter.setText("");
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			};
+			textFilter.addKeyListener(keyAdapter);
+			
+			// Stop timer on exit.
+			addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowClosed(WindowEvent e) {
+					try {
+						
+						timer.stop();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
 		};
-		textFilter.addKeyListener(keyAdapter);
-		
-		// Stop timer on exit.
-		addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosed(WindowEvent e) {
-
-				timer.stop();
-			}
-		});
 	}
 
 	/**
 	 * Load constructor holders.
 	 */
 	private void loadConstructorHolderTree() {
-		
-		// Clear old data.
-		DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) treeModel.getRoot();
-		rootNode.removeAllChildren();
-		treeModel.reload();
-		
-		// Get filter text.
-		String filterText = textFilter.getText();
-		boolean filterIsOn = !filterText.isEmpty();
-		FoundAttr foundAttr = new FoundAttr(filterText, false, false);
-				
-		// Load constructor holders.
-		for (ConstructorHolder constructorHolder : constructorHolders) {
-						
-			if (constructorHolder.isInvisible()) {
-				continue;
-			}
+		try {
 			
-			// Filter constructor name.
-			if (filterIsOn) {
-				String constructorName = constructorHolder.getPathLastName();
-				
-				if (!Utility.find(constructorName, foundAttr)) {
+			// Clear old data.
+			DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) treeModel.getRoot();
+			rootNode.removeAllChildren();
+			treeModel.reload();
+			
+			// Get filter text.
+			String filterText = textFilter.getText();
+			boolean filterIsOn = !filterText.isEmpty();
+			FoundAttr foundAttr = new FoundAttr(filterText, false, false);
+					
+			// Load constructor holders.
+			for (ConstructorHolder constructorHolder : constructorHolders) {
+							
+				if (constructorHolder.isInvisible()) {
 					continue;
 				}
-			}
-			
-			DefaultMutableTreeNode node = addNewConstructorNode(rootNode, constructorHolder);
-			
-			if (constructorHolder.selectIt()) {
 				
-				// Select node after moving it up
-				SwingUtilities.invokeLater(() -> {
+				// Filter constructor name.
+				if (filterIsOn) {
+					String constructorName = constructorHolder.getPathLastName();
 					
-					TreeNode[] nodes = treeModel.getPathToRoot(node);
-					TreePath treePath = new TreePath(nodes);
+					if (!Utility.find(constructorName, foundAttr)) {
+						continue;
+					}
+				}
+				
+				DefaultMutableTreeNode node = addNewConstructorNode(rootNode, constructorHolder);
+				
+				if (constructorHolder.selectIt()) {
 					
-					tree.setSelectionPath(treePath);
-					tree.scrollPathToVisible(treePath);
-				});
-							
-				isSelected = true;
+					// Select node after moving it up
+					Safe.invokeLater(() -> {
+						
+						TreeNode[] nodes = treeModel.getPathToRoot(node);
+						TreePath treePath = new TreePath(nodes);
+						
+						tree.setSelectionPath(treePath);
+						tree.scrollPathToVisible(treePath);
+					});
+								
+					isSelected = true;
+				}
+				
+				constructorHolder.removeAsterisk();
 			}
 			
-			constructorHolder.removeAsterisk();
+			// Expand root node.
+			Utility.expandAll(tree, true);
 		}
-		
-		// Expand root node.
-		Utility.expandAll(tree, true);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -484,29 +549,35 @@ public class SelectConstructorDialog extends JDialog {
 	 */
 	private DefaultMutableTreeNode addNewConstructorNode(DefaultMutableTreeNode rootNode, ConstructorHolder constructorHolder) {
 		
-		// Parse constructor path.
-		String constructorName = constructorHolder.getName();
-		String [] constructorPath = constructorName.split("/");
-		
-		// Create tree node.
-		for (int index = 0; index < constructorPath.length - 1; index++) {
+		try {
+			// Parse constructor path.
+			String constructorName = constructorHolder.getName();
+			String [] constructorPath = constructorName.split("/");
 			
-			String pathItem = constructorPath[index];
-			
-			DefaultMutableTreeNode childNode = getChildFolderTreeNode(rootNode, pathItem);
-			
-			if (childNode == null) {
-				childNode = new DefaultMutableTreeNode(pathItem);
-				rootNode.add(childNode);
+			// Create tree node.
+			for (int index = 0; index < constructorPath.length - 1; index++) {
+				
+				String pathItem = constructorPath[index];
+				
+				DefaultMutableTreeNode childNode = getChildFolderTreeNode(rootNode, pathItem);
+				
+				if (childNode == null) {
+					childNode = new DefaultMutableTreeNode(pathItem);
+					rootNode.add(childNode);
+				}
+	
+				rootNode = childNode;
 			}
-
-			rootNode = childNode;
+			
+			DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(constructorHolder);
+			rootNode.add(childNode);
+			
+			return childNode;
 		}
-		
-		DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(constructorHolder);
-		rootNode.add(childNode);
-		
-		return childNode;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -518,25 +589,30 @@ public class SelectConstructorDialog extends JDialog {
 	private DefaultMutableTreeNode getChildFolderTreeNode(
 			DefaultMutableTreeNode rootNode, String childFolderName) {
 		
-		Enumeration children = rootNode.children();
-		
-		// Do loop for all root node children.
-		while (children.hasMoreElements()) {
+		try {
+			Enumeration children = rootNode.children();
 			
-			DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) children.nextElement();
-			if (childNode == null) {
-				return null;
-			}
-			
-			Object userObject = childNode.getUserObject();
-			if (userObject instanceof String) {
+			// Do loop for all root node children.
+			while (children.hasMoreElements()) {
 				
-				String folderName = (String) userObject;
-				if (folderName.equals(childFolderName)) {
+				DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) children.nextElement();
+				if (childNode == null) {
+					return null;
+				}
+				
+				Object userObject = childNode.getUserObject();
+				if (userObject instanceof String) {
 					
-					return childNode;
+					String folderName = (String) userObject;
+					if (folderName.equals(childFolderName)) {
+						
+						return childNode;
+					}
 				}
 			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -547,29 +623,35 @@ public class SelectConstructorDialog extends JDialog {
 	 */
 	private ConstructorHolder getSelectedConstructorHolder() {
 		
-		// Get selected items.
-		if (tree.getSelectionCount() != 1) {
+		try {
+			// Get selected items.
+			if (tree.getSelectionCount() != 1) {
+				
+				return null;
+			}
 			
-			return null;
-		}
-		
-		TreePath path = tree.getSelectionPath();
-		Object lastPathItem = path.getLastPathComponent();
-		
-		if (!(lastPathItem instanceof DefaultMutableTreeNode)) {
-			return null;
-		}
-		
-		DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) lastPathItem;
-		
-		Object userObject = treeNode.getUserObject();
-		if (!(userObject instanceof ConstructorHolder)) {
+			TreePath path = tree.getSelectionPath();
+			Object lastPathItem = path.getLastPathComponent();
 			
-			Utility.show(this, "org.multipage.generator.messageSelectSingleConstructor");
-			return null;
+			if (!(lastPathItem instanceof DefaultMutableTreeNode)) {
+				return null;
+			}
+			
+			DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) lastPathItem;
+			
+			Object userObject = treeNode.getUserObject();
+			if (!(userObject instanceof ConstructorHolder)) {
+				
+				Utility.show(this, "org.multipage.generator.messageSelectSingleConstructor");
+				return null;
+			}
+			
+			return (ConstructorHolder) userObject;
 		}
-		
-		return (ConstructorHolder) userObject;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -578,70 +660,74 @@ public class SelectConstructorDialog extends JDialog {
 	 */
 	private boolean setSelectedConstructorHolder(ConstructorHolder constructorHolder) {
 		
-		if (constructorHolder == null) {
-			return false;
-		}
-		
-		// Parse constructor holder name.
-		String constructorName = constructorHolder.getName();
-		String [] constructorPath = constructorName.split("/");
-		int index = 0;
-		
-		DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) treeModel.getRoot();
-		LinkedList pathObjects = new LinkedList();
-		pathObjects.add(rootNode);
-		
-		while (index < constructorPath.length) {
-			
-			boolean isFolder = index < constructorPath.length - 1;
-			if (isFolder) {
-				
-				DefaultMutableTreeNode childNode = getChildFolderTreeNode(rootNode, constructorPath[index]);
-				if (childNode == null) {
-					return false;
-				}
-				
-				Object userObject = childNode.getUserObject();
-				if (!(userObject instanceof String)) {
-					return false;
-				}
-				
-				String folderName = (String) userObject;
-				if (!folderName.equals(constructorPath[index])) {
-					return false;
-				}
-				
-				pathObjects.add(childNode);
-				rootNode = childNode;
+		try {
+			if (constructorHolder == null) {
+				return false;
 			}
-			else {
+			
+			// Parse constructor holder name.
+			String constructorName = constructorHolder.getName();
+			String [] constructorPath = constructorName.split("/");
+			int index = 0;
+			
+			DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) treeModel.getRoot();
+			LinkedList pathObjects = new LinkedList();
+			pathObjects.add(rootNode);
+			
+			while (index < constructorPath.length) {
 				
-				Enumeration children = rootNode.children();
-				while (children.hasMoreElements()) {
+				boolean isFolder = index < constructorPath.length - 1;
+				if (isFolder) {
 					
-					DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) children.nextElement();
+					DefaultMutableTreeNode childNode = getChildFolderTreeNode(rootNode, constructorPath[index]);
+					if (childNode == null) {
+						return false;
+					}
+					
 					Object userObject = childNode.getUserObject();
+					if (!(userObject instanceof String)) {
+						return false;
+					}
 					
-					if (userObject instanceof ConstructorHolder) {
+					String folderName = (String) userObject;
+					if (!folderName.equals(constructorPath[index])) {
+						return false;
+					}
+					
+					pathObjects.add(childNode);
+					rootNode = childNode;
+				}
+				else {
+					
+					Enumeration children = rootNode.children();
+					while (children.hasMoreElements()) {
 						
-						ConstructorHolder foundConstructorHolder = (ConstructorHolder) userObject;
-						if (foundConstructorHolder.getName().equals(constructorHolder.getName())) {
+						DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) children.nextElement();
+						Object userObject = childNode.getUserObject();
+						
+						if (userObject instanceof ConstructorHolder) {
 							
-							pathObjects.add(childNode);
-							
-							// Select tree node.
-							Object [] pathArray = pathObjects.toArray();
-							TreePath treePath = new TreePath(pathArray);
-							
-							tree.setSelectionPath(treePath);
-							return true;
+							ConstructorHolder foundConstructorHolder = (ConstructorHolder) userObject;
+							if (foundConstructorHolder.getName().equals(constructorHolder.getName())) {
+								
+								pathObjects.add(childNode);
+								
+								// Select tree node.
+								Object [] pathArray = pathObjects.toArray();
+								TreePath treePath = new TreePath(pathArray);
+								
+								tree.setSelectionPath(treePath);
+								return true;
+							}
 						}
 					}
 				}
+				index++;
 			}
-			index++;
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return false;
 	}
 
@@ -649,10 +735,15 @@ public class SelectConstructorDialog extends JDialog {
 	 * On cancel.
 	 */
 	protected void onCancel() {
-		
-		filterText = textFilter.getText();
-		
-		returned = WizardReturned.CANCEL;
+		try {
+			
+			filterText = textFilter.getText();
+			returned = WizardReturned.CANCEL;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 	
@@ -661,17 +752,22 @@ public class SelectConstructorDialog extends JDialog {
 	 * On next.
 	 */
 	protected void onNext() {
-		
-		// An item must be selected.
-		ConstructorHolder selectedConstructorHolder = getSelectedConstructorHolder();
-		if (selectedConstructorHolder == null) {
-			Utility.show(this, "org.multipage.generator.messageSelectSingleConstructor");
-			return;
+		try {
+			
+			// An item must be selected.
+			ConstructorHolder selectedConstructorHolder = getSelectedConstructorHolder();
+			if (selectedConstructorHolder == null) {
+				Utility.show(this, "org.multipage.generator.messageSelectSingleConstructor");
+				return;
+			}
+			
+			filterText = textFilter.getText();
+			returned = WizardReturned.NEXT;
 		}
-		
-		filterText = textFilter.getText();
-		
-		returned = WizardReturned.NEXT;
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 	
@@ -679,10 +775,15 @@ public class SelectConstructorDialog extends JDialog {
 	 * On skip.
 	 */
 	protected void onSkip() {
-		
-		filterText = textFilter.getText();
-		
-		returned = WizardReturned.SKIP;
+		try {
+			
+			filterText = textFilter.getText();
+			returned = WizardReturned.SKIP;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -690,24 +791,29 @@ public class SelectConstructorDialog extends JDialog {
 	 * On show help.
 	 */
 	protected void onShowHelp() {
-		
-		// An item must be selected.
-		ConstructorHolder selectedConstructorHolder = getSelectedConstructorHolder();
-		if (selectedConstructorHolder == null) {
-			Utility.show(this, "org.multipage.generator.messageSelectSingleConstructor");
-			return;
+		try {
+			
+			// An item must be selected.
+			ConstructorHolder selectedConstructorHolder = getSelectedConstructorHolder();
+			if (selectedConstructorHolder == null) {
+				Utility.show(this, "org.multipage.generator.messageSelectSingleConstructor");
+				return;
+			}
+			
+			LinkedList<Area> list = new LinkedList<Area>();
+			
+			Area area = ProgramGenerator.getArea(selectedConstructorHolder.getAreaId());
+			if (area == null) {
+				return;
+			}
+			list.add(area);
+			
+			// Show help viewer.
+			AreaHelpViewer.showDialog(this, list);
 		}
-		
-		LinkedList<Area> list = new LinkedList<Area>();
-		
-		Area area = ProgramGenerator.getArea(selectedConstructorHolder.getAreaId());
-		if (area == null) {
-			return;
-		}
-		list.add(area);
-		
-		// Show help viewer.
-		AreaHelpViewer.showDialog(this, list);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -716,20 +822,44 @@ public class SelectConstructorDialog extends JDialog {
 	 * @param popup
 	 */
 	private static void addPopup(Component component, final JPopupMenu popup) {
-		component.addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e);
+		try {
+			
+			component.addMouseListener(new MouseAdapter() {
+				public void mousePressed(MouseEvent e) {
+					try {
+						
+						if (e.isPopupTrigger()) {
+							showMenu(e);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-			public void mouseReleased(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e);
+				public void mouseReleased(MouseEvent e) {
+					try {
+						
+						if (e.isPopupTrigger()) {
+							showMenu(e);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-			private void showMenu(MouseEvent e) {
-				popup.show(e.getComponent(), e.getX(), e.getY());
-			}
-		});
+				private void showMenu(MouseEvent e) {
+					try {
+						
+						popup.show(e.getComponent(), e.getX(), e.getY());
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

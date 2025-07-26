@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -44,11 +44,12 @@ import org.multipage.gui.Images;
 import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 
 /**
- * 
- * @author
+ * Dialog that displays search input fields for resources.
+ * @author vakol
  *
  */
 public class ResourceSearch extends JDialog {
@@ -101,14 +102,19 @@ public class ResourceSearch extends JDialog {
 	 * @return
 	 */
 	public static void showDialog(SearchableResourcesList listPanel) {
-
-		ResourceSearch.listPanel = listPanel;
-		
-		if (staticDialog == null) {
-			staticDialog = new ResourceSearch(listPanel.getWindow());
+		try {
+			
+			ResourceSearch.listPanel = listPanel;
+			
+			if (staticDialog == null) {
+				staticDialog = new ResourceSearch(listPanel.getWindow());
+			}
+			staticDialog.loadMimeTypes();
+			staticDialog.setVisible(true);
 		}
-		staticDialog.loadMimeTypes();
-		staticDialog.setVisible(true);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -117,9 +123,14 @@ public class ResourceSearch extends JDialog {
 	 */
 	public ResourceSearch(Window parent) {
 		super(parent, ModalityType.MODELESS);
-
-		initComponents();
-		postCreate(); // $hide$
+		
+		try {
+			initComponents();
+			postCreate(); // $hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -234,6 +245,7 @@ public class ResourceSearch extends JDialog {
 		getContentPane().add(buttonBackward);
 		
 		buttonFindNext = new JButton("org.multipage.generator.textFindNext");
+		springLayout.putConstraint(SpringLayout.EAST, buttonFindNext, -10, SpringLayout.EAST, labelSettings);
 		buttonFindNext.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				onFindNext();
@@ -242,12 +254,11 @@ public class ResourceSearch extends JDialog {
 		buttonFindNext.setMargin(new Insets(0, 0, 0, 0));
 		buttonFindNext.setPreferredSize(new Dimension(85, 25));
 		springLayout.putConstraint(SpringLayout.SOUTH, buttonFindNext, -10, SpringLayout.SOUTH, getContentPane());
-		springLayout.putConstraint(SpringLayout.EAST, buttonFindNext, 0, SpringLayout.EAST, labelSettings);
 		getContentPane().add(buttonFindNext);
 		
 		separatorHorizontal = new JSeparator();
+		springLayout.putConstraint(SpringLayout.NORTH, buttonForward, 10, SpringLayout.SOUTH, separatorHorizontal);
 		springLayout.putConstraint(SpringLayout.NORTH, separatorHorizontal, 26, SpringLayout.SOUTH, checkWholeWord);
-		springLayout.putConstraint(SpringLayout.NORTH, buttonForward, 23, SpringLayout.SOUTH, separatorHorizontal);
 		springLayout.putConstraint(SpringLayout.WEST, separatorHorizontal, 0, SpringLayout.EAST, separator);
 		springLayout.putConstraint(SpringLayout.EAST, separatorHorizontal, -10, SpringLayout.EAST, getContentPane());
 		getContentPane().add(separatorHorizontal);
@@ -285,102 +296,156 @@ public class ResourceSearch extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		Utility.centerOnScreen(this);
-		localize();
-		setIcons();
-		
-		initIdentifierTextBox();
-		initComboBoxes();
-		addKeyMaps();
-		
-		buttonForward.setSelected(true);
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			Utility.centerOnScreen(this);
+			localize();
+			setIcons();
+			
+			initIdentifierTextBox();
+			initComboBoxes();
+			addKeyMaps();
+			
+			buttonForward.setSelected(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Add key maps.
 	 */
 	private void addKeyMaps() {
-	
-		getRootPane().setDefaultButton(buttonFindNext);
+		try {
+			
+			getRootPane().setDefaultButton(buttonFindNext);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Initialize comboboxes.
 	 */
+	@SuppressWarnings("unchecked")
 	private void initComboBoxes() {
-		
-		comboSavedAsText.addItem(BooleanTriState.UNKNOWN);
-		comboSavedAsText.addItem(BooleanTriState.TRUE);
-		comboSavedAsText.addItem(BooleanTriState.FALSE);
-		
-		comboIsVisible.addItem(BooleanTriState.UNKNOWN);
-		comboIsVisible.addItem(BooleanTriState.TRUE);
-		comboIsVisible.addItem(BooleanTriState.FALSE);
+		try {
+			
+			comboSavedAsText.addItem(BooleanTriState.UNKNOWN);
+			comboSavedAsText.addItem(BooleanTriState.TRUE);
+			comboSavedAsText.addItem(BooleanTriState.FALSE);
+			
+			comboIsVisible.addItem(BooleanTriState.UNKNOWN);
+			comboIsVisible.addItem(BooleanTriState.TRUE);
+			comboIsVisible.addItem(BooleanTriState.FALSE);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Initialize identifier text box.
 	 */
 	private void initIdentifierTextBox() {
-		
-		textIdentifier.getDocument().addDocumentListener(new DocumentListener() {
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				onIdentiferChanged();
-			}
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				onIdentiferChanged();
-			}
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				onIdentiferChanged();
-			}
-		});
+		try {
+			
+			textIdentifier.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					try {
+						
+						onIdentiferChanged();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					try {
+						
+						onIdentiferChanged();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					try {
+						
+						onIdentiferChanged();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On identifier changed.
 	 */
 	protected void onIdentiferChanged() {
-		
-		Long identifier = getIdentifier();
-		if (textIdentifier.getText().isEmpty()) {
-			identifier = 0L;
+		try {
+			
+			Long identifier = getIdentifier();
+			if (textIdentifier.getText().isEmpty()) {
+				identifier = 0L;
+			}
+			
+			textIdentifier.setForeground(identifier != null ? Color.BLACK : Color.RED);
 		}
-		
-		textIdentifier.setForeground(identifier != null ? Color.BLACK : Color.RED);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(labelName);
-		Utility.localize(labelMime);
-		Utility.localize(labelIdentifier);
-		Utility.localize(labelSavedAsText);
-		Utility.localize(labelIsVisible);
-		Utility.localize(labelSettings);
-		Utility.localize(checkCaseSensitive);
-		Utility.localize(checkWholeWord);
-		Utility.localize(buttonForward);
-		Utility.localize(buttonBackward);
-		Utility.localize(buttonFindNext);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(labelName);
+			Utility.localize(labelMime);
+			Utility.localize(labelIdentifier);
+			Utility.localize(labelSavedAsText);
+			Utility.localize(labelIsVisible);
+			Utility.localize(labelSettings);
+			Utility.localize(checkCaseSensitive);
+			Utility.localize(checkWholeWord);
+			Utility.localize(buttonForward);
+			Utility.localize(buttonBackward);
+			Utility.localize(buttonFindNext);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonFindNext.setIcon(Images.getIcon("org/multipage/generator/images/search_icon.png"));
-		buttonReloadMime.setIcon(Images.getIcon("org/multipage/generator/images/update_icon.png"));
+		try {
+			
+			buttonFindNext.setIcon(Images.getIcon("org/multipage/generator/images/search_icon.png"));
+			buttonReloadMime.setIcon(Images.getIcon("org/multipage/generator/images/update_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -396,33 +461,44 @@ public class ResourceSearch extends JDialog {
 	 * Load MIME types.
 	 */
 	private void loadMimeTypes() {
-		
-		if (listPanel == null) {
-			return;
+		try {
+			
+			if (listPanel == null) {
+				return;
+			}
+			
+			LinkedList<MimeType> mimeTypesReference = listPanel.getMimeTypes();
+			if (mimeTypesReference == null) {
+				return;
+			}
+			
+			// Clone and sort the list.
+			LinkedList<MimeType> mimeTypes = (LinkedList<MimeType>) mimeTypesReference.clone();
+			Collections.sort(mimeTypes, new Comparator<MimeType>() {
+				@Override
+				public int compare(MimeType mimeType1, MimeType mimeType2) {
+					try {
+						return mimeType1.toString().compareTo(mimeType2.toString());
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return 0;
+				}});
+			
+			// Load MIME types to the combo box.
+			comboBoxMime.removeAllItems();
+			
+			// Add default item.
+			comboBoxMime.addItem("");
+	
+			for (MimeType mimeType : mimeTypes) {
+				comboBoxMime.addItem(mimeType);
+			}
 		}
-		
-		LinkedList<MimeType> mimeTypesReference = listPanel.getMimeTypes();
-		if (mimeTypesReference == null) {
-			return;
-		}
-		
-		// Clone and sort the list.
-		LinkedList<MimeType> mimeTypes = (LinkedList<MimeType>) mimeTypesReference.clone();
-		Collections.sort(mimeTypes, new Comparator<MimeType>() {
-			@Override
-			public int compare(MimeType mimeType1, MimeType mimeType2) {
-				return mimeType1.toString().compareTo(mimeType2.toString());
-			}});
-		
-		// Load MIME types to the combo box.
-		comboBoxMime.removeAllItems();
-		
-		// Add default item.
-		comboBoxMime.addItem("");
-
-		for (MimeType mimeType : mimeTypes) {
-			comboBoxMime.addItem(mimeType);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -431,33 +507,49 @@ public class ResourceSearch extends JDialog {
 	 */
 	private String getResourceName() {
 		
-		String name = textName.getText();
-		if (name == null) {
-			return null;
+		try {
+			String name = textName.getText();
+			if (name == null) {
+				return null;
+			}
+			if (name.isEmpty()) {
+				return null;
+			}
+			
+			return name;
 		}
-		if (name.isEmpty()) {
-			return null;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		return name;
+		return null;
 	}
 
 	/**
 	 * On reload MIME.
 	 */
 	protected void onReloadMime() {
-		
-		loadMimeTypes();
+		try {
+			
+			loadMimeTypes();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Update dialog.
 	 */
 	public static void update() {
-		
-		if (staticDialog != null) {
-			staticDialog.loadMimeTypes();
+		try {
+			
+			if (staticDialog != null) {
+				staticDialog.loadMimeTypes();
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -466,12 +558,18 @@ public class ResourceSearch extends JDialog {
 	 */
 	private MimeType getSelectedMimeType() {
 		
-		Object item = comboBoxMime.getSelectedItem();
-		if (!(item instanceof MimeType)) {
-			return null;
+		try {
+			Object item = comboBoxMime.getSelectedItem();
+			if (!(item instanceof MimeType)) {
+				return null;
+			}
+			
+			return (MimeType) item;
 		}
-		
-		return (MimeType) item;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -480,16 +578,22 @@ public class ResourceSearch extends JDialog {
 	 */
 	private Long getIdentifier() {
 		
-		String idText = textIdentifier.getText();
-		Long identifier = null;
-		
 		try {
-			identifier = Long.parseLong(idText);
+			String idText = textIdentifier.getText();
+			Long identifier = null;
+			
+			try {
+				identifier = Long.parseLong(idText);
+			}
+			catch (NumberFormatException e) {
+			}
+			
+			return identifier;
 		}
-		catch (NumberFormatException e) {
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		return identifier;
+		return null;
 	}
 
 	/**
@@ -498,13 +602,19 @@ public class ResourceSearch extends JDialog {
 	 */
 	private Boolean getSavedAsText() {
 		
-		Object item = comboSavedAsText.getSelectedItem();
-		if (!(item instanceof BooleanTriState)) {
-			return null;
+		try {
+			Object item = comboSavedAsText.getSelectedItem();
+			if (!(item instanceof BooleanTriState)) {
+				return null;
+			}
+			
+			BooleanTriState state = (BooleanTriState) item;
+			return state.value;
 		}
-		
-		BooleanTriState state = (BooleanTriState) item;
-		return state.value;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -513,118 +623,110 @@ public class ResourceSearch extends JDialog {
 	 */
 	private Boolean getIsVisible() {
 		
-		Object item = comboIsVisible.getSelectedItem();
-		if (!(item instanceof BooleanTriState)) {
-			return null;
+		try {
+			Object item = comboIsVisible.getSelectedItem();
+			if (!(item instanceof BooleanTriState)) {
+				return null;
+			}
+			
+			BooleanTriState state = (BooleanTriState) item;
+			return state.value;
 		}
-		
-		BooleanTriState state = (BooleanTriState) item;
-		return state.value;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
 	 * On find next.
 	 */
 	protected void onFindNext() {
-		
-		if (listPanel == null) {
-			return;
-		}
-		
-		// Get first selected item.
-		boolean forward = buttonForward.isSelected();
-
-		JList list = listPanel.getList();
-		ListModel model = list.getModel();
-		int resourcesCount = model.getSize();
-		
-		if (resourcesCount == 0) {
-			Utility.show(this, "org.multipage.generator.messageThereAreNoResourcesInList");
-			return;
-		}
-		
-		int selectedIndex = list.getSelectedIndex();
-		int lastIndex = resourcesCount - 1;
-		int nextIndex;
-		
-		if (selectedIndex == -1) {
-			nextIndex = forward ? 0 : lastIndex;
-		}
-		else {
-			if (forward) {
-				nextIndex = selectedIndex < lastIndex ? selectedIndex + 1 : lastIndex;
+		try {
+			
+			if (listPanel == null) {
+				return;
+			}
+			
+			// Get first selected item.
+			boolean forward = buttonForward.isSelected();
+	
+			JList list = listPanel.getList();
+			ListModel model = list.getModel();
+			int resourcesCount = model.getSize();
+			
+			if (resourcesCount == 0) {
+				Utility.show(this, "org.multipage.generator.messageThereAreNoResourcesInList");
+				return;
+			}
+			
+			int selectedIndex = list.getSelectedIndex();
+			int lastIndex = resourcesCount - 1;
+			int nextIndex;
+			
+			if (selectedIndex == -1) {
+				nextIndex = forward ? 0 : lastIndex;
 			}
 			else {
-				nextIndex = selectedIndex > 0 ? selectedIndex - 1 : 0;
-			}
-		}
-		
-		// Get settings.
-		String name = getResourceName();
-		MimeType mimeType = getSelectedMimeType();
-		Long identifier = getIdentifier();
-		Boolean savedAsText = getSavedAsText();
-		Boolean isVisible = getIsVisible();
-		boolean isCaseSensitive = checkCaseSensitive.isSelected();
-		boolean isWholeWord = checkWholeWord.isSelected();
-		
-		Resource foundResource = null;
-		
-		// Search for next match.
-		for (int currentIndex = nextIndex;
-		     currentIndex >= 0 && currentIndex <= lastIndex;
-		     currentIndex = forward ? currentIndex + 1 : currentIndex - 1) {
-			
-			// Get resource reference.
-			Object element = model.getElementAt(currentIndex);
-			if (!(element instanceof Resource)) {
-				continue;
-			}
-			Resource resource = (Resource) element;
-			
-			if (identifier != null) {
-				if (identifier == resource.getId()) {
-					// Select this resource.
-					list.setSelectedIndex(currentIndex);
-					list.ensureIndexIsVisible(currentIndex);
-					
-					foundResource = resource;
-					break;
+				if (forward) {
+					nextIndex = selectedIndex < lastIndex ? selectedIndex + 1 : lastIndex;
+				}
+				else {
+					nextIndex = selectedIndex > 0 ? selectedIndex - 1 : 0;
 				}
 			}
 			
-			// Check properties.
-			if (mimeType != null) {
-				if (mimeType.id != resource.getMimeTypeId()) {
+			// Get settings.
+			String name = getResourceName();
+			MimeType mimeType = getSelectedMimeType();
+			Long identifier = getIdentifier();
+			Boolean savedAsText = getSavedAsText();
+			Boolean isVisible = getIsVisible();
+			boolean isCaseSensitive = checkCaseSensitive.isSelected();
+			boolean isWholeWord = checkWholeWord.isSelected();
+			
+			Resource foundResource = null;
+			
+			// Search for next match.
+			for (int currentIndex = nextIndex;
+			     currentIndex >= 0 && currentIndex <= lastIndex;
+			     currentIndex = forward ? currentIndex + 1 : currentIndex - 1) {
+				
+				// Get resource reference.
+				Object element = model.getElementAt(currentIndex);
+				if (!(element instanceof Resource)) {
 					continue;
 				}
-			}
-			if (savedAsText != null) {
-				if (savedAsText != resource.isSavedAsText()) {
-					continue;
+				Resource resource = (Resource) element;
+				
+				if (identifier != null) {
+					if (identifier == resource.getId()) {
+						// Select this resource.
+						list.setSelectedIndex(currentIndex);
+						list.ensureIndexIsVisible(currentIndex);
+						
+						foundResource = resource;
+						break;
+					}
 				}
-			}
-			if (isVisible != null) {
-				if (isVisible != resource.isVisible()) {
-					continue;
+				
+				// Check properties.
+				if (mimeType != null) {
+					if (mimeType.id != resource.getMimeTypeId()) {
+						continue;
+					}
 				}
-			}
-			if (name == null && identifier == null) {
-				
-				// Select this resource.
-				list.setSelectedIndex(currentIndex);
-				list.ensureIndexIsVisible(currentIndex);
-				
-				foundResource = resource;
-				break;
-			}
-			
-			if (name != null) {
-				// Search in resource description.
-				String resourceName = resource.getDescription();
-				FoundAttr foundAttr = new FoundAttr(name, isCaseSensitive, isWholeWord);
-				
-				if (Utility.find(resourceName, foundAttr)) {
+				if (savedAsText != null) {
+					if (savedAsText != resource.isSavedAsText()) {
+						continue;
+					}
+				}
+				if (isVisible != null) {
+					if (isVisible != resource.isVisible()) {
+						continue;
+					}
+				}
+				if (name == null && identifier == null) {
 					
 					// Select this resource.
 					list.setSelectedIndex(currentIndex);
@@ -633,15 +735,34 @@ public class ResourceSearch extends JDialog {
 					foundResource = resource;
 					break;
 				}
+				
+				if (name != null) {
+					// Search in resource description.
+					String resourceName = resource.getDescription();
+					FoundAttr foundAttr = new FoundAttr(name, isCaseSensitive, isWholeWord);
+					
+					if (Utility.find(resourceName, foundAttr)) {
+						
+						// Select this resource.
+						list.setSelectedIndex(currentIndex);
+						list.ensureIndexIsVisible(currentIndex);
+						
+						foundResource = resource;
+						break;
+					}
+				}
+			}
+			
+			// If not found inform user.
+			if (foundResource == null) {
+				labelMessage.setText(Resources.getString("org.multipage.generator.textResourceNotFound"));
+			}
+			else {
+				labelMessage.setText(foundResource.getDescription());
 			}
 		}
-		
-		// If not found inform user.
-		if (foundResource == null) {
-			labelMessage.setText(Resources.getString("org.multipage.generator.textResourceNotFound"));
-		}
-		else {
-			labelMessage.setText(foundResource.getDescription());
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -22,7 +22,6 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.print.PrinterException;
-import java.beans.BeanProperty;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.LinkedList;
@@ -48,7 +47,6 @@ import javax.swing.JToolBar;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.SpringLayout;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
@@ -80,11 +78,12 @@ import javax.swing.undo.UndoManager;
 
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 import org.multipage.util.SimpleMethodRef;
 
 /**
- * 
- * @author
+ * Panel that displays text editors.
+ * @author vakol
  *
  */
 public class TextEditorPane extends JPanel implements StringValueEditor {
@@ -128,19 +127,28 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * Load dialog.
 	 */
 	protected void loadDialog() {
-		
-		buttonWrap.setSelected(wordWrapState);
-		wrapUnwrap();
+		try {
+			
+			buttonWrap.setSelected(wordWrapState);
+			wrapUnwrap();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	protected void saveDialog() {
-		
-		stopTimers();
-		
-		wordWrapState = buttonWrap.isSelected();
+		try {
+			
+			stopTimers();
+			wordWrapState = buttonWrap.isSelected();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -179,16 +187,21 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 */
 	public static String moveLineRight(String lineText) {
 		
-		StringBuffer movedText = new StringBuffer();
-		
-		for (int index = 0; index < tabWidth; index++) {
-			movedText.append(' ');
+		try {
+			StringBuffer movedText = new StringBuffer();
+			
+			for (int index = 0; index < tabWidth; index++) {
+				movedText.append(' ');
+			}
+			
+			movedText.append(lineText);
+			
+			return movedText.toString();
 		}
-		
-		movedText.append(lineText);
-		
-		return movedText.toString();
-	
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return lineText;
 	}
 
 	/**
@@ -198,29 +211,35 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 */
 	public static String moveLineLeft(String lineText) {
 		
-		StringBuffer movedText = new StringBuffer();
-		int spacesToRemove = tabWidth;
-		
-		boolean isStartingWhitespace = true;
-		
-		for (int index = 0; index < lineText.length(); index++) {
+		try {
+			StringBuffer movedText = new StringBuffer();
+			int spacesToRemove = tabWidth;
 			
-			Character character = lineText.charAt(index);
+			boolean isStartingWhitespace = true;
 			
-			if (isStartingWhitespace && character != ' ') {
-				isStartingWhitespace = false;
-				spacesToRemove = 0;
+			for (int index = 0; index < lineText.length(); index++) {
+				
+				Character character = lineText.charAt(index);
+				
+				if (isStartingWhitespace && character != ' ') {
+					isStartingWhitespace = false;
+					spacesToRemove = 0;
+				}
+				
+				if (spacesToRemove == 0) {
+					movedText.append(character);
+				}
+				else if (spacesToRemove > 0) {
+					spacesToRemove--;
+				}
 			}
 			
-			if (spacesToRemove == 0) {
-				movedText.append(character);
-			}
-			else if (spacesToRemove > 0) {
-				spacesToRemove--;
-			}
+			return movedText.toString();
 		}
-		
-		return movedText.toString();
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return lineText;
 	}
 
 	/**
@@ -348,17 +367,23 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * Constructor.
 	 */
 	public TextEditorPane(Window parentWindow, boolean useHtmlEditor) {
-		panelNoWrapPlain.setLayout(new BorderLayout(0, 0));
-		panelNoWrapHtml.setLayout(new BorderLayout(0, 0));
 		
-		this.parentWindow = parentWindow;
-		this.useHtmlEditor = useHtmlEditor;
-		// Initialize components.
-		initComponents();
-		// $hide>>$
-		// Post creation.
-		postCreation();
-		// $hide<<$
+		try {
+			panelNoWrapPlain.setLayout(new BorderLayout(0, 0));
+			panelNoWrapHtml.setLayout(new BorderLayout(0, 0));
+			
+			this.parentWindow = parentWindow;
+			this.useHtmlEditor = useHtmlEditor;
+			// Initialize components.
+			initComponents();
+			// $hide>>$
+			// Post creation.
+			postCreation();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -455,30 +480,35 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * Post creation.
 	 */
 	private void postCreation() {
-
-		// Initialize key strokes.
-		initKeyStrokes();
-		// Localize components.
-		localize();
-		// Set icons.
-		setIcons();
-		// Set tool bar.
-		createToolBars();
-		// Set editors.
-		setEditors();
-		// Set documents filter.
-		setDocuments();
-		// Set listeners.
-		setListeners();
-		// Set undoable edit.
-		setUndoableEdit();
-		// Create find dialog.
-		createFindDialog();
-		// Create popup menus.
-		popupMenuPlain = new TextPopupMenu(plainTextPane);
-		popupMenuHtml = new TextPopupMenu(htmlTextPane);
-		// Create timers.
-		createTimers();
+		try {
+			
+			// Initialize key strokes.
+			initKeyStrokes();
+			// Localize components.
+			localize();
+			// Set icons.
+			setIcons();
+			// Set tool bar.
+			createToolBars();
+			// Set editors.
+			setEditors();
+			// Set documents filter.
+			setDocuments();
+			// Set listeners.
+			setListeners();
+			// Set undoable edit.
+			setUndoableEdit();
+			// Create find dialog.
+			createFindDialog();
+			// Create popup menus.
+			popupMenuPlain = new TextPopupMenu(plainTextPane);
+			popupMenuHtml = new TextPopupMenu(htmlTextPane);
+			// Create timers.
+			createTimers();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -486,203 +516,266 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 */
 	@SuppressWarnings("serial")
 	private void initKeyStrokes() {
-		
-		// Escape key.
-		Action removeHighlights = new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Utility.removeFindHighlights(plainTextPane);
-				Utility.removeFindHighlights(htmlTextPane);
-			}};
-		KeyStroke ecsapeKey = KeyStroke.getKeyStroke("ESCAPE");
-		
-		
-		plainTextPane.getInputMap().put(ecsapeKey, "removeHighlights");
-		plainTextPane.getActionMap().put("removeHighlights", removeHighlights);
-		htmlTextPane.getInputMap().put(ecsapeKey, "removeHighlights");
-		htmlTextPane.getActionMap().put("removeHighlights", removeHighlights);
-		
-		// CTRL + F key.
-		Action find = new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				findText();
-			}};
-		KeyStroke findKey = KeyStroke.getKeyStroke("control F");
-		
-		plainTextPane.getInputMap().put(findKey, "find");
-		plainTextPane.getActionMap().put("find", find);
-		htmlTextPane.getInputMap().put(findKey, "find");
-		htmlTextPane.getActionMap().put("find", find);
-		
-		// Shift + TAB key.
-		Action moveRight = new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				moveTextRight();
-			}
+		try {
+			
+			// Escape key.
+			Action removeHighlights = new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						
+						Utility.removeFindHighlights(plainTextPane);
+						Utility.removeFindHighlights(htmlTextPane);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}};
+			KeyStroke ecsapeKey = KeyStroke.getKeyStroke("ESCAPE");
+			
+			
+			plainTextPane.getInputMap().put(ecsapeKey, "removeHighlights");
+			plainTextPane.getActionMap().put("removeHighlights", removeHighlights);
+			htmlTextPane.getInputMap().put(ecsapeKey, "removeHighlights");
+			htmlTextPane.getActionMap().put("removeHighlights", removeHighlights);
+			
+			// CTRL + F key.
+			Action find = new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						
+						findText();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}};
+			KeyStroke findKey = KeyStroke.getKeyStroke("control F");
+			
+			plainTextPane.getInputMap().put(findKey, "find");
+			plainTextPane.getActionMap().put("find", find);
+			htmlTextPane.getInputMap().put(findKey, "find");
+			htmlTextPane.getActionMap().put("find", find);
+			
+			// Shift + TAB key.
+			Action moveRight = new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						
+						moveTextRight();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			};
+			KeyStroke moveRightKey = KeyStroke.getKeyStroke("shift TAB");
+			
+			plainTextPane.getInputMap().put(moveRightKey, "moveRight");
+			plainTextPane.getActionMap().put("moveRight", moveRight);
+			htmlTextPane.getInputMap().put(moveRightKey, "moveRight");
+			htmlTextPane.getActionMap().put("moveRight", moveRight);
+			
+			
+			// CTRL + B key.
+			Action moveLeft = new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						
+						moveTextLeft();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			};
+			KeyStroke moveLeftKey = KeyStroke.getKeyStroke("control B");
+			
+			plainTextPane.getInputMap().put(moveLeftKey, "moveLeft");
+			plainTextPane.getActionMap().put("moveLeft", moveLeft);
+			htmlTextPane.getInputMap().put(moveLeftKey, "moveLeft");
+			htmlTextPane.getActionMap().put("moveLeft", moveLeft);
+			
+			// Shift + bacspace.
+			Action backLeft = new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						
+						backTextLeft();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			};
+			KeyStroke backLeftKey = KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, InputEvent.SHIFT_DOWN_MASK);
+			
+			plainTextPane.getInputMap().put(backLeftKey, "backLeft");
+			plainTextPane.getActionMap().put("backLeft", backLeft);
+			htmlTextPane.getInputMap().put(backLeftKey, "backLeft");
+			htmlTextPane.getActionMap().put("backLeft", backLeft);
+			
+			
+			// CTRL + Z key.
+			Action undo = new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						
+						undoText();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			};
+			KeyStroke undoKey = KeyStroke.getKeyStroke("control Z");
+			
+			plainTextPane.getInputMap().put(undoKey, "undo");
+			plainTextPane.getActionMap().put("undo", undo);
+			htmlTextPane.getInputMap().put(undoKey, "undo");
+			htmlTextPane.getActionMap().put("undo", undo);
+			
+			
+			// CTRL + Y key.
+			Action redo = new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						
+						redoText();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			};
+			KeyStroke redoKey = KeyStroke.getKeyStroke("control Y");
+			
+			plainTextPane.getInputMap().put(redoKey, "redo");
+			plainTextPane.getActionMap().put("redo", redo);
+			htmlTextPane.getInputMap().put(redoKey, "redo");
+			htmlTextPane.getActionMap().put("redo", redo);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
 		};
-		KeyStroke moveRightKey = KeyStroke.getKeyStroke("shift TAB");
-		
-		plainTextPane.getInputMap().put(moveRightKey, "moveRight");
-		plainTextPane.getActionMap().put("moveRight", moveRight);
-		htmlTextPane.getInputMap().put(moveRightKey, "moveRight");
-		htmlTextPane.getActionMap().put("moveRight", moveRight);
-		
-		
-		// CTRL + B key.
-		Action moveLeft = new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				moveTextLeft();
-			}
-		};
-		KeyStroke moveLeftKey = KeyStroke.getKeyStroke("control B");
-		
-		plainTextPane.getInputMap().put(moveLeftKey, "moveLeft");
-		plainTextPane.getActionMap().put("moveLeft", moveLeft);
-		htmlTextPane.getInputMap().put(moveLeftKey, "moveLeft");
-		htmlTextPane.getActionMap().put("moveLeft", moveLeft);
-		
-		// Shift + bacspace.
-		Action backLeft = new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				backTextLeft();
-			}
-		};
-		KeyStroke backLeftKey = KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, InputEvent.SHIFT_DOWN_MASK);
-		
-		plainTextPane.getInputMap().put(backLeftKey, "backLeft");
-		plainTextPane.getActionMap().put("backLeft", backLeft);
-		htmlTextPane.getInputMap().put(backLeftKey, "backLeft");
-		htmlTextPane.getActionMap().put("backLeft", backLeft);
-		
-		
-		// CTRL + Z key.
-		Action undo = new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				undoText();
-			}
-		};
-		KeyStroke undoKey = KeyStroke.getKeyStroke("control Z");
-		
-		plainTextPane.getInputMap().put(undoKey, "undo");
-		plainTextPane.getActionMap().put("undo", undo);
-		htmlTextPane.getInputMap().put(undoKey, "undo");
-		htmlTextPane.getActionMap().put("undo", undo);
-		
-		
-		// CTRL + Y key.
-		Action redo = new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				redoText();
-			}
-		};
-		KeyStroke redoKey = KeyStroke.getKeyStroke("control Y");
-		
-		plainTextPane.getInputMap().put(redoKey, "redo");
-		plainTextPane.getActionMap().put("redo", redo);
-		htmlTextPane.getInputMap().put(redoKey, "redo");
-		htmlTextPane.getActionMap().put("redo", redo);
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(tabbedPane);
+		try {
+			
+			Utility.localize(tabbedPane);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		// Set tab icons.
-		tabbedPane.setIconAt(0, Images.getIcon("org/multipage/gui/images/html_icon.png"));
-		tabbedPane.setIconAt(1, Images.getIcon("org/multipage/gui/images/text_icon.png"));
+		try {
+			
+			// Set tab icons.
+			tabbedPane.setIconAt(0, Images.getIcon("org/multipage/gui/images/html_icon.png"));
+			tabbedPane.setIconAt(1, Images.getIcon("org/multipage/gui/images/text_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set tool bars.
 	 */
 	private void createToolBars() {
-
-		buttonCut = ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/cut_icon.png",
-				this, "cutText", "org.multipage.gui.tooltipCutText");
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/copy_icon.png",
-				this, "copyText", "org.multipage.gui.tooltipCopySelectedText");
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/paste_icon.png",
-				this, "pasteText", "org.multipage.gui.tooltipPasteText");
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/select_all.png",
-				this, "selectAll", "org.multipage.gui.tooltipSelectAll");
-
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/copy_all.png",
-				this, "copyAll", "org.multipage.gui.tooltipCopyAllText");
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/replace_icon.png",
-				this, "replaceText", "org.multipage.gui.tooltipReplaceText");
-		toolBar.addSeparator();
-		buttonFont = ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/font_icon.png",
-				this, "setFont", "org.multipage.gui.tooltipSetFont");
-		toolBar.addSeparator();
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/indent.png",
-				this, "moveTextRight", "org.multipage.gui.tooltipMoveTextRight");
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/unindent.png",
-				this, "moveTextLeft", "org.multipage.gui.tooltipMoveTextLeft");
-		toolBar.addSeparator();
-		buttonUndo = ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/undo_icon.png",
-				this, "undoText", "org.multipage.gui.tooltipUndoAction");
-		buttonRedo = ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/redo_icon.png",
-				this, "redoText", "org.multipage.gui.tooltipRedoAction");
-		toolBar.addSeparator();
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/search_icon.png",
-				this, "findText", "org.multipage.gui.tooltipFindText");
-		toolBar.addSeparator();
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/print_icon.png",
-				this, "print", "org.multipage.gui.tooltipPrintText");
-		buttonWrap = ToolBarKit.addToggleButton(toolBar, "org/multipage/gui/images/word_wrap.png",
-				this, "wrapUnwrap", "org.multipage.gui.tooltipWrapUnwrap");
-		buttonReset = ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/cancel_icon.png",
-				this, "resetText", "org.multipage.gui.tooltipResetContent");
-		
-		// If the HTML editor is used.
-		if (useHtmlEditor) {
-
-			buttonBold = ToolBarKit.addToggleButton(richTextToolBar,
-					"org/multipage/gui/images/bold.png",
-					this, "boldText", "org.multipage.gui.tooltipSetBoldText");
-			buttonItalic = ToolBarKit.addToggleButton(richTextToolBar,
-					"org/multipage/gui/images/italic.png",
-					this, "italicText", "org.multipage.gui.tooltipSetItalicText");
-			buttonUnderline = ToolBarKit.addToggleButton(richTextToolBar,
-					"org/multipage/gui/images/underline.png",
-					this, "underlineText", "org.multipage.gui.tooltipSetUnderlinedText");
-			buttonStrike = ToolBarKit.addToggleButton(richTextToolBar,
-					"org/multipage/gui/images/strike.png",
-					this, "strikeText", "org.multipage.gui.tooltipSetStrikedText");
-			buttonSubscript = ToolBarKit.addToggleButton(richTextToolBar,
-					"org/multipage/gui/images/subscript.png",
-					this, "subscriptText", "org.multipage.gui.tooltipSetSubscriptText");
-			buttonSuperscript = ToolBarKit.addToggleButton(richTextToolBar,
-					"org/multipage/gui/images/superscript.png",
-					this, "superscriptText", "org.multipage.gui.tooltipSetSuperscriptText");
+		try {
 			
-			setFontNames(richTextToolBar);
-			setFontSizes(richTextToolBar);
-			setAlignment(richTextToolBar);
+			buttonCut = ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/cut_icon.png",
+					"org.multipage.gui.tooltipCutText", () -> cutText());
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/copy_icon.png",
+					"org.multipage.gui.tooltipCopySelectedText", () -> copyText());
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/paste_icon.png",
+					"org.multipage.gui.tooltipPasteText", () -> pasteText());
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/select_all.png",
+					"org.multipage.gui.tooltipSelectAll", () -> selectAll());
+	
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/copy_all.png",
+					"org.multipage.gui.tooltipCopyAllText", () -> copyAll());
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/replace_icon.png",
+					"org.multipage.gui.tooltipReplaceText", () -> replaceText());
+			toolBar.addSeparator();
+			buttonFont = ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/font_icon.png",
+					"org.multipage.gui.tooltipSetFont", () -> setFont());
+			toolBar.addSeparator();
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/indent.png",
+					"org.multipage.gui.tooltipMoveTextRight", () -> moveTextRight());
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/unindent.png",
+					"org.multipage.gui.tooltipMoveTextLeft", () -> moveTextLeft());
+			toolBar.addSeparator();
+			buttonUndo = ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/undo_icon.png",
+					"org.multipage.gui.tooltipUndoAction", () -> undoText());
+			buttonRedo = ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/redo_icon.png",
+					"org.multipage.gui.tooltipRedoAction", () -> redoText());
+			toolBar.addSeparator();
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/search_icon.png",
+					"org.multipage.gui.tooltipFindText", () -> findText());
+			toolBar.addSeparator();
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/print_icon.png",
+					"org.multipage.gui.tooltipPrintText", () -> print());
+			buttonWrap = ToolBarKit.addToggleButton(toolBar, "org/multipage/gui/images/word_wrap.png",
+					"org.multipage.gui.tooltipWrapUnwrap", () -> wrapUnwrap());
+			buttonReset = ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/cancel_icon.png",
+					"org.multipage.gui.tooltipResetContent", () -> resetText());
 			
-			buttonForeground = ToolBarKit.addToolBarButton(richTextToolBar,
-					"org/multipage/gui/images/foreground.png",
-					this, "foregroundText", "org.multipage.gui.tooltipSetTextForegroundColor");
-			buttonBackground = ToolBarKit.addToolBarButton(richTextToolBar,
-					"org/multipage/gui/images/background.png",
-					this, "backgroundText", "org.multipage.gui.tooltipSetTextBackgroundColor");
-			buttonBackground.setVisible(false);// hide it
+			// If the HTML editor is used.
+			if (useHtmlEditor) {
+	
+				buttonBold = ToolBarKit.addToggleButton(richTextToolBar,
+						"org/multipage/gui/images/bold.png",
+						"org.multipage.gui.tooltipSetBoldText", () -> boldText());
+				buttonItalic = ToolBarKit.addToggleButton(richTextToolBar,
+						"org/multipage/gui/images/italic.png",
+						"org.multipage.gui.tooltipSetItalicText", () -> italicText());
+				buttonUnderline = ToolBarKit.addToggleButton(richTextToolBar,
+						"org/multipage/gui/images/underline.png",
+						"org.multipage.gui.tooltipSetUnderlinedText", () -> underlineText());
+				buttonStrike = ToolBarKit.addToggleButton(richTextToolBar,
+						"org/multipage/gui/images/strike.png",
+						"org.multipage.gui.tooltipSetStrikedText", () -> strikeText());
+				buttonSubscript = ToolBarKit.addToggleButton(richTextToolBar,
+						"org/multipage/gui/images/subscript.png",
+						"org.multipage.gui.tooltipSetSubscriptText", () -> subscriptText());
+				buttonSuperscript = ToolBarKit.addToggleButton(richTextToolBar,
+						"org/multipage/gui/images/superscript.png",
+						"org.multipage.gui.tooltipSetSuperscriptText", () -> superscriptText());
+				
+				setFontNames(richTextToolBar);
+				setFontSizes(richTextToolBar);
+				setAlignment(richTextToolBar);
+				
+				buttonForeground = ToolBarKit.addToolBarButton(richTextToolBar,
+						"org/multipage/gui/images/foreground.png",
+						"org.multipage.gui.tooltipSetTextForegroundColor", () -> foregroundText());
+				buttonBackground = ToolBarKit.addToolBarButton(richTextToolBar,
+						"org/multipage/gui/images/background.png",
+						"org.multipage.gui.tooltipSetTextBackgroundColor", () -> backgroundText());
+				buttonBackground.setVisible(false);// hide it
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 	}
 	
 	/**
@@ -690,33 +783,44 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * @param toolBar
 	 */
 	private void setAlignment(JToolBar toolBar) {
-		
-		// Get current paragraph alignment.
-		AttributeSet attributes = Utility.getInputAttributes(htmlTextPane);
-		int alignment = StyleConstants.getAlignment(attributes);
+		try {
 			
-		textAlignment = new JComboBox();
-		textAlignment.setEnabled(false);
-		textAlignment.setMaximumSize(new Dimension(40, 26));
-		
-		Utility.setParagraphAlignments(textAlignment, alignment);
-		
-		toolBar.add(textAlignment);
-		
-		// Set listener.
-		textAlignment.addItemListener(new ItemListener() {
-			// On selection.
-			@Override
-			public void itemStateChanged(ItemEvent e) {
-				Object selected = textAlignment.getSelectedItem();
-				if (selected instanceof Object []) {
-					Object [] item = (Object []) selected;
-					textAlign((Integer) item[1]);
+			// Get current paragraph alignment.
+			AttributeSet attributes = Utility.getInputAttributes(htmlTextPane);
+			int alignment = StyleConstants.getAlignment(attributes);
+				
+			textAlignment = new JComboBox();
+			textAlignment.setEnabled(false);
+			textAlignment.setMaximumSize(new Dimension(40, 26));
+			
+			Utility.setParagraphAlignments(textAlignment, alignment);
+			
+			toolBar.add(textAlignment);
+			
+			// Set listener.
+			textAlignment.addItemListener(new ItemListener() {
+				// On selection.
+				@Override
+				public void itemStateChanged(ItemEvent e) {
+					try {
+						
+						Object selected = textAlignment.getSelectedItem();
+						if (selected instanceof Object []) {
+							Object [] item = (Object []) selected;
+							textAlign((Integer) item[1]);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-		});
-		
-		textAlignment.setVisible(false); // hide it
+			});
+			
+			textAlignment.setVisible(false); // hide it
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -724,43 +828,59 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * @param toolBar
 	 */
 	private void setFontSizes(JToolBar toolBar) {
-		
-		// Get current font size.
-		AttributeSet attributes = Utility.getInputAttributes(htmlTextPane);
-		int size = StyleConstants.getFontSize(attributes);
-				
-		fontSize = new JComboBox();
-		fontSize.setMaximumSize(new Dimension(45, 26));
-		
-		Utility.loadFontSizes(fontSize, size);
-		toolBar.add(fontSize);
-		
-		final JPanel thisPanel = this;
-		
-		// Set listeners.
-		fontSize.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(ItemEvent e) {
-
-				Object selected = fontSize.getSelectedItem();
-				if (selected instanceof Integer) {
-					textSize((Integer) selected);
+		try {
+			
+			// Get current font size.
+			AttributeSet attributes = Utility.getInputAttributes(htmlTextPane);
+			int size = StyleConstants.getFontSize(attributes);
+					
+			fontSize = new JComboBox();
+			fontSize.setMaximumSize(new Dimension(45, 26));
+			
+			Utility.loadFontSizes(fontSize, size);
+			toolBar.add(fontSize);
+			
+			final JPanel thisPanel = this;
+			
+			// Set listeners.
+			fontSize.addItemListener(new ItemListener() {
+				@Override
+				public void itemStateChanged(ItemEvent e) {
+					try {
+						
+						Object selected = fontSize.getSelectedItem();
+						if (selected instanceof Integer) {
+							textSize((Integer) selected);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-		});
-		fontSize.getEditor().addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// Check value.
-				String value = fontSize.getSelectedItem().toString();
-				try {
-					textSize(Integer.parseInt(value));
+			});
+			fontSize.getEditor().addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						
+						// Check value.
+						String value = fontSize.getSelectedItem().toString();
+						try {
+							textSize(Integer.parseInt(value));
+						}
+						catch (NumberFormatException err) {
+							Utility.show(thisPanel, "org.multipage.gui.messageInputValueIsNotNumber");
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-				catch (NumberFormatException err) {
-					Utility.show(thisPanel, "org.multipage.gui.messageInputValueIsNotNumber");
-				}
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -768,54 +888,72 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * @param toolBar
 	 */
 	private void setFontNames(JToolBar toolBar) {
-		
-		// Get current font family.
-		AttributeSet attributes = Utility.getInputAttributes(htmlTextPane);
-		String name = StyleConstants.getFontFamily(attributes);
-		
-		// Add font names.
-		fontFamily = new JComboBox();
-		fontFamily.setMaximumSize(new Dimension(150, 26));
-		Utility.loadFontFamilies(fontFamily, name);
-		toolBar.add(fontFamily);
-		
-		// Set listener.
-		fontFamily.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(ItemEvent e) {
-				
-				Object selected = fontFamily.getSelectedItem();
-				if (selected instanceof String) {
-					textFont((String) selected);
+		try {
+			
+			// Get current font family.
+			AttributeSet attributes = Utility.getInputAttributes(htmlTextPane);
+			String name = StyleConstants.getFontFamily(attributes);
+			
+			// Add font names.
+			fontFamily = new JComboBox();
+			fontFamily.setMaximumSize(new Dimension(150, 26));
+			Utility.loadFontFamilies(fontFamily, name);
+			toolBar.add(fontFamily);
+			
+			// Set listener.
+			fontFamily.addItemListener(new ItemListener() {
+				@Override
+				public void itemStateChanged(ItemEvent e) {
+					try {
+						
+						Object selected = fontFamily.getSelectedItem();
+						if (selected instanceof String) {
+							textFont((String) selected);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Tab changed.
 	 */
 	protected void onTabChanged() {
-		
-		if (buttonFont == null) {
-			return;
+		try {
+			
+			if (buttonFont == null) {
+				return;
+			}
+			boolean htmlEditorSelected = (tabbedPane.getSelectedIndex() == 1);
+			buttonFont.setEnabled(!htmlEditorSelected);
+			
+			// Reset undo managers.
+			undoManagerPlain.discardAllEdits();
+			undoManagerHtml.discardAllEdits();
+			
+			onDocumentChanged();
+			
+			// Close find dialogs.
+			if (findPlainDialog.isVisible()) {
+				findPlainDialog.closeWindow();
+			}
+			if (findHtmlDialog.isVisible()) {
+				findHtmlDialog.closeWindow();
+			}
+			
+			// Highlight script commands.
+			highlightScriptCommands();
 		}
-		boolean htmlEditorSelected = (tabbedPane.getSelectedIndex() == 1);
-		buttonFont.setEnabled(!htmlEditorSelected);
-		// Reset undo managers.
-		undoManagerPlain.discardAllEdits();
-		undoManagerHtml.discardAllEdits();
-		onDocumentChanged();
-		// Close find dialogs.
-		if (findPlainDialog.isVisible()) {
-			findPlainDialog.closeWindow();
-		}
-		if (findHtmlDialog.isVisible()) {
-			findHtmlDialog.closeWindow();
-		}
-		
-		// Highlight script commands.
-		highlightScriptCommands();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -823,65 +961,101 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 */
 	public JEditorPane getCurrentEditor() {
 		
-		return tabbedPane.getSelectedIndex() == 0 ? plainTextPane : htmlTextPane;
+		try {
+			return tabbedPane.getSelectedIndex() == 0 ? plainTextPane : htmlTextPane;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return plainTextPane;
 	}
 	
 	/**
 	 * Cut text.
 	 */
 	public void cutText() {
-		
-		JEditorPane editor = getCurrentEditor();
-		editor.grabFocus();
-		editor.cut();
+		try {
+			
+			JEditorPane editor = getCurrentEditor();
+			editor.grabFocus();
+			editor.cut();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Copy text.
 	 */
 	public void copyText() {
-
-		JEditorPane editor = getCurrentEditor();
-		editor.grabFocus();
-		editor.copy();
+		try {
+			
+			JEditorPane editor = getCurrentEditor();
+			editor.grabFocus();
+			editor.copy();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Paste text.
 	 */
 	public void pasteText() {
-
-		JEditorPane editor = getCurrentEditor();
-		editor.grabFocus();
-		editor.paste();
+		try {
+			
+			JEditorPane editor = getCurrentEditor();
+			editor.grabFocus();
+			editor.paste();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Select all.
 	 */
 	public void selectAll() {
-		
-		JEditorPane editor = getCurrentEditor();
-		editor.grabFocus();
-		editor.selectAll();
+		try {
+			
+			JEditorPane editor = getCurrentEditor();
+			editor.grabFocus();
+			editor.selectAll();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Replace text.
 	 */
 	public void replaceText() {
-		
-		selectAll();
-		pasteText();
+		try {
+			
+			selectAll();
+			pasteText();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Copy all.
 	 */
 	public void copyAll() {
-		
-		selectAll();
-		copyText();
+		try {
+			
+			selectAll();
+			copyText();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -890,49 +1064,83 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 */
 	private UndoManager getUndoManager() {
 		
-		return tabbedPane.getSelectedIndex() == 0 ? undoManagerPlain : undoManagerHtml;
+		try {
+			return tabbedPane.getSelectedIndex() == 0 ? undoManagerPlain : undoManagerHtml;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return undoManagerPlain;
 	}
 	
 	/**
 	 * Set undoable edit.
 	 */
 	private void setUndoableEdit() {
-
-		// Create undo manager.
-		undoManagerPlain = new UndoManager();
-		undoManagerHtml = new UndoManager();
-		// Get documents.
-		Document documentPlain = plainTextPane.getDocument();
-		Document documentHtml = htmlTextPane.getDocument();
-		// Set listeners.
-		documentPlain.addUndoableEditListener(undoManagerPlain);
-		documentHtml.addUndoableEditListener(undoManagerHtml);
-		// Add listener.
-		documentPlain.addDocumentListener(new DocumentListener() {
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				onDocumentChanged();
-			}
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				onDocumentChanged();
-			}
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				onDocumentChanged();
-			}
-		});
+		try {
+			
+			// Create undo manager.
+			undoManagerPlain = new UndoManager();
+			undoManagerHtml = new UndoManager();
+			// Get documents.
+			Document documentPlain = plainTextPane.getDocument();
+			Document documentHtml = htmlTextPane.getDocument();
+			// Set listeners.
+			documentPlain.addUndoableEditListener(undoManagerPlain);
+			documentHtml.addUndoableEditListener(undoManagerHtml);
+			// Add listener.
+			documentPlain.addDocumentListener(new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					try {
+						
+						onDocumentChanged();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					try {
+						
+						onDocumentChanged();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					try {
+						
+						onDocumentChanged();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On document change.
 	 */
 	protected void onDocumentChanged() {
-
-		// Enable / disable buttons.
-		UndoManager undoManager = getUndoManager();
-		buttonUndo.setEnabled(undoManager.canUndo());
-		buttonRedo.setEnabled(undoManager.canRedo());
+		try {
+			
+			// Enable / disable buttons.
+			UndoManager undoManager = getUndoManager();
+			buttonUndo.setEnabled(undoManager.canUndo());
+			buttonRedo.setEnabled(undoManager.canRedo());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -940,41 +1148,56 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * @param editable
 	 */
 	public void setEditable(boolean editable) {
-
-		plainTextPane.setEditable(editable);
-		plainTextPane.setBackground(editable ? Color.WHITE : readOnlyBackground);
-		htmlTextPane.setEditable(editable);
-		htmlTextPane.setBackground(editable ? Color.WHITE : readOnlyBackground);
-		buttonCut.setEnabled(editable);
-		buttonUndo.setEnabled(editable);
-		buttonRedo.setEnabled(editable);
-		buttonReset.setEnabled(editable);
+		try {
+			
+			plainTextPane.setEditable(editable);
+			plainTextPane.setBackground(editable ? Color.WHITE : readOnlyBackground);
+			htmlTextPane.setEditable(editable);
+			htmlTextPane.setBackground(editable ? Color.WHITE : readOnlyBackground);
+			buttonCut.setEnabled(editable);
+			buttonUndo.setEnabled(editable);
+			buttonRedo.setEnabled(editable);
+			buttonReset.setEnabled(editable);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set font.
 	 */
 	public void setFont() {
-		
-		FontChooser dialog = new FontChooser();
-		Font font = dialog.showDialog(this, textFont);
-		
-		if (font != null) {
-			// Set font.
-			plainTextPane.setFont(font);
-			textFont = font;
+		try {
+			
+			FontChooser dialog = new FontChooser();
+			Font font = dialog.showDialog(this, textFont);
+			
+			if (font != null) {
+				// Set font.
+				plainTextPane.setFont(font);
+				textFont = font;
+			}
+			
+			plainTextPane.grabFocus();
 		}
-		
-		plainTextPane.grabFocus();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Create find dialog.
 	 */
 	private void createFindDialog() {
-
-		findPlainDialog = new FindReplaceDialog(parentWindow, plainTextPane);
-		findHtmlDialog = new FindReplaceDialog(parentWindow, htmlTextPane);
+		try {
+			
+			findPlainDialog = new FindReplaceDialog(parentWindow, plainTextPane);
+			findHtmlDialog = new FindReplaceDialog(parentWindow, htmlTextPane);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -982,20 +1205,25 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * @param text
 	 */
 	public void setText(String text) {
-
-		final Point point = new Point();
-		
-		plainTextPane.setText(text);
-		// Set caret position.
-		plainTextPane.setCaretPosition(0);
-		// Reset undo manager.
-		undoManagerPlain.discardAllEdits();
-		undoManagerHtml.discardAllEdits();
-		// Scroll to the old position.
-		Utility.scrollToPosition(htmlScrollPane, point);
-		
-		// Highlight script commands.
-		highlightScriptCommands();
+		try {
+			
+			final Point point = new Point();
+			
+			plainTextPane.setText(text);
+			// Set caret position.
+			plainTextPane.setCaretPosition(0);
+			// Reset undo manager.
+			undoManagerPlain.discardAllEdits();
+			undoManagerHtml.discardAllEdits();
+			// Scroll to the old position.
+			Utility.scrollToPosition(htmlScrollPane, point);
+			
+			// Highlight script commands.
+			highlightScriptCommands();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1003,8 +1231,14 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * @return
 	 */
 	public Font getTextFont() {
-
-		return plainTextPane.getFont();
+		
+		try {
+			return plainTextPane.getFont();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -1012,59 +1246,79 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * @param font
 	 */
 	public void setTextFont(Font font) {
-
-		this.textFont = font;
-		plainTextPane.setFont(font);
+		try {
+			
+			this.textFont = font;
+			plainTextPane.setFont(font);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Undo text.
 	 */
 	public void undoText() {
-
 		try {
-			getUndoManager().undo();
-		}
-		catch (CannotUndoException e) {
 			
+			try {
+				getUndoManager().undo();
+			}
+			catch (CannotUndoException e) {
+				
+			}
+			getCurrentEditor().grabFocus();
 		}
-		getCurrentEditor().grabFocus();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Redo text.
 	 */
 	public void redoText() {
-		
 		try {
-			getUndoManager().redo();
-		}
-		catch (CannotRedoException e) {
 			
+			try {
+				getUndoManager().redo();
+			}
+			catch (CannotRedoException e) {
+				
+			}
+			getCurrentEditor().grabFocus();
 		}
-		getCurrentEditor().grabFocus();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Find text.
 	 */
 	public void findText() {
-		
-		// Show find dialog.
-		if (tabbedPane.getSelectedIndex() == 0) {
+		try {
 			
-			// Get selected text.
-			String selectedText = plainTextPane.getSelectedText();
-			findPlainDialog.setVisible(true);
-			findPlainDialog.setFindText(selectedText);
+			// Show find dialog.
+			if (tabbedPane.getSelectedIndex() == 0) {
+				
+				// Get selected text.
+				String selectedText = plainTextPane.getSelectedText();
+				findPlainDialog.setVisible(true);
+				findPlainDialog.setFindText(selectedText);
+			}
+			else {
+				
+				// Get selected text.
+				String selectedText = htmlTextPane.getSelectedText();
+				findHtmlDialog.setVisible(true);
+				findHtmlDialog.setFindText(selectedText);
+			}
 		}
-		else {
-			
-			// Get selected text.
-			String selectedText = htmlTextPane.getSelectedText();
-			findHtmlDialog.setVisible(true);
-			findHtmlDialog.setFindText(selectedText);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1072,9 +1326,15 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * @return
 	 */
 	public String getText() {
-
-		String text = plainTextPane.getText();
-		return text;
+		
+		try {
+			String text = plainTextPane.getText();
+			return text;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -1083,8 +1343,14 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 */
 	public Point getScrollPosition() {
 		
-		JViewport viewport = htmlScrollPane.getViewport();
-		return viewport.getViewPosition();
+		try {
+			JViewport viewport = htmlScrollPane.getViewport();
+			return viewport.getViewPosition();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -1093,14 +1359,12 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 */
 	public void scrollToPosition(final Point position) {
 		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				// Scroll to the start.
-				JViewport viewport = htmlScrollPane.getViewport();
-				if (viewport != null) {
-					viewport.setViewPosition(position);
-				}
+		Safe.invokeLater(() -> {
+			
+			// Scroll to the start.
+			JViewport viewport = htmlScrollPane.getViewport();
+			if (viewport != null) {
+				viewport.setViewPosition(position);
 			}
 		});
 	}
@@ -1123,23 +1387,28 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * Enable / disable word wrap.
 	 */
 	public void wrapUnwrap() {
-
-		boolean wrapText = buttonWrap.isSelected();
-		
-		if (wrapText) {
-			htmlScrollPane.setViewportView(htmlTextPane);
+		try {
 			
-			plainScrollPane.setViewportView(plainTextPane);
-		}
-		else {
-			htmlScrollPane.setViewportView(panelNoWrapHtml);
-			panelNoWrapHtml.add(htmlTextPane);
+			boolean wrapText = buttonWrap.isSelected();
 			
-			plainScrollPane.setViewportView(panelNoWrapPlain);
-			panelNoWrapPlain.add(plainTextPane);
+			if (wrapText) {
+				htmlScrollPane.setViewportView(htmlTextPane);
+				
+				plainScrollPane.setViewportView(plainTextPane);
+			}
+			else {
+				htmlScrollPane.setViewportView(panelNoWrapHtml);
+				panelNoWrapHtml.add(htmlTextPane);
+				
+				plainScrollPane.setViewportView(panelNoWrapPlain);
+				panelNoWrapPlain.add(plainTextPane);
+			}
+			htmlTextPane.revalidate();
+			plainTextPane.revalidate();
 		}
-		htmlTextPane.revalidate();
-		plainTextPane.revalidate();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1154,8 +1423,13 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * @param popupAddIn
 	 */
 	public void addPopupMenusPlain(TextPopupMenuAddIn popupAddIn) {
-		
-		popupAddIn.addMenu(popupMenuPlain, plainTextPane);
+		try {
+			
+			popupAddIn.addMenu(popupMenuPlain, plainTextPane);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -1163,100 +1437,113 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * @param popupAddIn
 	 */
 	public void addPopupMenusHtml(TextPopupMenuAddIn popupAddIn) {
-		
-		popupAddIn.addMenu(popupMenuHtml, htmlTextPane);
+		try {
+			
+			popupAddIn.addMenu(popupMenuHtml, htmlTextPane);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set listerers.
 	 */
 	private void setListeners() {
-		
-		htmlTextPane.getDocument().addDocumentListener(new DocumentListener() {
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				onChangeDesign();
-			}
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				onChangeDesign();
-			}
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				onChangeDesign();
-			}
-		});
-		plainTextPane.getDocument().addDocumentListener(new DocumentListener() {
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				onChangeSource();
-			}
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				onChangeSource();
-			}
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				onChangeSource();
-			}
-		});
+		try {
+			
+			htmlTextPane.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					onChangeDesign();
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					onChangeDesign();
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					onChangeDesign();
+				}
+			});
+			plainTextPane.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					onChangeSource();
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					onChangeSource();
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					onChangeSource();
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On change design window content.
 	 */
 	protected void onChangeDesign() {
-
-		if (changing) {
-			return;
-		}
-		
-		// Disable deadlock.
-		changing = true;
-		
-		// Read text from the design text component and insert it to the source text component.
-		HTMLDocument htmlDocument = (HTMLDocument) htmlTextPane.getDocument();
-		
-		EditorKit kit = htmlTextPane.getEditorKit();
-		StringWriter writer = new StringWriter();
 		try {
-			kit.write(writer, htmlDocument, 0, htmlDocument.getLength());
-		}
-		catch (Exception e1) {
-			e1.printStackTrace();
-		}
-		
-		String htmlText = writer.toString();
-
-		htmlText = adaptTextToSource(htmlText);
-		
-		// Rearrange <p> paragraphs.
-		if (extractBody) {
 			
-			Obj<Boolean> modified = new Obj<Boolean>(false);
-			htmlText = rearrangeParagraphs(htmlText, modified);
+			if (changing) {
+				return;
+			}
 			
-			final String newHtmlText = htmlText;
+			// Disable deadlock.
+			changing = true;
 			
-			if (modified.ref) {
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
+			// Read text from the design text component and insert it to the source text component.
+			HTMLDocument htmlDocument = (HTMLDocument) htmlTextPane.getDocument();
+			
+			EditorKit kit = htmlTextPane.getEditorKit();
+			StringWriter writer = new StringWriter();
+			try {
+				kit.write(writer, htmlDocument, 0, htmlDocument.getLength());
+			}
+			catch (Exception e1) {
+				Safe.exception(e1);
+			}
+			
+			String htmlText = writer.toString();
 	
+			htmlText = adaptTextToSource(htmlText);
+			
+			// Rearrange <p> paragraphs.
+			if (extractBody) {
+				
+				Obj<Boolean> modified = new Obj<Boolean>(false);
+				htmlText = rearrangeParagraphs(htmlText, modified);
+				
+				final String newHtmlText = htmlText;
+				
+				if (modified.ref) {
+					Safe.invokeLater(() -> {
+						
 						// Update HTML editor text.
 						changing = true;
 						htmlTextPane.setText(newHtmlText);
 						changing = false;
-					}
-				});
+					});
+				}
 			}
+			
+			plainTextPane.setText(htmlText);
+			
+			changing = false;
+			
+			fireChange();
 		}
-		
-		plainTextPane.setText(htmlText);
-		
-		changing = false;
-		
-		fireChange();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 	}
 	
 	/**
@@ -1264,70 +1551,96 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * @param event
 	 */
 	protected void onKeyReleased(KeyEvent event) {
-		
-		// Get plain text and insert it to the design text component.
-		Document plainDocument = plainTextPane.getDocument();
-		int plainLength = plainDocument.getLength();
-		
-		final Obj<String> plainText = new Obj<String>("");
 		try {
-			// Get text content.
-			plainText.ref = plainDocument.getText(0, plainLength);
 			
-			// Get caret position.
-			int selection = plainTextPane.getSelectionStart();
-			Caret caret = plainTextPane.getCaret();
+			// Get released key.
+			int keyCode = event.getKeyCode();
+			boolean isControl = event.isControlDown();
 			
-			// If the intellisense exists, get text hints.
-			if (intellisenseLambda != null) {
+			// Open intellisense window.
+			if (keyCode == KeyEvent.VK_SPACE && isControl) {
 				
-				SwingUtilities.invokeLater(() -> {
-					intellisenseLambda.apply(plainText.ref).apply(selection).apply(caret).accept(plainTextPane);
-				});
+				// Get plain text and insert it to the text component.
+				Document plainDocument = plainTextPane.getDocument();
+				int plainLength = plainDocument.getLength();
 				
+				final Obj<String> plainText = new Obj<String>("");
+				try {
+					// Get text content.
+					plainText.ref = plainDocument.getText(0, plainLength);
+					
+					// Get caret position.
+					int selection = plainTextPane.getSelectionStart();
+					Caret caret = plainTextPane.getCaret();
+					
+					// If the intellisense exists, get text hints.
+					if (intellisenseLambda != null) {
+						
+						Safe.invokeLater(() -> {
+							intellisenseLambda.apply(plainText.ref).apply(selection).apply(caret).accept(plainTextPane);
+						});
+					}
+				}
+				catch (BadLocationException e) {
+					Safe.exception(e);
+				}
+			}
+			// Close intellisense window.
+			else if (keyCode == KeyEvent.VK_ESCAPE) {
+				
+				// If the intellisense exists, get text hints.
+				if (intellisenseLambda != null) {
+					
+					Safe.invokeLater(() -> {
+						intellisenseLambda.apply(null).apply(null).apply(null).accept(plainTextPane);
+					});
+				}
 			}
 		}
-		catch (BadLocationException e) {
-			e.printStackTrace();
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On change source.
 	 */
 	protected void onChangeSource() {
-
-		if (changing) {
-			return;
-		}
-		
-		// Disable deadlock.
-		changing = true;
-		
-		// Get plain text and insert it to the design text component.
-		Document plainDocument = plainTextPane.getDocument();
-		int plainLength = plainDocument.getLength();
-		
-		final Obj<String> plainText = new Obj<String>("");
 		try {
-			// Get text content.
-			plainText.ref = plainDocument.getText(0, plainLength);
-		}
-		catch (BadLocationException e) {
-			e.printStackTrace();
-		}
 			
-		if (useHtmlEditor) {
-			htmlTextPane.setText(plainText.ref);
-
+			if (changing) {
+				return;
+			}
 			
+			// Disable deadlock.
+			changing = true;
+			
+			// Get plain text and insert it to the design text component.
+			Document plainDocument = plainTextPane.getDocument();
+			int plainLength = plainDocument.getLength();
+			
+			final Obj<String> plainText = new Obj<String>("");
+			try {
+				// Get text content.
+				plainText.ref = plainDocument.getText(0, plainLength);
+			}
+			catch (BadLocationException e) {
+				Safe.exception(e);
+			}
+				
+			if (useHtmlEditor) {
+				htmlTextPane.setText(plainText.ref);
+			}
+			changing = false;
+			
+			// Highlight script commands.
+			highlightScriptCommands();
+			
+			fireChange();
 		}
-		changing = false;
-		
-		// Highlight script commands.
-		highlightScriptCommands();
-		
-		fireChange();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1335,18 +1648,28 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * @param simpleMethodRef
 	 */
 	protected void addChangeListener(SimpleMethodRef simpleMethodRef) {
-		
-		changeListeners.add(simpleMethodRef);
+		try {
+			
+			changeListeners.add(simpleMethodRef);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Fire change.
 	 */
 	private void fireChange() {
-		
-		for (SimpleMethodRef listener : changeListeners) {
-			listener.run();
+		try {
+			
+			for (SimpleMethodRef listener : changeListeners) {
+				listener.run();
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1356,41 +1679,45 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 */
 	private String adaptTextToSource(String text) {
 		
-		// Extract body.
-		if (extractBody) {
-			text = extractBody(text);
-		}
-
-		// Remove character escapes.
-		Pattern escapePattern = Pattern.compile("&#[0-9]+;");
-		while (true) {
+		try {
+			// Extract body.
+			if (extractBody) {
+				text = extractBody(text);
+			}
+	
+			// Remove character escapes.
+			Pattern escapePattern = Pattern.compile("&#[0-9]+;");
+			while (true) {
+				
+				Matcher escapeMatcher = escapePattern.matcher(text);
+				// Find escape sequence.
+				if (!escapeMatcher.find(0)) {
+					break;
+				}
+				// Replace escape sequence.
+				int escapeStart = escapeMatcher.start();
+				int escapeEnd = escapeMatcher.end();
+				String numberString = text.substring(escapeStart + 2, escapeEnd - 1);
+				int number = 0;
+				try {
+					number = Integer.parseInt(numberString);
+				}
+				catch (NumberFormatException e) {
+				}
+				char character = (char) number;
+				
+				int length = text.length();
+				text = text.substring(0, escapeStart) + character + text.substring(escapeEnd, length);
+			}
 			
-			Matcher escapeMatcher = escapePattern.matcher(text);
-			// Find escape sequence.
-			if (!escapeMatcher.find(0)) {
-				break;
-			}
-			// Replace escape sequence.
-			int escapeStart = escapeMatcher.start();
-			int escapeEnd = escapeMatcher.end();
-			String numberString = text.substring(escapeStart + 2, escapeEnd - 1);
-			int number = 0;
-			try {
-				number = Integer.parseInt(numberString);
-			}
-			catch (NumberFormatException e) {
-			}
-			char character = (char) number;
-			
-			int length = text.length();
-			text = text.substring(0, escapeStart) + character + text.substring(escapeEnd, length);
+			// Replace &amp;
+			text = text.replace("&amp;", "&");
+			// Replace &quot;
+			text = text.replace("&quot;", "\"");
 		}
-		
-		// Replace &amp;
-		text = text.replace("&amp;", "&");
-		// Replace &quot;
-		text = text.replace("&quot;", "\"");
-
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return text;
 	}
 
@@ -1402,84 +1729,90 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 */
 	private String rearrangeParagraphs(String text, Obj<Boolean> modified) {
 		
-		modified.ref = false;
-		
-		Pattern paragraphStartPattern = Pattern.compile("<\\s*p\\s*[^>]*");
-		Pattern paragraphEndPattern = Pattern.compile("<\\s*/\\s*p\\s*>");
-		
-		// Simplify end of lines.
-		text = text.replace("\r\n", "\n");
-		text = text.replace('\r', '\n');
-		
-		String resultText = "";
-		
-		int length = text.length();
-		int lineBegin = 0;
-		
-		for (int index = 0; index < length; index++) {
+		try {
+			modified.ref = false;
 			
-			// If a paragraph start is on current position.
-			if (Utility.patternMatches(text, index, paragraphStartPattern)) {
+			Pattern paragraphStartPattern = Pattern.compile("<\\s*p\\s*[^>]*");
+			Pattern paragraphEndPattern = Pattern.compile("<\\s*/\\s*p\\s*>");
+			
+			// Simplify end of lines.
+			text = text.replace("\r\n", "\n");
+			text = text.replace('\r', '\n');
+			
+			String resultText = "";
+			
+			int length = text.length();
+			int lineBegin = 0;
+			
+			for (int index = 0; index < length; index++) {
 				
-				// Find end of the paragraph.
-				Integer paragraphEnd = Utility.findPattarnEnd(text, index, paragraphEndPattern);
-				if (paragraphEnd == null) {
+				// If a paragraph start is on current position.
+				if (Utility.patternMatches(text, index, paragraphStartPattern)) {
 					
-					paragraphEnd = text.length();
+					// Find end of the paragraph.
+					Integer paragraphEnd = Utility.findPattarnEnd(text, index, paragraphEndPattern);
+					if (paragraphEnd == null) {
+						
+						paragraphEnd = text.length();
+					}
+					
+					// Save paragraph.
+					resultText += text.substring(index, paragraphEnd) + '\n';
+					index = paragraphEnd;
+					lineBegin = index;
+					
+					continue;
 				}
 				
-				// Save paragraph.
-				resultText += text.substring(index, paragraphEnd) + '\n';
-				index = paragraphEnd;
-				lineBegin = index;
+				// If end of text is reached.
+				if (index == length - 1) {
+					
+					boolean isNewLineEnd = text.charAt(index) == '\n';
+					String line = "";
+					
+					if (length > lineBegin) {
+						line = text.substring(lineBegin, isNewLineEnd ? length - 1 : length);
+					}
+					
+					// Create paragraph.
+					String paragraph = String.format("<p style=\"margin-top: 0\">\n    %s\n</p>\n", line);
+					resultText += paragraph;
+					
+					// Add possible end new line.
+					if (isNewLineEnd && !line.isEmpty()) {
+						resultText += "<p style=\"margin-top: 0\">\n    \n</p>\n";
+					}
+					
+					modified.ref = true;
+					
+					break;
+				}
 				
-				continue;
+				// If the end of line is reached, add new paragraph.
+				if (text.charAt(index) == '\n') {
+					
+					String line = "";
+					
+					if (index > lineBegin) {
+						line = text.substring(lineBegin, index);
+					}
+					
+					// Create paragraph.
+					String paragraph = String.format("<p style=\"margin-top: 0\">\n    %s\n</p>\n", line);
+					resultText += paragraph;
+					
+					lineBegin = index + 1;
+					
+					modified.ref = true;
+				}
 			}
 			
-			// If end of text is reached.
-			if (index == length - 1) {
-				
-				boolean isNewLineEnd = text.charAt(index) == '\n';
-				String line = "";
-				
-				if (length > lineBegin) {
-					line = text.substring(lineBegin, isNewLineEnd ? length - 1 : length);
-				}
-				
-				// Create paragraph.
-				String paragraph = String.format("<p style=\"margin-top: 0\">\n    %s\n</p>\n", line);
-				resultText += paragraph;
-				
-				// Add possible end new line.
-				if (isNewLineEnd && !line.isEmpty()) {
-					resultText += "<p style=\"margin-top: 0\">\n    \n</p>\n";
-				}
-				
-				modified.ref = true;
-				
-				break;
-			}
-			
-			// If the end of line is reached, add new paragraph.
-			if (text.charAt(index) == '\n') {
-				
-				String line = "";
-				
-				if (index > lineBegin) {
-					line = text.substring(lineBegin, index);
-				}
-				
-				// Create paragraph.
-				String paragraph = String.format("<p style=\"margin-top: 0\">\n    %s\n</p>\n", line);
-				resultText += paragraph;
-				
-				lineBegin = index + 1;
-				
-				modified.ref = true;
-			}
+			return resultText;
 		}
-		
-		return resultText;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return text;
 	}
 
 	/**
@@ -1489,41 +1822,45 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 */
 	private String extractBody(String text) {
 		
-		// Find body start and end.
-		final Pattern bodyStartPattern = Pattern.compile("<\\s*body\\s*>", Pattern.CASE_INSENSITIVE);
-		final Pattern bodyEndPattern = Pattern.compile("<\\s*/\\s*body\\s*>", Pattern.CASE_INSENSITIVE);
-		
-		// Find first body start.
-		Matcher bodyStartMatcher = bodyStartPattern.matcher(text);
-		if (bodyStartMatcher.find()) {
+		try {
+			// Find body start and end.
+			final Pattern bodyStartPattern = Pattern.compile("<\\s*body\\s*>", Pattern.CASE_INSENSITIVE);
+			final Pattern bodyEndPattern = Pattern.compile("<\\s*/\\s*body\\s*>", Pattern.CASE_INSENSITIVE);
 			
-			int bodyStart = bodyStartMatcher.end();
-			int bodyEnd = text.length();
-			
-			// Find last body end.
-			Matcher bodyEndMatcher = bodyEndPattern.matcher(text);
-			while (bodyEndMatcher.find()) {
+			// Find first body start.
+			Matcher bodyStartMatcher = bodyStartPattern.matcher(text);
+			if (bodyStartMatcher.find()) {
 				
-				bodyEnd = bodyEndMatcher.start();
-			}
-			
-			// Extract body.
-			text = text.substring(bodyStart, bodyEnd);
-			
-			// Move text lines left.
-			String [] textLines = text.split("\n");
-			String movedText = "";
-			
-			for (String textLine : textLines) {
+				int bodyStart = bodyStartMatcher.end();
+				int bodyEnd = text.length();
 				
-				textLine = moveLineLeft(textLine);
-				movedText += textLine + '\n';
+				// Find last body end.
+				Matcher bodyEndMatcher = bodyEndPattern.matcher(text);
+				while (bodyEndMatcher.find()) {
+					
+					bodyEnd = bodyEndMatcher.start();
+				}
+				
+				// Extract body.
+				text = text.substring(bodyStart, bodyEnd);
+				
+				// Move text lines left.
+				String [] textLines = text.split("\n");
+				String movedText = "";
+				
+				for (String textLine : textLines) {
+					
+					textLine = moveLineLeft(textLine);
+					movedText += textLine + '\n';
+				}
+				
+				// Trim text.
+				text = movedText.trim();
 			}
-			
-			// Trim text.
-			text = movedText.trim();
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return text;
 	}
 
@@ -1531,126 +1868,171 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * Set editors.
 	 */
 	private void setEditors() {
-
-		if (!useHtmlEditor) {
-			tabbedPane.removeTabAt(1);
+		try {
+			
+			if (!useHtmlEditor) {
+				tabbedPane.removeTabAt(1);
+			}
+			else {
+				// Customized HTML editor kit.
+				CustomizedHTMLEditorKit editorKit = new CustomizedHTMLEditorKit();
+				htmlTextPane.setEditorKit(editorKit);
+			}
 		}
-		else {
-			// Customized HTML editor kit.
-			CustomizedHTMLEditorKit editorKit = new CustomizedHTMLEditorKit();
-			htmlTextPane.setEditorKit(editorKit);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Select HTML editor.
 	 */
 	public void selectHtmlEditor(boolean select) {
-		
-		if (useHtmlEditor) {
-			tabbedPane.setSelectedIndex(select ? 1 : 0);
+		try {
+			
+			if (useHtmlEditor) {
+				tabbedPane.setSelectedIndex(select ? 1 : 0);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Reset text.
 	 */
 	public void resetText() {
-		
-		if (JOptionPane.showConfirmDialog(this,
-				Resources.getString("org.multipage.gui.messageResetContent"))
-				!= JOptionPane.YES_OPTION) {
-			return;
+		try {
+			
+			if (JOptionPane.showConfirmDialog(this,
+					Resources.getString("org.multipage.gui.messageResetContent"))
+					!= JOptionPane.YES_OPTION) {
+				return;
+			}
+			
+			changing = true;
+			htmlTextPane.setText("");
+			plainTextPane.setText("");
+			changing = false;
 		}
-		
-		changing = true;
-		htmlTextPane.setText("");
-		plainTextPane.setText("");
-		changing = false;
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Toggle bold text.
 	 */
 	public void boldText() {
-		
-		htmlTextPane.grabFocus();
-		
-		boolean flag = StyleConstants.isBold(Utility.getInputAttributes(htmlTextPane));
-
-		SimpleAttributeSet attributes = new SimpleAttributeSet();
-		StyleConstants.setBold(attributes, !flag);
-		Utility.setCharacterAttributes(htmlTextPane, attributes, false);
+		try {
+			
+			htmlTextPane.grabFocus();
+			
+			boolean flag = StyleConstants.isBold(Utility.getInputAttributes(htmlTextPane));
+	
+			SimpleAttributeSet attributes = new SimpleAttributeSet();
+			StyleConstants.setBold(attributes, !flag);
+			Utility.setCharacterAttributes(htmlTextPane, attributes, false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Toggle italic text.
 	 */
 	public void italicText() {
-		
-		htmlTextPane.grabFocus();
-		
-		boolean flag = StyleConstants.isItalic(Utility.getInputAttributes(htmlTextPane));
-
-		SimpleAttributeSet attributes = new SimpleAttributeSet();
-		StyleConstants.setItalic(attributes, !flag);
-		Utility.setCharacterAttributes(htmlTextPane, attributes, false);
+		try {
+			
+			htmlTextPane.grabFocus();
+			
+			boolean flag = StyleConstants.isItalic(Utility.getInputAttributes(htmlTextPane));
+	
+			SimpleAttributeSet attributes = new SimpleAttributeSet();
+			StyleConstants.setItalic(attributes, !flag);
+			Utility.setCharacterAttributes(htmlTextPane, attributes, false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Toggle underlined text.
 	 */
 	public void underlineText() {
-		
-		htmlTextPane.grabFocus();
-		
-		boolean flag = StyleConstants.isUnderline(Utility.getInputAttributes(htmlTextPane));
-
-		SimpleAttributeSet attributes = new SimpleAttributeSet();
-		StyleConstants.setUnderline(attributes, !flag);
-		Utility.setCharacterAttributes(htmlTextPane, attributes, false);
+		try {
+			
+			htmlTextPane.grabFocus();
+			
+			boolean flag = StyleConstants.isUnderline(Utility.getInputAttributes(htmlTextPane));
+	
+			SimpleAttributeSet attributes = new SimpleAttributeSet();
+			StyleConstants.setUnderline(attributes, !flag);
+			Utility.setCharacterAttributes(htmlTextPane, attributes, false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Toggle strike text.
 	 */
 	public void strikeText() {
-		
-		htmlTextPane.grabFocus();
-		
-		boolean flag = StyleConstants.isStrikeThrough(Utility.getInputAttributes(htmlTextPane));
-
-		SimpleAttributeSet attributes = new SimpleAttributeSet();
-		StyleConstants.setStrikeThrough(attributes, !flag);
-		Utility.setCharacterAttributes(htmlTextPane, attributes, false);
+		try {
+			
+			htmlTextPane.grabFocus();
+			
+			boolean flag = StyleConstants.isStrikeThrough(Utility.getInputAttributes(htmlTextPane));
+	
+			SimpleAttributeSet attributes = new SimpleAttributeSet();
+			StyleConstants.setStrikeThrough(attributes, !flag);
+			Utility.setCharacterAttributes(htmlTextPane, attributes, false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Toggle subscript text.
 	 */
 	public void subscriptText() {
-		
-		htmlTextPane.grabFocus();
-		
-		boolean flag = StyleConstants.isSubscript(Utility.getInputAttributes(htmlTextPane));
-
-		SimpleAttributeSet attributes = new SimpleAttributeSet();
-		StyleConstants.setSubscript(attributes, !flag);
-		Utility.setCharacterAttributes(htmlTextPane, attributes, false);
+		try {
+			
+			htmlTextPane.grabFocus();
+			
+			boolean flag = StyleConstants.isSubscript(Utility.getInputAttributes(htmlTextPane));
+	
+			SimpleAttributeSet attributes = new SimpleAttributeSet();
+			StyleConstants.setSubscript(attributes, !flag);
+			Utility.setCharacterAttributes(htmlTextPane, attributes, false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Toggle superscript text.
 	 */
 	public void superscriptText() {
-		
-		htmlTextPane.grabFocus();
-		
-		boolean flag = StyleConstants.isSuperscript(Utility.getInputAttributes(htmlTextPane));
-
-		SimpleAttributeSet attributes = new SimpleAttributeSet();
-		StyleConstants.setSuperscript(attributes, !flag);
-		Utility.setCharacterAttributes(htmlTextPane, attributes, false);
+		try {
+			
+			htmlTextPane.grabFocus();
+			
+			boolean flag = StyleConstants.isSuperscript(Utility.getInputAttributes(htmlTextPane));
+	
+			SimpleAttributeSet attributes = new SimpleAttributeSet();
+			StyleConstants.setSuperscript(attributes, !flag);
+			Utility.setCharacterAttributes(htmlTextPane, attributes, false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1658,12 +2040,17 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * @param fontFamily
 	 */
 	protected void textFont(String fontFamily) {
-
-		htmlTextPane.grabFocus();
-		
-		SimpleAttributeSet attributes = new SimpleAttributeSet();
-		StyleConstants.setFontFamily(attributes, fontFamily);
-		Utility.setCharacterAttributes(htmlTextPane, attributes, false);		
+		try {
+			
+			htmlTextPane.grabFocus();
+			
+			SimpleAttributeSet attributes = new SimpleAttributeSet();
+			StyleConstants.setFontFamily(attributes, fontFamily);
+			Utility.setCharacterAttributes(htmlTextPane, attributes, false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1671,12 +2058,17 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * @param size
 	 */
 	protected void textSize(int size) {
-
-		htmlTextPane.grabFocus();
-		
-		SimpleAttributeSet attributes = new SimpleAttributeSet();
-		StyleConstants.setFontSize(attributes, size);
-		Utility.setCharacterAttributes(htmlTextPane, attributes, false);		
+		try {
+			
+			htmlTextPane.grabFocus();
+			
+			SimpleAttributeSet attributes = new SimpleAttributeSet();
+			StyleConstants.setFontSize(attributes, size);
+			Utility.setCharacterAttributes(htmlTextPane, attributes, false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1684,88 +2076,108 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * @param align
 	 */
 	protected void textAlign(int align) {
-
-		htmlTextPane.grabFocus();
-
-		MutableAttributeSet attributes = new SimpleAttributeSet();
-		StyleConstants.setAlignment(attributes, align);
-		htmlTextPane.setParagraphAttributes(attributes, false);
+		try {
+			
+			htmlTextPane.grabFocus();
+	
+			MutableAttributeSet attributes = new SimpleAttributeSet();
+			StyleConstants.setAlignment(attributes, align);
+			htmlTextPane.setParagraphAttributes(attributes, false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set tool bar controls.
 	 */
 	protected void setToolBarControls() {
-		
-		if (buttonBold == null) {
-			return;
+		try {
+			
+			if (buttonBold == null) {
+				return;
+			}
+			
+			AttributeSet textAttributes = Utility.getInputAttributes(htmlTextPane);
+			AttributeSet paragraphAttributes = htmlTextPane.getParagraphAttributes();
+			
+			Color color = StyleConstants.getForeground(textAttributes);
+			buttonForeground.setBackground(color);
+			color = (Color) textAttributes.getAttribute(StyleConstants.Background);
+			if (color == null) {
+				color = Color.WHITE;
+			}
+			buttonBackground.setBackground(color);
+			buttonBold.setSelected(StyleConstants.isBold(textAttributes));
+			buttonItalic.setSelected(StyleConstants.isItalic(textAttributes));
+			buttonUnderline.setSelected(StyleConstants.isUnderline(textAttributes));
+			buttonStrike.setSelected(StyleConstants.isStrikeThrough(textAttributes));
+			buttonSubscript.setSelected(StyleConstants.isSubscript(textAttributes));
+			buttonSuperscript.setSelected(StyleConstants.isSuperscript(textAttributes));
+			
+	
+			String name = StyleConstants.getFontFamily(textAttributes);
+			Utility.selectComboItem(fontFamily, name);
+			
+			Integer size = StyleConstants.getFontSize(textAttributes);
+			fontSize.getEditor().setItem(size.toString());
+			Utility.selectComboItem(fontSize, size);
+	
+			int align = StyleConstants.getAlignment(paragraphAttributes);
+			Utility.selectComboAlign(textAlignment, align);
 		}
-		
-		AttributeSet textAttributes = Utility.getInputAttributes(htmlTextPane);
-		AttributeSet paragraphAttributes = htmlTextPane.getParagraphAttributes();
-		
-		Color color = StyleConstants.getForeground(textAttributes);
-		buttonForeground.setBackground(color);
-		color = (Color) textAttributes.getAttribute(StyleConstants.Background);
-		if (color == null) {
-			color = Color.WHITE;
-		}
-		buttonBackground.setBackground(color);
-		buttonBold.setSelected(StyleConstants.isBold(textAttributes));
-		buttonItalic.setSelected(StyleConstants.isItalic(textAttributes));
-		buttonUnderline.setSelected(StyleConstants.isUnderline(textAttributes));
-		buttonStrike.setSelected(StyleConstants.isStrikeThrough(textAttributes));
-		buttonSubscript.setSelected(StyleConstants.isSubscript(textAttributes));
-		buttonSuperscript.setSelected(StyleConstants.isSuperscript(textAttributes));
-		
-
-		String name = StyleConstants.getFontFamily(textAttributes);
-		Utility.selectComboItem(fontFamily, name);
-		
-		Integer size = StyleConstants.getFontSize(textAttributes);
-		fontSize.getEditor().setItem(size.toString());
-		Utility.selectComboItem(fontSize, size);
-
-		int align = StyleConstants.getAlignment(paragraphAttributes);
-		Utility.selectComboAlign(textAlignment, align);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set foreground color.
 	 */
 	public void foregroundText() {
-		
-		Color color = StyleConstants.getForeground(Utility.getInputAttributes(htmlTextPane));
-
-		// Choose color.
-		color = Utility.chooseColor(this, color);
-		buttonForeground.setBackground(color);
-		
-		// Set foreground color.
-		htmlTextPane.grabFocus();
-		
-		SimpleAttributeSet attributes = new SimpleAttributeSet();
-		StyleConstants.setForeground(attributes, color);
-		Utility.setCharacterAttributes(htmlTextPane, attributes, false);
+		try {
+			
+			Color color = StyleConstants.getForeground(Utility.getInputAttributes(htmlTextPane));
+	
+			// Choose color.
+			color = Utility.chooseColor(this, color);
+			buttonForeground.setBackground(color);
+			
+			// Set foreground color.
+			htmlTextPane.grabFocus();
+			
+			SimpleAttributeSet attributes = new SimpleAttributeSet();
+			StyleConstants.setForeground(attributes, color);
+			Utility.setCharacterAttributes(htmlTextPane, attributes, false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set background text.
 	 */
 	public void backgroundText() {
-		
-		Color color = StyleConstants.getBackground(Utility.getInputAttributes(htmlTextPane));
-
-		// Choose color.
-		color = Utility.chooseColor(this, color);
-		buttonBackground.setBackground(color);
-		
-		// Set foreground color.
-		htmlTextPane.grabFocus();
-		
-		SimpleAttributeSet attributes = new SimpleAttributeSet();
-		StyleConstants.setBackground(attributes, color);
-		Utility.setCharacterAttributes(htmlTextPane, attributes, false);	
+		try {
+			
+			Color color = StyleConstants.getBackground(Utility.getInputAttributes(htmlTextPane));
+	
+			// Choose color.
+			color = Utility.chooseColor(this, color);
+			buttonBackground.setBackground(color);
+			
+			// Set foreground color.
+			htmlTextPane.grabFocus();
+			
+			SimpleAttributeSet attributes = new SimpleAttributeSet();
+			StyleConstants.setBackground(attributes, color);
+			Utility.setCharacterAttributes(htmlTextPane, attributes, false);	
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1774,15 +2186,12 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 */
 	public void highlightFound(final FoundAttr foundAttr) {
 		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				
-				Utility.highlight(plainTextPane, foundAttr, myHighlightPainter);
-				if (useHtmlEditor) {
-					Utility.highlight(htmlTextPane, foundAttr, myHighlightPainter);
-				}				
-			}
+		Safe.invokeLater(() -> {
+			
+			Utility.highlight(plainTextPane, foundAttr, myHighlightPainter);
+			if (useHtmlEditor) {
+				Utility.highlight(htmlTextPane, foundAttr, myHighlightPainter);
+			}				
 		});
 	}
 
@@ -1799,31 +2208,49 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * Set documents.
 	 */
 	private void setDocuments() {
-
-		// Create document filter.
-		DocumentFilter filter = new DocumentFilter() {
-
-			@Override
-			public void replace(FilterBypass fb, int offset, int length,
-					String text, AttributeSet attrs)
-					throws BadLocationException {
-				
-				// Replace tabulator with spaces.
-				text = text.replace("\t", tabWhiteSpaces);
-				
-				if (text.equals("\n")) {
-					// On new line keep leading white spaces.
-					String previousText = fb.getDocument().getText(0, offset);
-					String spaces = getLeadingSpacesFromPreviousText(previousText);
-					text += spaces;
+		try {
+			
+			// Create document filter.
+			DocumentFilter filter = new DocumentFilter() {
+	
+				@Override
+				public void replace(FilterBypass fb, int offset, int length,
+						String text, AttributeSet attrs)
+						throws BadLocationException {
+					try {
+						
+						// Initialize.
+						String theText = text;
+						
+						// Replace tabulator with spaces.
+						theText = theText.replace("\t", tabWhiteSpaces);
+						
+						try {
+							if (theText.equals("\n")) {
+								// On new line keep leading white spaces.
+								String previousText = fb.getDocument().getText(0, offset);
+								String spaces = getLeadingSpacesFromPreviousText(previousText);
+								theText += spaces;
+							}
+							super.replace(fb, offset, length, theText, attrs);
+						}
+						catch (Throwable e) {
+							Safe.exception(e);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-				super.replace(fb, offset, length, text, attrs);
-			}
+			};
+			
+			// Set document filters.
+			AbstractDocument document = (AbstractDocument) plainTextPane.getDocument();
+			document.setDocumentFilter(filter);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
 		};
-		
-		// Set document filters.
-		AbstractDocument document = (AbstractDocument) plainTextPane.getDocument();
-		document.setDocumentFilter(filter);
 	}
 	
 	/**
@@ -1833,33 +2260,39 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 */
 	protected String getLeadingSpacesFromPreviousText(String previousText) {
 		
-		// Get last line.
-		String[] lines = previousText.split("\n");
-		int length = lines.length;
-		
-		String lastLine = null;
-		if (length > 0) {
-			lastLine = lines[length - 1];
-		}
-		else {
-			lastLine = previousText.replace("\n", "");
-		}
-		
-		String spaces = "";
-		
-		// Get last line leading spaces.
-		for (int index = 0; index < lastLine.length(); index++) {
+		try {
+			// Get last line.
+			String[] lines = previousText.split("\n");
+			int length = lines.length;
 			
-			char character = lastLine.charAt(index);
-			if (Character.isWhitespace(character)) {
-				spaces += character;
+			String lastLine = null;
+			if (length > 0) {
+				lastLine = lines[length - 1];
 			}
 			else {
-				break;
+				lastLine = previousText.replace("\n", "");
 			}
+			
+			String spaces = "";
+			
+			// Get last line leading spaces.
+			for (int index = 0; index < lastLine.length(); index++) {
+				
+				char character = lastLine.charAt(index);
+				if (Character.isWhitespace(character)) {
+					spaces += character;
+				}
+				else {
+					break;
+				}
+			}
+	
+			return spaces;
 		}
-
-		return spaces;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -1868,23 +2301,29 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * @param size
 	 */
 	public static void setTabSize(JTextPane pane, int size) {
-		String tab = "";
-		for (int i = 0; i < size; i++) {
-			tab += " ";
+		try {
+			
+			String tab = "";
+			for (int i = 0; i < size; i++) {
+				tab += " ";
+			}
+			float f = (float) pane.getFontMetrics(pane.getFont()).stringWidth(tab);
+			TabStop[] tabs = new TabStop[500]; // this sucks
+	
+			for (int i = 0; i < tabs.length; i++) {
+				tabs[i] = new TabStop(f * (i + 1), TabStop.ALIGN_LEFT,
+						TabStop.LEAD_NONE);
+			}
+	
+			TabSet tabset = new TabSet(tabs);
+			StyleContext sc = StyleContext.getDefaultStyleContext();
+			AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY,
+					StyleConstants.TabSet, tabset);
+			pane.setParagraphAttributes(aset, false);
 		}
-		float f = (float) pane.getFontMetrics(pane.getFont()).stringWidth(tab);
-		TabStop[] tabs = new TabStop[500]; // this sucks
-
-		for (int i = 0; i < tabs.length; i++) {
-			tabs[i] = new TabStop(f * (i + 1), TabStop.ALIGN_LEFT,
-					TabStop.LEAD_NONE);
-		}
-
-		TabSet tabset = new TabSet(tabs);
-		StyleContext sc = StyleContext.getDefaultStyleContext();
-		AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY,
-				StyleConstants.TabSet, tabset);
-		pane.setParagraphAttributes(aset, false);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1895,47 +2334,53 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 */
 	private static String getLine(String text, int lineIndex) {
 		
-		int length = text.length();
-		int currentLine = 0;
-		StringBuffer lineText = new StringBuffer();
-		
-		for (int charIndex = 0; charIndex < length; charIndex++) {
+		try {
+			int length = text.length();
+			int currentLine = 0;
+			StringBuffer lineText = new StringBuffer();
 			
-			Character character = text.charAt(charIndex);
-			
-			if (currentLine == lineIndex) {
-				lineText.append(character);
-			}
-			if (currentLine > lineIndex) {
-				break;
-			}
-
-			// Recognize line end.
-			if (character == '\n') {
-				currentLine++;
-			}
-			else if (character == '\r') {
-				Integer nextIndex = charIndex + 1;
-				if (nextIndex >= length) {
-					nextIndex = null;
+			for (int charIndex = 0; charIndex < length; charIndex++) {
+				
+				Character character = text.charAt(charIndex);
+				
+				if (currentLine == lineIndex) {
+					lineText.append(character);
 				}
-				if (nextIndex == null) {
+				if (currentLine > lineIndex) {
+					break;
+				}
+	
+				// Recognize line end.
+				if (character == '\n') {
 					currentLine++;
 				}
-				else {
-					Character nextCharacter = text.charAt(nextIndex);
-					if (nextCharacter != '\n') {
+				else if (character == '\r') {
+					Integer nextIndex = charIndex + 1;
+					if (nextIndex >= length) {
+						nextIndex = null;
+					}
+					if (nextIndex == null) {
 						currentLine++;
 					}
 					else {
-						charIndex++;
-						currentLine++;
+						Character nextCharacter = text.charAt(nextIndex);
+						if (nextCharacter != '\n') {
+							currentLine++;
+						}
+						else {
+							charIndex++;
+							currentLine++;
+						}
 					}
 				}
 			}
+			
+			return lineText.toString();
 		}
-		
-		return lineText.toString();
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -1944,129 +2389,134 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * @return
 	 */
 	public static void moveLines(boolean left, JTextComponent textComponent) {
-		
-		// Get selection.
-		Integer start = textComponent.getSelectionStart();
-		Integer end = textComponent.getSelectionEnd();
-		// Get text.
-		String text = textComponent.getText();
-
-		int lineIndex = 0;
-		int length = text.length();
-		Integer startLine = null;
-		Integer endLine = null;
-		boolean isLineStart = true;
-		int position = 0;
-		
-		for (int charIndex = 0; charIndex < length; charIndex++) {
-
-			// Get start line.
-			if (position >= start) {
-				if (startLine == null) {
-					startLine = lineIndex;
-				}
-			}
+		try {
 			
-			// Get stop line.
-			if (position >= end) {
-				if (endLine == null) {
-					if (isLineStart && start == end || !isLineStart) {
-						endLine = lineIndex;
+			// Get selection.
+			Integer start = textComponent.getSelectionStart();
+			Integer end = textComponent.getSelectionEnd();
+			// Get text.
+			String text = textComponent.getText();
+	
+			int lineIndex = 0;
+			int length = text.length();
+			Integer startLine = null;
+			Integer endLine = null;
+			boolean isLineStart = true;
+			int position = 0;
+			
+			for (int charIndex = 0; charIndex < length; charIndex++) {
+	
+				// Get start line.
+				if (position >= start) {
+					if (startLine == null) {
+						startLine = lineIndex;
+					}
+				}
+				
+				// Get stop line.
+				if (position >= end) {
+					if (endLine == null) {
+						if (isLineStart && start == end || !isLineStart) {
+							endLine = lineIndex;
+						}
+						else {
+							endLine = lineIndex - 1;
+							if (endLine < 0) {
+								endLine = 0;
+							}
+	 					}
+					}
+				}
+				
+				isLineStart = false;
+				
+				// Recognize line end.
+				Character character = text.charAt(charIndex);
+				if (character == '\n') {
+					lineIndex++;
+					isLineStart = true;
+				}
+				else if (character == '\r') {
+					Integer nextIndex = charIndex + 1;
+					if (nextIndex >= length) {
+						nextIndex = null;
+					}
+					if (nextIndex == null) {
+						lineIndex++;
+						isLineStart = true;					
 					}
 					else {
-						endLine = lineIndex - 1;
-						if (endLine < 0) {
-							endLine = 0;
+						Character nextCharacter = text.charAt(nextIndex);
+						if (nextCharacter != '\n') {
+							lineIndex++;
+							isLineStart = true;							
 						}
- 					}
+						else {
+							charIndex++;
+							lineIndex++;
+							isLineStart = true;
+						}
+					}
 				}
+				
+				position++;
 			}
 			
-			isLineStart = false;
-			
-			// Recognize line end.
-			Character character = text.charAt(charIndex);
-			if (character == '\n') {
-				lineIndex++;
-				isLineStart = true;
+			if (startLine == null) {
+				startLine = lineIndex;
 			}
-			else if (character == '\r') {
-				Integer nextIndex = charIndex + 1;
-				if (nextIndex >= length) {
-					nextIndex = null;
-				}
-				if (nextIndex == null) {
-					lineIndex++;
-					isLineStart = true;					
+			if (endLine == null) {
+				if (isLineStart && start == end || !isLineStart) {
+					endLine = lineIndex;
 				}
 				else {
-					Character nextCharacter = text.charAt(nextIndex);
-					if (nextCharacter != '\n') {
-						lineIndex++;
-						isLineStart = true;							
-					}
-					else {
-						charIndex++;
-						lineIndex++;
-						isLineStart = true;
+					endLine = lineIndex - 1;
+					if (endLine < 0) {
+						endLine = 0;
 					}
 				}
 			}
 			
-			position++;
-		}
-		
-		if (startLine == null) {
-			startLine = lineIndex;
-		}
-		if (endLine == null) {
-			if (isLineStart && start == end || !isLineStart) {
-				endLine = lineIndex;
-			}
-			else {
-				endLine = lineIndex - 1;
-				if (endLine < 0) {
-					endLine = 0;
-				}
-			}
-		}
-		
-		// Move lines left or right.
-		position = 0;
-		String newText = "";
-		int lineCount = lineIndex;
-		start = null;
-		end = null;
-		
-		for (int index = 0; index <= lineCount; index++) {
+			// Move lines left or right.
+			position = 0;
+			String newText = "";
+			int lineCount = lineIndex;
+			start = null;
+			end = null;
 			
-			String lineText = getLine(text, index);
-			if (index >= startLine && index <= endLine) {
-				if (start == null) {
-					start = newText.length();
-				}
-				newText += left ? TextEditorPane.moveLineLeft(lineText) : TextEditorPane.moveLineRight(lineText);
+			for (int index = 0; index <= lineCount; index++) {
 				
-				if (index == lineCount && start != null && end == null) {
-					end = newText.length();
-				}
-			}
-			else {
-				if (start != null && end == null) {
-					end = newText.length();
-				}
-				newText += lineText;
-			}
-		}
-		
-		textComponent.setText(newText);
-		textComponent.grabFocus();
-
-		if (start != null && end != null) {
+				String lineText = getLine(text, index);
+				if (index >= startLine && index <= endLine) {
+					if (start == null) {
+						start = newText.length();
+					}
+					newText += left ? TextEditorPane.moveLineLeft(lineText) : TextEditorPane.moveLineRight(lineText);
 					
-			textComponent.setSelectionStart(start);
-			textComponent.setSelectionEnd(end);
+					if (index == lineCount && start != null && end == null) {
+						end = newText.length();
+					}
+				}
+				else {
+					if (start != null && end == null) {
+						end = newText.length();
+					}
+					newText += lineText;
+				}
+			}
+			
+			textComponent.setText(newText);
+			textComponent.grabFocus();
+	
+			if (start != null && end != null) {
+						
+				textComponent.setSelectionStart(start);
+				textComponent.setSelectionEnd(end);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -2074,126 +2524,156 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * @param textComponent
 	 */
 	private static void backText(JTextComponent textComponent) {
-		
-		int position = textComponent.getCaretPosition();
-
-		// Get component text.
-		int length = textComponent.getDocument().getLength();
-		String text = "";
 		try {
-			text = textComponent.getDocument().getText(0, length);
-		}
-		catch (BadLocationException e) {
-		}
-		
-		// Find previous new line character.
-		int lineStart = position - 1;
-		while (true) {
 			
-			if (lineStart < 0) {
-				lineStart = 0;
-				break;
-			}
-			
-			char character = text.charAt(lineStart);
-			if (character == '\n') {
-
-				lineStart++;
-				break;
-			}
-			
-			lineStart--;
-		}
-		
-		// Remove leading spaces.
-		int removeCount = 0;
-		int index = lineStart;
-		
-		while (true) {
-			
-			char character = text.charAt(index);
-			if (character == ' ') {
-				index++;
-				
-				removeCount++;
-				if (removeCount < tabWidth) {
-					continue;
-				}
-			}
-			
-			break;
-		}
-		
-		// Remove leading spaces.
-		if (removeCount > 0) {
-
+			int position = textComponent.getCaretPosition();
+	
+			// Get component text.
+			int length = textComponent.getDocument().getLength();
+			String text = "";
 			try {
-				textComponent.getDocument().remove(lineStart, removeCount);
+				text = textComponent.getDocument().getText(0, length);
 			}
 			catch (BadLocationException e) {
-				e.printStackTrace();
 			}
 			
-			// Set new caret position.
-			textComponent.setCaretPosition(position - removeCount);
+			// Find previous new line character.
+			int lineStart = position - 1;
+			while (true) {
+				
+				if (lineStart < 0) {
+					lineStart = 0;
+					break;
+				}
+				
+				char character = text.charAt(lineStart);
+				if (character == '\n') {
+	
+					lineStart++;
+					break;
+				}
+				
+				lineStart--;
+			}
+			
+			// Remove leading spaces.
+			int removeCount = 0;
+			int index = lineStart;
+			
+			while (true) {
+				
+				char character = text.charAt(index);
+				if (character == ' ') {
+					index++;
+					
+					removeCount++;
+					if (removeCount < tabWidth) {
+						continue;
+					}
+				}
+				
+				break;
+			}
+			
+			// Remove leading spaces.
+			if (removeCount > 0) {
+	
+				try {
+					textComponent.getDocument().remove(lineStart, removeCount);
+				}
+				catch (BadLocationException e) {
+					Safe.exception(e);
+				}
+				
+				// Set new caret position.
+				textComponent.setCaretPosition(position - removeCount);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 	}
 
 	/**
 	 * Move text right.
 	 */
 	public void moveTextRight() {
-		
-		if (getCurrentEditor().isEditable()) {
-			TextEditorPane.moveLines(false, getCurrentEditor());
+		try {
+			
+			if (getCurrentEditor().isEditable()) {
+				TextEditorPane.moveLines(false, getCurrentEditor());
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Move text left.
 	 */
 	public void moveTextLeft() {
-		
-		if (getCurrentEditor().isEditable()) {
-			TextEditorPane.moveLines(true, getCurrentEditor());
+		try {
+			
+			if (getCurrentEditor().isEditable()) {
+				TextEditorPane.moveLines(true, getCurrentEditor());
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Shift text back.
 	 */
 	protected void backTextLeft() {
-		
-		if (getCurrentEditor().isEditable()) {
-			TextEditorPane.backText(getCurrentEditor());
+		try {
+			
+			if (getCurrentEditor().isEditable()) {
+				TextEditorPane.backText(getCurrentEditor());
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Create timers.
 	 */
 	private void createTimers() {
-		
-		// Create Swing timer.
-		highlightScriptCommandsTimer = new Timer(100, new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				
-				// Highlight script commands.
-				if (plainTextPane.isShowing()) {
-					highlightScriptCommands(plainTextPane);
+		try {
+			
+			// Create Swing timer.
+			highlightScriptCommandsTimer = new Timer(100, new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						
+						// Highlight script commands.
+						if (plainTextPane.isShowing()) {
+							highlightScriptCommands(plainTextPane);
+						}
+						
+						if (htmlTextPane.isShowing()) {
+							highlightScriptCommands(htmlTextPane);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-				
-				if (htmlTextPane.isShowing()) {
-					highlightScriptCommands(htmlTextPane);
-				}
-			}
-		});
-		
-		// Timer action is invoked only once.
-		highlightScriptCommandsTimer.setRepeats(false);
-		
-		highlightScriptCommandsTimer.setCoalesce(true);
+			});
+			
+			// Timer action is invoked only once.
+			highlightScriptCommandsTimer.setRepeats(false);
+			highlightScriptCommandsTimer.setCoalesce(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -2209,19 +2689,29 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * Stop timers.
 	 */
 	private void stopTimers() {
-		
-		highlightScriptCommandsTimer.stop();
+		try {
+			
+			highlightScriptCommandsTimer.stop();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Highlight script commands.
 	 */
 	protected void highlightScriptCommands() {
-		
-		// Start timer.
-		if (!highlightScriptCommandsTimer.isRunning()) {
-			highlightScriptCommandsTimer.start();
+		try {
+			
+			// Start timer.
+			if (!highlightScriptCommandsTimer.isRunning()) {
+				highlightScriptCommandsTimer.start();
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -2239,7 +2729,13 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	@Override
 	public String getStringValue() {
 		
-		return getText();
+		try {
+			return getText();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 	
 	/**
@@ -2248,7 +2744,13 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	@Override
 	public String getSpecification() {
 		
-		return getText();
+		try {
+			return getText();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 	
 	/**
@@ -2256,8 +2758,13 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 */
 	@Override
 	public void setStringValue(String string) {
-		
-		setText(string);
+		try {
+			
+			setText(string);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -2273,18 +2780,19 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 * Text editor grabs focus.
 	 */
 	public void grabFocusText() {
-		
-		JEditorPane editorPane = getCurrentEditor();
-		if (editorPane != null) {
+		try {
 			
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					
+			JEditorPane editorPane = getCurrentEditor();
+			if (editorPane != null) {
+				
+				Safe.invokeLater(() -> {
 					editorPane.grabFocus();
-				}
-			});
+				});
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

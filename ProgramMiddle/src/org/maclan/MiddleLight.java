@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -20,7 +20,8 @@ import javax.sql.DataSource;
 import org.multipage.util.Obj;
 
 /**
- * @author
+ * Interface for middle layer.
+ * @author vakol
  *
  */
 public interface MiddleLight {
@@ -343,23 +344,6 @@ public interface MiddleLight {
 			LinkedList<Area> projectRootAreas);
 	
 	/**
-	 * Load area slot.
-	 * @param area
-	 * @param alias
-	 * @param inherit
-	 * @param skipDefault
-	 * @param slot 
-	 * @param lastFoundDefaultSlot
-	 * @param isInheritance
-	 * @param skipCurrentArea
-	 * @param loadValue
-	 * @return
-	 */
-	public MiddleResult loadSlotPrivate(Area area, String alias,
-			boolean inherit, boolean skipDefault, Obj<Slot> slot, Obj<Slot> lastFoundDefaultSlot, int hint,
-			boolean isInheritance, Long inheritanceLevel, boolean skipCurrentArea, boolean loadValue);
-	
-	/**
 	 * Load slot value.
 	 * @param slot
 	 * @return
@@ -404,12 +388,22 @@ public interface MiddleLight {
 			boolean inherit, boolean parent, boolean skipDefault, Obj<Slot> slot, boolean loadValue);
 	
 	/**
+	 * Load slot.
+	 * @param slotId
+	 * @param slot
+	 * @param found 
+	 * @return
+	 */
+	public MiddleResult loadSlot(long slotId, Slot slot, Obj<Boolean> found);
+	
+	/**
 	 * Check if the input slot changes.
 	 * @param slot
 	 * @param slotChanges
+	 * @param aliasChange
 	 * @return
 	 */
-	public MiddleResult loadSlotChanges(Slot slot, Obj<Boolean> slotChanges);
+	public MiddleResult loadSlotChanges(Slot slot, Obj<Boolean> slotChanges, Obj<Boolean> aliasChange);
 
 	/**
 	 * Load area slot with inheritance level.

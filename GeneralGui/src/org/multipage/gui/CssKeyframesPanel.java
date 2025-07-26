@@ -29,7 +29,7 @@ public class CssKeyframesPanel extends InsertPanel implements StringValueEditor 
 	private JLabel labelKeyframes;
 	private JScrollPane scrollPane;
 	private JToolBar toolBar;
-	private JList<CssKeyframe> list;
+	private JList<CssKeyFrame> list;
 
 	// $hide>>$
 	/**
@@ -84,7 +84,7 @@ public class CssKeyframesPanel extends InsertPanel implements StringValueEditor 
 	/**
 	 * List model.
 	 */
-	private DefaultListModel<CssKeyframe> listModel;
+	private DefaultListModel<CssKeyFrame> listModel;
 	
 	// $hide<<$
 
@@ -93,13 +93,18 @@ public class CssKeyframesPanel extends InsertPanel implements StringValueEditor 
 	 * @param parentWindow 
 	 */
 	public CssKeyframesPanel(String initialString) {
-
-		initComponents();
 		
-		// $hide>>$
-		this.initialString = initialString;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			this.initialString = initialString;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -144,18 +149,28 @@ public class CssKeyframesPanel extends InsertPanel implements StringValueEditor 
 	 * @param e
 	 */
 	protected void onListClick(MouseEvent e) {
-		
-		if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
-			onEdit();
+		try {
+			
+			if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
+				onEdit();
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-
-		setFromInitialString();
+		try {
+			
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -170,65 +185,91 @@ public class CssKeyframesPanel extends InsertPanel implements StringValueEditor 
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		localize();
-		
-		initToolbar();
-		initList();
-		
-		loadDialog();
+		try {
+			
+			localize();
+			
+			initToolbar();
+			initList();
+			
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Initialize list.
 	 */
 	private void initList() {
-		
-		listModel = new DefaultListModel<CssKeyframe>();
-		list.setModel(listModel);
-		
-		// Set renderer.
-		list.setCellRenderer(new ListCellRenderer<CssKeyframe>() {
-
-			// Renderer.
-			@SuppressWarnings("serial")
-			RendererCssKeyframeItem renderer = new RendererCssKeyframeItem() {
-
-				// Get preferred size.
-				@Override
-				public Dimension getPreferredSize() {
-					
-					final Dimension dimension = new Dimension(list.getWidth(), 80);
-					return dimension;
-				}
-			};
+		try {
 			
-			// Get renderer callback method.
-			@Override
-			public Component getListCellRendererComponent(
-					JList<? extends CssKeyframe> list, CssKeyframe value,
-					int index, boolean isSelected, boolean cellHasFocus) {
+			listModel = new DefaultListModel<CssKeyFrame>();
+			list.setModel(listModel);
+			
+			// Set renderer.
+			list.setCellRenderer(new ListCellRenderer<CssKeyFrame>() {
+	
+				// Renderer.
+				@SuppressWarnings("serial")
+				RendererCssKeyframeItem renderer = new RendererCssKeyframeItem() {
+	
+					// Get preferred size.
+					@Override
+					public Dimension getPreferredSize() {
+						
+						try {
+							final Dimension dimension = new Dimension(list.getWidth(), 80);
+							return dimension;
+						}
+						catch (Throwable e) {
+							Safe.exception(e);
+						}
+						return new Dimension();
+					}
+				};
 				
-				if (value == null) {
-					return null;
+				// Get renderer callback method.
+				@Override
+				public Component getListCellRendererComponent(
+						JList<? extends CssKeyFrame> list, CssKeyFrame value,
+						int index, boolean isSelected, boolean cellHasFocus) {
+					
+					try {
+						if (value == null) {
+							return null;
+						}
+						
+						renderer.set(value, isSelected, cellHasFocus, 0);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return renderer;
 				}
-				
-				renderer.set(value, isSelected, cellHasFocus, 0);
-				return renderer;
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Initialize toolbar.
 	 */
 	private void initToolbar() {
-		
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/insert.png", this, "onAdd", "org.multipage.gui.tooltipAddKeyframe");
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/edit.png", this, "onEdit", "org.multipage.gui.tooltipEditKeyframe");
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/cancel_icon.png", this, "onDelete", "org.multipage.gui.tooltipDeleteKeyframe");
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/move_backward.png", this, "onMoveUp", "org.multipage.gui.tooltipMoveKeyframeUp");
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/move_forward.png", this, "onMoveDown", "org.multipage.gui.tooltipMoveKeyframeDown");
+		try {
+			
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/insert.png", this, "onAdd", "org.multipage.gui.tooltipAddKeyframe");
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/edit.png", this, "onEdit", "org.multipage.gui.tooltipEditKeyframe");
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/cancel_icon.png", this, "onDelete", "org.multipage.gui.tooltipDeleteKeyframe");
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/move_backward.png", this, "onMoveUp", "org.multipage.gui.tooltipMoveKeyframeUp");
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/move_forward.png", this, "onMoveDown", "org.multipage.gui.tooltipMoveKeyframeDown");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -236,26 +277,31 @@ public class CssKeyframesPanel extends InsertPanel implements StringValueEditor 
 	 */
 	@SuppressWarnings("unused")
 	private void onMoveUp() {
-		
-		int index = list.getSelectedIndex();
-		if (index == -1) {
+		try {
 			
-			Utility.show(this, "org.multipage.gui.messageSelectSingleKeyframe");
-			return;
+			int index = list.getSelectedIndex();
+			if (index == -1) {
+				
+				Utility.show(this, "org.multipage.gui.messageSelectSingleKeyframe");
+				return;
+			}
+			
+			// Check selection, move font up and select it.
+			if (index <= 0) {
+				return;
+			}
+			
+			CssKeyFrame current = listModel.get(index);
+			CssKeyFrame previous = listModel.get(index - 1);
+			listModel.set(index, previous);
+			listModel.set(index - 1, current);
+			
+			list.setSelectedIndex(index - 1);
+			list.ensureIndexIsVisible(index - 1);
 		}
-		
-		// Check selection, move font up and select it.
-		if (index <= 0) {
-			return;
-		}
-		
-		CssKeyframe current = listModel.get(index);
-		CssKeyframe previous = listModel.get(index - 1);
-		listModel.set(index, previous);
-		listModel.set(index - 1, current);
-		
-		list.setSelectedIndex(index - 1);
-		list.ensureIndexIsVisible(index - 1);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 		
 	/**
@@ -263,28 +309,33 @@ public class CssKeyframesPanel extends InsertPanel implements StringValueEditor 
 	 */
 	@SuppressWarnings("unused")
 	private void onMoveDown() {
-		
-		int index = list.getSelectedIndex();
-		if (index == -1) {
+		try {
 			
-			Utility.show(this, "org.multipage.gui.messageSelectSingleKeyframe");
-			return;
+			int index = list.getSelectedIndex();
+			if (index == -1) {
+				
+				Utility.show(this, "org.multipage.gui.messageSelectSingleKeyframe");
+				return;
+			}
+			
+			int count = listModel.getSize();
+			
+			// Check selection, move font down and select it.
+			if (index >= count - 1) {
+				return;
+			}
+			
+			CssKeyFrame current = listModel.get(index);
+			CssKeyFrame next = listModel.get(index + 1);
+			listModel.set(index, next);
+			listModel.set(index + 1, current);
+			
+			list.setSelectedIndex(index + 1);
+			list.ensureIndexIsVisible(index + 1);
 		}
-		
-		int count = listModel.getSize();
-		
-		// Check selection, move font down and select it.
-		if (index >= count - 1) {
-			return;
-		}
-		
-		CssKeyframe current = listModel.get(index);
-		CssKeyframe next = listModel.get(index + 1);
-		listModel.set(index, next);
-		listModel.set(index + 1, current);
-		
-		list.setSelectedIndex(index + 1);
-		list.ensureIndexIsVisible(index + 1);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -292,29 +343,39 @@ public class CssKeyframesPanel extends InsertPanel implements StringValueEditor 
 	 */
 	@SuppressWarnings("unused")
 	private void onAdd() {
-		
-		CssKeyframe keyframe = CssKeyFrameItemDialog.showDialog(this);
-		if (keyframe != null) {
+		try {
 			
-			listModel.addElement(keyframe);
+			CssKeyFrame keyframe = CssKeyFrameItemDialog.showDialog(this);
+			if (keyframe != null) {
+				
+				listModel.addElement(keyframe);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On edit keyframe.
 	 */
 	private void onEdit() {
-		
-		CssKeyframe keyframe = list.getSelectedValue();
-		if (keyframe == null) {
+		try {
 			
-			Utility.show(this, "org.multipage.gui.messageSelectSingleKeyframe");
-			return;
+			CssKeyFrame keyframe = list.getSelectedValue();
+			if (keyframe == null) {
+				
+				Utility.show(this, "org.multipage.gui.messageSelectSingleKeyframe");
+				return;
+			}
+			
+			if (CssKeyFrameItemDialog.editDialog(this, keyframe)) {
+				list.updateUI();
+			}
 		}
-		
-		if (CssKeyFrameItemDialog.editDialog(this, keyframe)) {
-			list.updateUI();
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -322,19 +383,24 @@ public class CssKeyframesPanel extends InsertPanel implements StringValueEditor 
 	 */
 	@SuppressWarnings("unused")
 	private void onDelete() {
-		
-		int index = list.getSelectedIndex();
-		if (index == -1) {
+		try {
 			
-			Utility.show(this, "org.multipage.gui.messageSelectSingleKeyframe");
-			return;
+			int index = list.getSelectedIndex();
+			if (index == -1) {
+				
+				Utility.show(this, "org.multipage.gui.messageSelectSingleKeyframe");
+				return;
+			}
+			
+			if (!Utility.ask(this, "org.multipage.gui.messageDeleteKeyframe")) {
+				return;
+			}
+			
+			listModel.remove(index);
 		}
-		
-		if (!Utility.ask(this, "org.multipage.gui.messageDeleteKeyframe")) {
-			return;
-		}
-		
-		listModel.remove(index);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -344,54 +410,70 @@ public class CssKeyframesPanel extends InsertPanel implements StringValueEditor 
 	@Override
 	public String getSpecification() {
 		
-		// Compile keyframes specification.
-		String specification = "";
-		boolean isFirst = true;
-		
-		for (int index = 0; index < listModel.getSize(); index++) {
+		try {
+			// Compile keyframes specification.
+			String specification = "";
+			boolean isFirst = true;
 			
-			if (!isFirst) {
-				specification += "\r\n";
+			for (int index = 0; index < listModel.getSize(); index++) {
+				
+				if (!isFirst) {
+					specification += "\r\n";
+				}
+				
+				CssKeyFrame keyframe = listModel.get(index);
+				specification += "    " + keyframe.getSpecificationText();
+				
+				isFirst = false;
 			}
-			
-			CssKeyframe keyframe = listModel.get(index);
-			specification += "    " + keyframe.getSpecificationText();
-			
-			isFirst = false;
+	
+			return specification;
 		}
-
-		return specification;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
 	 * Set from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		// Initialize controls.
-		listModel.removeAllElements();
-
-		if (initialString != null) {
+		try {
 			
-			// Parse lines.
-			String [] lines = initialString.split("\r\n");
-			for (String line : lines) {
+			// Initialize controls.
+			listModel.removeAllElements();
+	
+			if (initialString != null) {
 				
-				CssKeyframe keyframe = CssKeyframe.parse(line);
-				if (keyframe != null) {
+				// Parse lines.
+				String [] lines = initialString.split("\r\n");
+				for (String line : lines) {
 					
-					listModel.addElement(keyframe);
+					CssKeyFrame keyframe = CssKeyFrame.parse(line);
+					if (keyframe != null) {
+						
+						listModel.addElement(keyframe);
+					}
 				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(labelKeyframes);
+		try {
+			
+			Utility.localize(labelKeyframes);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -400,7 +482,13 @@ public class CssKeyframesPanel extends InsertPanel implements StringValueEditor 
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.gui.textCssKeyframesBuilder");
+		try {
+			return Resources.getString("org.multipage.gui.textCssKeyframesBuilder");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -409,7 +497,13 @@ public class CssKeyframesPanel extends InsertPanel implements StringValueEditor 
 	@Override
 	public String getResultText() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -465,7 +559,13 @@ public class CssKeyframesPanel extends InsertPanel implements StringValueEditor 
 	@Override
 	public String getStringValue() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -474,9 +574,14 @@ public class CssKeyframesPanel extends InsertPanel implements StringValueEditor 
 	 */
 	@Override
 	public void setStringValue(String string) {
-		
-		initialString = string;
-		setFromInitialString();
+		try {
+			
+			initialString = string;
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

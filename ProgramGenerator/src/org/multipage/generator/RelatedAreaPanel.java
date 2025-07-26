@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -22,16 +22,15 @@ import org.maclan.Area;
 import org.maclan.Middle;
 import org.maclan.MiddleResult;
 import org.multipage.basic.ProgramBasic;
-import org.multipage.gui.ApplicationEvents;
-import org.multipage.gui.GuiSignal;
 import org.multipage.gui.Images;
 import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays editor for the related area.
+ * @author vakol
  *
  */
 public class RelatedAreaPanel extends JPanel {
@@ -61,10 +60,14 @@ public class RelatedAreaPanel extends JPanel {
 	 * Create the panel.
 	 */
 	public RelatedAreaPanel() {
-
-		initComponents();
 		
-		postCreate(); // $hide$
+		try {
+			initComponents();
+			postCreate(); // $hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -106,7 +109,7 @@ public class RelatedAreaPanel extends JPanel {
 		buttonUpdateRelatedArea = new JButton("");
 		buttonUpdateRelatedArea.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				onUpdateRelatedArea();
+				updateComponents();
 			}
 		});
 		springLayout.putConstraint(SpringLayout.NORTH, buttonUpdateRelatedArea, 0, SpringLayout.NORTH, labelRelatedArea);
@@ -129,147 +132,172 @@ public class RelatedAreaPanel extends JPanel {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		localize();
-		setIcons();
-		setToolTips();
+		try {
+			
+			localize();
+			setIcons();
+			setToolTips();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(labelRelatedArea);
+		try {
+			
+			Utility.localize(labelRelatedArea);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	protected void setIcons() {
-		
-		buttonSelectRelatedArea.setIcon(Images.getIcon("org/multipage/generator/images/area_node.png"));
-		buttonClearRelatedArea.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
-		buttonUpdateRelatedArea.setIcon(Images.getIcon("org/multipage/generator/images/update_icon.png"));
+		try {
+			
+			buttonSelectRelatedArea.setIcon(Images.getIcon("org/multipage/generator/images/area_node.png"));
+			buttonClearRelatedArea.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+			buttonUpdateRelatedArea.setIcon(Images.getIcon("org/multipage/generator/images/update_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set tool tips.
 	 */
 	protected void setToolTips() {
-
-		buttonSelectRelatedArea.setToolTipText(Resources.getString("org.multipage.generator.tooltipSelectRelatedArea"));
-		buttonClearRelatedArea.setToolTipText(Resources.getString("org.multipage.generator.tooltipClearRelatedArea"));
-		buttonUpdateRelatedArea.setToolTipText(Resources.getString("org.multipage.generator.tooltipUpdateRelatedArea"));
+		try {
+			
+			buttonSelectRelatedArea.setToolTipText(Resources.getString("org.multipage.generator.tooltipSelectRelatedArea"));
+			buttonClearRelatedArea.setToolTipText(Resources.getString("org.multipage.generator.tooltipClearRelatedArea"));
+			buttonUpdateRelatedArea.setToolTipText(Resources.getString("org.multipage.generator.tooltipUpdateRelatedArea"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
-	 * Set currentArea.
+	 * Set current area.
 	 * @param currentArea
 	 */
 	public void setArea(Area area) {
-
-		this.currentArea = area;
-		
-		// Load related area.
-		loadRelatedArea();
-	}
-
-	/**
-	 * Load related area.
-	 */
-	public void loadRelatedArea() {
-		
-		if (currentArea == null) {
-			textRelatedArea.setText("");
-			return;
+		try {
+			
+			this.currentArea = area;
+			// Load related area.
+			updateComponents();
 		}
-		
-		Area relatedArea = currentArea.getRelatedArea();
-		textRelatedArea.setText(relatedArea != null ? relatedArea.getDescriptionForced() : "");
-	}
-
-	/**
-	 * On update related area.
-	 */
-	protected void onUpdateRelatedArea() {
-		
-		if (currentArea == null) {
-			textRelatedArea.setText("");
-			return;
-		}
-		
-		Area relatedArea = currentArea.getRelatedArea();
-		textRelatedArea.setText(relatedArea != null ? relatedArea.getDescriptionForced() : "");
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On clear selected area.
 	 */
 	protected void onClearSelectedArea() {
-		
-		if (currentArea == null) {
-			textRelatedArea.setText("");
-			return;
-		}
-		
-		// Ask user.
-		if (!Utility.ask(this, "org.multipage.generator.messageClearAreaRelatedArea")) {
-			return;
-		}
-		
-		// Clear related area ID.
-		Middle middle = ProgramBasic.getMiddle();
-		Properties login = ProgramBasic.getLoginProperties();
-		
-		long currentAreaId = currentArea.getId();
-		
-		MiddleResult result = middle.updateAreaRelatedArea(login, currentAreaId, null);
-		if (result.isNotOK()) {
+		try {
 			
-			result.show(this);
-			return;
+			if (currentArea == null) {
+				textRelatedArea.setText("");
+				return;
+			}
+			
+			// Ask user.
+			if (!Utility.ask(this, "org.multipage.generator.messageClearAreaRelatedArea")) {
+				return;
+			}
+			
+			// Clear related area ID.
+			Middle middle = ProgramBasic.getMiddle();
+			Properties login = ProgramBasic.getLoginProperties();
+			
+			long currentAreaId = currentArea.getId();
+			
+			MiddleResult result = middle.updateAreaRelatedArea(login, currentAreaId, null);
+			if (result.isNotOK()) {
+				
+				result.show(this);
+				return;
+			}
+			
+			currentArea.clearRelatedArea();
+			textRelatedArea.setText("");
 		}
-		
-		currentArea.clearRelatedArea();
-		textRelatedArea.setText("");
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On select related area.
 	 */
 	protected void onSelectRelatedArea() {
-		
-		if (currentArea == null) {
-			textRelatedArea.setText("");
-			return;
-		}
-		
-		// Select area.
-		Area rootArea = ProgramGenerator.getArea(0);
-		Area oldRelatedArea = currentArea.getRelatedArea();
-		
-		Area relatedArea = SelectSubAreaDialog.showDialog(this, rootArea, oldRelatedArea);
-		if (relatedArea == null) {
-			return;
-		}
-		
-		// Save new related area ID.
-		Middle middle = ProgramBasic.getMiddle();
-		Properties login = ProgramBasic.getLoginProperties();
-		
-		long currentAreaId = currentArea.getId();
-		
-		MiddleResult result = middle.updateAreaRelatedArea(login, currentAreaId,
-				relatedArea != null ? relatedArea.getId() : null);
-		if (result.isNotOK()) {
+		try {
 			
-			result.show(this);
-			return;
+			if (currentArea == null) {
+				textRelatedArea.setText("");
+				return;
+			}
+			
+			// Select area.
+			Area rootArea = ProgramGenerator.getArea(0);
+			Area oldRelatedArea = currentArea.getRelatedArea();
+			
+			Area relatedArea = SelectSubAreaDialog.showDialog(this, rootArea, oldRelatedArea);
+			if (relatedArea == null) {
+				return;
+			}
+			
+			// Save new related area ID.
+			Middle middle = ProgramBasic.getMiddle();
+			Properties login = ProgramBasic.getLoginProperties();
+			
+			long currentAreaId = currentArea.getId();
+			
+			MiddleResult result = middle.updateAreaRelatedArea(login, currentAreaId,
+					relatedArea != null ? relatedArea.getId() : null);
+			if (result.isNotOK()) {
+				
+				result.show(this);
+				return;
+			}
+			
+			// Set new area.
+			currentArea.setRelatedArea(relatedArea);
+			textRelatedArea.setText(relatedArea != null ? relatedArea.getDescriptionForDiagram() : "");
 		}
-		
-		// Set new area.
-		currentArea.setRelatedArea(relatedArea);
-		textRelatedArea.setText(relatedArea != null ? relatedArea.getDescriptionForDiagram() : "");
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+	}
+	
+	/**
+	 * Method for updating the dialog components.
+	 */
+	public void updateComponents() {
+		try {
+			
+			if (currentArea == null) {
+				textRelatedArea.setText("");
+				return;
+			}
+			currentArea = ProgramGenerator.updateArea(currentArea);
+			Area relatedArea = currentArea.getRelatedArea();
+			textRelatedArea.setText(relatedArea != null ? relatedArea.getDescriptionForced() : "");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2020 (C) Vaclav Koarcik
+ * Copyright 2010-2025 (C) Vaclav Koarcik
  * 
- * Created on : 24-02-2020
+ * Created on : 2020-02-24
  *
  */
 package org.multipage.generator;
@@ -26,10 +26,11 @@ import org.multipage.gui.Images;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author user
+ * Dialog that displays path editor.
+ * @author vakol
  *
  */
 public class PathSelectionDialog extends JDialog {
@@ -93,15 +94,21 @@ public class PathSelectionDialog extends JDialog {
 	 */
 	public static ProgramPaths.PathSupplier showDialog(Component parent, Area area) {
 		
-		PathSelectionDialog dialog = new PathSelectionDialog(parent);
-		dialog.loadPaths(area);
-		dialog.setVisible(true);
-		
-		if (!dialog.confirmed) {
-			return null;
+		try {
+			PathSelectionDialog dialog = new PathSelectionDialog(parent);
+			dialog.loadPaths(area);
+			dialog.setVisible(true);
+			
+			if (!dialog.confirmed) {
+				return null;
+			}
+			
+			return dialog.getPathSupplier();
 		}
-		
-		return dialog.getPathSupplier();
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -111,11 +118,15 @@ public class PathSelectionDialog extends JDialog {
 	public PathSelectionDialog(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
 		
-		// Initialize components.
-		initComponents();
-		
-		// Post creation.
-		postCreation(); //$hide$
+		try {
+			// Initialize components.
+			initComponents();
+			// Post creation.
+			postCreation(); //$hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -172,42 +183,62 @@ public class PathSelectionDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreation() {
-		
-		localize();
-		setIcons();
-		
-		loadDialog();
+		try {
+			
+			localize();
+			setIcons();
+			
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Localize components
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(labelSelectPath);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(labelSelectPath);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On OK
 	 */
 	protected void onOk() {
-		
-		// Confirm revision
-		confirmed = true;
-		
-		saveDialog();
+		try {
+			
+			// Confirm revision
+			confirmed = true;
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 	
@@ -215,8 +246,14 @@ public class PathSelectionDialog extends JDialog {
 	 * On cancel
 	 */
 	protected void onCancel() {
+		try {
+			
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
-		saveDialog();
 		dispose();
 	}
 	
@@ -224,13 +261,18 @@ public class PathSelectionDialog extends JDialog {
 	 * Load dialog
 	 */
 	private void loadDialog() {
-		
-		if (!bounds.isEmpty()) {
-			setBounds(bounds);
+		try {
+			
+			if (!bounds.isEmpty()) {
+				setBounds(bounds);
+			}
+			else {
+				Utility.centerOnScreen(this);
+			}
 		}
-		else {
-			Utility.centerOnScreen(this);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -238,17 +280,27 @@ public class PathSelectionDialog extends JDialog {
 	 * @param area
 	 */
 	private void loadPaths(Area area) {
-		
-		GeneratorUtility.loadProgramPaths(comboBoxPaths);
-		GeneratorUtility.loadAreaPaths(comboBoxPaths, area);
+		try {
+			
+			GeneratorUtility.loadProgramPaths(comboBoxPaths);
+			GeneratorUtility.loadAreaPaths(comboBoxPaths, area);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -257,7 +309,13 @@ public class PathSelectionDialog extends JDialog {
 	 */
 	private PathSupplier getPathSupplier() {
 		
-		ProgramPaths.PathSupplier pathSupplier = (ProgramPaths.PathSupplier) comboBoxPaths.getSelectedItem();
-		return pathSupplier;
+		try {
+			ProgramPaths.PathSupplier pathSupplier = (ProgramPaths.PathSupplier) comboBoxPaths.getSelectedItem();
+			return pathSupplier;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 }

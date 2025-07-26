@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -18,9 +18,10 @@ import javax.swing.JPanel;
 import org.maclan.AreaResource;
 import org.multipage.gui.GraphUtility;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * @author
+ * @author vakol
  *
  */
 public class AreaResourceRendererBase extends JPanel {
@@ -104,12 +105,17 @@ public class AreaResourceRendererBase extends JPanel {
 	 * Localize.
 	 */
 	protected void localize() {
-
-		Utility.localize(labelTextNamespace);
-		Utility.localize(labelTextMime);
-		Utility.localize(labelVisible);
-		Utility.localize(labelTextId);
-		Utility.localize(labelSaveAsText);
+		try {
+			
+			Utility.localize(labelTextNamespace);
+			Utility.localize(labelTextMime);
+			Utility.localize(labelVisible);
+			Utility.localize(labelTextId);
+			Utility.localize(labelSaveAsText);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -124,35 +130,40 @@ public class AreaResourceRendererBase extends JPanel {
 	public void setProperties(AreaResource resource, String mimeType,
 			String namespacePath, int index,
 			boolean isSelected, boolean hasFocus) {
-		
-		// Get background color.
-		Color backGroundColor = Utility.itemColor(index);
-		// Set color.
-		setBackground(backGroundColor);
-		
-		String finalDescription = resource.getLocalDescription().isEmpty() ? 
-				String.format("<html><b>%s</b></html>", resource.getDescription()) :
-					String.format("<html><b>%s</b>&nbsp;&nbsp;&nbsp;<i>(%s)</i></html>",
-							resource.getLocalDescription(), resource.getDescription());
-		
-		// Set dialog components.
-		labelDescription.setText(finalDescription);
-		labelNamespacePath.setText(namespacePath);
-		labelMimeType.setText(mimeType);
-		checkBoxVisible.setSelected(resource.isVisible());
-		checkBoxSavedAsText.setSelected(resource.isSavedAsText());
-		
-		labelId.setText(String.valueOf(resource.getId()));
-		
-		if (resource.getImage() != null) {
-			labelImage.setIcon(new ImageIcon(resource.getImage()));
+		try {
+			
+			// Get background color.
+			Color backGroundColor = Utility.itemColor(index);
+			// Set color.
+			setBackground(backGroundColor);
+			
+			String finalDescription = resource.getLocalDescription().isEmpty() ? 
+					String.format("<html><b>%s</b></html>", resource.getDescription()) :
+						String.format("<html><b>%s</b>&nbsp;&nbsp;&nbsp;<i>(%s)</i></html>",
+								resource.getLocalDescription(), resource.getDescription());
+			
+			// Set dialog components.
+			labelDescription.setText(finalDescription);
+			labelNamespacePath.setText(namespacePath);
+			labelMimeType.setText(mimeType);
+			checkBoxVisible.setSelected(resource.isVisible());
+			checkBoxSavedAsText.setSelected(resource.isSavedAsText());
+			
+			labelId.setText(String.valueOf(resource.getId()));
+			
+			if (resource.getImage() != null) {
+				labelImage.setIcon(new ImageIcon(resource.getImage()));
+			}
+			else {
+				labelImage.setIcon(null);
+			}
+			
+			this.isSelected = isSelected;
+			this.hasFocus = hasFocus;
 		}
-		else {
-			labelImage.setIcon(null);
-		}
-		
-		this.isSelected = isSelected;
-		this.hasFocus = hasFocus;
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -161,9 +172,14 @@ public class AreaResourceRendererBase extends JPanel {
 	@Override
 	public void paint(Graphics g) {
 		
-		// Paint component.
-		super.paint(g);
-		// Draw selection.
-		GraphUtility.drawSelection(g, this, isSelected, hasFocus);
+		try {
+			// Paint component.
+			super.paint(g);
+			// Draw selection.
+			GraphUtility.drawSelection(g, this, isSelected, hasFocus);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 }

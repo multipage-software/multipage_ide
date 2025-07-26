@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-03-2020
+ * Created on : 2020-03-26
  *
  */
 package org.maclan.server;
@@ -19,7 +19,8 @@ import org.multipage.util.j;
 import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
 /**
- * @author user
+ * Class for scripting engine.
+ * @author vakol
  *
  */
 public class ScriptingEngine {

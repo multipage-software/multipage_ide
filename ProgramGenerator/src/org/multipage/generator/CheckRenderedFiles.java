@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -37,10 +37,11 @@ import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays information about rendered files.
+ * @author vakol
  *
  */
 public class CheckRenderedFiles extends JDialog {
@@ -89,16 +90,26 @@ public class CheckRenderedFiles extends JDialog {
 	 * Load dialog.
 	 */
 	public void loadDialog() {
-		
-		setBounds(bounds);
+		try {
+			
+			setBounds(bounds);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	public void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -130,11 +141,16 @@ public class CheckRenderedFiles extends JDialog {
 	 * @param resource
 	 */
 	public static void showDialog(Component parent, LinkedList<Area> areas) {
-		
-		CheckRenderedFiles dialog = new CheckRenderedFiles(Utility.findWindow(parent), false, areas);
-		
-		dialog.buttonCancel.setVisible(false);
-		dialog.setVisible(true);
+		try {
+			
+			CheckRenderedFiles dialog = new CheckRenderedFiles(Utility.findWindow(parent), false, areas);
+			
+			dialog.buttonCancel.setVisible(false);
+			dialog.setVisible(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -144,12 +160,18 @@ public class CheckRenderedFiles extends JDialog {
 	 */
 	public static boolean showDialogModal(Component parent, LinkedList<Area> areas) {
 		
-		CheckRenderedFiles dialog = new CheckRenderedFiles(Utility.findWindow(parent), true, areas);
-		
-		dialog.buttonCancel.setVisible(true);
-		dialog.setVisible(true);
-
-		return dialog.confirm;
+		try {
+			CheckRenderedFiles dialog = new CheckRenderedFiles(Utility.findWindow(parent), true, areas);
+			
+			dialog.buttonCancel.setVisible(true);
+			dialog.setVisible(true);
+	
+			return dialog.confirm;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -160,11 +182,16 @@ public class CheckRenderedFiles extends JDialog {
 	 */
 	public CheckRenderedFiles(Window parentWindow, boolean modal, LinkedList<Area> areas) {
 		super(parentWindow, modal ? ModalityType.DOCUMENT_MODAL : ModalityType.MODELESS);
-
-		initComponents();
 		
-		checkAreas(areas); // $hide$
-		postCreate(); // $hide$
+		try {
+			initComponents();
+			
+			checkAreas(areas); // $hide$
+			postCreate(); // $hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -247,10 +274,15 @@ public class CheckRenderedFiles extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		confirm = true;
-		
-		saveDialog();
+		try {
+			
+			confirm = true;
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 	
@@ -258,10 +290,15 @@ public class CheckRenderedFiles extends JDialog {
 	 * On cancel.
 	 */
 	protected void onCancel() {
-				
-		confirm = false;
-		
-		saveDialog();
+		try {
+			
+			confirm = false;
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};	
+			
 		dispose();
 	}
 
@@ -269,34 +306,49 @@ public class CheckRenderedFiles extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-				
-		loadDialog();
-		Utility.centerOnScreen(this);
-		
-		localize();
-		setIcons();
+		try {
+			
+			loadDialog();
+			Utility.centerOnScreen(this);
+			
+			localize();
+			setIcons();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(labelAmbiguousPages);
-		Utility.localize(buttonReload);
-		Utility.localize(buttonCancel);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(labelAmbiguousPages);
+			Utility.localize(buttonReload);
+			Utility.localize(buttonCancel);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		buttonReload.setIcon(Images.getIcon("org/multipage/generator/images/update_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			buttonReload.setIcon(Images.getIcon("org/multipage/generator/images/update_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -304,54 +356,59 @@ public class CheckRenderedFiles extends JDialog {
 	 * @param areas
 	 */
 	private void checkAreas(LinkedList<Area> areas) {
-		
-		// Save reference.
-		this.areas = areas;
-		
-		// Create panel.
-		JPanel listPanel = new JPanel();
-		scrollPane.setViewportView(listPanel);
-		
-		// Get list of ambiguous file names.
-		LinkedList<AmbiguousFileName> ambiguousFileNames = new LinkedList<AmbiguousFileName>();
-		
-		AreasModel model = ProgramGenerator.getAreasModel();
-		LinkedList<VersionObj> versions = model.getVersions();
-		
-		getAmbiguousFileNames(areas, versions, ambiguousFileNames);
-
-		int count = ambiguousFileNames.size();
-		
-		if (count == 0) {
-			// Inform user.
-			listPanel.setLayout(new BorderLayout());
+		try {
 			
-			JLabel labelMessage = new JLabel(
-					Resources.getString("org.multipage.generator.messageNoAmbiguousFileNamesFound"));
+			// Save reference.
+			this.areas = areas;
 			
-			labelMessage.setHorizontalAlignment(SwingConstants.CENTER);
-			listPanel.add(labelMessage, BorderLayout.CENTER);
-			return;
+			// Create panel.
+			JPanel listPanel = new JPanel();
+			scrollPane.setViewportView(listPanel);
+			
+			// Get list of ambiguous file names.
+			LinkedList<AmbiguousFileName> ambiguousFileNames = new LinkedList<AmbiguousFileName>();
+			
+			AreasModel model = ProgramGenerator.getAreasModel();
+			LinkedList<VersionObj> versions = model.getVersions();
+			
+			getAmbiguousFileNames(areas, versions, ambiguousFileNames);
+	
+			int count = ambiguousFileNames.size();
+			
+			if (count == 0) {
+				// Inform user.
+				listPanel.setLayout(new BorderLayout());
+				
+				JLabel labelMessage = new JLabel(
+						Resources.getString("org.multipage.generator.messageNoAmbiguousFileNamesFound"));
+				
+				labelMessage.setHorizontalAlignment(SwingConstants.CENTER);
+				listPanel.add(labelMessage, BorderLayout.CENTER);
+				return;
+			}
+	
+			// Set list panel layout.
+			listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
+			
+			// Add panels.
+			for (int index = 0; index < count; index++) {
+				
+				AmbiguousFileName fileName = ambiguousFileNames.get(index);
+				
+				// Add new panel.
+				JPanel panel = new AmbiguousRenderedFilePanel(fileName);
+				
+				Dimension size = panel.getPreferredSize();
+				size.width = Integer.MAX_VALUE;
+				panel.setMaximumSize(size);
+				
+				panel.setBackground(Utility.itemColor(index));
+				listPanel.add(panel);
+			}
 		}
-
-		// Set list panel layout.
-		listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
-		
-		// Add panels.
-		for (int index = 0; index < count; index++) {
-			
-			AmbiguousFileName fileName = ambiguousFileNames.get(index);
-			
-			// Add new panel.
-			JPanel panel = new AmbiguousRenderedFilePanel(fileName);
-			
-			Dimension size = panel.getPreferredSize();
-			size.width = Integer.MAX_VALUE;
-			panel.setMaximumSize(size);
-			
-			panel.setBackground(Utility.itemColor(index));
-			listPanel.add(panel);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -362,39 +419,43 @@ public class CheckRenderedFiles extends JDialog {
 	public static void getAmbiguousFileNames(
 			LinkedList<Area> areas, LinkedList<VersionObj> versions,
 			LinkedList<AmbiguousFileName> ambiguousFileNames) {
-		
-		ambiguousFileNames.clear();
-		
-		AreasModel model = ProgramGenerator.getAreasModel();
-		
-		LinkedList<AmbiguousFileName> fileNames = new LinkedList<AmbiguousFileName>();
-		
-		for (Area area : areas) {
+		try {
 			
-			if (!area.isVisible()) {
-				continue;
-			}
+			ambiguousFileNames.clear();
 			
-			for (VersionObj version : versions) {
+			AreasModel model = ProgramGenerator.getAreasModel();
+			LinkedList<AmbiguousFileName> fileNames = new LinkedList<AmbiguousFileName>();
+			
+			for (Area area : areas) {
 				
-				// Get area full file name.
-				String fullFileName = model.getAreaFullFileName(area, version);
-				if (fullFileName == null) {
+				if (!area.isVisible()) {
 					continue;
 				}
 				
-				// Add area full file name.
-				addFileName(fileNames, fullFileName, area, version);
+				for (VersionObj version : versions) {
+					
+					// Get area full file name.
+					String fullFileName = model.getAreaFullFileName(area, version);
+					if (fullFileName == null) {
+						continue;
+					}
+					
+					// Add area full file name.
+					addFileName(fileNames, fullFileName, area, version);
+				}
 			}
-		}
-		
-		// Get ambiguous file names.
-		for (AmbiguousFileName fileName : fileNames) {
 			
-			if (fileName.isAmbiguous()) {
-				ambiguousFileNames.add(fileName);
+			// Get ambiguous file names.
+			for (AmbiguousFileName fileName : fileNames) {
+				
+				if (fileName.isAmbiguous()) {
+					ambiguousFileNames.add(fileName);
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -405,40 +466,50 @@ public class CheckRenderedFiles extends JDialog {
 	 */
 	private static void addFileName(LinkedList<AmbiguousFileName> fileNamesList,
 			String fullFileName, Area area, VersionObj version) {
-		
-		AmbiguousFileName foundFileName = null;
-		
-		// Try to found existing file name.
-		for (AmbiguousFileName fileName : fileNamesList) {
+		try {
 			
-			if (fileName.fileName.equalsIgnoreCase(fullFileName)) {
+			AmbiguousFileName foundFileName = null;
+			
+			// Try to found existing file name.
+			for (AmbiguousFileName fileName : fileNamesList) {
 				
-				foundFileName = fileName;
-				break;
+				if (fileName.fileName.equalsIgnoreCase(fullFileName)) {
+					
+					foundFileName = fileName;
+					break;
+				}
 			}
+			
+			if (foundFileName == null) {
+				foundFileName = new AmbiguousFileName(fullFileName);
+				fileNamesList.add(foundFileName);
+			}
+			
+			// Add new item.
+			foundFileName.addItem(area, version);
 		}
-		
-		if (foundFileName == null) {
-			foundFileName = new AmbiguousFileName(fullFileName);
-			fileNamesList.add(foundFileName);
-		}
-		
-		// Add new item.
-		foundFileName.addItem(area, version);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On reload.
 	 */
 	protected void onReload() {
-		
-		// Get model.
-		AreasModel model = ProgramGenerator.getAreasModel();
-		
-		// Update areas' references.
-		model.updateAreas(areas);
-		
-		// Check new areas.
-		checkAreas(areas);
+		try {
+			
+			// Get model.
+			AreasModel model = ProgramGenerator.getAreasModel();
+			
+			// Update areas' references.
+			model.updateAreas(areas);
+			
+			// Check new areas.
+			checkAreas(areas);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

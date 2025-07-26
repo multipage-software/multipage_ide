@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2025-04-26
  *
  */
 
@@ -20,8 +20,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 /**
- * 
- * @author
+ * Panel that displays outlines editor.
+ * @author vakol
  *
  */
 public class CssOutlinesPanel extends InsertPanel implements StringValueEditor {
@@ -106,13 +106,18 @@ public class CssOutlinesPanel extends InsertPanel implements StringValueEditor {
 	 * @param parentWindow 
 	 */
 	public CssOutlinesPanel(String initialString) {
-
-		initComponents();
 		
-		// $hide>>$
-		this.initialString = initialString;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			this.initialString = initialString;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -237,25 +242,35 @@ public class CssOutlinesPanel extends InsertPanel implements StringValueEditor {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-
-		loadFromString(initialString);
+		try {
+			
+			loadFromString(initialString);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Load from initial string.
 	 */
 	private void loadFromString(String string) {
-		
-		initialString = string;
-		
-		setTop(CssOutlinesPanel.top);
-		setRight(CssOutlinesPanel.right);
-		setBottom(CssOutlinesPanel.bottom);
-		setLeft(CssOutlinesPanel.left);
-
-		if (initialString != null) {
-			setFromInitialString();
+		try {
+			
+			initialString = string;
+			
+			setTop(CssOutlinesPanel.top);
+			setRight(CssOutlinesPanel.right);
+			setBottom(CssOutlinesPanel.bottom);
+			setLeft(CssOutlinesPanel.left);
+	
+			if (initialString != null) {
+				setFromInitialString();
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -270,23 +285,31 @@ public class CssOutlinesPanel extends InsertPanel implements StringValueEditor {
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		localize();
-		
-		loadUnits();
-		
-		loadDialog();
+		try {
+			
+			localize();
+			loadUnits();
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load units.
 	 */
 	private void loadUnits() {
-		
-		Utility.loadCssUnits(comboBoxTop);
-		Utility.loadCssUnits(comboBoxRight);
-		Utility.loadCssUnits(comboBoxBottom);
-		Utility.loadCssUnits(comboBoxLeft);
+		try {
+			
+			Utility.loadCssUnits(comboBoxTop);
+			Utility.loadCssUnits(comboBoxRight);
+			Utility.loadCssUnits(comboBoxBottom);
+			Utility.loadCssUnits(comboBoxLeft);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -296,10 +319,16 @@ public class CssOutlinesPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getSpecification() {
 		
-		if (checkCenter.isSelected()) {
-			return getTop() + " auto " + getBottom() + " auto";
+		try {
+			if (checkCenter.isSelected()) {
+				return getTop() + " auto " + getBottom() + " auto";
+			}
+			return getTop() + " " + getRight() + " " + getBottom() + " " + getLeft();
 		}
-		return getTop() + " " + getRight() + " " + getBottom() + " " + getLeft();
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -308,27 +337,33 @@ public class CssOutlinesPanel extends InsertPanel implements StringValueEditor {
 	 */
 	private String getLeft() {
 		
-		if (checkCenter.isSelected()) {
-			return "auto";
-		}
-		
-		String value = textLeft.getText();
-		String units = "";
-		
 		try {
-			value = String.valueOf(Double.parseDouble(value));
-		}
-		catch (Exception e) {
-			value = "0";
-		}
-		
-		Object item = comboBoxLeft.getSelectedItem();
-		if (item instanceof String) {
+			if (checkCenter.isSelected()) {
+				return "auto";
+			}
 			
-			units = (String) item;
+			String value = textLeft.getText();
+			String units = "";
+			
+			try {
+				value = String.valueOf(Double.parseDouble(value));
+			}
+			catch (Exception e) {
+				value = "0";
+			}
+			
+			Object item = comboBoxLeft.getSelectedItem();
+			if (item instanceof String) {
+				
+				units = (String) item;
+			}
+	
+			return value + units;
 		}
-
-		return value + units;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 	
 	/**
@@ -336,25 +371,30 @@ public class CssOutlinesPanel extends InsertPanel implements StringValueEditor {
 	 * @param string
 	 */
 	private void setLeft(String string) {
-		
-		if (string.equals("auto")) {
+		try {
 			
-			textLeft.setText("0");
-			Utility.selectComboItem(comboBoxRight, "px");
+			if (string.equals("auto")) {
+				
+				textLeft.setText("0");
+				Utility.selectComboItem(comboBoxRight, "px");
+				
+				checkCenter.setSelected(true);
+				onCenter();
+				
+				return;
+			}
 			
-			checkCenter.setSelected(true);
-			onCenter();
+			Obj<String> number = new Obj<String>();
+			Obj<String> unit = new Obj<String>();
 			
-			return;
+			Utility.convertCssStringToNumberUnit(string, number, unit);
+			
+			textLeft.setText(number.ref);
+			Utility.selectComboItem(comboBoxLeft, unit.ref);
 		}
-		
-		Obj<String> number = new Obj<String>();
-		Obj<String> unit = new Obj<String>();
-		
-		Utility.convertCssStringToNumberUnit(string, number, unit);
-		
-		textLeft.setText(number.ref);
-		Utility.selectComboItem(comboBoxLeft, unit.ref);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -363,23 +403,29 @@ public class CssOutlinesPanel extends InsertPanel implements StringValueEditor {
 	 */
 	private String getBottom() {
 		
-		String value = textBottom.getText();
-		String units = "";
-		
 		try {
-			value = String.valueOf(Double.parseDouble(value));
-		}
-		catch (Exception e) {
-			value = "0";
-		}
-		
-		Object item = comboBoxBottom.getSelectedItem();
-		if (item instanceof String) {
+			String value = textBottom.getText();
+			String units = "";
 			
-			units = (String) item;
+			try {
+				value = String.valueOf(Double.parseDouble(value));
+			}
+			catch (Exception e) {
+				value = "0";
+			}
+			
+			Object item = comboBoxBottom.getSelectedItem();
+			if (item instanceof String) {
+				
+				units = (String) item;
+			}
+	
+			return value + units;
 		}
-
-		return value + units;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -387,14 +433,19 @@ public class CssOutlinesPanel extends InsertPanel implements StringValueEditor {
 	 * @param string
 	 */
 	private void setBottom(String string) {
-		
-		Obj<String> number = new Obj<String>();
-		Obj<String> unit = new Obj<String>();
-		
-		Utility.convertCssStringToNumberUnit(string, number, unit);
-		
-		textBottom.setText(number.ref);
-		Utility.selectComboItem(comboBoxBottom, unit.ref);
+		try {
+			
+			Obj<String> number = new Obj<String>();
+			Obj<String> unit = new Obj<String>();
+			
+			Utility.convertCssStringToNumberUnit(string, number, unit);
+			
+			textBottom.setText(number.ref);
+			Utility.selectComboItem(comboBoxBottom, unit.ref);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -403,27 +454,33 @@ public class CssOutlinesPanel extends InsertPanel implements StringValueEditor {
 	 */
 	private String getRight() {
 		
-		if (checkCenter.isSelected()) {
-			return "auto";
-		}
-
-		String value = textRight.getText();
-		String units = "";
-		
 		try {
-			value = String.valueOf(Double.parseDouble(value));
-		}
-		catch (Exception e) {
-			value = "0";
-		}
-		
-		Object item = comboBoxRight.getSelectedItem();
-		if (item instanceof String) {
+			if (checkCenter.isSelected()) {
+				return "auto";
+			}
+	
+			String value = textRight.getText();
+			String units = "";
 			
-			units = (String) item;
+			try {
+				value = String.valueOf(Double.parseDouble(value));
+			}
+			catch (Exception e) {
+				value = "0";
+			}
+			
+			Object item = comboBoxRight.getSelectedItem();
+			if (item instanceof String) {
+				
+				units = (String) item;
+			}
+	
+			return value + units;
 		}
-
-		return value + units;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -431,25 +488,30 @@ public class CssOutlinesPanel extends InsertPanel implements StringValueEditor {
 	 * @param string
 	 */
 	private void setRight(String string) {
-		
-		if (string.equals("auto")) {
+		try {
 			
-			textRight.setText("0");
-			Utility.selectComboItem(comboBoxRight, "px");
+			if (string.equals("auto")) {
+				
+				textRight.setText("0");
+				Utility.selectComboItem(comboBoxRight, "px");
+				
+				checkCenter.setSelected(true);
+				onCenter();
+				
+				return;
+			}
 			
-			checkCenter.setSelected(true);
-			onCenter();
+			Obj<String> number = new Obj<String>();
+			Obj<String> unit = new Obj<String>();
 			
-			return;
+			Utility.convertCssStringToNumberUnit(string, number, unit);
+			
+			textRight.setText(number.ref);
+			Utility.selectComboItem(comboBoxRight, unit.ref);
 		}
-		
-		Obj<String> number = new Obj<String>();
-		Obj<String> unit = new Obj<String>();
-		
-		Utility.convertCssStringToNumberUnit(string, number, unit);
-		
-		textRight.setText(number.ref);
-		Utility.selectComboItem(comboBoxRight, unit.ref);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -457,24 +519,30 @@ public class CssOutlinesPanel extends InsertPanel implements StringValueEditor {
 	 * @return
 	 */
 	private String getTop() {
-
-		String value = textTop.getText();
-		String units = "";
 		
 		try {
-			value = String.valueOf(Double.parseDouble(value));
-		}
-		catch (Exception e) {
-			value = "0";
-		}
-		
-		Object item = comboBoxTop.getSelectedItem();
-		if (item instanceof String) {
+			String value = textTop.getText();
+			String units = "";
 			
-			units = (String) item;
+			try {
+				value = String.valueOf(Double.parseDouble(value));
+			}
+			catch (Exception e) {
+				value = "0";
+			}
+			
+			Object item = comboBoxTop.getSelectedItem();
+			if (item instanceof String) {
+				
+				units = (String) item;
+			}
+			
+			return value + units;
 		}
-		
-		return value + units;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -482,75 +550,95 @@ public class CssOutlinesPanel extends InsertPanel implements StringValueEditor {
 	 * @param string
 	 */
 	private void setTop(String string) {
-		
-		Obj<String> number = new Obj<String>();
-		Obj<String> unit = new Obj<String>();
-		
-		Utility.convertCssStringToNumberUnit(string, number, unit);
-		
-		textTop.setText(number.ref);
-		Utility.selectComboItem(comboBoxTop, unit.ref);
+		try {
+			
+			Obj<String> number = new Obj<String>();
+			Obj<String> unit = new Obj<String>();
+			
+			Utility.convertCssStringToNumberUnit(string, number, unit);
+			
+			textTop.setText(number.ref);
+			Utility.selectComboItem(comboBoxTop, unit.ref);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		Scanner scanner = new Scanner(initialString.trim());
-		
 		try {
-			String value = scanner.next();
-			setTop(value.trim());
 			
-			value = scanner.next();
-			setRight(value.trim());
+			Scanner scanner = new Scanner(initialString.trim());
 			
-			value = scanner.next();
-			setBottom(value.trim());
+			try {
+				String value = scanner.next();
+				setTop(value.trim());
+				
+				value = scanner.next();
+				setRight(value.trim());
+				
+				value = scanner.next();
+				setBottom(value.trim());
+				
+				value = scanner.next();
+				setLeft(value.trim());
+			}
+			catch (Exception e) {
+			}
 			
-			value = scanner.next();
-			setLeft(value.trim());
+		    scanner.close();
 		}
-		catch (Exception e) {
-		}
-		
-	    scanner.close();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(labelTop);
-		Utility.localize(labelRight);
-		Utility.localize(labelBottom);
-		Utility.localize(labelLeft);
-		Utility.localize(checkCenter);
+		try {
+			
+			Utility.localize(labelTop);
+			Utility.localize(labelRight);
+			Utility.localize(labelBottom);
+			Utility.localize(labelLeft);
+			Utility.localize(checkCenter);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On check / uncheck center flag.
 	 */
 	protected void onCenter() {
-		
-		boolean checked = checkCenter.isSelected();
-		
-		if (checked) {
-			textLeft.setEditable(false);
-			textRight.setEditable(false);
+		try {
 			
-			textLeft.setBackground(Color.LIGHT_GRAY);
-			textRight.setBackground(Color.LIGHT_GRAY);
-		}
-		else {
-			textLeft.setEditable(true);
-			textRight.setEditable(true);
+			boolean checked = checkCenter.isSelected();
 			
-			textLeft.setBackground(Color.WHITE);
-			textRight.setBackground(Color.WHITE);
+			if (checked) {
+				textLeft.setEditable(false);
+				textRight.setEditable(false);
+				
+				textLeft.setBackground(Color.LIGHT_GRAY);
+				textRight.setBackground(Color.LIGHT_GRAY);
+			}
+			else {
+				textLeft.setEditable(true);
+				textRight.setEditable(true);
+				
+				textLeft.setBackground(Color.WHITE);
+				textRight.setBackground(Color.WHITE);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -559,7 +647,13 @@ public class CssOutlinesPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.gui.textCssOutlinesBuilder");
+		try {
+			return Resources.getString("org.multipage.gui.textCssOutlinesBuilder");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -568,7 +662,13 @@ public class CssOutlinesPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getResultText() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -622,7 +722,13 @@ public class CssOutlinesPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getStringValue() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -630,8 +736,13 @@ public class CssOutlinesPanel extends InsertPanel implements StringValueEditor {
 	 */
 	@Override
 	public void setStringValue(String string) {
-		
-		loadFromString(string);
+		try {
+			
+			loadFromString(string);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

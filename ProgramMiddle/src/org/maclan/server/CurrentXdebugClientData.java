@@ -1,13 +1,14 @@
 /*
- * Copyright 2010-2024 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 18-07-2024
+ * Created on : 2024-07-18
  *
  */
 package org.maclan.server;
 
 /**
- * Parameters of debugger client.
+ * Parameters for debugger client.
+ * @author vakol
  */
 public class CurrentXdebugClientData {
 	

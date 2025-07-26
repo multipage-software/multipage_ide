@@ -1,13 +1,15 @@
 /*
- * Copyright 2010-2024 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 25-05-2024
+ * Created on : 2024-05-25
  *
  */
 package org.maclan.server;
 
+import java.util.LinkedList;
+
 /**
- * Area Srever stack level information for Xdebug viewer.
+ * Class that stores stack information.
  * @author vakol
  */
 public class XdebugStackLevel {
@@ -41,6 +43,11 @@ public class XdebugStackLevel {
 	 * Command end position.
 	 */
 	private int cmdEnd = 0;
+	
+	/**
+	 * Session reference.
+	 */
+	private XdebugListenerSession session = null;
 	
 	/**
 	 * Constructor.
@@ -80,6 +87,26 @@ public class XdebugStackLevel {
 
 		this.cmdBegin = cmdBegin;
 		this.cmdEnd = cmdEnd;
+	}
+	
+	/**
+	 * Set session references.
+	 * @param stack
+	 * @param xdebugListenerSession
+	 */
+	public static void setSessionReferences(LinkedList<XdebugStackLevel> stack,
+			XdebugListenerSession xdebugListenerSession) {
+		
+		stack.forEach(level -> level.session = xdebugListenerSession);
+	}
+	
+	/**
+	 * Get session.
+	 * @return
+	 */
+	public XdebugListenerSession getSession() {
+		
+		return session;
 	}
 	
 	/**
@@ -132,7 +159,6 @@ public class XdebugStackLevel {
 	 * @return
 	 */
 	public int getCmdEnd() {
-		
 		return cmdEnd;
 	}
 	
@@ -141,7 +167,14 @@ public class XdebugStackLevel {
 	 */
 	@Override
 	public String toString() {
+
+		final int maxLength = 30;
 		
-		return String.format("[%d] %s", level, sourceCode);
+		int end = sourceCode.length() - 1;
+		if (end > maxLength) {
+			end = maxLength;
+		}
+		
+		return String.format("[%d] %s", level, sourceCode).substring(0, end);
 	}
 }

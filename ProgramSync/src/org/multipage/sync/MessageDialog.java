@@ -1,3 +1,9 @@
+/*
+ * Copyright 2010-2025 (C) vakol
+ * 
+ * Created on : 2020-04-21
+ *
+ */
 package org.multipage.sync;
 
 import java.awt.BorderLayout;
@@ -40,10 +46,11 @@ import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.TextPaneEx;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays message from the Area Server.
+ * @author vakol
  *
  */
 public class MessageDialog extends JDialog {
@@ -146,24 +153,34 @@ public class MessageDialog extends JDialog {
 	 * Create the dialog.
 	 */
 	public MessageDialog() {
-
-		initComponents();
-		localize();
-		setIcons();
-		setControls();
 		
-		loadDialog();
-		
-		// Make the dialog top most window.
-		setAlwaysOnTop(true);
+		try {
+			initComponents();
+			localize();
+			setIcons();
+			setControls();
+			
+			loadDialog();
+			
+			// Make the dialog top most window.
+			setAlwaysOnTop(true);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
 	 * Set icons
 	 */
 	private void setIcons() {
-		
-		this.setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
+		try {
+			
+			this.setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -236,93 +253,118 @@ public class MessageDialog extends JDialog {
 	 * Load dialog
 	 */
 	private void loadDialog() {
-		
-		// Set bounds
-		if (bounds == null || bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
+		try {
+			
+			// Set bounds
+			if (bounds == null || bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setBounds(bounds);
+			}
+			
+			// Load messages
+			detailLabel = Resources.getString("org.multipage.sync.textDetail");
+			backLabel = Resources.getString("org.multipage.sync.textBackToMessage");
 		}
-		else {
-			setBounds(bounds);
-		}
-		
-		// Load messages
-		detailLabel = Resources.getString("org.multipage.sync.textDetail");
-		backLabel = Resources.getString("org.multipage.sync.textBackToMessage");
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog
 	 */
 	private void saveDialog() {
-		
-		bounds = this.getBounds();
+		try {
+			
+			bounds = this.getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Localize dialog controls
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonOK);
-		Utility.localize(labelDetail);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOK);
+			Utility.localize(labelDetail);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On detail
 	 */
 	protected void onDetail() {
-		
-		// Switch the flag ...
-		if (areDetails()) {
-			detailsDisplayed = !detailsDisplayed;
+		try {
+			
+			// Switch the flag.
+			if (areDetails()) {
+				detailsDisplayed = !detailsDisplayed;
+			}
+			else {
+				// ... or disable the flag
+				detailsDisplayed = false;
+			}
+			
+			// Display remembered message depending on the previous flag
+			displayRememberedMessage();
 		}
-		else {
-			// ... or disable the flag
-			detailsDisplayed = false;
-		}
-		
-		// Display remembered message depending on the previous flag
-		displayRememberedMessage();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Display remembered message
 	 */
 	private void displayRememberedMessage() {
-		
-		// Check the detailed message
-		if (!areDetails()) {
-			detailsDisplayed = false;
-		}
-		
-		// Get text pane attributes
-		StyledDocument document = textPane.getStyledDocument();
-		SimpleAttributeSet attributes = new SimpleAttributeSet();
-		
-		// Display message
-		labelDetail.setVisible(detailsDisplayed);
-		if (detailsDisplayed) {
+		try {
 			
-			textPane.setText(messageDetails);
-			labelDetail.setText(backLabel);
-			StyleConstants.setAlignment(attributes, StyleConstants.ALIGN_LEFT);
-			sl_contentPanel.putConstraint(SpringLayout.NORTH, scrollPane, 10, SpringLayout.NORTH, contentPanel);
-		}
-		else {
+			// Check the detailed message
+			if (!areDetails()) {
+				detailsDisplayed = false;
+			}
 			
-			textPane.setText(message);
-			labelDetail.setText(detailLabel);
-			StyleConstants.setAlignment(attributes, StyleConstants.ALIGN_CENTER);
-			sl_contentPanel.putConstraint(SpringLayout.NORTH, scrollPane, textTopMarging, SpringLayout.NORTH, contentPanel);
+			// Get text pane attributes
+			StyledDocument document = textPane.getStyledDocument();
+			SimpleAttributeSet attributes = new SimpleAttributeSet();
+			
+			// Display message
+			labelDetail.setVisible(detailsDisplayed);
+			if (detailsDisplayed) {
+				
+				textPane.setText(messageDetails);
+				labelDetail.setText(backLabel);
+				StyleConstants.setAlignment(attributes, StyleConstants.ALIGN_LEFT);
+				sl_contentPanel.putConstraint(SpringLayout.NORTH, scrollPane, 10, SpringLayout.NORTH, contentPanel);
+			}
+			else {
+				
+				textPane.setText(message);
+				labelDetail.setText(detailLabel);
+				StyleConstants.setAlignment(attributes, StyleConstants.ALIGN_CENTER);
+				sl_contentPanel.putConstraint(SpringLayout.NORTH, scrollPane, textTopMarging, SpringLayout.NORTH, contentPanel);
+			}
+			
+			// Set modified text pane attributes
+			document.setParagraphAttributes(0, document.getLength(), attributes, false);
+			
+			// Scroll the detailed text to the beginning
+			textPane.grabFocus();
+			textPane.setCaretPosition(0);
 		}
-		
-		// Set modified text pane attributes
-		document.setParagraphAttributes(0, document.getLength(), attributes, false);
-		
-		// Scroll the detailed text to the beginning
-		textPane.grabFocus();
-		textPane.setCaretPosition(0);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -330,23 +372,35 @@ public class MessageDialog extends JDialog {
 	 * @return
 	 */
 	private boolean areDetails() {
-
-		boolean areDetails = (messageDetails != null && !messageDetails.isEmpty());
-		return areDetails;
+		
+		try {
+			boolean areDetails = (messageDetails != null && !messageDetails.isEmpty());
+			return areDetails;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
 	 * On dialog end
 	 */
 	private void endDialog() {
-		
-		// Reset messages
-		message = null;
-		messageDetails = null;	
-		detailsDisplayed = false;
-		
-		// Save and dispose the dialog
-		saveDialog();
+		try {
+			
+			// Reset messages
+			message = null;
+			messageDetails = null;	
+			detailsDisplayed = false;
+			
+			// Save and dispose the dialog
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();		
 	}
 	
@@ -354,16 +408,26 @@ public class MessageDialog extends JDialog {
 	 * On OK
 	 */
 	protected void onOK() {
-		
-		endDialog();
+		try {
+			
+			endDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On cancel dialog
 	 */
 	protected void onCancel() {
-		
-		endDialog();
+		try {
+			
+			endDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -371,13 +435,18 @@ public class MessageDialog extends JDialog {
 	 * @param button
 	 */
 	private void setButtonColor(JButton button) {
-		
-		BasicButtonUI basicButtonUI = new BasicButtonUI();
-		button.setUI(basicButtonUI);
-		button.setOpaque(true);
-		button.setContentAreaFilled(true);
-		button.setBackground(controlsColor);
-		button.setForeground(Color.WHITE);
+		try {
+			
+			BasicButtonUI basicButtonUI = new BasicButtonUI();
+			button.setUI(basicButtonUI);
+			button.setOpaque(true);
+			button.setContentAreaFilled(true);
+			button.setBackground(controlsColor);
+			button.setForeground(Color.WHITE);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -385,16 +454,21 @@ public class MessageDialog extends JDialog {
 	 */
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	private void setControls() {
-		
-		// Set OK button
-		setButtonColor(buttonOK);
-		
-		// Set label
-		labelDetail.setForeground(controlsColor);
-		Font font = labelDetail.getFont();
-		Map attributes = font.getAttributes();
-		attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_LOW_GRAY);
-		labelDetail.setFont(font.deriveFont(attributes));
+		try {
+			
+			// Set OK button
+			setButtonColor(buttonOK);
+			
+			// Set label
+			labelDetail.setForeground(controlsColor);
+			Font font = labelDetail.getFont();
+			Map attributes = font.getAttributes();
+			attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_LOW_GRAY);
+			labelDetail.setFont(font.deriveFont(attributes));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -403,15 +477,19 @@ public class MessageDialog extends JDialog {
 	 * @param messageResourceId
 	 */
 	public static void show(String messageResourceId, Object ... parameters) {
-		
-		// Get localized message
-		String message = Resources.getString(messageResourceId);
-		
-		// Set message parameters
-		message = String.format(message, parameters);
-		
-		// Display message
-		showDialog(message, null);
+		try {
+			
+			// Get localized message
+			String message = Resources.getString(messageResourceId);
+			// Set message parameters
+			message = String.format(message, parameters);
+			
+			// Display message
+			showDialog(message, null);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -420,22 +498,27 @@ public class MessageDialog extends JDialog {
 	 * @param exception
 	 */
 	public static void showException(String messageResourceId, Exception exception) {
-		
-		// Get localized message
-		String messageTemplate = Resources.getString(messageResourceId);
-		String message = String.format(messageTemplate, exception.getLocalizedMessage());
-		String messageDetails = null;
-		
-		// On HTTP exception
-		if (exception instanceof HttpException) {
-			HttpException httpException = (HttpException) exception;
+		try {
 			
-			// Get exception body
-			messageDetails = httpException.getExceptionBody();
+			// Get localized message
+			String messageTemplate = Resources.getString(messageResourceId);
+			String message = String.format(messageTemplate, exception.getLocalizedMessage());
+			String messageDetails = null;
+			
+			// On HTTP exception
+			if (exception instanceof HttpException) {
+				HttpException httpException = (HttpException) exception;
+				
+				// Get exception body
+				messageDetails = httpException.getExceptionBody();
+			}
+			
+			// Show dialog
+			showDialog(message, messageDetails);
 		}
-		
-		// Show dialog
-		showDialog(message, messageDetails);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -444,13 +527,19 @@ public class MessageDialog extends JDialog {
 	 * @return
 	 */
 	public static String makeHtmlMessage(String message) {
-		
-		message = message.trim();
-		
-		String finalMessage = message.replaceAll("\n|(\r\n?)", "<br>");
-		finalMessage = String.format("<html><font size=\"3\" face=\"Monospace\">%s</font></html>", finalMessage);
-		
-		return finalMessage;
+
+		try {
+			message = message.trim();
+			
+			String finalMessage = message.replaceAll("\n|(\r\n?)", "<br>");
+			finalMessage = String.format("<html><font size=\"3\" face=\"Monospace\">%s</font></html>", finalMessage);
+			
+			return finalMessage;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 	
 	/**
@@ -460,10 +549,9 @@ public class MessageDialog extends JDialog {
 	 */
 	public static void showDialog(String message, String messageDetails) {
 		
-		SwingUtilities.invokeLater(() -> {
+		Safe.invokeLater(() -> {
 			
 			try {
-				
 				// Create dialog window
 				if (MessageDialog.dialog == null) {
 					MessageDialog.dialog = new MessageDialog();
@@ -514,7 +602,6 @@ public class MessageDialog extends JDialog {
 				dialog.setVisible(true);
 			}
 			catch (Exception e) {
-				
 				Utility.show2(null, e.getLocalizedMessage());
 			}
 		});
@@ -525,8 +612,13 @@ public class MessageDialog extends JDialog {
 	 * @param message
 	 */
 	public static void showDialog(String message) {
-		
-		// Delegate the call
-		showDialog(message, null);
+		try {
+			
+			// Delegate the call
+			showDialog(message, null);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

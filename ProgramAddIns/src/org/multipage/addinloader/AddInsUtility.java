@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2022 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 25-05-2022
+ * Created on : 2022-05-22
  *
  */
 
@@ -39,9 +39,10 @@ import javax.swing.tree.TreePath;
 import org.multipage.addins.ImportFileApp;
 import org.multipage.addins.ProgramAddIns;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * Miscellaneous helper functions.
+ * Miscellaneous helper functions for add-ins.
  * @author vakol
  *
  */
@@ -137,11 +138,17 @@ public class AddInsUtility {
 	public static synchronized boolean loadResource(String baseName) {
 
 		// If the properties already exist, exit the method.
-		for (NamedProperties item : namedProperties) {
-			
-			if (item.getName().equals(baseName)) {
-				return true;
+		try {
+			for (NamedProperties item : namedProperties) {
+				
+				if (item.getName().equals(baseName)) {
+					return true;
+				}
 			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+			return false;
 		}
 		
 		try {
@@ -184,8 +191,6 @@ public class AddInsUtility {
 			}
 			return false;
 		}
-		
-
 
 		return true;
 	}
@@ -198,6 +203,7 @@ public class AddInsUtility {
 	private static void loadProperties(InputStream inputStream,
 			Properties properties) throws Exception {
 		
+		Exception exception = null;
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
 			
@@ -242,10 +248,14 @@ public class AddInsUtility {
 			}
 		}
 		catch (Exception e) {
-			throw e;
+			exception = e;
+			Safe.exception(e);
 		}
 		finally {
 			inputStream.close();
+		}
+		if (exception != null) {
+			throw exception;
 		}
 	}
 
@@ -257,44 +267,47 @@ public class AddInsUtility {
 	public synchronized static String getString(String identifier) {
 		
 		String outputString = null;
-		
-		// Trim identifier.
-		identifier = identifier.trim();
-		
-		// Search in list of named properties.
-		for (NamedProperties item : namedProperties) {			
+		try {
+			// Trim identifier.
+			identifier = identifier.trim();
 			
-			Properties properties = item.getProperties();
-			if (properties.containsKey(identifier)) {
-				outputString = properties.getProperty(identifier);
-				break;
-			}
-		}
-		
-		// If not found, try to search in primary properties.
-		if (outputString == null) {
-			
-			for (NamedProperties item : primaryNamedProperties) {			
-			
+			// Search in list of named properties.
+			for (NamedProperties item : namedProperties) {			
+				
 				Properties properties = item.getProperties();
 				if (properties.containsKey(identifier)) {
 					outputString = properties.getProperty(identifier);
 					break;
 				}
 			}
-		}
-
-		if (outputString == null) {
-			outputString = String.format("# %s not found #", identifier);
-		}
-		// Inform user about an error.
-		if (outputString.isEmpty()) {
-			if (informUserAboutError) {
-				JOptionPane.showMessageDialog(null, "Unknown resource string: " + identifier,
-						"Resource Loader Error", JOptionPane.ERROR_MESSAGE);
+			
+			// If not found, try to search in primary properties.
+			if (outputString == null) {
+				
+				for (NamedProperties item : primaryNamedProperties) {			
+				
+					Properties properties = item.getProperties();
+					if (properties.containsKey(identifier)) {
+						outputString = properties.getProperty(identifier);
+						break;
+					}
+				}
+			}
+	
+			if (outputString == null) {
+				outputString = String.format("# %s not found #", identifier);
+			}
+			// Inform user about an error.
+			if (outputString.isEmpty()) {
+				if (informUserAboutError) {
+					JOptionPane.showMessageDialog(null, "Unknown resource string: " + identifier,
+							"Resource Loader Error", JOptionPane.ERROR_MESSAGE);
+				}
 			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return outputString;
 	}
 
@@ -302,8 +315,13 @@ public class AddInsUtility {
 	 * Initializes namedResources.
 	 */
 	synchronized public static void initialize() {
-
-		AddInsUtility.setLanguageAndCountry("en", "US");
+		try {
+			
+			AddInsUtility.setLanguageAndCountry("en", "US");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -329,17 +347,21 @@ public class AddInsUtility {
 	 */
 	public static BufferedImage getImage(String urlString) {
 		
-		URL url = ClassLoader.getSystemResource(urlString);
-		if (url != null) {
-			try {
-				BufferedImage image = ImageIO.read(url);
-				return image;
-			}
-			catch (IOException e) {
-				e.printStackTrace();
+		try {
+			URL url = ClassLoader.getSystemResource(urlString);
+			if (url != null) {
+				try {
+					BufferedImage image = ImageIO.read(url);
+					return image;
+				}
+				catch (IOException e) {
+					Safe.exception(e);
+				}
 			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return null;
 	}
 	
@@ -363,10 +385,15 @@ public class AddInsUtility {
 	 * @param key - Resource bundle key.
 	 */
 	public static void localize(JFrame frame) {
-		
-		String title = frame.getTitle();
-		title = getString(title);
-		frame.setTitle(title);
+		try {
+			
+			String title = frame.getTitle();
+			title = getString(title);
+			frame.setTitle(title);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -374,10 +401,15 @@ public class AddInsUtility {
 	 * @param label
 	 */
 	public static void localize(JLabel label) {
-		
-		String caption = label.getText();
-		caption = getString(caption);
-		label.setText(caption);
+		try {
+			
+			String caption = label.getText();
+			caption = getString(caption);
+			label.setText(caption);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -385,18 +417,23 @@ public class AddInsUtility {
 	 * @param button
 	 */
 	public static void localize(JButton button) {
-		
-		// Localize caption.
-		String caption = button.getText();
-		if (caption != null && !caption.isEmpty()) {
-			button.setText(getString(caption));
+		try {
+			
+			// Localize caption.
+			String caption = button.getText();
+			if (caption != null && !caption.isEmpty()) {
+				button.setText(getString(caption));
+			}
+			
+			// Localize tool tip.
+			String tooltip = button.getToolTipText();
+			if (tooltip != null && !tooltip.isEmpty()) {
+				button.setToolTipText(getString(tooltip));
+			}
 		}
-		
-		// Localize tool tip.
-		String tooltip = button.getToolTipText();
-		if (tooltip != null && !tooltip.isEmpty()) {
-			button.setToolTipText(getString(tooltip));
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -407,9 +444,14 @@ public class AddInsUtility {
 	 */
 	public static void show(Component parent, String message,
 			Object ... parameters) {
-
-		message = String.format(getString(message), parameters);
-		JOptionPane.showMessageDialog(parent, message);
+		
+		try {
+			message = String.format(getString(message), parameters);
+			JOptionPane.showMessageDialog(parent, message);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -562,12 +604,17 @@ public class AddInsUtility {
 	 * @param expand
 	 */
 	public static void expandAll(JTree tree, boolean expand) {
-		
-		TreeModel model = tree.getModel();
-		if (model != null) {
-			TreePath parent = new TreePath(model.getRoot());
-			expandAll(tree, model, parent, expand);
+		try {
+			
+			TreeModel model = tree.getModel();
+			if (model != null) {
+				TreePath parent = new TreePath(model.getRoot());
+				expandAll(tree, model, parent, expand);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -579,29 +626,35 @@ public class AddInsUtility {
 	 */
 	private static void expandAll(JTree tree, TreeModel model, TreePath parent,
 			boolean expand) {
-		
-		// Check input values.
-		if (tree == null || model == null || parent == null) {
-			return;
+		try {
+			
+			// Check input values.
+			if (tree == null || model == null || parent == null) {
+				return;
+			}
+			
+			// Traverse children
+			Object node = parent.getLastPathComponent();
+			int count = model.getChildCount(node);
+			
+			for (int index = 0; index < count; index++) {
+	
+				Object child = model.getChild(node, index);
+				TreePath path = parent.pathByAddingChild(child);
+				expandAll(tree, model, path, expand);
+		    }
+	
+		    // Expansion or collapse must be done bottom-up
+		    if (expand) {
+		        tree.expandPath(parent);
+		    }
+		    else {
+		        tree.collapsePath(parent);
+		    }
 		}
-		
-		// Traverse children
-		Object node = parent.getLastPathComponent();
-		int count = model.getChildCount(node);
-		
-		for (int index = 0; index < count; index++) {
-
-			Object child = model.getChild(node, index);
-			TreePath path = parent.pathByAddingChild(child);
-			expandAll(tree, model, path, expand);
-	    }
-
-	    // Expansion or collapse must be done bottom-up
-	    if (expand) {
-	        tree.expandPath(parent);
-	    } else {
-	        tree.collapsePath(parent);
-	    }
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	/**
 	 * Throws exception with given message
@@ -794,12 +847,17 @@ public class AddInsUtility {
 	 */
 	public static boolean isApplicationZipped(String applicationPath) {
 		
-		// Get application path.
-		File fileOrFolder = new File(applicationPath);
-
-		// If the path is a file return true.
-		if (fileOrFolder.exists() && fileOrFolder.isFile()) {
-			return true;
+		try {
+			// Get application path.
+			File fileOrFolder = new File(applicationPath);
+	
+			// If the path is a file return true.
+			if (fileOrFolder.exists() && fileOrFolder.isFile()) {
+				return true;
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		
 		// Otherwise return false.
@@ -817,43 +875,49 @@ public class AddInsUtility {
 	public static boolean importUpdatedKeystore(File keystoreFile, Class<?> mainProjectClass, boolean restart)
 			throws Exception {
 		
-		// Check keystore file.
-		if (!keystoreFile.isFile()) {
-			return false;
+		try {
+			// Check keystore file.
+			if (!keystoreFile.isFile()) {
+				return false;
+			}
+			
+			final String destinationFolder = "org/multipage/addinloader/properties";
+			final String destinationKeystoreName = "multipage_client.p12";
+			final String importerFileName = "ImportFileApp.class";
+			
+			String keystorePath = keystoreFile.toString();
+			
+			// Expose application that can import the keystore.
+			Class<?> importerClass = ImportFileApp.class;
+			String importerFolder = importerClass.getPackageName().replace('.', File.separatorChar);
+			String temporaryDirectory = Files.createTempDirectory("Multipage_").toString();
+			File importerFile = Utility.exposeApplicationFile(importerFolder, importerFileName, temporaryDirectory);
+			String keystoreProjectPath = Utility.getApplicationFile(ProgramAddIns.class).toString();
+			String importerWorkingDirectory = importerFile.getParent();
+			File applicationFile = Utility.getApplicationFile(mainProjectClass);
+			String applicationPath = applicationFile.toString();
+			
+			// Run Java application class to import keystore.
+			if (applicationFile.isFile()) {
+				// TODO: <---FIX Bad directory. Remove package path.
+				String result = Utility.runJavaClass(importerClass, temporaryDirectory, importerWorkingDirectory, new String [] {
+					keystorePath,
+					applicationPath,
+					destinationFolder,
+					applicationPath
+				});
+				Utility.show2("IMPORTER RESULT " + result);
+			}
+			else {
+				Path sourcePath = keystoreFile.toPath();
+				Path destinationPath = Paths.get(keystoreProjectPath, destinationFolder, destinationKeystoreName);
+				Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
+			} 
+			return true;
 		}
-		
-		final String destinationFolder = "org/multipage/addinloader/properties";
-		final String destinationKeystoreName = "multipage_client.p12";
-		final String importerFileName = "ImportFileApp.class";
-		
-		String keystorePath = keystoreFile.toString();
-		
-		// Expose application that can import the keystore.
-		Class<?> importerClass = ImportFileApp.class;
-		String importerFolder = importerClass.getPackageName().replace('.', File.separatorChar);
-		String temporaryDirectory = Files.createTempDirectory("Multipage_").toString();
-		File importerFile = Utility.exposeApplicationFile(importerFolder, importerFileName, temporaryDirectory);
-		String keystoreProjectPath = Utility.getApplicationFile(ProgramAddIns.class).toString();
-		String importerWorkingDirectory = importerFile.getParent();
-		File applicationFile = Utility.getApplicationFile(mainProjectClass);
-		String applicationPath = applicationFile.toString();
-		
-		// Run Java application class to import keystore.
-		if (applicationFile.isFile()) {
-			// TODO: <---FIX Bad directory. Remove package path.
-			String result = Utility.runJavaClass(importerClass, temporaryDirectory, importerWorkingDirectory, new String [] {
-				keystorePath,
-				applicationPath,
-				destinationFolder,
-				applicationPath
-			});
-			Utility.show2("IMPORTER RESULT " + result);
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		else {
-			Path sourcePath = keystoreFile.toPath();
-			Path destinationPath = Paths.get(keystoreProjectPath, destinationFolder, destinationKeystoreName);
-			Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
-		} 
-		return true;
+		return false;
 	}
 }

@@ -1,11 +1,15 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 14-12-2020
+ * Created on : 2020-12-14
  *
  */
 package org.multipage.generator;
 
+/**
+ * Tab types.
+ * @author vakol
+ */
 public enum TabType {
 	
 	/**

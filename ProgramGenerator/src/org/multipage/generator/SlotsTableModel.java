@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -19,10 +19,11 @@ import org.maclan.SlotHolder;
 import org.maclan.SlotType;
 import org.multipage.gui.StringValueEditor;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Table model for slots.
+ * @author vakol
  *
  */
 public class SlotsTableModel extends AbstractTableModel {
@@ -48,8 +49,13 @@ public class SlotsTableModel extends AbstractTableModel {
 	 */
 	public SlotsTableModel(LinkedList<? extends SlotHolder> holders,
 			LinkedList<FoundSlot> foundSlots, boolean showOnlyFound, boolean showAllSlots) {
-
-		setList(holders, foundSlots, showOnlyFound, showAllSlots);
+		try {
+			
+			setList(holders, foundSlots, showOnlyFound, showAllSlots);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -61,55 +67,60 @@ public class SlotsTableModel extends AbstractTableModel {
 	 */
 	public void setList(LinkedList<? extends SlotHolder> holders,
 			LinkedList<FoundSlot> foundSlots, boolean showOnlyFound, boolean showAllSlots) {
-
-		this.holders = holders;
-		
-		// Clear items.
-		slots.clear();
-		
-		// List of found slots.
-		ArrayList<Slot> highlightedSlots = new ArrayList<Slot>();
-		
-		// List of other slots.
-		ArrayList<Slot> otherSlots = new ArrayList<Slot>();
-		
-		// Load table items.
-		for (SlotHolder holder : holders) {
+		try {
 			
-			// Do loop for all slots.
-			for (Slot slot : holder.getSlots()) {
+			this.holders = holders;
+			
+			// Clear items.
+			slots.clear();
+			
+			// List of found slots.
+			ArrayList<Slot> highlightedSlots = new ArrayList<Slot>();
+			
+			// List of other slots.
+			ArrayList<Slot> otherSlots = new ArrayList<Slot>();
+			
+			// Load table items.
+			for (SlotHolder holder : holders) {
 				
-				if (!showAllSlots && slot.isUserDefined()) {
-					continue;
-				}
-				
-				// Load possible area value object.
-				AreaReference areaValue = slot.getAreaValue();
-				if (areaValue != null && !areaValue.existsAreaObject()) {
+				// Do loop for all slots.
+				for (Slot slot : holder.getSlots()) {
 					
-					long areaValueId = areaValue.areaId;
-					Area area = ProgramGenerator.getArea(areaValueId);
+					if (!showAllSlots && slot.isUserDefined()) {
+						continue;
+					}
 					
-					areaValue.setAreaObject(area);
-				}
-				
-				// Add slot to array.
-				if (FoundSlot.isSlotFound(foundSlots, slot)) {
-					highlightedSlots.add(slot);
-				}
-				else {
-					otherSlots.add(slot);
+					// Load possible area value object.
+					AreaReference areaValue = slot.getAreaValue();
+					if (areaValue != null && !areaValue.existsAreaObject()) {
+						
+						long areaValueId = areaValue.areaId;
+						Area area = ProgramGenerator.getArea(areaValueId);
+						
+						areaValue.setAreaObject(area);
+					}
+					
+					// Add slot to array.
+					if (FoundSlot.isSlotFound(foundSlots, slot)) {
+						highlightedSlots.add(slot);
+					}
+					else {
+						otherSlots.add(slot);
+					}
 				}
 			}
+			
+			// Add highlighted slots to the beginning of the array.
+			slots.addAll(highlightedSlots);
+			
+			// If not only found slots should be displayed, add all other slots.
+			if (!showOnlyFound) {
+				slots.addAll(otherSlots);
+			}
 		}
-		
-		// Add highlighted slots to the beginning of the array.
-		slots.addAll(highlightedSlots);
-		
-		// If not only found slots should be displayed, add all other slots.
-		if (!showOnlyFound) {
-			slots.addAll(otherSlots);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -117,9 +128,14 @@ public class SlotsTableModel extends AbstractTableModel {
 	 * @param items
 	 */
 	public void removeAll(LinkedList<Slot> slots) {
-
-		this.slots.removeAll(slots);
-		fireTableDataChanged();
+		try {
+			
+			this.slots.removeAll(slots);
+			fireTableDataChanged();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -129,11 +145,17 @@ public class SlotsTableModel extends AbstractTableModel {
 	 */
 	public Slot get(int index) 
 		throws IndexOutOfBoundsException {
-
-		if (index < 0 || index >= slots.size()) {
-			return null;
+		
+		try {
+			if (index < 0 || index >= slots.size()) {
+				return null;
+			}
+			return slots.get(index);
 		}
-		return slots.get(index);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -141,9 +163,14 @@ public class SlotsTableModel extends AbstractTableModel {
 	 * @param slot
 	 */
 	public void add(Slot slot) {
-
-		slots.add(slot);
-		fireTableDataChanged();
+		try {
+			
+			slots.add(slot);
+			fireTableDataChanged();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -151,8 +178,14 @@ public class SlotsTableModel extends AbstractTableModel {
 	 */
 	@Override
 	public int getRowCount() {
-
-		return slots.size();
+		
+		try {
+			return slots.size();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return 0;
 	}
 
 	/**
@@ -170,49 +203,54 @@ public class SlotsTableModel extends AbstractTableModel {
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {
 		
-		if (rowIndex < 0 || rowIndex >= slots.size()) {
-			return null;
+		try {
+			if (rowIndex < 0 || rowIndex >= slots.size()) {
+				return null;
+			}
+	
+			Slot slot = slots.get(rowIndex);
+			
+			switch (columnIndex) {
+			
+			case 0:
+				return slot.getAlias();
+			case 1:
+				if (slot.isDefault()) {
+					return "\uFFFFdefault";
+				}
+				
+				String specialValue = slot.getSpecialValueNull();
+				if (specialValue != null) {
+					return specialValue;
+				}
+				
+				String valueMeaning = slot.getValueMeaning();
+				if (valueMeaning != null && valueMeaning.charAt(0) == 'c' 
+						&& !valueMeaning.equals(StringValueEditor.meansColor)
+						&& !valueMeaning.equals(StringValueEditor.meansCssNumber)
+						&& !valueMeaning.equals(StringValueEditor.meansCssTextLine)) {
+						
+					return ".....";
+				}
+				
+				if (slot.getType() == SlotType.LOCALIZED_TEXT) {
+					return String.format("<html>%s</html>", slot.getTextValue());
+				}
+				
+				return slot.getTextValue();
+			case 2:
+				if (holders.size() == 1) {
+					return Resources.getString("org.multipage.generator.textThis");
+				}
+				return slot.getHolder().toString();
+			case 3:
+				return slot.getNameForGenerator();
+			case 4:
+				return slot;
+			}
 		}
-
-		Slot slot = slots.get(rowIndex);
-		
-		switch (columnIndex) {
-		
-		case 0:
-			return slot.getAlias();
-		case 1:
-			if (slot.isDefault()) {
-				return "\uFFFFdefault";
-			}
-			
-			String specialValue = slot.getSpecialValueNull();
-			if (specialValue != null) {
-				return specialValue;
-			}
-			
-			String valueMeaning = slot.getValueMeaning();
-			if (valueMeaning != null && valueMeaning.charAt(0) == 'c' 
-					&& !valueMeaning.equals(StringValueEditor.meansColor)
-					&& !valueMeaning.equals(StringValueEditor.meansCssNumber)
-					&& !valueMeaning.equals(StringValueEditor.meansCssTextLine)) {
-					
-				return ".....";
-			}
-			
-			if (slot.getType() == SlotType.LOCALIZED_TEXT) {
-				return String.format("<html>%s</html>", slot.getTextValue());
-			}
-			
-			return slot.getTextValue();
-		case 2:
-			if (holders.size() == 1) {
-				return Resources.getString("org.multipage.generator.textThis");
-			}
-			return slot.getHolder().toString();
-		case 3:
-			return slot.getNameForGenerator();
-		case 4:
-			return slot;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -222,34 +260,41 @@ public class SlotsTableModel extends AbstractTableModel {
 	 */
 	@Override
 	public String getColumnName(int column) {
-
-		String columnTextId;
 		
-		switch (column) {
-		
-		case 0:
-			columnTextId = "org.multipage.generator.textSlotAlias";
-			break;
-		case 1:
-			columnTextId = "org.multipage.generator.textSlotValue";
-			break;
-		case 2:
-			columnTextId = "org.multipage.generator.textSlotHolder";
-			break;
-		case 3:
-			columnTextId = "org.multipage.generator.textSlotAlias2";
-			break;
-		default:
-			return "";
+		try {
+			String columnTextId;
+			
+			switch (column) {
+			
+			case 0:
+				columnTextId = "org.multipage.generator.textSlotAlias";
+				break;
+			case 1:
+				columnTextId = "org.multipage.generator.textSlotValue";
+				break;
+			case 2:
+				columnTextId = "org.multipage.generator.textSlotHolder";
+				break;
+			case 3:
+				columnTextId = "org.multipage.generator.textSlotAlias2";
+				break;
+			default:
+				return "";
+			}
+			
+			return Resources.getString(columnTextId);
 		}
-		
-		return Resources.getString(columnTextId);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
 	 * @return the slots
 	 */
 	public ArrayList<Slot> getSlots() {
+		
 		return slots;
 	}
 }

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -34,9 +34,11 @@ import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
  * Option class.
+ * @author vakol
  */
 class Option {
 	
@@ -129,8 +131,8 @@ public class SelectNewTextResourceDialog extends JDialog {
 	 * Set default data.
 	 */
 	public static void setDefaultData() {
-		
-		bounds = new Rectangle();
+
+        bounds = new Rectangle(100, 100, 400, 300);
 	}
 
 	/**
@@ -164,21 +166,31 @@ public class SelectNewTextResourceDialog extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (!bounds.isEmpty()) {
-			setBounds(bounds);
+		try {
+			
+			if (!bounds.isEmpty()) {
+				setBounds(bounds);
+			}
+			else {
+				Utility.centerOnScreen(this);
+			}
 		}
-		else {
-			Utility.centerOnScreen(this);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -206,20 +218,25 @@ public class SelectNewTextResourceDialog extends JDialog {
 	 */
 	public static boolean showDialog(Component parent, Obj<String> text, Obj<MimeType> mimeType) {
 		
-		SelectNewTextResourceDialog dialog = new SelectNewTextResourceDialog(Utility.findWindow(parent));
-		
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			SelectNewTextResourceDialog dialog = new SelectNewTextResourceDialog(Utility.findWindow(parent));
+			dialog.setVisible(true);
 			
-			// Get selected option.
-			Option option = dialog.getSelectedOption();
+			if (dialog.confirm) {
+				
+				// Get selected option.
+				Option option = dialog.getSelectedOption();
+				
+				text.ref = option.contentText;
+				mimeType.ref = GeneratorUtility.getMimeType(option.type, option.extension);
+			}
 			
-			text.ref = option.contentText;
-			mimeType.ref = GeneratorUtility.getMimeType(option.type, option.extension);
+			return dialog.confirm;
 		}
-		
-		return dialog.confirm;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -228,12 +245,16 @@ public class SelectNewTextResourceDialog extends JDialog {
 	 */
 	public SelectNewTextResourceDialog(Window parentWindow) {
 		super(parentWindow, ModalityType.DOCUMENT_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -303,67 +324,87 @@ public class SelectNewTextResourceDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		
-		loadDialog();
-		
-		localize();
-		setIcons();
-		
-		createOptions();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			
+			loadDialog();
+			
+			localize();
+			setIcons();
+			
+			createOptions();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(label);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(label);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Create options.
 	 */
 	private void createOptions() {
-		
-		Rectangle radioBounds = new Rectangle(5, 5, 800, 23);
-		final int yIncrement = radioBounds.height + 10;
-		
-		boolean isFirstOption = true;
-		
-		// Do loop for all options.
-		for (Option option : options) {
+		try {
 			
-			// Create new radio button.
-			JRadioButton radioButton = new JRadioButton(Resources.getString(option.labelText));
-			option.radioButton = radioButton;
-			if (isFirstOption) {
-				radioButton.setSelected(true);
-				isFirstOption = false;
+			Rectangle radioBounds = new Rectangle(5, 5, 800, 23);
+			final int yIncrement = radioBounds.height + 10;
+			
+			boolean isFirstOption = true;
+			
+			// Do loop for all options.
+			for (Option option : options) {
+				
+				// Create new radio button.
+				JRadioButton radioButton = new JRadioButton(Resources.getString(option.labelText));
+				option.radioButton = radioButton;
+				if (isFirstOption) {
+					radioButton.setSelected(true);
+					isFirstOption = false;
+				}
+				// Add it to the group.
+				buttonGroup.add(radioButton);
+				// Set radio button position.
+				radioButton.setBounds(radioBounds);
+				// Add it to the option panel.
+				panelOptions.add(radioButton);
+				
+				// Increment Y position.
+				radioBounds.y += yIncrement;
 			}
-			// Add it to the group.
-			buttonGroup.add(radioButton);
-			// Set radio button position.
-			radioButton.setBounds(radioBounds);
-			// Add it to the option panel.
-			panelOptions.add(radioButton);
-			
-			// Increment Y position.
-			radioBounds.y += yIncrement;
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -371,26 +412,37 @@ public class SelectNewTextResourceDialog extends JDialog {
 	 * @return
 	 */
 	private Option getSelectedOption() {
-
-		// Do loop for all options.
-		for (Option option : options) {
-			
-			if (option.radioButton != null && option.radioButton.isSelected()) {
-				return option;
-			}
-		}
 		
-		return options[0];
+		try {
+			// Do loop for all options.
+			for (Option option : options) {
+				
+				if (option.radioButton != null && option.radioButton.isSelected()) {
+					return option;
+				}
+			}
+			
+			return options[0];
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
-		
-		saveDialog();
-		
-		confirm = false;
+		try {
+			
+			saveDialog();
+			confirm = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -398,10 +450,15 @@ public class SelectNewTextResourceDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		saveDialog();
-		
-		confirm = true;
+		try {
+			
+			saveDialog();
+			confirm = true;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 }

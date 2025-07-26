@@ -1,14 +1,14 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 24-04-2017
+ * Created on : 2017-04-24
  *
  */
 package org.maclan.server;
 
 /**
- * 
- * @author user
+ * Enumeration of API call types.
+ * @author vakol
  *
  */
 public enum ApiCallType {

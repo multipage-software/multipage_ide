@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -9,10 +9,13 @@ package org.multipage.gui;
 
 import java.awt.Rectangle;
 
-import javax.swing.*;
+import javax.swing.JPanel;
+
+import org.multipage.util.Safe;
 
 /**
- * @author
+ * Panel that contains CSS editor.
+ * @author vakol
  *
  */
 public class InsertPanel extends JPanel {
@@ -54,8 +57,14 @@ public class InsertPanel extends JPanel {
 	 */
 	public Rectangle getContainerDialogBounds() {
 		
-		// Override this method.
-		return new Rectangle();
+		try {
+			// Override this method.
+			return new Rectangle();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**

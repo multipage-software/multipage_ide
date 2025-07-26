@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -32,10 +32,11 @@ import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays editor of user slot properties.
+ * @author vakol
  *
  */
 public class UserSlotInput extends JDialog {
@@ -108,16 +109,21 @@ public class UserSlotInput extends JDialog {
 	public static boolean showDialog(Component parent, Obj<String> slotAlias,
 			Obj<SlotType> slotType, Obj<Boolean> isInheritable) {
 		
-		UserSlotInput dialog = new UserSlotInput(parent);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			UserSlotInput dialog = new UserSlotInput(parent);
+			dialog.setVisible(true);
 			
-			slotAlias.ref = dialog.textSlotAlias.getText();
-			slotType.ref = (SlotType) dialog.comboSlotType.getSelectedItem();
-			isInheritable.ref = dialog.checkInheritable.isSelected();
-			
-			return true;
+			if (dialog.confirm) {
+				
+				slotAlias.ref = dialog.textSlotAlias.getText();
+				slotType.ref = (SlotType) dialog.comboSlotType.getSelectedItem();
+				isInheritable.ref = dialog.checkInheritable.isSelected();
+				
+				return true;
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return false;
 	}
@@ -128,13 +134,18 @@ public class UserSlotInput extends JDialog {
 	 */
 	public UserSlotInput(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
-		setResizable(false);
-
-		initComponents();
 		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			setResizable(false);
+	
+			initComponents();
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -210,56 +221,81 @@ public class UserSlotInput extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		loadTypes();
-		localize();
-		setIcons();
-		
-		loadDialog();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			loadTypes();
+			localize();
+			setIcons();
+			
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Load slot types
 	 */
 	private void loadTypes() {
+		try {
+			
+			GeneratorUtility.loadSlotTypesCombo(comboSlotType);
 		
-		GeneratorUtility.loadSlotTypesCombo(comboSlotType);
-		
-		comboSlotType.setSelectedItem(SlotType.TEXT);
+			comboSlotType.setSelectedItem(SlotType.TEXT);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(labelSlotName);
-		Utility.localize(checkInheritable);
-		Utility.localize(labelType);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(labelSlotName);
+			Utility.localize(checkInheritable);
+			Utility.localize(labelType);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
-		
-		saveDialog();
-		
-		confirm = false;
+		try {
+			
+			saveDialog();
+			confirm = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -267,10 +303,15 @@ public class UserSlotInput extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		saveDialog();
-		
-		confirm = true;
+		try {
+			
+			saveDialog();
+			confirm = true;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -278,20 +319,30 @@ public class UserSlotInput extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setBounds(bounds);
+			}
 		}
-		else {
-			setBounds(bounds);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

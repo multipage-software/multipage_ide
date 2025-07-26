@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2021 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 01-07-2021
+ * Created on : 2021-07-01
  *
  */
 package org.maclan.help.gnu_prolog;
@@ -12,6 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 import gnu.prolog.term.AtomTerm;
 import gnu.prolog.term.CompoundTerm;
@@ -21,6 +22,7 @@ import gnu.prolog.term.Term;
 import gnu.prolog.vm.TermConstants;
 
 /**
+ * Utility functions used with the GNU Prolog.
  * @author vakol
  *
  */
@@ -33,28 +35,32 @@ public class PrologUtility {
 	 */
 	public static String removeApostrophes(String text) {
 		
-		// Check input text.
-		if (text == null || text.isEmpty()) {
-			return text;
+		try {
+			// Check input text.
+			if (text == null || text.isEmpty()) {
+				return text;
+			}
+			
+			// Remove leading apostrophe.
+			char firstCharacter = text.charAt(0);
+			if (firstCharacter == '\'') {
+				text = text.substring(1);
+			}
+			
+			if (text.isEmpty()) {
+				return text;
+			}
+			
+			// Remove ending apostrophe.
+			int lastPosition = text.length() - 1;
+			char lastCharacter = text.charAt(lastPosition);
+			if (lastCharacter == '\'') {
+				text = text.substring(0, lastPosition);
+			}
 		}
-		
-		// Remove leading apostrophe.
-		char firstCharacter = text.charAt(0);
-		if (firstCharacter == '\'') {
-			text = text.substring(1);
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		if (text.isEmpty()) {
-			return text;
-		}
-		
-		// Remove ending apostrophe.
-		int lastPosition = text.length() - 1;
-		char lastCharacter = text.charAt(lastPosition);
-		if (lastCharacter == '\'') {
-			text = text.substring(0, lastPosition);
-		}
-		
 		return text;
 	}
 

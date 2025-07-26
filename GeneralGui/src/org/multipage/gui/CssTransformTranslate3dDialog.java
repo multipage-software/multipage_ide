@@ -1,20 +1,33 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import java.awt.*;
-import javax.swing.*;
-import java.awt.event.*;
-import java.io.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.SpringLayout;
+
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays 3D translation editor.
+ * @author vakol
  *
  */
 public class CssTransformTranslate3dDialog extends JDialog {
@@ -89,12 +102,17 @@ public class CssTransformTranslate3dDialog extends JDialog {
 	 */
 	public static CssTransformTranslate3d showDialog(Component parent) {
 		
-		CssTransformTranslate3dDialog dialog = new CssTransformTranslate3dDialog(parent);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			CssTransformTranslate3dDialog dialog = new CssTransformTranslate3dDialog(parent);
+			dialog.setVisible(true);
 			
-			return dialog.getTranslate();
+			if (dialog.confirm) {
+				
+				return dialog.getTranslate();
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -108,13 +126,18 @@ public class CssTransformTranslate3dDialog extends JDialog {
 	public static boolean editDialog(Component parent,
 			CssTransformTranslate3d translate) {
 		
-		CssTransformTranslate3dDialog dialog = new CssTransformTranslate3dDialog(parent);
-		dialog.setTranslate(translate);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			CssTransformTranslate3dDialog dialog = new CssTransformTranslate3dDialog(parent);
+			dialog.setTranslate(translate);
+			dialog.setVisible(true);
 			
-			translate.setFrom(dialog.getTranslate());
+			if (dialog.confirm) {
+				
+				translate.setFrom(dialog.getTranslate());
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return false;
 	}
@@ -124,14 +147,19 @@ public class CssTransformTranslate3dDialog extends JDialog {
 	 * @param translate
 	 */
 	private void setTranslate(CssTransformTranslate3d translate) {
-		
-		textTx.setText(String.valueOf(translate.tx));
-		textTy.setText(String.valueOf(translate.ty));
-		textTz.setText(String.valueOf(translate.tz));
-
-		comboTxUnits.setSelectedItem(translate.txUnits);
-		comboTyUnits.setSelectedItem(translate.tyUnits);
-		comboTzUnits.setSelectedItem(translate.tzUnits);
+		try {
+			
+			textTx.setText(String.valueOf(translate.tx));
+			textTy.setText(String.valueOf(translate.ty));
+			textTz.setText(String.valueOf(translate.tz));
+	
+			comboTxUnits.setSelectedItem(translate.txUnits);
+			comboTyUnits.setSelectedItem(translate.tyUnits);
+			comboTzUnits.setSelectedItem(translate.tzUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -140,17 +168,23 @@ public class CssTransformTranslate3dDialog extends JDialog {
 	 */
 	private CssTransformTranslate3d getTranslate() {
 		
-		CssTransformTranslate3d translate = new CssTransformTranslate3d();
-		
-		translate.tx = Utility.getFloat(textTx, 0.0f);
-		translate.ty = Utility.getFloat(textTy, 0.0f);
-		translate.tz = Utility.getFloat(textTz, 0.0f);
-
-		translate.txUnits = (String) comboTxUnits.getSelectedItem();
-		translate.tyUnits = (String) comboTyUnits.getSelectedItem();
-		translate.tzUnits = (String) comboTzUnits.getSelectedItem();
-
-		return translate;
+		try {
+			CssTransformTranslate3d translate = new CssTransformTranslate3d();
+			
+			translate.tx = Utility.getFloat(textTx, 0.0f);
+			translate.ty = Utility.getFloat(textTy, 0.0f);
+			translate.tz = Utility.getFloat(textTz, 0.0f);
+	
+			translate.txUnits = (String) comboTxUnits.getSelectedItem();
+			translate.tyUnits = (String) comboTyUnits.getSelectedItem();
+			translate.tzUnits = (String) comboTzUnits.getSelectedItem();
+	
+			return translate;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -159,12 +193,17 @@ public class CssTransformTranslate3dDialog extends JDialog {
 	 */
 	public CssTransformTranslate3dDialog(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -262,54 +301,78 @@ public class CssTransformTranslate3dDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		localize();
-		setIcons();
-		
-		loadUnits();
-		
-		loadDialog();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			localize();
+			setIcons();
+			
+			loadUnits();
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load units.
 	 */
 	private void loadUnits() {
-		
-		Utility.loadCssUnits(comboTxUnits);
-		Utility.loadCssUnits(comboTyUnits);
-		Utility.loadCssUnits(comboTzUnits);
+		try {
+			
+			Utility.loadCssUnits(comboTxUnits);
+			Utility.loadCssUnits(comboTyUnits);
+			Utility.loadCssUnits(comboTzUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(this);
+		try {
+			
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(this);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
-		
-		saveDialog();
-		
-		confirm = false;
+		try {
+			
+			saveDialog();
+			confirm = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -317,10 +380,15 @@ public class CssTransformTranslate3dDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		saveDialog();
-		
-		confirm = true;
+		try {
+			
+			saveDialog();
+			confirm = true;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -345,7 +413,12 @@ public class CssTransformTranslate3dDialog extends JDialog {
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

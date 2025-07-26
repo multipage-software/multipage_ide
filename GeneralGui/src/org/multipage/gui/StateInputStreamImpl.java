@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2022 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 01-01-2022
+ * Created on : 2022-01-01
  *
  */
 package org.multipage.gui;
@@ -23,7 +23,7 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 
 /**
- * Input stream of objects which describe application settings.
+ * Input stream for objects representing application states.
  * @author vakol
  *
  */

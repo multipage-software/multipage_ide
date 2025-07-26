@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 21-04-2020
+ * Created on : 2020-04-21
  *
  */
 package org.multipage.sync;
@@ -11,7 +11,6 @@ import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.http.HttpResponse;
@@ -24,10 +23,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -37,14 +32,15 @@ import org.multipage.gui.HttpException;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 
 /**
- * 
- * @author user
+ * Class for the Area Server client.
+ * @author vakol
  *
  */
 public class AreaServerClient {
@@ -102,8 +98,13 @@ public class AreaServerClient {
 	 * @param userDirectory 
 	 */
 	public static void setAccessString(String host, String user, String password) {
-		
-		accessString = String.format(accessStringFormat, host, user, password);
+		try {
+			
+			accessString = String.format(accessStringFormat, host, user, password);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -138,7 +139,7 @@ public class AreaServerClient {
 		// Create reload menu scheduler
 		AreaServerClient.reloadMenuScheduler = new Timer(250, event -> {
 			
-			SwingUtilities.invokeLater(() -> {
+			Safe.invokeLater(() -> {
 				
 				try {
 					areaServerClient.loadMenu(true);
@@ -163,8 +164,14 @@ public class AreaServerClient {
 	 */
 	public String getMenuAreaUrl(String areaAlias) {
 		
-		String theUrl = this.url + (areaAlias == null ? "/?a" : "/?alias=" + areaAlias);
-		return theUrl;
+		try {
+			String theUrl = this.url + (areaAlias == null ? "/?a" : "/?alias=" + areaAlias);
+			return theUrl;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 	
 	/**
@@ -179,12 +186,11 @@ public class AreaServerClient {
 		Thread thread = new Thread(() -> {
 
 			try {
-				
 				Obj<HttpResponse<InputStream>> response = new Obj<HttpResponse<InputStream>>();
 				Optional<String> optionalException = null;
 				
 				// Remove all menu items
-				SwingUtilities.invokeLater(() -> {
+				Safe.invokeLater(() -> {
 					popupMenu.removeAll();
 				});
 				
@@ -231,7 +237,7 @@ public class AreaServerClient {
 				NodeList nodes = (NodeList) menuXPath.evaluate(xml, XPathConstants.NODESET);
 				int length = nodes.getLength();
 				
-				SwingUtilities.invokeLater(() -> {
+				Safe.invokeLater(() -> {
 	
 					// Go through child nodes
 					for (int index = 0; index < length; index++) {
@@ -245,24 +251,28 @@ public class AreaServerClient {
 						MenuItem menu = new MenuItem(name.getTextContent());
 						popupMenu.add(menu);
 						menu.addActionListener((event) -> {
-							
-							String answer = null;
 							try {
-								// Send request
-								answer = sendSimpleRequest(request);
-							
-								// Display answer
-								answer = answer.trim();
+								
+								String answer = null;
+								try {
+									// Send request
+									answer = sendSimpleRequest(request);
+								
+									// Display answer
+									answer = answer.trim();
+								}
+								catch (Exception e) {
+									answer = e.getLocalizedMessage();
+								}
+								
+								// Display possible answer
+								if (!answer.isEmpty()) {
+									MessageDialog.showDialog(answer);
+								}
 							}
-							catch (Exception e) {
-								answer = e.getLocalizedMessage();
-							}
-							
-							// Display possible answer
-							if (!answer.isEmpty()) {
-								MessageDialog.showDialog(answer);
-							}
-							
+							catch(Throwable expt) {
+								Safe.exception(expt);
+							};
 						});
 					}
 					
@@ -312,7 +322,7 @@ public class AreaServerClient {
 	 */
 	private void addDefaultMenuItems() {
 		
-		SwingUtilities.invokeLater(() -> {
+		Safe.invokeLater(() -> {
 			
 			// Add separator.
 			int itemCount = popupMenu.getItemCount();
@@ -326,12 +336,24 @@ public class AreaServerClient {
 			
 			// Update menu.
 			Utility.addSubMenu(menuMaintenance, "org.multipage.sync.menuReloadMenu", e -> {
-				reloadMenuScheduler.start();
+				try {
+					
+					reloadMenuScheduler.start();
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
 			});
 			
 			// Reactivate GUI.
 			Utility.addSubMenu(menuMaintenance, "org.multipage.sync.menuReactivateGui", e -> {
-				SyncMain.reactivateGui();
+				try {
+					
+					SyncMain.reactivateGui();
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
 			});
 			
 			// Menu item for program termination.
@@ -340,18 +362,28 @@ public class AreaServerClient {
 			
 			if (SyncMain.isStandalone) {
 				Utility.addSubMenu(menuMaintenance, "org.multipage.sync.menuQuitApplication", e -> {
-					
-					if (Utility.ask2Top(confirmationMessage)) {
-						SyncMain.stop();
+					try {
+						
+						if (Utility.ask2Top(confirmationMessage)) {
+							SyncMain.stop();
+						}
 					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				});
 			}
 			else {
 				Utility.addPopupMenuItem(popupMenu, "org.multipage.sync.menuQuitApplication", e -> {
-					
-					if (Utility.ask2Top(confirmationMessage)) {
-						SyncMain.closeMainApplication();
+					try {
+						
+						if (Utility.ask2Top(confirmationMessage)) {
+							SyncMain.closeMainApplication();
+						}
 					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				});
 			}
 		});
@@ -373,7 +405,6 @@ public class AreaServerClient {
 		Thread thread = new Thread (() -> {
 			
 			try {
-				
 				URL theUrl = new URL(url + "/" + request);
 				URLConnection connection = theUrl.openConnection();
 				
@@ -402,7 +433,6 @@ public class AreaServerClient {
 				String errorMessage = String.format(connectionErrorTemplate, Utility.removeLastPunctuation(e.getMessage()), url);
 				exception.ref = new Exception(errorMessage);
 			}
-			
 		});
 		
 		// Start the thread
@@ -437,7 +467,6 @@ public class AreaServerClient {
 		Exception exception = null;
 		
 		try {
-			
 			// Make HTTP request for the home area.
 			inputStream = Utility.getHttpStream(url, apiRequestTimoutMs, response,
 					// Set request headers

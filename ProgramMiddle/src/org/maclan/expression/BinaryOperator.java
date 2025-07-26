@@ -1,14 +1,22 @@
+/*
+ * Copyright 2010-2025 (C) vakol
+ * 
+ * Created on : 2017-04-26
+ *
+ */
 package org.maclan.expression;
 
-import java.lang.reflect.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import org.maclan.Slot;
+import org.maclan.SlotType;
 import org.maclan.server.AreaServer;
-import org.multipage.util.*;
+import org.multipage.util.Resources;
 
 /**
- * Binary operator.
- * @author
+ * Class for binary operators.
+ * @author vakol
  *
  **/
 public class BinaryOperator implements ExpressionElement {

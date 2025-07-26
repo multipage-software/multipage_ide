@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 10-03-2020
+ * Created on : 2020-03-10
  *
  */
 package org.maclan.server;
@@ -19,7 +19,8 @@ import org.maclan.MiddleLight;
 import org.multipage.util.Obj;
 
 /**
- * @author user
+ * Class for Area Server states.
+ * @author vakol
  *
  */
 public class AreaServerState {
@@ -35,6 +36,11 @@ public class AreaServerState {
 	public static final int metaInfoFalse = 0;
 	public static final int metaInfoTrue = 1;
 	public static final int metaInfoTemporary = 2;
+	
+	/**
+	 * State level index.
+	 */
+	public int stateLevelIndex = 0;
 	
 	/**
 	 * Reference to parent state.
@@ -305,16 +311,84 @@ public class AreaServerState {
         threadId = currentThread.getId();
         threadName = currentThread.getName();
 	}
+	
+	/**
+	 * Clone this Area Server state.
+	 * @param area
+	 * @param textValue
+	 * @return
+	 */
+	public AreaServerState cloneState(Area area, String textValue) {
+		
+		AreaServerState clonedState = new AreaServerState();
+		
+		clonedState.stateLevelIndex = stateLevelIndex + 1;
+		
+		clonedState.parentState = parentState;
+		clonedState.responseTimeoutMilliseconds = responseTimeoutMilliseconds;
+		clonedState.responseStartTime = responseStartTime;
+		clonedState.rendering = rendering;
+		clonedState.renderingFlags = renderingFlags;
+		clonedState.renderingResources = renderingResources;
+		clonedState.commonResourceFileNames = commonResourceFileNames;
+		clonedState.middle = middle;
+		clonedState.blocks = blocks;
+		clonedState.request = request;
+		clonedState.response = response;
+		clonedState.languages = languages;
+		clonedState.analysis = analysis;
+		clonedState.text = new StringBuilder(textValue);
+		clonedState.encoding = encoding;
+		clonedState.level = level;
+		clonedState.area = area;
+		clonedState.requestedArea = requestedArea;
+		clonedState.startArea = startArea;
+		clonedState.position = 0;
+		clonedState.tagStartPosition = 0;
+		clonedState.currentLanguage = currentLanguage;
+		clonedState.currentVersionId = currentVersionId;
+		clonedState.processProperties = processProperties;
+		clonedState.breakPointName = breakPointName;
+		clonedState.showLocalizedTextIds = showLocalizedTextIds;
+		clonedState.listener = listener;
+		clonedState.bookmarkReplacement = bookmarkReplacement;
+		clonedState.foundIncludeIdentifiers = foundIncludeIdentifiers;
+		clonedState.relatedAreaVersions = relatedAreaVersions;
+		clonedState.enablePhp = enablePhp;
+		clonedState.scriptingEngine = scriptingEngine;
+		clonedState.tabulator = tabulator;
+		clonedState.cssRulesCache = cssRulesCache;
+		clonedState.cssLookupTable = cssLookupTable;
+		clonedState.unzippedResourceIds = unzippedResourceIds;
+		clonedState.webInterfaceDirectory = webInterfaceDirectory;
+		clonedState.redirection = redirection;
+		clonedState.resourcesRenderFolder = resourcesRenderFolder;
+		clonedState.updatedSlots = updatedSlots;
+		clonedState.defaultVersionId = defaultVersionId;
+		clonedState.trayMenu = trayMenu;
+		clonedState.newLine = newLine;
+		clonedState.enableMetaTags = enableMetaTags;
+		
+		if (debugInfo != null) {
+			clonedState.debugInfo = debugInfo.cloneDebugInfo();
+		}
+		
+		return clonedState;
+	}	
 
 	/**
 	 * Update server state.
 	 * @param server
 	 */
-	public void progateFromSubstate(AreaServerState subState) {
+	public void progateFromSubState(AreaServerState subState) {
 		
 		breakPointName = subState.breakPointName;
 		exceptionThrown = subState.exceptionThrown;
 		trayMenu = subState.trayMenu;
+		
+		if (debugInfo != null) {
+			debugInfo.progateFromSubInfo(subState.debugInfo);
+		}
 	}
 	
 	/**

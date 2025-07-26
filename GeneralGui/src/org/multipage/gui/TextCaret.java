@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2021 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 06-01-2021
+ * Created on : 2021-01-06
  *
  */
 package org.multipage.gui;
@@ -9,7 +9,8 @@ package org.multipage.gui;
 import javax.swing.text.JTextComponent;
 
 /**
- * @author Dell
+ * Class for text caret.
+ * @author vakol
  *
  */
 public class TextCaret {

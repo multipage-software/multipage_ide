@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2021 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 16-06-2021
+ * Created on : 2021-06-16
  *
  */
 
@@ -17,6 +17,8 @@ import java.awt.Window;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
@@ -35,17 +37,18 @@ import javax.swing.text.Caret;
 
 import org.maclan.help.Intellisense.Suggestion;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 import org.multipage.util.j;
 
 /**
- * 
+ * Window that displays the intellisense suggestions.
  * @author vakol
  *
  */
 public class IntellisenseWindow extends JDialog {
 
 	/**
-	 * Version
+	 * Version.
 	 */
 	private static final long serialVersionUID = 1L;
 	
@@ -73,146 +76,225 @@ public class IntellisenseWindow extends JDialog {
 	 * List model.
 	 */
 	private DefaultListModel<Suggestion> listModel;
+	
+	/**
+	 * Tag start position.
+	 */
+	private int tagStart = 0;
+	
 	/**
 	 * Create new window.
 	 * @param parent
 	 */
 	public static void createNew(Component parent) {
-		
-		// Try to close old window.
-		closeIntellisense();
-		
-		// Create new hidden window.
-		Window parentWindow = Utility.findWindow(parent);
-		dialog = new IntellisenseWindow(parentWindow);
-		dialog.setAlwaysOnTop(true);
-		dialog.setFocusable(false);
-		dialog.setVisible(false);
-		
-		// Add action listener for the list.
-		dialog.list.addMouseListener(new MouseAdapter() {
-
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				
-				// Check button bounds.
-				if (IntellisenseItemPanel.linkButtonSize != null) {
-				
-					// Try to get selected list item index.
-					int selectedIndex = dialog.list.getSelectedIndex();
-					if (selectedIndex >= 0) {
+		try {
+			
+			// Try to close old window.
+			closeIntellisense();
+			
+			// Create new hidden window.
+			Window parentWindow = Utility.findWindow(parent);
+			dialog = new IntellisenseWindow(parentWindow);
+			dialog.setAlwaysOnTop(true);
+			dialog.setFocusable(false);
+			dialog.setVisible(false);
+			
+			// Add action listener for the suggestion list.
+			dialog.list.addMouseListener(new MouseAdapter() {
+	
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					try {
 						
-						// Get item bounds and the mouse pointer position.
-						Rectangle itemBounds = dialog.list.getCellBounds(selectedIndex, selectedIndex);
-						Point mousePoint = e.getPoint();
+						// Check button bounds.
+						if (IntellisenseItemPanel.linkButtonSize != null) {
 						
-						// Trim boundaries to link button.
-						itemBounds.x = itemBounds.x + (itemBounds.width - IntellisenseItemPanel.linkButtonSize.width);
+							// Try to get selected list item index.
+							int selectedIndex = dialog.list.getSelectedIndex();
+							if (selectedIndex >= 0) {
+								
+								// Get item bounds and the mouse pointer position.
+								Rectangle itemBounds = dialog.list.getCellBounds(selectedIndex, selectedIndex);
+								Point mousePoint = e.getPoint();
+								
+								// Trim boundaries to link button.
+								itemBounds.x = itemBounds.x + (itemBounds.width - IntellisenseItemPanel.linkButtonSize.width);
+								
+								// Get selected suggestion.
+								Suggestion selectedSuggestion = dialog.list.getSelectedValue();
+								
+								// If the mouse pointer is on the link button, display help page.
+								boolean isOnLinkButton = itemBounds.contains(mousePoint);
+								if (isOnLinkButton) {
+									
+									Intellisense.displayHelpPage(selectedSuggestion);
+								}
+								// Else apply suggestion.
+								else {
+									Intellisense.acceptSuggestion(selectedSuggestion, dialog.tagStart);
+								}
+							}
+						}
 						
-						// Get selected suggestion.
-						Suggestion selectedSuggestion = dialog.list.getSelectedValue();
+						// Delegate call.
+						super.mouseClicked(e);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+			
+			// Add key listener.
+			dialog.list.addKeyListener(new KeyAdapter() {
+	
+				@Override
+				public void keyReleased(KeyEvent e) {
+					try {
 						
-						// If the mouse pointer is on the link button, display help page.
-						boolean isOnLinkButton = itemBounds.contains(mousePoint);
-						if (isOnLinkButton) {
+						// Check key.
+						int keyCode = e.getKeyCode();
+						if (keyCode == KeyEvent.VK_ENTER) {
 							
+							// Get selected suggestion.
+							Suggestion selectedSuggestion = dialog.list.getSelectedValue();
+							
+		                    // If suggestion is not null, apply it.
+							Intellisense.acceptSuggestion(selectedSuggestion, dialog.tagStart);
+						}
+						else if (keyCode == KeyEvent.VK_ESCAPE) {
+								
+		                    // Close the intellisense window.
+		                    Safe.invokeLater(() -> {
+		                    	closeIntellisense();
+		                    });
+						}
+						else if (keyCode == KeyEvent.VK_RIGHT) {
+							
+							// Show selected suggestion help page.
+							Suggestion selectedSuggestion = dialog.list.getSelectedValue();
 							Intellisense.displayHelpPage(selectedSuggestion);
 						}
-						// Else apply suggestion.
-						else {
-							Intellisense.acceptSuggestion(selectedSuggestion);
-						}
+						// Delegate call.
+						super.keyReleased(e);
 					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-				
-				// Delegate call.
-				super.mouseClicked(e);
-			}
-		});
-		
-		// Add focus listener.
-		dialog.list.addFocusListener(new FocusAdapter() {
-
-			@Override
-			public void focusLost(FocusEvent e) {
-				
-				// Close the intellisense window.
-				SwingUtilities.invokeLater(() -> closeIntellisense());
-				
-				// Delegate the call.
-				super.focusLost(e);
-			}
-		});
-		
-		// Add focus listener.
-		final FocusListener focusListener = new FocusListener() {
-
-			@Override
-			public void focusGained(FocusEvent e) {
-				
-				// Reset the flag.
-				canDispose = true;
-			}
-
-			@Override
-			public void focusLost(FocusEvent e) {
-				
-				// Check flag.
-				if (!canDispose) {
-					return;
-				}
-				
-				// Check dialog.
-				if (dialog == null) {
-					return;
-				}
-				
-				// Check if mouse pointer is on intellisense window.
-				Point mouseLocation = MouseInfo.getPointerInfo().getLocation();
-				Rectangle intellisenseBoonds = dialog.getBounds();
-				
-				if (intellisenseBoonds.contains(mouseLocation)) {
-					return;
-				}
-				
-				// Hide the dialog.
-				SwingUtilities.invokeLater(() -> closeIntellisense());
-			}
-		};
-		parent.addFocusListener(focusListener);
-		
-		// Add parent window close handler.
-		parentWindow.addWindowListener(new WindowAdapter() {
+			});
 			
-			@Override
-			public void windowClosed(WindowEvent e) {
+			// Add focus listener.
+			dialog.list.addFocusListener(new FocusAdapter() {
+	
+				@Override
+				public void focusLost(FocusEvent e) {
+					try {
+						
+						// Close the intellisense window.
+						Safe.invokeLater(() -> {
+							closeIntellisense();
+						});
+						
+						// Delegate the call.
+						super.focusLost(e);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+			
+			// Add focus listener.
+			final FocusListener focusListener = new FocusListener() {
+	
+				@Override
+				public void focusGained(FocusEvent e) {
+					
+					// Reset the flag.
+					canDispose = true;
+				}
+	
+				@Override
+				public void focusLost(FocusEvent e) {
+					try {
+						
+						// Check flag.
+						if (!canDispose) {
+							return;
+						}
+						
+						// Check dialog.
+						if (dialog == null) {
+							return;
+						}
+						
+						// Check if mouse pointer is on intellisense window.
+						Point mouseLocation = MouseInfo.getPointerInfo().getLocation();
+						Rectangle intellisenseBoonds = dialog.getBounds();
+						
+						if (intellisenseBoonds.contains(mouseLocation)) {
+							return;
+						}
+						
+						// Hide the dialog.
+						Safe.invokeLater(() -> {
+							closeIntellisense();
+						});
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			};
+			parent.addFocusListener(focusListener);
+			
+			// Add parent window close handler.
+			parentWindow.addWindowListener(new WindowAdapter() {
 				
-				// Hide the dialog.
-				SwingUtilities.invokeLater(() -> closeIntellisense());
-				
-				// Delegate the call.
-				super.windowClosed(e);
-				
-				// Remove listener.
-				parent.removeFocusListener(focusListener);
-				
-				// Remove listener.
-				parentWindow.removeWindowListener(this);
-			}
-		});
+				@Override
+				public void windowClosed(WindowEvent e) {
+					try {
+						
+						// Hide the dialog.
+						Safe.invokeLater(() -> {
+							closeIntellisense();
+						});
+						
+						// Delegate the call.
+						super.windowClosed(e);
+						
+						// Remove listener.
+						parent.removeFocusListener(focusListener);
+						
+						// Remove listener.
+						parentWindow.removeWindowListener(this);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Try to dispose the window object.
 	 */
-	private static void closeIntellisense() {
-		
-
-		if (dialog != null) {
+	public static void closeIntellisense() {
+		try {
 			
-			dialog.dispose();
-			dialog = null;
+			if (dialog != null) {
+				dialog.dispose();
+				dialog = null;
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -221,65 +303,62 @@ public class IntellisenseWindow extends JDialog {
 	 * @param caret
 	 * @param suggestions
 	 */
-	public static final void displayAtCaret(JTextPane textPane, Caret caret, LinkedList<Suggestion> suggestions) {
-		
-		// Set flag.
-		canDispose = false;
-		
-		// Check dialog and possibly create new one.
-		if (dialog == null) {
-			createNew(textPane);
-		}
-		
-		// Get current caret position in text and its location.
-		int caretPosition = caret.getDot();
-		Rectangle2D caretBounds = null;
+	public static final void displayAtCaret(JTextPane textPane, Caret caret, int tagStart,
+			LinkedList<Suggestion> suggestions) {
 		try {
-			caretBounds = textPane.modelToView2D(caretPosition);
-		}
-		catch (Exception e) {
 			
-			dialog.setVisible(false);
-			return;
-		}
-		Point caretLocation = new Point();
-		caretLocation.x = (int) caretBounds.getX() + 10;
-		caretLocation.y = (int) caretBounds.getY();
-		
-		// Load suggestions.
-		dialog.loadSuggestions(suggestions);
-		
-		// Trim the coordinates.
-		SwingUtilities.convertPointToScreen(caretLocation, textPane);
-		
-		// Display window at caret location.
-		SwingUtilities.invokeLater(() -> dialog.setLocation(caretLocation));
-		
-		// Update the window.
-		SwingUtilities.invokeLater(() -> {
-			if (dialog != null) {
+			// Set flag.
+			canDispose = false;
+			
+			// Check dialog and possibly create new one.
+			if (dialog == null) {
+				createNew(textPane);
+			}
+			
+			// Get current caret position in text.
+			int caretPosition = caret.getDot();
+			Rectangle2D caretBounds = null;
+			try {
+				caretBounds = textPane.modelToView2D(caretPosition);
+			}
+			catch (Exception e) {
+				
 				dialog.setVisible(false);
+				return;
 			}
-		});
-		SwingUtilities.invokeLater(() -> {
-			if (dialog != null) {
-				dialog.setVisible(true);
-			}
-		});
-		
-		// Return focus.
-		SwingUtilities.invokeLater(() -> textPane.grabFocus());
-	}
-	
-	/**
-	 * Hide window.
-	 */
-	public static void hideWindow() {
-		
-		// Hide the dialog window.
-		if (dialog != null) {
-			dialog.setVisible(false);
+			Point caretLocation = new Point();
+			caretLocation.x = (int) caretBounds.getX() + 10;
+			caretLocation.y = (int) caretBounds.getY();
+			
+			// Remember tag starting position.
+			dialog.tagStart = tagStart;
+			
+			// Load suggestions.
+			dialog.loadSuggestions(suggestions);
+			
+			// Trim the coordinates.
+			SwingUtilities.convertPointToScreen(caretLocation, textPane);
+			
+			// Display window at caret location.
+			Safe.invokeLater(() -> {
+				dialog.setLocation(caretLocation);
+			});
+			
+			// Update the window.
+			Safe.invokeLater(() -> {
+				if (dialog != null) {
+					dialog.setVisible(false);
+				}
+			});
+			Safe.invokeLater(() -> {
+				if (dialog != null) {
+					dialog.setVisible(true);
+				}
+			});
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -295,8 +374,13 @@ public class IntellisenseWindow extends JDialog {
 	public IntellisenseWindow(Window parent) {
 		super(parent, ModalityType.MODELESS);
 		
-		initComponents();
-		postCreate(); //$hide$
+		try {
+			initComponents();
+			postCreate(); //$hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -321,35 +405,49 @@ public class IntellisenseWindow extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		createList();
+		try {
+			
+			createList();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Create list of suggestions.
 	 */
 	private void createList() {
-		
-		// Create list model.
-		listModel = new DefaultListModel<Suggestion>();
-		list.setModel(listModel);
-		
-		// Create renderer.
-		list.setCellRenderer(new ListCellRenderer<Suggestion>() {
+		try {
 			
-			// Renderer of the suggestion.
-			IntellisenseItemPanel renderer = new IntellisenseItemPanel(IntellisenseWindow.this);
+			// Create list model.
+			listModel = new DefaultListModel<Suggestion>();
+			list.setModel(listModel);
 			
-			// Callback method.
-			@Override
-			public Component getListCellRendererComponent(JList<? extends Suggestion> list, Suggestion suggestion, int index,
-					boolean isSelected, boolean cellHasFocus) {
+			// Create renderer.
+			list.setCellRenderer(new ListCellRenderer<Suggestion>() {
 				
-				renderer.setSuggestion(suggestion, index, isSelected, cellHasFocus);
-				return renderer;
-			}
-			
-		});
+				// Renderer of the suggestion.
+				IntellisenseItemPanel renderer = new IntellisenseItemPanel(IntellisenseWindow.this);
+				
+				// Callback method.
+				@Override
+				public Component getListCellRendererComponent(JList<? extends Suggestion> list, Suggestion suggestion, int index,
+						boolean isSelected, boolean cellHasFocus) {
+					
+					try {
+						renderer.setSuggestion(suggestion, index, isSelected, cellHasFocus);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return renderer;
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -357,14 +455,20 @@ public class IntellisenseWindow extends JDialog {
 	 * @param suggestions
 	 */
 	private void loadSuggestions(LinkedList<Suggestion> suggestions) {
-		
-		// Clear the list.
-		listModel.clear();
-		
-		// Insert suggestions.
-		listModel.addAll(suggestions);
-		list.updateUI();
-		
-		j.log("DISPLAYED SUGGESTIONS %s", suggestions.toString());
+		try {
+			
+			// Clear the list.
+			listModel.clear();
+			
+			// Insert suggestions.
+			listModel.addAll(suggestions);
+			list.setSelectedIndex(0);
+			list.updateUI();
+			
+			j.log("DISPLAYED SUGGESTIONS %s", suggestions.toString());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

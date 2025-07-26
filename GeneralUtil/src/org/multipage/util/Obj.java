@@ -1,16 +1,18 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.util;
 
+import org.multipage.util.Safe;
+
 /**
- * @author
+ * This template class is a wrapper for objects of type T.
+ * @author vakol
  * 
- * This class is a wrapper for objects of type T.
  */
 public class Obj<T> {
 
@@ -41,7 +43,16 @@ public class Obj<T> {
 	 */
 	@Override
 	public String toString() {
-
-		return ref.toString();
+		
+		if (ref == null) {
+			return "null";
+		}
+		try {
+			return ref.toString();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 }

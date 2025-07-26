@@ -1,20 +1,33 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import java.awt.*;
-import javax.swing.*;
-import java.awt.event.*;
-import java.io.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.SpringLayout;
+
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays skew editor.
+ * @author vakol
  *
  */
 public class CssTransformSkewDialog extends JDialog {
@@ -87,12 +100,17 @@ public class CssTransformSkewDialog extends JDialog {
 	 */
 	public static CssTransformSkew showDialog(Component parent) {
 		
-		CssTransformSkewDialog dialog = new CssTransformSkewDialog(parent);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			CssTransformSkewDialog dialog = new CssTransformSkewDialog(parent);
+			dialog.setVisible(true);
 			
-			return dialog.getSkew();
+			if (dialog.confirm) {
+				
+				return dialog.getSkew();
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -106,13 +124,18 @@ public class CssTransformSkewDialog extends JDialog {
 	public static boolean editDialog(Component parent,
 			CssTransformSkew skew) {
 		
-		CssTransformSkewDialog dialog = new CssTransformSkewDialog(parent);
-		dialog.setSkew(skew);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			CssTransformSkewDialog dialog = new CssTransformSkewDialog(parent);
+			dialog.setSkew(skew);
+			dialog.setVisible(true);
 			
-			skew.setFrom(dialog.getSkew());
+			if (dialog.confirm) {
+				
+				skew.setFrom(dialog.getSkew());
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return false;
 	}
@@ -122,11 +145,16 @@ public class CssTransformSkewDialog extends JDialog {
 	 * @param skew
 	 */
 	private void setSkew(CssTransformSkew skew) {
-		
-		textAx.setText(String.valueOf(skew.ax));
-		comboXUnits.setSelectedItem(skew.axUnits);
-		textAy.setText(String.valueOf(skew.ay));
-		comboYUnits.setSelectedItem(skew.ayUnits);
+		try {
+			
+			textAx.setText(String.valueOf(skew.ax));
+			comboXUnits.setSelectedItem(skew.axUnits);
+			textAy.setText(String.valueOf(skew.ay));
+			comboYUnits.setSelectedItem(skew.ayUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -135,14 +163,20 @@ public class CssTransformSkewDialog extends JDialog {
 	 */
 	private CssTransformSkew getSkew() {
 		
-		CssTransformSkew skew = new CssTransformSkew();
-		
-		skew.ax = Utility.getFloat(textAx, 0.0f);
-		skew.axUnits = (String) comboXUnits.getSelectedItem();
-		skew.ay = Utility.getFloat(textAy, 0.0f);
-		skew.ayUnits = (String) comboYUnits.getSelectedItem();
-
-		return skew;
+		try {
+			CssTransformSkew skew = new CssTransformSkew();
+			
+			skew.ax = Utility.getFloat(textAx, 0.0f);
+			skew.axUnits = (String) comboXUnits.getSelectedItem();
+			skew.ay = Utility.getFloat(textAy, 0.0f);
+			skew.ayUnits = (String) comboYUnits.getSelectedItem();
+	
+			return skew;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -151,12 +185,17 @@ public class CssTransformSkewDialog extends JDialog {
 	 */
 	public CssTransformSkewDialog(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -239,53 +278,77 @@ public class CssTransformSkewDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		localize();
-		setIcons();
-		
-		loadUnits();
-		
-		loadDialog();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			localize();
+			setIcons();
+			
+			loadUnits();
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load units.
 	 */
 	private void loadUnits() {
-		
-		Utility.loadCssAngleUnits(comboXUnits);
-		Utility.loadCssAngleUnits(comboYUnits);
+		try {
+			
+			Utility.loadCssAngleUnits(comboXUnits);
+			Utility.loadCssAngleUnits(comboYUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(this);
+		try {
+			
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(this);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
-		
-		saveDialog();
-		
-		confirm = false;
+		try {
+			
+			saveDialog();
+			confirm = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -293,10 +356,15 @@ public class CssTransformSkewDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		saveDialog();
-		
-		confirm = true;
+		try {
+			
+			saveDialog();
+			confirm = true;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -304,23 +372,33 @@ public class CssTransformSkewDialog extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setBounds(bounds);
+			}
+	
+			textAx.setText("0.0");
+			textAy.setText("0.0");
 		}
-		else {
-			setBounds(bounds);
-		}
-
-		textAx.setText("0.0");
-		textAy.setText("0.0");
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

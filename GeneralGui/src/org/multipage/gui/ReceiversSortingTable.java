@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2021 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 19-02-2021
+ * Created on : 2021-02-19
  *
  */
 package org.multipage.gui;
@@ -13,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
 /**
+ * 
  * @author vakol
  *
  */

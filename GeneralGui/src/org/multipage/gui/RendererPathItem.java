@@ -1,20 +1,26 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 18-02-2020
+ * Created on : 2020-02-18
  *
  */
 package org.multipage.gui;
 
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
 
-import org.multipage.util.*;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SpringLayout;
 
-import java.awt.*;
+import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author user
+ * Renderer that displays path information.
+ * @author vakol
  *
  */
 public class RendererPathItem extends JPanel {
@@ -49,26 +55,33 @@ public class RendererPathItem extends JPanel {
 	 * Set properties.
 	 */
 	public void set(boolean enabled, boolean isSelected, boolean hasFocus, int index, String caption, String path) {
-		
-		this.isSelected = isSelected;
-		this.hasFocus = hasFocus;
-		
-		if (enabled) {
-			this.labelCaption.setText(" " + caption + " ");
-			if (path == null || path.isEmpty()) {
-				
-				if (notSpecified == null) {
-					notSpecified = Resources.getString("org.mutlipage.gui.textNotSpecified");
+		try {
+			
+			this.isSelected = isSelected;
+			this.hasFocus = hasFocus;
+			
+			String thePath = path;
+			
+			if (enabled) {
+				this.labelCaption.setText(" " + caption + " ");
+				if (thePath == null || thePath.isEmpty()) {
+					
+					if (notSpecified == null) {
+						notSpecified = Resources.getString("org.mutlipage.gui.textNotSpecified");
+					}
+					thePath = notSpecified;
 				}
-				path = notSpecified ;
+				this.labelPath.setText(thePath);
 			}
-			this.labelPath.setText(path);
+			else {
+				// Empty texts.
+				this.labelCaption.setText("");
+				this.labelPath.setText("");
+			}
 		}
-		else {
-			// Empty texts.
-			this.labelCaption.setText("");
-			this.labelPath.setText("");
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -76,19 +89,28 @@ public class RendererPathItem extends JPanel {
 	 */
 	@Override
 	public void paint(Graphics g) {
-		
-		super.paint(g);
-		
-		GraphUtility.drawSelection(g, this, isSelected, hasFocus);
+		try {
+			
+			super.paint(g);
+			GraphUtility.drawSelection(g, this, isSelected, hasFocus);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Create the panel.
 	 */
 	public RendererPathItem() {
-
-		initComponents();
-		setOpaque(false);
+		try {
+			
+			initComponents();
+			setOpaque(false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -115,5 +137,4 @@ public class RendererPathItem extends JPanel {
 		springLayout.putConstraint(SpringLayout.SOUTH, labelPath, 0, SpringLayout.SOUTH, labelCaption);
 		add(labelPath);
 	}
-
 }

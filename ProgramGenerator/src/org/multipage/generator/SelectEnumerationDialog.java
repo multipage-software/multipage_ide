@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -34,7 +34,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JToolBar;
 import javax.swing.ListCellRenderer;
 import javax.swing.SpringLayout;
-import javax.swing.SwingUtilities;
 
 import org.maclan.EnumerationObj;
 import org.maclan.EnumerationValue;
@@ -45,10 +44,11 @@ import org.multipage.gui.Images;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays enumerations that can be selected.
+ * @author vakol
  *
  */
 public class SelectEnumerationDialog extends JDialog {
@@ -133,13 +133,18 @@ public class SelectEnumerationDialog extends JDialog {
 	 */
 	public static String showDialog(Component parent, String inputText) {
 		
-		SelectEnumerationDialog dialog = new SelectEnumerationDialog(parent);
-		dialog.selectValuesFromText(inputText);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			SelectEnumerationDialog dialog = new SelectEnumerationDialog(parent);
+			dialog.selectValuesFromText(inputText);
+			dialog.setVisible(true);
 			
-			return dialog.getSelectedEnumerationValueText();
+			if (dialog.confirm) {
+				
+				return dialog.getSelectedEnumerationValueText();
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -149,40 +154,46 @@ public class SelectEnumerationDialog extends JDialog {
 	 * @param inputText
 	 */
 	private void selectValuesFromText(String inputText) {
-		
-		// Match regex against the input text.
-		String inputFormat = SelectEnumerationFormatDialog.selectedFormat.input;
-		Pattern pattern = Pattern.compile(inputFormat);
-		Matcher matcher = pattern.matcher(inputText);
-		
-		if (!matcher.matches()) {
-			return;
+		try {
+			
+			// Match regex against the input text.
+			String inputFormat = SelectEnumerationFormatDialog.selectedFormat.input;
+			Pattern pattern = Pattern.compile(inputFormat);
+			Matcher matcher = pattern.matcher(inputText);
+			
+			if (!matcher.matches()) {
+				return;
+			}
+			
+			if (matcher.groupCount() < 2) {
+				return;
+			}
+			
+			// Get enumeration name.
+			String enumeration = matcher.group(1);
+			if (enumeration == null) {
+				return;
+			}
+			enumeration = enumeration.trim();
+			
+			// Get value name.
+			String value = matcher.group(2);
+			if (value == null) {
+				return;
+			}
+			value = value.trim();
+			
+			// Select enumeration and its value.
+			selectEnumerationText(enumeration);
+			
+			final String valueText = value;
+			Safe.invokeLater(() -> {
+				selectValueText(valueText);
+			});
 		}
-		
-		if (matcher.groupCount() < 2) {
-			return;
-		}
-		
-		// Get enumeration name.
-		String enumeration = matcher.group(1);
-		if (enumeration == null) {
-			return;
-		}
-		enumeration = enumeration.trim();
-		
-		// Get value name.
-		String value = matcher.group(2);
-		if (value == null) {
-			return;
-		}
-		value = value.trim();
-		
-		// Select enumeration and its value.
-		selectEnumerationText(enumeration);
-		
-		final String valueText = value;
-		SwingUtilities.invokeLater(() -> { selectValueText(valueText); });
-		
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -190,24 +201,29 @@ public class SelectEnumerationDialog extends JDialog {
 	 * @param text
 	 */
 	private void selectEnumerationText(String text) {
-		
-		int count = comboEnumeration.getItemCount();
-		
-		for (int index = 0; index < count; index++) {
-			Object object = comboEnumeration.getItemAt(index);
+		try {
 			
-			if (!(object instanceof EnumerationObj)) {
-				continue;
-			}
+			int count = comboEnumeration.getItemCount();
 			
-			EnumerationObj enumeration = (EnumerationObj) object;
-			if (enumeration.getDescription().equals(text)) {
+			for (int index = 0; index < count; index++) {
+				Object object = comboEnumeration.getItemAt(index);
 				
-				// If found select it and exit.
-				comboEnumeration.setSelectedIndex(index);
-				return;
+				if (!(object instanceof EnumerationObj)) {
+					continue;
+				}
+				
+				EnumerationObj enumeration = (EnumerationObj) object;
+				if (enumeration.getDescription().equals(text)) {
+					
+					// If found select it and exit.
+					comboEnumeration.setSelectedIndex(index);
+					return;
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -215,24 +231,29 @@ public class SelectEnumerationDialog extends JDialog {
 	 * @param text
 	 */
 	private void selectValueText(String text) {
-		
-		int count = comboValue.getItemCount();
-		
-		for (int index = 0; index < count; index++) {
-			Object object = comboValue.getItemAt(index);
+		try {
 			
-			if (!(object instanceof EnumerationValue)) {
-				continue;
-			}
+			int count = comboValue.getItemCount();
 			
-			EnumerationValue value = (EnumerationValue) object;
-			if (value.getValue().equals(text)) {
+			for (int index = 0; index < count; index++) {
+				Object object = comboValue.getItemAt(index);
 				
-				// If found select it and exit.
-				comboValue.setSelectedIndex(index);
-				return;
+				if (!(object instanceof EnumerationValue)) {
+					continue;
+				}
+				
+				EnumerationValue value = (EnumerationValue) object;
+				if (value.getValue().equals(text)) {
+					
+					// If found select it and exit.
+					comboValue.setSelectedIndex(index);
+					return;
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -241,17 +262,25 @@ public class SelectEnumerationDialog extends JDialog {
 	 */
 	private String getSelectedEnumerationValueText() {
 		
-		// Check the value.
-		if (selectedEnumerationValue == null) {
-			return null;
+		try {
+			
+			// Check the value.
+			if (selectedEnumerationValue == null) {
+				return null;
+			}
+			
+			// Compile string.
+			String outputFormat = SelectEnumerationFormatDialog.selectedFormat.output;
+			
+			return String.format(outputFormat,
+					selectedEnumerationValue.getEnumeration().getDescription(),
+					selectedEnumerationValue.getValue());
 		}
-		
-		// Compile string.
-		String outputFormat = SelectEnumerationFormatDialog.selectedFormat.output;
-		
-		return String.format(outputFormat,
-				selectedEnumerationValue.getEnumeration().getDescription(),
-				selectedEnumerationValue.getValue());
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
+			
 	}
 
 	/**
@@ -260,6 +289,36 @@ public class SelectEnumerationDialog extends JDialog {
 	 */
 	public SelectEnumerationDialog(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
+		
+		try {
+			initComponents();
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+	}
+
+	/**
+	 * On select text format.
+	 */
+	protected void onTextFormat() {
+		try {
+			
+			// Select format.
+			SelectEnumerationFormatDialog.showDialog(this);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+	}
+
+	/**
+	 * Initialize components.
+	 */
+	private void initComponents() {
 		setMinimumSize(new Dimension(300, 300));
 		
 		menuBar = new JMenuBar();
@@ -275,27 +334,6 @@ public class SelectEnumerationDialog extends JDialog {
 			}
 		});
 		menuSettings.add(menuTextFormat);
-
-		initComponents();
-		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
-	}
-
-	/**
-	 * On select text format.
-	 */
-	protected void onTextFormat() {
-		
-		// Select format.
-		SelectEnumerationFormatDialog.showDialog(this);
-	}
-
-	/**
-	 * Initialize components.
-	 */
-	private void initComponents() {
 		setTitle("org.multipage.generator.textSelectEnumeration");
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -376,65 +414,86 @@ public class SelectEnumerationDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		localize();
-		setIcons();
-		
-		initializeComboBox();
-		loadEnumerations();
-		
-		loadDialog();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			localize();
+			setIcons();
+			
+			initializeComboBox();
+			loadEnumerations();
+			
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Initialize combo box.
 	 */
+	@SuppressWarnings("unchecked")
 	private void initializeComboBox() {
-		
-		comboValue.setRenderer(new ListCellRenderer<EnumerationValue>() {
+		try {
 			
-			DefaultListCellRenderer  renderer = new DefaultListCellRenderer();
-			
-			@Override
-			public Component getListCellRendererComponent(JList<? extends EnumerationValue> list,
-					EnumerationValue value, int index, boolean isSelected, boolean cellHasFocus) {
+			comboValue.setRenderer(new ListCellRenderer<EnumerationValue>() {
 				
-			    if (isSelected) {
-			    	renderer.setBackground(list.getSelectionBackground());
-			    	renderer.setForeground(list.getSelectionForeground());
-			    }
-			    else {
-			    	renderer.setBackground(list.getBackground());
-			    	renderer.setForeground(list.getForeground());
-			    }
-			    
-				renderer.setText(value.getValueDescriptionBuilder());
-				return renderer;
-			}
-		});
+				DefaultListCellRenderer  renderer = new DefaultListCellRenderer();
+				
+				@Override
+				public Component getListCellRendererComponent(JList<? extends EnumerationValue> list,
+						EnumerationValue value, int index, boolean isSelected, boolean cellHasFocus) {
+					
+					try {
+					    if (isSelected) {
+					    	renderer.setBackground(list.getSelectionBackground());
+					    	renderer.setForeground(list.getSelectionForeground());
+					    }
+					    else {
+					    	renderer.setBackground(list.getBackground());
+					    	renderer.setForeground(list.getForeground());
+					    }
+					    
+						renderer.setText(value.getValueDescriptionBuilder());
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return renderer;
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load enumerations.
 	 */
 	private void loadEnumerations() {
-		
-		// Load them from the database.
-		Properties login = ProgramBasic.getLoginProperties();
-		Middle middle = ProgramBasic.getMiddle();
-		
-		MiddleResult result = middle.loadEnumerations(login, enumerations);
-		if (result.isNotOK()) {
-			result.show(this);
-		}
-		
-		// Load combo box items.
-		for (EnumerationObj enumeration : enumerations) {
+		try {
 			
-			comboEnumeration.addItem(enumeration);
+			// Load them from the database.
+			Properties login = ProgramBasic.getLoginProperties();
+			Middle middle = ProgramBasic.getMiddle();
+			
+			MiddleResult result = middle.loadEnumerations(login, enumerations);
+			if (result.isNotOK()) {
+				result.show(this);
+			}
+			
+			// Load combo box items.
+			for (EnumerationObj enumeration : enumerations) {
+				
+				comboEnumeration.addItem(enumeration);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -442,73 +501,98 @@ public class SelectEnumerationDialog extends JDialog {
 	 * @param enumeration 
 	 */
 	private void loadValues(EnumerationObj enumeration) {
-		
-		comboValue.removeAllItems();
-		
-		if (enumeration == null) {
-			return;
+		try {
+			
+			comboValue.removeAllItems();
+			
+			if (enumeration == null) {
+				return;
+			}
+			
+			for (EnumerationValue value : enumeration.getValues()) {
+				comboValue.addItem(value);
+			}
 		}
-		
-		for (EnumerationValue value : enumeration.getValues()) {
-			comboValue.addItem(value);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On select enumeration.
 	 */
 	protected void onSelectEnumeration() {
-		
-		// Get selected enumeration.
-		Object selectedObject = comboEnumeration.getSelectedItem();
-		if (!(selectedObject instanceof EnumerationObj)) {
-			return;
+		try {
+			
+			// Get selected enumeration.
+			Object selectedObject = comboEnumeration.getSelectedItem();
+			if (!(selectedObject instanceof EnumerationObj)) {
+				return;
+			}
+			
+			EnumerationObj enumeration = (EnumerationObj) selectedObject;
+			
+			// Show values combo box.
+			if (!comboValue.isVisible()) {
+				labelSelectValue.setVisible(true);
+				comboValue.setVisible(true);
+			}
+			
+			// Load values.
+			loadValues(enumeration);
 		}
-		
-		EnumerationObj enumeration = (EnumerationObj) selectedObject;
-		
-		// Show values combo box.
-		if (!comboValue.isVisible()) {
-			labelSelectValue.setVisible(true);
-			comboValue.setVisible(true);
-		}
-		
-		// Load values.
-		loadValues(enumeration);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
-		menuTextFormat.setIcon(Images.getIcon("org/multipage/generator/images/text_format.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+			menuTextFormat.setIcon(Images.getIcon("org/multipage/generator/images/text_format.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(labelEnumerationName);
-		Utility.localize(labelSelectValue);
-		Utility.localize(menuSettings);
-		Utility.localize(menuTextFormat);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(labelEnumerationName);
+			Utility.localize(labelSelectValue);
+			Utility.localize(menuSettings);
+			Utility.localize(menuTextFormat);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
-		
-		saveDialog();
-		
-		confirm = false;
+		try {
+			
+			saveDialog();
+			confirm = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -516,20 +600,25 @@ public class SelectEnumerationDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		// Get and check selected values.
-		Object selectedObject = comboValue.getSelectedItem();
-		if (!(selectedObject instanceof EnumerationValue)) {
+		try {
 			
-			Utility.show(this, "org.multipage.generator.messageSelectEnumerationValueOrCancel");
-			return;
+			// Get and check selected values.
+			Object selectedObject = comboValue.getSelectedItem();
+			if (!(selectedObject instanceof EnumerationValue)) {
+				
+				Utility.show(this, "org.multipage.generator.messageSelectEnumerationValueOrCancel");
+				return;
+			}
+			
+			selectedEnumerationValue = (EnumerationValue) selectedObject;
+			
+			saveDialog();
+			confirm = true;
 		}
-		
-		selectedEnumerationValue = (EnumerationValue) selectedObject;
-		
-		saveDialog();
-		
-		confirm = true;
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -537,20 +626,30 @@ public class SelectEnumerationDialog extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setBounds(bounds);
+			}
 		}
-		else {
-			setBounds(bounds);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

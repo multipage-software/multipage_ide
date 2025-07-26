@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -41,10 +41,11 @@ import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
 
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays editor for find and replace values.
+ * @author vakol
  *
  */
 public class FindReplaceDialog extends JDialog {
@@ -172,12 +173,18 @@ public class FindReplaceDialog extends JDialog {
 	 */
 	public FindReplaceDialog(Window parentWindow, JTextComponent textComponent) {
 		super(parentWindow, ModalityType.MODELESS);
-		// Initialize components.
-		initComponents();
-		// $hide>>$
-		// Post creation.
-		postCreation(textComponent);
-		// $hide<<$
+		
+		try {
+			// Initialize components.
+			initComponents();
+			// $hide>>$
+			// Post creation.
+			postCreation(textComponent);
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -338,11 +345,18 @@ public class FindReplaceDialog extends JDialog {
 	 * Close window.
 	 */
 	public void closeWindow() {
-
-		Utility.removeFindHighlights(textComponent);
-		restoreSelectionColor();
 		
-		saveDialog();
+		try {
+			
+			Utility.removeFindHighlights(textComponent);
+			restoreSelectionColor();
+			
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -350,66 +364,86 @@ public class FindReplaceDialog extends JDialog {
 	 * On window opened.
 	 */
 	protected void onComponentShown() {
-
-		// Set selection color.
-		setSelectionColor();
-		highlightText();
-		
-		loadDialog();
+		try {
+			
+			// Set selection color.
+			setSelectionColor();
+			highlightText();
+			
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Post creation.
 	 */
 	public void postCreation(JTextComponent textComponent) {
-		
-		this.textComponent = textComponent;
-		// Localize components.
-		localize();
-		// Set icons.
-		setIcons();
-		// Center dialog.
-		Utility.centerOnScreen(this);
-		// Reset information text.
-		labelInformation.setText("");
-		// Set closing with ESC.
-		setClosingWithEsc();
-		// Set default button.
-		JRootPane rootPane = SwingUtilities.getRootPane(buttonFind); 
-		rootPane.setDefaultButton(buttonFind);
+		try {
+			
+			this.textComponent = textComponent;
+			// Localize components.
+			localize();
+			// Set icons.
+			setIcons();
+			// Center dialog.
+			Utility.centerOnScreen(this);
+			// Reset information text.
+			labelInformation.setText("");
+			// Set closing with ESC.
+			setClosingWithEsc();
+			// Set default button.
+			JRootPane rootPane = SwingUtilities.getRootPane(buttonFind); 
+			rootPane.setDefaultButton(buttonFind);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load dialog content and state.
 	 */
 	private void loadDialog() {
-		
-		Utility.setList(comboFind, listFoundItems);
-		Utility.setList(comboReplace, listReplacedItems);
-		
-		comboFind.getEditor().setItem(textInFindEditor);
-		comboReplace.getEditor().setItem(textInReplaceEditor);
-		
-		if (!bounds.isEmpty()) {
-			setBounds(bounds);
+		try {
+			
+			Utility.setList(comboFind, listFoundItems);
+			Utility.setList(comboReplace, listReplacedItems);
+			
+			comboFind.getEditor().setItem(textInFindEditor);
+			comboReplace.getEditor().setItem(textInReplaceEditor);
+			
+			if (!bounds.isEmpty()) {
+				setBounds(bounds);
+			}
+			else {
+				Utility.centerOnScreen(this);
+			}
 		}
-		else {
-			Utility.centerOnScreen(this);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Save dialog content and state.
 	 */
 	private void saveDialog() {
-		
-		listFoundItems = Utility.getList(comboFind);
-		listReplacedItems = Utility.getList(comboReplace);
-		
-		textInFindEditor = (String) comboFind.getEditor().getItem();
-		textInReplaceEditor = (String) comboReplace.getEditor().getItem();
-		
-		bounds = getBounds();
+		try {
+			
+			listFoundItems = Utility.getList(comboFind);
+			listReplacedItems = Utility.getList(comboReplace);
+			
+			textInFindEditor = (String) comboFind.getEditor().getItem();
+			textInReplaceEditor = (String) comboReplace.getEditor().getItem();
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -418,189 +452,255 @@ public class FindReplaceDialog extends JDialog {
 	private void setClosingWithEsc() {
 		
 		final FindReplaceDialog dialog = this;
-		
-	    ActionListener escListener = new ActionListener() {
-
-	        @Override
-	        public void actionPerformed(ActionEvent e) {
-	            dialog.closeWindow();
-	        }
-	    };
-
-	    dialog.getRootPane().registerKeyboardAction(escListener,
-	            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
-	            JComponent.WHEN_IN_FOCUSED_WINDOW);
+		try {
+			
+			 ActionListener escListener = new ActionListener() {
+		        @Override
+		        public void actionPerformed(ActionEvent e) {
+		        	try {
+						
+						dialog.closeWindow();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+		        }
+		    };
+	
+		    dialog.getRootPane().registerKeyboardAction(escListener,
+		            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+		            JComponent.WHEN_IN_FOCUSED_WINDOW);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On find text changed.
 	 */
 	protected void onFindTextChange() {
-
-		highlightText();
+		try {
+			
+			highlightText();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set selection color.
 	 */
 	private void setSelectionColor() {
-
-		oldSelectionColor = textComponent.getSelectionColor();
-		oldSelectedTextColor = textComponent.getSelectedTextColor();
-		textComponent.setSelectionColor(Color.BLUE);
-		textComponent.setSelectedTextColor(Color.WHITE);
+		try {
+			
+			oldSelectionColor = textComponent.getSelectionColor();
+			oldSelectedTextColor = textComponent.getSelectedTextColor();
+			textComponent.setSelectionColor(Color.BLUE);
+			textComponent.setSelectedTextColor(Color.WHITE);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Restore selection color.
 	 */
 	private void restoreSelectionColor() {
-		
-		textComponent.setSelectionColor(oldSelectionColor);
-		textComponent.setSelectedTextColor(oldSelectedTextColor);
+		try {
+			
+			textComponent.setSelectionColor(oldSelectionColor);
+			textComponent.setSelectedTextColor(oldSelectedTextColor);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(this);
-		Utility.localize(labelFind);
-		Utility.localize(labelReplaceWith);
-		Utility.localize(labelDirection);
-		Utility.localize(buttonForward);
-		Utility.localize(buttonBackward);
-		Utility.localize(labelOptions);
-		Utility.localize(buttonCaseSensitive);
-		Utility.localize(buttonWholeWord);
-		Utility.localize(buttonFind);
-		Utility.localize(buttonReplaceFind);
-		Utility.localize(buttonReplace);
-		Utility.localize(buttonReplaceAll);
-		Utility.localize(buttonClose);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(labelFind);
+			Utility.localize(labelReplaceWith);
+			Utility.localize(labelDirection);
+			Utility.localize(buttonForward);
+			Utility.localize(buttonBackward);
+			Utility.localize(labelOptions);
+			Utility.localize(buttonCaseSensitive);
+			Utility.localize(buttonWholeWord);
+			Utility.localize(buttonFind);
+			Utility.localize(buttonReplaceFind);
+			Utility.localize(buttonReplace);
+			Utility.localize(buttonReplaceAll);
+			Utility.localize(buttonClose);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-
-		setIconImage(Images.getImage("org/multipage/gui/images/search_icon.png"));
-		buttonFind.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
-		buttonReplace.setIcon(Images.getIcon("org/multipage/gui/images/replace_icon.png"));
-		buttonClose.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
-		buttonReplaceFind.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
-		buttonReplaceAll.setIcon(Images.getIcon("org/multipage/gui/images/replace_icon.png"));
+		try {
+			
+			setIconImage(Images.getImage("org/multipage/gui/images/search_icon.png"));
+			buttonFind.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
+			buttonReplace.setIcon(Images.getIcon("org/multipage/gui/images/replace_icon.png"));
+			buttonClose.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+			buttonReplaceFind.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
+			buttonReplaceAll.setIcon(Images.getIcon("org/multipage/gui/images/replace_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Highlight text.
 	 */
 	private void highlightText(String text) {
-		
-		// Highlight text.
-		FoundAttr foundAttr = new FoundAttr(text, buttonCaseSensitive.isSelected(),
-				buttonWholeWord.isSelected());
-		Utility.highlight(textComponent, foundAttr, findHighlightPainter);		
+		try {
+			
+			// Highlight text.
+			FoundAttr foundAttr = new FoundAttr(text, buttonCaseSensitive.isSelected(),
+					buttonWholeWord.isSelected());
+			Utility.highlight(textComponent, foundAttr, findHighlightPainter);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Highlight text.
 	 */
 	private void highlightText() {
-		
-		// Get text.
-		String text = getPatternText();
-		// Highlight text.
-		highlightText(text);		
+		try {
+			
+			// Get text.
+			String text = getPatternText();
+			// Highlight text.
+			highlightText(text);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Find text.
 	 */
 	protected boolean find(boolean info) {
-
-		boolean successful;
 		
-		// Get pattern.
-		String pattern = getPatternText();
-		boolean caseSensitive = buttonCaseSensitive.isSelected();
-		boolean wholeWord = buttonWholeWord.isSelected();
-		
-		// Select text forward.
-		if (buttonForward.isSelected()) {
-			successful = selectTextForward(pattern, caseSensitive, wholeWord);
+		try {
+			boolean successful;
+			
+			// Get pattern.
+			String pattern = getPatternText();
+			boolean caseSensitive = buttonCaseSensitive.isSelected();
+			boolean wholeWord = buttonWholeWord.isSelected();
+			
+			// Select text forward.
+			if (buttonForward.isSelected()) {
+				successful = selectTextForward(pattern, caseSensitive, wholeWord);
+			}
+			else {
+				successful = selectTextBackward(pattern, caseSensitive, wholeWord);
+			}
+	
+			highlightText();
+			
+			// Add pattern to the combo box list.
+			addTextToCombo(comboFind, pattern);
+			// Set information text.
+			if (info) {
+				labelInformation.setText(successful ? "" :
+					Resources.getString("org.multipage.gui.messageTextNotFound"));
+			}
+	
+			return successful;
 		}
-		else {
-			successful = selectTextBackward(pattern, caseSensitive, wholeWord);
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-
-		highlightText();
-		
-		// Add pattern to the combo box list.
-		addTextToCombo(comboFind, pattern);
-		// Set information text.
-		if (info) {
-			labelInformation.setText(successful ? "" :
-				Resources.getString("org.multipage.gui.messageTextNotFound"));
-		}
-
-		return successful;
+		return false;
 	}
 
 	/**
 	 * Replace text.
 	 */
 	protected void replace() {
-		
-		// Get pattern.
-		String pattern = getPatternText();
-		if (pattern.isEmpty()) {
-			return;
-		}
-		// Get replace text.
-		String replaceText = getReplaceText();
-		
-		// Get selected text position.
-		int selectionStart = textComponent.getSelectionStart();
-		int selectionEnd = textComponent.getSelectionEnd();
-		int selectionLength = selectionEnd - selectionStart;
-		
-		if (selectionLength > 0) {
+		try {
 			
-			// Replace text.
-			textComponent.replaceSelection(replaceText);
-			// Select the new text.
-			textComponent.setSelectionStart(selectionStart);
-			textComponent.setSelectionEnd(selectionStart + replaceText.length());
+			// Get pattern.
+			String pattern = getPatternText();
+			if (pattern.isEmpty()) {
+				return;
+			}
+			// Get replace text.
+			String replaceText = getReplaceText();
+			
+			// Get selected text position.
+			int selectionStart = textComponent.getSelectionStart();
+			int selectionEnd = textComponent.getSelectionEnd();
+			int selectionLength = selectionEnd - selectionStart;
+			
+			if (selectionLength > 0) {
+				
+				// Replace text.
+				textComponent.replaceSelection(replaceText);
+				// Select the new text.
+				textComponent.setSelectionStart(selectionStart);
+				textComponent.setSelectionEnd(selectionStart + replaceText.length());
+			}
+			
+			addTextToCombo(comboReplace, replaceText);
 		}
-		
-		addTextToCombo(comboReplace, replaceText);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Replace and find text.
 	 */
 	protected void replaceFind() {
-		
-		replace();
-		find(true);
+		try {
+			
+			replace();
+			find(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Replace all texts.
 	 */
 	protected void replaceAll() {
-
-		// Reset caret position.
-		textComponent.setCaretPosition(0);
-		// Replace texts.
-		while (find(false)) {
-			replace();
+		try {
+			
+			// Reset caret position.
+			textComponent.setCaretPosition(0);
+			// Replace texts.
+			while (find(false)) {
+				replace();
+			}
+			// Highlight text.
+			highlightText(getReplaceText());
 		}
-		// Highlight text.
-		highlightText(getReplaceText());
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -609,45 +709,55 @@ public class FindReplaceDialog extends JDialog {
 	 * @param text
 	 */
 	private static void addTextToCombo(JComboBox comboBox, String text) {
-
-		int itemCount = comboBox.getItemCount();
-		
-		for (int index = 0; index < itemCount; index++) {
-			Object item = comboBox.getItemAt(index);
-			if (!(item instanceof String)) {
-				
-				continue;
-			}
-
-			String itemText = (String) item;
-		
-			if (itemText.equals(text)) {
-				if (index != 0) {
+		try {
+			
+			int itemCount = comboBox.getItemCount();
+			
+			for (int index = 0; index < itemCount; index++) {
+				Object item = comboBox.getItemAt(index);
+				if (!(item instanceof String)) {
 					
-					// Move text to the beginning.
-					comboBox.removeItemAt(index);
-					comboBox.insertItemAt(item, 0);
+					continue;
 				}
-				return;
+	
+				String itemText = (String) item;
+			
+				if (itemText.equals(text)) {
+					if (index != 0) {
+						
+						// Move text to the beginning.
+						comboBox.removeItemAt(index);
+						comboBox.insertItemAt(item, 0);
+					}
+					return;
+				}
+			}
+			
+			// Add item to the beginning.
+			comboBox.insertItemAt(text, 0);
+			
+			// Remove item.
+			if (itemCount > maximumComboItems) {
+				comboBox.removeItemAt(itemCount);
 			}
 		}
-		
-		// Add item to the beginning.
-		comboBox.insertItemAt(text, 0);
-		
-		// Remove item.
-		if (itemCount > maximumComboItems) {
-			comboBox.removeItemAt(itemCount);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set combo text.
 	 */
 	public void setFindText(String text) {
-
-		comboFind.setSelectedItem(text);
-		onFindTextChange();
+		try {
+			
+			comboFind.setSelectedItem(text);
+			onFindTextChange();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -659,83 +769,89 @@ public class FindReplaceDialog extends JDialog {
 	private boolean selectTextForward(String pattern,
 			boolean caseSensitive, boolean wholeWord) {
 		
-		// If the pattern is empty, exit the method.
-		if (pattern.isEmpty()) {
-			return false;
-		}
-
-		// Get document and the text length.
-		Document document = textComponent.getDocument();
-		int textLength = document.getLength();
-		
-		// If the document is empty, exit the method.
-		if (textLength == 0) {
-			return false;
-		}
-		
-        String originalText;
-        String text;
-        
 		try {
-			originalText = document.getText(0, document.getLength());
+			// If the pattern is empty, exit the method.
+			if (pattern.isEmpty()) {
+				return false;
+			}
+	
+			// Get document and the text length.
+			Document document = textComponent.getDocument();
+			int textLength = document.getLength();
+			
+			// If the document is empty, exit the method.
+			if (textLength == 0) {
+				return false;
+			}
+			
+	        String originalText;
+	        String text;
+	        
+			try {
+				originalText = document.getText(0, document.getLength());
+			}
+			catch (BadLocationException e) {
+				return false;
+			}
+			
+			// If not case sensitive, covert texts to upper case.
+			if (!caseSensitive) {
+				text = originalText.toUpperCase();
+				pattern = pattern.toUpperCase();
+			}
+			else {
+				text = originalText;
+			}
+	
+			
+	 		// Get cursor position.
+	        int searchPosition = textComponent.getCaretPosition();
+	        // Get pattern length.
+	        int patternLength = pattern.length();
+	        
+	        boolean successful = false;
+	        
+	        while (searchPosition <= textLength) {
+	
+	        	// Find pattern begin.
+	        	int patternStart = text.indexOf(pattern, searchPosition);
+	        	if (patternStart == -1) {
+	        		break;
+	        	}
+	        	// Get pattern end.
+	        	int patternEnd = patternStart + patternLength;
+	        	boolean selectAndExit;
+	        	
+	        	if (wholeWord) {
+	        		selectAndExit = Utility.isWordStart(originalText, patternStart) &&
+	        				Utility.isWordEnd(originalText, patternEnd);
+	        	}
+	        	else {
+	        		selectAndExit = true;
+	        	}
+	        	
+	        	// Select text and exit.
+	        	if (selectAndExit) {
+	        		
+	        		textComponent.setSelectionStart(patternStart);
+	        		textComponent.setSelectionEnd(patternEnd);
+	        		// Ensure selection visible.
+	        		Utility.ensureTextVisible(textComponent, patternEnd);
+	
+	        		successful = true;
+	        		break;
+	        	}
+	        	
+	        	// Set new search position.
+	        	searchPosition = patternEnd;
+	        }
+	        
+	        return successful;
+	    }
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		catch (BadLocationException e) {
-			return false;
-		}
-		
-		// If not case sensitive, covert texts to upper case.
-		if (!caseSensitive) {
-			text = originalText.toUpperCase();
-			pattern = pattern.toUpperCase();
-		}
-		else {
-			text = originalText;
-		}
-
-		
- 		// Get cursor position.
-        int searchPosition = textComponent.getCaretPosition();
-        // Get pattern length.
-        int patternLength = pattern.length();
-        
-        boolean successful = false;
-        
-        while (searchPosition <= textLength) {
-
-        	// Find pattern begin.
-        	int patternStart = text.indexOf(pattern, searchPosition);
-        	if (patternStart == -1) {
-        		break;
-        	}
-        	// Get pattern end.
-        	int patternEnd = patternStart + patternLength;
-        	boolean selectAndExit;
-        	
-        	if (wholeWord) {
-        		selectAndExit = Utility.isWordStart(originalText, patternStart) &&
-        				Utility.isWordEnd(originalText, patternEnd);
-        	}
-        	else {
-        		selectAndExit = true;
-        	}
-        	
-        	// Select text and exit.
-        	if (selectAndExit) {
-        		
-        		textComponent.setSelectionStart(patternStart);
-        		textComponent.setSelectionEnd(patternEnd);
-        		// Ensure selection visible.
-        		Utility.ensureTextVisible(textComponent, patternEnd);
-
-        		successful = true;
-        		break;
-        	}
-        	
-        	// Set new search position.
-        	searchPosition = patternEnd;
-        }
-        
-        return successful;
+		return false;
 	}
 
 	/**
@@ -746,83 +862,89 @@ public class FindReplaceDialog extends JDialog {
 	 */
 	private boolean selectTextBackward(String pattern, boolean caseSensitive,
 			boolean wholeWord) {
-
-		// If the pattern is empty, exit the method.
-		if (pattern.isEmpty()) {
-			return false;
-		}
-
-		// Get document and the text length.
-		Document document = textComponent.getDocument();
-		int textLength = document.getLength();
 		
-		// If the document is empty, exit the method.
-		if (textLength == 0) {
-			return false;
-		}
-		
-        String originalText;
-        String text;
-        
 		try {
-			originalText = document.getText(0, document.getLength());
+			// If the pattern is empty, exit the method.
+			if (pattern.isEmpty()) {
+				return false;
+			}
+	
+			// Get document and the text length.
+			Document document = textComponent.getDocument();
+			int textLength = document.getLength();
+			
+			// If the document is empty, exit the method.
+			if (textLength == 0) {
+				return false;
+			}
+			
+	        String originalText;
+	        String text;
+	        
+			try {
+				originalText = document.getText(0, document.getLength());
+			}
+			catch (BadLocationException e) {
+				return false;
+			}
+			
+			// If not case sensitive, covert texts to upper case.
+			if (!caseSensitive) {
+				text = originalText.toUpperCase();
+				pattern = pattern.toUpperCase();
+			}
+			else {
+				text = originalText;
+			}
+	
+			String selectedText = textComponent.getSelectedText();
+			
+	 		// Get cursor position.
+	        int searchPosition = (selectedText == null ? textComponent.getCaretPosition() :
+	        	textComponent.getSelectionStart()) - 1;
+	        // Get pattern length.
+	        int patternLength = pattern.length();
+	        
+	        boolean successful = false;
+	        
+	        while (searchPosition >= 0) {
+	        	
+	        	// Find pattern start.
+	        	int patternStart = text.lastIndexOf(pattern, searchPosition);
+	        	if (patternStart == -1) {
+	        		break;
+	        	}
+	        	// Get pattern end.
+	        	int patternEnd = patternStart + patternLength;
+	        	boolean selectAndExit;
+	        	
+	        	if (wholeWord) {
+	        		selectAndExit = Utility.isWordStart(originalText, patternStart) &&
+	        				Utility.isWordEnd(originalText, patternEnd);
+	        	}
+	        	else {
+	        		selectAndExit = true;
+	        	}
+	        	
+	        	// Select text and exit.
+	        	if (selectAndExit) {
+	        		
+	        		textComponent.setSelectionStart(patternStart);
+	        		textComponent.setSelectionEnd(patternEnd);
+	        		successful = true;
+	        		break;
+	        	}
+	        	
+	        	// Set new search position.
+	        	searchPosition = patternStart - 1;
+	        }
+	        
+	        return successful;
+	    }
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		catch (BadLocationException e) {
-			return false;
-		}
-		
-		// If not case sensitive, covert texts to upper case.
-		if (!caseSensitive) {
-			text = originalText.toUpperCase();
-			pattern = pattern.toUpperCase();
-		}
-		else {
-			text = originalText;
-		}
-
-		String selectedText = textComponent.getSelectedText();
-		
- 		// Get cursor position.
-        int searchPosition = (selectedText == null ? textComponent.getCaretPosition() :
-        	textComponent.getSelectionStart()) - 1;
-        // Get pattern length.
-        int patternLength = pattern.length();
-        
-        boolean successful = false;
-        
-        while (searchPosition >= 0) {
-        	
-        	// Find pattern start.
-        	int patternStart = text.lastIndexOf(pattern, searchPosition);
-        	if (patternStart == -1) {
-        		break;
-        	}
-        	// Get pattern end.
-        	int patternEnd = patternStart + patternLength;
-        	boolean selectAndExit;
-        	
-        	if (wholeWord) {
-        		selectAndExit = Utility.isWordStart(originalText, patternStart) &&
-        				Utility.isWordEnd(originalText, patternEnd);
-        	}
-        	else {
-        		selectAndExit = true;
-        	}
-        	
-        	// Select text and exit.
-        	if (selectAndExit) {
-        		
-        		textComponent.setSelectionStart(patternStart);
-        		textComponent.setSelectionEnd(patternEnd);
-        		successful = true;
-        		break;
-        	}
-        	
-        	// Set new search position.
-        	searchPosition = patternStart - 1;
-        }
-        
-        return successful;
+		return false;
 	}
 
 	/**
@@ -830,8 +952,14 @@ public class FindReplaceDialog extends JDialog {
 	 * @return
 	 */
 	private String getPatternText() {
-
-		return getComboText(comboFind);
+		
+		try {
+			return getComboText(comboFind);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -839,8 +967,14 @@ public class FindReplaceDialog extends JDialog {
 	 * @return
 	 */
 	private String getReplaceText() {
-
-		return getComboText(comboReplace);
+		
+		try {
+			return getComboText(comboReplace);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -849,11 +983,28 @@ public class FindReplaceDialog extends JDialog {
 	 * @return
 	 */
 	private static String getComboText(JComboBox combo) {
-
-		Object selected = combo.getSelectedItem();
-		if (selected instanceof String) {
-			return (String) selected;
+		
+		try {
+			Object selected = combo.getSelectedItem();
+			if (selected instanceof String) {
+				return (String) selected;
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return "";
+	}
+	
+	/**
+	 * Disables GUI components used for text replacement.
+	 */
+	public void setOnlyFind() {
+		
+		labelReplaceWith.setEnabled(false);
+		comboReplace.setEnabled(false);
+		buttonReplaceFind.setEnabled(false);
+		buttonReplace.setEnabled(false);
+		buttonReplaceAll.setEnabled(false);
 	}
 }

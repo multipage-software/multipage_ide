@@ -1,13 +1,20 @@
+/*
+ * Copyright 2010-2025 (C) vakol
+ * 
+ * Created on : 2017-04-26
+ *
+ */
 package org.maclan.expression;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.maclan.SlotType;
 import org.multipage.util.Resources;
 
 /**
- * Unary operator.
- * @author
+ * Class fro unary operators.
+ * @author vakol
  *
  **/
 public class UnaryOperator implements ExpressionElement {
@@ -156,7 +163,7 @@ public class UnaryOperator implements ExpressionElement {
 	}
 	
 	/**
-	 * Boolean AND.
+	 * Boolean NOT.
 	 * @param leftValue
 	 * @param rightValue
 	 * @return
@@ -164,11 +171,25 @@ public class UnaryOperator implements ExpressionElement {
 	 */
 	public boolean booleanNegation(Object rightValue) throws Exception {
 		
-		if (!(rightValue instanceof Boolean)) {
-			throw new EvaluateException(this, Resources.getString("middle.messageExpectingBooleanValue"));
+		// On null value return true.
+		if (rightValue == null) {
+			return true;
 		}
 		
-		return ! (Boolean) rightValue;
+		// On boolean value return negative value.
+		if (rightValue instanceof Boolean) {
+			return ! (Boolean) rightValue;
+		}
+		
+		// On empty value of given type return true.
+		Class<?> valueClass = rightValue.getClass();
+		Object foundEmptyValue = SlotType.getEmptyValue(valueClass);
+		if (rightValue.equals(foundEmptyValue)) {
+			return true;
+		}
+		
+		// Otherwise throw exception.
+		throw new EvaluateException(this, Resources.getString("middle.messageExpectingBooleanValue"));
 	}
 	
 	/**

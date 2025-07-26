@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -13,7 +13,8 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 
 /**
- * @author
+ * Color definition object.
+ * @author vakol
  *
  */
 public class ColorObj extends Color implements Cloneable {

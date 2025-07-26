@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -33,10 +33,11 @@ import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog for special slot values.
+ * @author vakol
  *
  */
 public class SpecialValueDialog extends JDialog {
@@ -111,28 +112,40 @@ public class SpecialValueDialog extends JDialog {
 	 */
 	public static String showDialog(Component parent, String oldValue) {
 		
-		SpecialValueDialog dialog = new SpecialValueDialog(parent);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			SpecialValueDialog dialog = new SpecialValueDialog(parent);
+			dialog.selectValue(oldValue);
+			dialog.setVisible(true);
 			
-			return dialog.getSpecialValue();
+			if (dialog.confirm) {
+				
+				return dialog.getSpecialValue();
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Get special value.
 	 * @return
 	 */
 	private String getSpecialValue() {
 		
-		int selectedRowIndex = table.getSelectedRow();
-		if (selectedRowIndex == -1) {
-			return null;
+		try {
+			int selectedRowIndex = table.getSelectedRow();
+			if (selectedRowIndex == -1) {
+				return null;
+			}
+			
+			return (String) tableModel.getValueAt(selectedRowIndex, 0);
 		}
-		
-		return (String) tableModel.getValueAt(selectedRowIndex, 0);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -141,12 +154,16 @@ public class SpecialValueDialog extends JDialog {
 	 */
 	public SpecialValueDialog(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -216,14 +233,19 @@ public class SpecialValueDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		localize();
-		setIcons();
-		initTable();
-		
-		loadDialog();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			localize();
+			setIcons();
+			initTable();
+			
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -231,62 +253,108 @@ public class SpecialValueDialog extends JDialog {
 	 */
 	@SuppressWarnings("serial")
 	private void initTable() {
-		
-		tableModel = new DefaultTableModel() {
-			@Override
-			public boolean isCellEditable(int row, int column) {
-				return false;
-			}
+		try {
 			
+			tableModel = new DefaultTableModel() {
+				@Override
+				public boolean isCellEditable(int row, int column) {
+					return false;
+				}
+				
+			};
+			table.setModel(tableModel);
+			table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+			table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			
+			tableModel.addColumn(Resources.getString("org.multipage.generator.textSpecialValueColumn"));
+			tableModel.addColumn(Resources.getString("org.multipage.generator.textSpecialValueDescriptionColumn"));
+			
+			final String prefix = "- ";
+			tableModel.addRow(new String [] { "none", prefix + Resources.getString("org.multipage.generator.textCssSpecialValueNone") });
+			tableModel.addRow(new String [] { "initial", prefix + Resources.getString("org.multipage.generator.textCssSpecialValueInitial") });
+			tableModel.addRow(new String [] { "inherit", prefix + Resources.getString("org.multipage.generator.textCssSpecialValueInherit") });
+			tableModel.addRow(new String [] { "auto", prefix + Resources.getString("org.multipage.generator.textCssSpecialValueAuto") });
+			tableModel.addRow(new String [] { "unset", prefix + Resources.getString("org.multipage.generator.textCssSpecialValueUnset") });
+	
+			final int width = 100;
+			table.getColumnModel().getColumn(0).setPreferredWidth(width);
+			table.getColumnModel().getColumn(0).setMaxWidth(width);
+			table.doLayout();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
 		};
-		table.setModel(tableModel);
-		table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		
-		tableModel.addColumn(Resources.getString("org.multipage.generator.textSpecialValueColumn"));
-		tableModel.addColumn(Resources.getString("org.multipage.generator.textSpecialValueDescriptionColumn"));
-		
-		final String prefix = "- ";
-		tableModel.addRow(new String [] { "none", prefix + Resources.getString("org.multipage.generator.textCssSpecialValueNone") });
-		tableModel.addRow(new String [] { "initial", prefix + Resources.getString("org.multipage.generator.textCssSpecialValueInitial") });
-		tableModel.addRow(new String [] { "inherit", prefix + Resources.getString("org.multipage.generator.textCssSpecialValueInherit") });
-		tableModel.addRow(new String [] { "auto", prefix + Resources.getString("org.multipage.generator.textCssSpecialValueAuto") });
-		tableModel.addRow(new String [] { "unset", prefix + Resources.getString("org.multipage.generator.textCssSpecialValueUnset") });
-
-		final int width = 100;
-		table.getColumnModel().getColumn(0).setPreferredWidth(width);
-		table.getColumnModel().getColumn(0).setMaxWidth(width);
-		table.doLayout();
+	}
+	
+	/**
+	 * Select table value.
+	 * @param oldValue
+	 */
+	private void selectValue(String oldValue) {
+		try {
+			
+			int count = tableModel.getRowCount();
+			for (int row = 0; row < count; row++) {
+				
+				Object value = tableModel.getValueAt(row, 0);
+				if (!(value instanceof String)) {
+					continue;
+				}
+				String textValue = (String) value;
+				if (textValue.equals(oldValue)) {
+					table.getSelectionModel().setSelectionInterval(row, row);
+					break;
+				}
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(labelSelectSpecialValue);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(labelSelectSpecialValue);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
-		
-		saveDialog();
-		
-		confirm = false;
+		try {
+			
+			saveDialog();
+			confirm = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -294,15 +362,20 @@ public class SpecialValueDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		if (getSpecialValue() == null) {
-			Utility.show(this, "org.multipage.generator.messageSelectSingleSpecialValue");
-			return;
+		try {
+			
+			if (getSpecialValue() == null) {
+				Utility.show(this, "org.multipage.generator.messageSelectSingleSpecialValue");
+				return;
+			}
+			
+			saveDialog();
+			confirm = true;
 		}
-		
-		saveDialog();
-		
-		confirm = true;
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -310,21 +383,31 @@ public class SpecialValueDialog extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setBounds(bounds);
+			}
 		}
-		else {
-			setBounds(bounds);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -332,9 +415,14 @@ public class SpecialValueDialog extends JDialog {
 	 * @param e 
 	 */
 	protected void onTableClick(MouseEvent e) {
-		
-		if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
-			onOk();
+		try {
+			
+			if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
+				onOk();
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

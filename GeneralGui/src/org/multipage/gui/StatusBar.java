@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -12,10 +12,13 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 
-import javax.swing.*;
+import javax.swing.JPanel;
+
+import org.multipage.util.Safe;
 
 /**
- * @author
+ * Panel that displays status bar.
+ * @author vakol
  *
  */
 public class StatusBar extends JPanel {
@@ -44,9 +47,14 @@ public class StatusBar extends JPanel {
 	 * Constructor.
 	 */
 	public StatusBar() {
-		
-		setPreferredSize(new Dimension(0, height));
-		setBackground(new Color(220, 220, 220));
+		try {
+			
+			setPreferredSize(new Dimension(0, height));
+			setBackground(new Color(220, 220, 220));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -54,12 +62,18 @@ public class StatusBar extends JPanel {
 	 */
 	@Override
 	public void paint(Graphics g) {
-		super.paint(g);
-		
-		int width = getWidth();
-		
-		// Draw top line.
-		g.setColor(Color.BLACK);
-		g.drawLine(0, 0, width, 0);
+		try {
+			
+			super.paint(g);
+			
+			int width = getWidth();
+			
+			// Draw top line.
+			g.setColor(Color.BLACK);
+			g.drawLine(0, 0, width, 0);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

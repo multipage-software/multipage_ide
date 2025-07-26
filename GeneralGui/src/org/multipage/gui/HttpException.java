@@ -1,29 +1,30 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 07-12-2020
+ * Created on : 2020-12-07
  *
  */
 package org.multipage.gui;
 
 /**
- * @author sechance
+ * Class for HTTP exception object.
+ * @author vakol
  *
  */
 public class HttpException extends Exception {
 
 	/**
-	 * Version
+	 * Version.
 	 */
 	private static final long serialVersionUID = 1L;
 	
 	/**
-	 * Exception body
+	 * Exception body.
 	 */
 	private String exceptionBody = null;
 	
 	/**
-	 * Constructor
+	 * Constructor.
 	 * @param errorMessage
 	 * @param 
 	 */
@@ -35,7 +36,7 @@ public class HttpException extends Exception {
 	}
 	
 	/**
-	 * Get exception body
+	 * Get exception body.
 	 * @return
 	 */
 	public String getExceptionBody() {

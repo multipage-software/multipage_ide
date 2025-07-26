@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -12,8 +12,11 @@ import java.util.*;
 
 import javax.swing.JOptionPane;
 
+import org.multipage.util.Safe;
+
 /**
- * @author
+ * Class that enables to get text resources in different languages for the application.
+ * @author vakol
  *
  */
 public class Resources {
@@ -60,37 +63,21 @@ public class Resources {
 	 * @param key - Name representing given resource bundle.
 	 */
 	public static synchronized boolean loadResource(String baseName) {
-
-		// If the properties already exist, exit the method.
-		for (NamedProperties item : namedProperties) {
-			
-			if (item.getName().equals(baseName)) {
-				return true;
-			}
-		}
 		
 		try {
-			// Try to read primary resource.
-			String fileName = "/" + baseName.replace('.', '/') + "_" + primaryLanguage + "_" + primaryCountry + ".properties";
-			InputStream inputStream = Resources.class.getResourceAsStream(fileName);
-			
-			if (inputStream != null) {
+			// If the properties already exist, exit the method.
+			for (NamedProperties item : namedProperties) {
 				
-				// Load properties from the input stream.
-				Properties properties = new Properties();
-				loadProperties(inputStream, properties);
-				
-				// Add new named properties to the list begin.
-				primaryNamedProperties.addFirst(new NamedProperties(properties, baseName));
+				if (item.getName().equals(baseName)) {
+					return true;
+				}
 			}
 			
-			// Read non-primary resources.
-			if (!(language.equals(primaryLanguage) && country.equals(primaryCountry))) {
+			try {
+				// Try to read primary resource.
+				String fileName = "/" + baseName.replace('.', '/') + "_" + primaryLanguage + "_" + primaryCountry + ".properties";
+				InputStream inputStream = Resources.class.getResourceAsStream(fileName);
 				
-				// Create input stream for given resource name.
-				fileName = "/" + baseName.replace('.', '/') + "_" + language + "_" + country + ".properties";
-				inputStream = Resources.class.getResourceAsStream(fileName);
-			
 				if (inputStream != null) {
 					
 					// Load properties from the input stream.
@@ -98,20 +85,40 @@ public class Resources {
 					loadProperties(inputStream, properties);
 					
 					// Add new named properties to the list begin.
-					namedProperties.addFirst(new NamedProperties(properties, baseName));
+					primaryNamedProperties.addFirst(new NamedProperties(properties, baseName));
+				}
+				
+				// Read non-primary resources.
+				if (!(language.equals(primaryLanguage) && country.equals(primaryCountry))) {
+					
+					// Create input stream for given resource name.
+					fileName = "/" + baseName.replace('.', '/') + "_" + language + "_" + country + ".properties";
+					inputStream = Resources.class.getResourceAsStream(fileName);
+				
+					if (inputStream != null) {
+						
+						// Load properties from the input stream.
+						Properties properties = new Properties();
+						loadProperties(inputStream, properties);
+						
+						// Add new named properties to the list begin.
+						namedProperties.addFirst(new NamedProperties(properties, baseName));
+					}
 				}
 			}
-		}
-		catch (Exception exception) {
-			if (informUserAboutError) {
-				JOptionPane.showMessageDialog(null, exception.getMessage(),
-						"Load Resource Error", JOptionPane.ERROR_MESSAGE);
+			catch (Exception exception) {
+				if (informUserAboutError) {
+					JOptionPane.showMessageDialog(null, exception.getMessage(),
+							"Load Resource Error", JOptionPane.ERROR_MESSAGE);
+				}
+				return false;
 			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 			return false;
 		}
 		
-
-
 		return true;
 	}
 	
@@ -181,51 +188,62 @@ public class Resources {
 	 */
 	public synchronized static String getString(String identifier) {
 		
-		String outputString = null;
-		
-		// Search in list of named properties.
-		for (NamedProperties item : namedProperties) {			
+		try {
+			String outputString = null;
 			
-			Properties properties = item.getProperties();
-			if (properties.containsKey(identifier)) {
-				outputString = properties.getProperty(identifier);
-				break;
-			}
-		}
-		
-		// If not found, try to search in primary properties.
-		if (outputString == null) {
-			
-			for (NamedProperties item : primaryNamedProperties) {			
-			
+			// Search in list of named properties.
+			for (NamedProperties item : namedProperties) {			
+				
 				Properties properties = item.getProperties();
 				if (properties.containsKey(identifier)) {
 					outputString = properties.getProperty(identifier);
 					break;
 				}
 			}
-		}
-
-		if (outputString == null) {
-			outputString = String.format("# %s not found #", identifier);
-		}
-		// Inform user about an error.
-		if (outputString.isEmpty()) {
-			if (informUserAboutError) {
-				JOptionPane.showMessageDialog(null, "Unknown resource string: " + identifier,
-						"Resource Loader Error", JOptionPane.ERROR_MESSAGE);
+			
+			// If not found, try to search in primary properties.
+			if (outputString == null) {
+				
+				for (NamedProperties item : primaryNamedProperties) {			
+				
+					Properties properties = item.getProperties();
+					if (properties.containsKey(identifier)) {
+						outputString = properties.getProperty(identifier);
+						break;
+					}
+				}
 			}
+	
+			if (outputString == null) {
+				outputString = String.format("# %s not found #", identifier);
+			}
+			// Inform user about an error.
+			if (outputString.isEmpty()) {
+				if (informUserAboutError) {
+					JOptionPane.showMessageDialog(null, "Unknown resource string: " + identifier,
+							"Resource Loader Error", JOptionPane.ERROR_MESSAGE);
+				}
+			}
+			
+			return outputString;
 		}
-		
-		return outputString;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
 	 * Initializes namedResources.
 	 */
 	synchronized public static void initialize() {
-
-		Resources.setLanguageAndCountry("en", "US");
+		try {
+			
+			Resources.setLanguageAndCountry("en", "US");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

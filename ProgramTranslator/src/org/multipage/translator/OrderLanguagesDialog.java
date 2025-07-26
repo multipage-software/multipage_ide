@@ -1,30 +1,54 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.translator;
 
-import java.awt.*;
-
-import javax.swing.*;
-import javax.swing.table.*;
-
-import org.maclan.*;
-import org.multipage.basic.*;
-import org.multipage.gui.*;
-import org.multipage.util.*;
-
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.Properties;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.SpringLayout;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellRenderer;
+
+import org.maclan.Language;
+import org.maclan.Middle;
+import org.maclan.MiddleResult;
+import org.multipage.basic.ProgramBasic;
+import org.multipage.gui.Images;
+import org.multipage.gui.RendererJLabel;
+import org.multipage.gui.StateInputStream;
+import org.multipage.gui.StateOutputStream;
+import org.multipage.gui.Utility;
+import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that enables to change language order.
+ * @author vakol
  *
  */
 public class OrderLanguagesDialog extends JDialog {
@@ -96,10 +120,14 @@ public class OrderLanguagesDialog extends JDialog {
 	 * @param resource
 	 */
 	public static void showDialog(Component parent) {
-		
-		OrderLanguagesDialog dialog = new OrderLanguagesDialog(Utility.findWindow(parent));
-		
-		dialog.setVisible(true);
+		try {
+			
+			OrderLanguagesDialog dialog = new OrderLanguagesDialog(Utility.findWindow(parent));
+			dialog.setVisible(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -108,12 +136,17 @@ public class OrderLanguagesDialog extends JDialog {
 	 */
 	public OrderLanguagesDialog(Window parentWindow) {
 		super(parentWindow, ModalityType.DOCUMENT_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			
+			initComponents();
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -207,78 +240,114 @@ public class OrderLanguagesDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		Utility.centerOnScreen(this);
-		
-		localize();
-		setIcons();
-		setToolTips();
-		
-		createTable();
-		loadTable();
-		
-		loadDialog();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			Utility.centerOnScreen(this);
+			
+			localize();
+			setIcons();
+			setToolTips();
+			
+			createTable();
+			loadTable();
+			
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setBounds(bounds);
+			}
 		}
-		else {
-			setBounds(bounds);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonClose);
-		Utility.localize(labelOrder);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonClose);
+			Utility.localize(labelOrder);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonClose.setIcon(Images.getIcon("org/multipage/translator/images/cancel_icon.png"));
-		buttonDefault.setIcon(Images.getIcon("org/multipage/translator/images/reset_order.png"));
-		buttonUp.setIcon(Images.getIcon("org/multipage/translator/images/up.png"));
-		buttonDown.setIcon(Images.getIcon("org/multipage/translator/images/down.png"));
+		try {
+			
+			buttonClose.setIcon(Images.getIcon("org/multipage/translator/images/cancel_icon.png"));
+			buttonDefault.setIcon(Images.getIcon("org/multipage/translator/images/reset_order.png"));
+			buttonUp.setIcon(Images.getIcon("org/multipage/translator/images/up.png"));
+			buttonDown.setIcon(Images.getIcon("org/multipage/translator/images/down.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set tool tips.
 	 */
 	protected void setToolTips() {
-
-		buttonDefault.setToolTipText(Resources.getString("org.multipage.translator.tooltipSetDefaultLanguagesOrder"));
-		buttonUp.setToolTipText(Resources.getString("org.multipage.translator.tooltipShiftLanguageUp"));
-		buttonDown.setToolTipText(Resources.getString("org.multipage.translator.tooltipShiftLanguageDown"));
+		try {
+			
+			buttonDefault.setToolTipText(Resources.getString("org.multipage.translator.tooltipSetDefaultLanguagesOrder"));
+			buttonUp.setToolTipText(Resources.getString("org.multipage.translator.tooltipShiftLanguageUp"));
+			buttonDown.setToolTipText(Resources.getString("org.multipage.translator.tooltipShiftLanguageDown"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On close dialog.
 	 */
 	protected void onClose() {
+		try {
+			
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
-		saveDialog();
 		dispose();
 	}
 	
@@ -286,196 +355,247 @@ public class OrderLanguagesDialog extends JDialog {
 	 * Create table.
 	 */
 	private void createTable() {
-
-		// Create table model and assign it to the table.
-		model = new LocalTableModel();
-		table.setModel(model);
-		table.getTableHeader().setReorderingAllowed(false);
-		
-		// Set flag renderer.
-		table.setDefaultRenderer(BufferedImage.class, new TableCellRenderer() {
+		try {
 			
-			// Create flag renderer.
-			RendererJLabel renderer;
-			{
-				renderer = new RendererJLabel();
-			}
+			// Create table model and assign it to the table.
+			model = new LocalTableModel();
+			table.setModel(model);
+			table.getTableHeader().setReorderingAllowed(false);
 			
-			// Return flag renderer.
-			@Override
-			public Component getTableCellRendererComponent(JTable table, Object value,
-					boolean isSelected, boolean hasFocus, int row, int column) {
+			// Set flag renderer.
+			table.setDefaultRenderer(BufferedImage.class, new TableCellRenderer() {
 				
-				// Set image. 
-				if (value instanceof BufferedImage) {
-					BufferedImage flag = (BufferedImage) value;
-					renderer.setIcon(new ImageIcon(flag));
-				}
-				else {
-					renderer.setIcon(null);
+				// Create flag renderer.
+				RendererJLabel renderer;
+				{
+					try {
+						
+						renderer = new RendererJLabel();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
 				
-				// Set properties.
-				renderer.set(isSelected, hasFocus, row);
-				return renderer;
-			}
-		});
-		
-		// Set text renderer.
-		table.setDefaultRenderer(Object.class, new TableCellRenderer() {
+				// Return flag renderer.
+				@Override
+				public Component getTableCellRendererComponent(JTable table, Object value,
+						boolean isSelected, boolean hasFocus, int row, int column) {
+					
+					try {
+						// Set image. 
+						if (value instanceof BufferedImage) {
+							BufferedImage flag = (BufferedImage) value;
+							renderer.setIcon(new ImageIcon(flag));
+						}
+						else {
+							renderer.setIcon(null);
+						}
+						
+						// Set properties.
+						renderer.set(isSelected, hasFocus, row);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return renderer;
+				}
+			});
 			
-			// Create flag renderer.
-			RendererJLabel renderer;
-			{
-				renderer = new RendererJLabel();
-			}
-			
-			// Return flag renderer.
-			@Override
-			public Component getTableCellRendererComponent(JTable table, Object value,
-					boolean isSelected, boolean hasFocus, int row, int column) {
+			// Set text renderer.
+			table.setDefaultRenderer(Object.class, new TableCellRenderer() {
 				
-				// Set text. 
-				renderer.setText(value.toString());
+				// Create flag renderer.
+				RendererJLabel renderer;
+				{
+					try {
+						
+						renderer = new RendererJLabel();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
 				
-				// Set properties.
-				renderer.set(isSelected, hasFocus, row);
-				return renderer;
-			}
-		});
+				// Return flag renderer.
+				@Override
+				public Component getTableCellRendererComponent(JTable table, Object value,
+						boolean isSelected, boolean hasFocus, int row, int column) {
+					
+					try {
+						// Set text. 
+						renderer.setText(value.toString());
+						// Set properties.
+						renderer.set(isSelected, hasFocus, row);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return renderer;
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Load table.
 	 */
 	private void loadTable() {
-		
-		// Reset model content.
-		model.clear();
-		
-		// Load languages.		
-		MiddleResult result;
-		Middle middle = ProgramBasic.getMiddle();
-		Properties login = ProgramBasic.getLoginProperties();
-		
-		// Login to the database.
-		result = middle.login(login);
-		if (result.isOK()) {
+		try {
 			
-			result = middle.loadLanguages(model.getLanguages());
-
-			// Logout from the database.
-			MiddleResult logoutResult = middle.logout(result);
+			// Reset model content.
+			model.clear();
+			
+			// Load languages.		
+			MiddleResult result;
+			Middle middle = ProgramBasic.getMiddle();
+			Properties login = ProgramBasic.getLoginProperties();
+			
+			// Login to the database.
+			result = middle.login(login);
 			if (result.isOK()) {
-				result = logoutResult;
+				
+				result = middle.loadLanguages(model.getLanguages());
+	
+				// Logout from the database.
+				MiddleResult logoutResult = middle.logout(result);
+				if (result.isOK()) {
+					result = logoutResult;
+				}
 			}
+			
+			if (result.isNotOK()) {
+				result.show(this);
+				return;
+			}
+			
+			// Update table.
+			model.fireTableDataChanged();
 		}
-		
-		if (result.isNotOK()) {
-			result.show(this);
-			return;
-		}
-		
-		// Update table.
-		model.fireTableDataChanged();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On move language up.
 	 */
 	protected void onUp() {
-		
-		// Get selected language.
-		int selectedRow = table.getSelectedRow();
-		if (selectedRow == -1) {
-			Utility.show(this, "org.multipage.translator.textSelectLanguageToMove");
-			return;
+		try {
+			
+			// Get selected language.
+			int selectedRow = table.getSelectedRow();
+			if (selectedRow == -1) {
+				Utility.show(this, "org.multipage.translator.textSelectLanguageToMove");
+				return;
+			}
+			
+			// Get previous row.
+			int previousRow = selectedRow - 1;
+			if (previousRow < 0) {
+				return;
+			}
+			
+			// Swap priorities.
+			model.swap(selectedRow, previousRow);
+			
+			// Save language priorities and load new table.
+			savePriorities();
+			loadTable();
+			
+			table.setRowSelectionInterval(previousRow, previousRow);
 		}
-		
-		// Get previous row.
-		int previousRow = selectedRow - 1;
-		if (previousRow < 0) {
-			return;
-		}
-		
-		// Swap priorities.
-		model.swap(selectedRow, previousRow);
-		
-		// Save language priorities and load new table.
-		savePriorities();
-		loadTable();
-		
-		table.setRowSelectionInterval(previousRow, previousRow);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On move language down.
 	 */
 	protected void onDown() {
-		
-		// Get selected language.
-		int selectedRow = table.getSelectedRow();
-		if (selectedRow == -1) {
-			Utility.show(this, "org.multipage.translator.textSelectLanguageToMove");
-			return;
+		try {
+			
+			// Get selected language.
+			int selectedRow = table.getSelectedRow();
+			if (selectedRow == -1) {
+				Utility.show(this, "org.multipage.translator.textSelectLanguageToMove");
+				return;
+			}
+	
+			// Get next row.
+			int nextRow = selectedRow + 1;
+			if (nextRow >= table.getModel().getRowCount()) {
+				return;
+			}
+			
+			// Swap priorities.
+			model.swap(selectedRow, nextRow);
+			
+			// Save language priorities and load new table.
+			savePriorities();
+			loadTable();
+			
+			table.setRowSelectionInterval(nextRow, nextRow);
 		}
-
-		// Get next row.
-		int nextRow = selectedRow + 1;
-		if (nextRow >= table.getModel().getRowCount()) {
-			return;
-		}
-		
-		// Swap priorities.
-		model.swap(selectedRow, nextRow);
-		
-		// Save language priorities and load new table.
-		savePriorities();
-		loadTable();
-		
-		table.setRowSelectionInterval(nextRow, nextRow);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Save language priorities.
 	 */
 	private void savePriorities() {
-		
-		// Get list of languages.
-		LinkedList<Language> languages = model.getLanguages();
-		
-		// Save priorities.
-		Middle middle = ProgramBasic.getMiddle();
-		Properties login = ProgramBasic.getLoginProperties();
-		
-		MiddleResult result = middle.updateLanguagePriorities(login, languages);
-		if (result.isNotOK()) {
-			result.show(this);
+		try {
+			
+			// Get list of languages.
+			LinkedList<Language> languages = model.getLanguages();
+			
+			// Save priorities.
+			Middle middle = ProgramBasic.getMiddle();
+			Properties login = ProgramBasic.getLoginProperties();
+			
+			MiddleResult result = middle.updateLanguagePriorities(login, languages);
+			if (result.isNotOK()) {
+				result.show(this);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On reset.
 	 */
 	protected void onReset() {
-		
-		int selectedRow = table.getSelectedRow();
-
-		// Reset language priorities.
-		Middle middle = ProgramBasic.getMiddle();
-		Properties login = ProgramBasic.getLoginProperties();
-		
-		MiddleResult result = middle.updateLanguagePrioritiesReset(login);
-		if (result.isNotOK()) {
-			result.show(this);
+		try {
+			
+			int selectedRow = table.getSelectedRow();
+	
+			// Reset language priorities.
+			Middle middle = ProgramBasic.getMiddle();
+			Properties login = ProgramBasic.getLoginProperties();
+			
+			MiddleResult result = middle.updateLanguagePrioritiesReset(login);
+			if (result.isNotOK()) {
+				result.show(this);
+			}
+			
+			// Load new table.
+			loadTable();
+			
+			if (selectedRow != -1) {
+				table.setRowSelectionInterval(selectedRow, selectedRow);
+			}
 		}
-		
-		// Load new table.
-		loadTable();
-		
-		if (selectedRow != -1) {
-			table.setRowSelectionInterval(selectedRow, selectedRow);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }
 
@@ -511,7 +631,13 @@ class LocalTableModel extends AbstractTableModel {
 	@Override
 	public int getColumnCount() {
 		
-		return columns.length;
+		try {
+			return columns.length;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return 0;
 	}
 
 	/**
@@ -520,23 +646,28 @@ class LocalTableModel extends AbstractTableModel {
 	 * @param row2
 	 */
 	public void swap(int row1, int row2) {
-		
-		// Check input values.
-		int count = languages.size();
-		
-		if (row1 < 0 || row2 < 0 || row1 >= count || row2 >= count) {
-			return;
+		try {
+			
+			// Check input values.
+			int count = languages.size();
+			
+			if (row1 < 0 || row2 < 0 || row1 >= count || row2 >= count) {
+				return;
+			}
+			
+			// Swap languages.
+			Language language1 = languages.get(row1);
+			Language language2 = languages.get(row2);
+			
+			languages.set(row1, language2);
+			languages.set(row2, language1);
+			
+			// Update table.
+			fireTableDataChanged();
 		}
-		
-		// Swap languages.
-		Language language1 = languages.get(row1);
-		Language language2 = languages.get(row2);
-		
-		languages.set(row1, language2);
-		languages.set(row2, language1);
-		
-		// Update table.
-		fireTableDataChanged();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -545,11 +676,17 @@ class LocalTableModel extends AbstractTableModel {
 	@Override
 	public String getColumnName(int columnIndex) {
 		
-		if (columnIndex < 0 || columnIndex >= columns.length) {
-			return "*error*";
+		try {
+			if (columnIndex < 0 || columnIndex >= columns.length) {
+				return "*error*";
+			}
+			
+			return Resources.getString(columns[columnIndex]);
 		}
-		
-		return Resources.getString(columns[columnIndex]);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "*error*";
 	}
 
 	/**
@@ -565,9 +702,14 @@ class LocalTableModel extends AbstractTableModel {
 	 * Clear data.
 	 */
 	public void clear() {
-		
-		languages.clear();
-		fireTableDataChanged();
+		try {
+			
+			languages.clear();
+			fireTableDataChanged();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -576,7 +718,13 @@ class LocalTableModel extends AbstractTableModel {
 	@Override
 	public int getRowCount() {
 		
-		return languages.size();
+		try {
+			return languages.size();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return 0;
 	}
 
 	/**
@@ -585,22 +733,27 @@ class LocalTableModel extends AbstractTableModel {
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {
 		
-		if (rowIndex >= languages.size()) {
-			return "*error*";
+		try {
+			if (rowIndex >= languages.size()) {
+				return "*error*";
+			}
+			
+			// Get language.
+			Language language = languages.get(rowIndex);
+			
+			switch (columnIndex) {
+				case 0:
+					return language.id;
+				case 1:
+					return language.image;
+				case 2:
+					return language.description;
+				case 3:
+					return language.alias;
+			}
 		}
-		
-		// Get language.
-		Language language = languages.get(rowIndex);
-		
-		switch (columnIndex) {
-			case 0:
-				return language.id;
-			case 1:
-				return language.image;
-			case 2:
-				return language.description;
-			case 3:
-				return language.alias;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return "*error*";
 	}
@@ -611,9 +764,15 @@ class LocalTableModel extends AbstractTableModel {
 	@Override
 	public Class<?> getColumnClass(int columnIndex) {
 		
-		if (columnIndex == 1) {
-			return BufferedImage.class;
+		try {
+			if (columnIndex == 1) {
+				return BufferedImage.class;
+			}
+			return super.getColumnClass(columnIndex);
 		}
-		return super.getColumnClass(columnIndex);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 }

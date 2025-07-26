@@ -1,12 +1,11 @@
 /*
- * Copyright 2010-2024 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 03-05-2023
+ * Created on : 2023-05-03
  *
  */
 package org.maclan.server;
 
-import java.awt.Component;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Collections;
@@ -20,7 +19,7 @@ import org.multipage.gui.PacketSession;
 import org.multipage.util.Resources;
 
 /**
- * Xdebug listener is built-in socket server that accepts debugging requests.
+ * Xdebug listener has a built-in socket server that accepts requests from debugger clients.
  * @author vakol
  *
  */
@@ -35,16 +34,16 @@ public class XdebugListener {
 	 * Singleton object.
 	 */
     private static XdebugListener instance = null;
-	
-	/**
-	 * Reference to debug viewer component.
-	 */
-	private Component debugViewerComponent = null;
-	
+
     /**
      * Invoked when a new Xdebug viewer has to be opened.
      */
-    public Consumer<XdebugListenerSession> openDebugViever = null;
+    private Consumer<XdebugListenerSession> openDebugViewerLambda = null;
+    
+    /**
+     * Invoked when debug viewer is closed.
+     */
+    private Runnable closeDebugViewerLambda = null;
 	
 	/**
 	 * Packet channel that accepts incomming packets.
@@ -80,58 +79,34 @@ public class XdebugListener {
 	 */
 	public void ensureLiveSessions() {
 		
-		LinkedList<XdebugListenerSession> closedSessions = new LinkedList<>();
-		
-		// Find closed sessions.
-		for (XdebugListenerSession session : sessions) {
+		synchronized (sessions) {
 			
-			boolean isOpen = session.isOpen();
-			if (!isOpen) {
-				closedSessions.addLast(session);
+			LinkedList<XdebugListenerSession> closedSessions = new LinkedList<>();
+			
+			// Find closed sessions.
+			for (XdebugListenerSession session : sessions) {
+				
+				boolean isOpen = session.isOpen();
+				if (!isOpen) {
+					closedSessions.addLast(session);
+				}
 			}
+	
+			// Remove the closed sessions.
+			sessions.removeAll(closedSessions);			
 		}
-		
-		// Remove the closed sessions.
-		removeSessions(closedSessions);
-	}
-	
-	/**
-	 * Remove input sessions from session list.
-	 * @param sessionsToRemove
-	 */
-	public void removeSessions(List<XdebugListenerSession> sessionsToRemove) {
-		
-		sessions.removeAll(sessionsToRemove);
-	}
-	
-	/**
-	 * Remember the debug viewer component.
-	 */
-	public void setViewerComponent(Component debugViewerComponent) {
-		
-		this.debugViewerComponent = debugViewerComponent;
-	}
-	
-	/**
-	 * Activate Xdebug listener.
-	 */
-	protected void activate()
-			throws Exception {
-		
-		// Opens Xdebug soket for the IDE.
-		openListenerPort(DEFAULT_XDEBUG_PORT);
 	}
 	
 	/**
 	 * Opens listener port.
 	 * @param port
 	 */
-	private void openListenerPort(int port)
+	public void openListenerPort(int port)
 			throws Exception {
 		
 		packetChannel = new PacketChannel() {
 			@Override
-			protected PacketSession onStartListening(AsynchronousSocketChannel client) {
+			protected PacketSession onStartSession(AsynchronousSocketChannel client) {
 				
 				PacketSession packetSession = XdebugListener.this.onOpenDebugViewer(client);
 				return packetSession;
@@ -152,20 +127,31 @@ public class XdebugListener {
 		// Create and remember new session object.
 		try {
 			
-			// Create Xdebug session.
-			AsynchronousServerSocketChannel socketServer = packetChannel.getServerSocket();
-			XdebugListenerSession xdebugSession = XdebugListenerSession.newSession(socketServer, socketClient, this);
-			XdebugListener.this.sessions.add(xdebugSession);
-			
-			// Call the "accept session" callback.
-			onOpenDebugViewer(xdebugSession);
-			
-			return xdebugSession.getPacketSession();
+			synchronized (sessions) {
+				// Create Xdebug session.
+				AsynchronousServerSocketChannel socketServer = packetChannel.getServerSocket();
+				XdebugListenerSession xdebugSession = XdebugListenerSession.newSession(socketServer, socketClient, this);
+				sessions.add(xdebugSession);
+				
+				// Call the "accept session" callback.
+				onOpenDebugViewer(xdebugSession);
+				
+				return xdebugSession.getPacketSession();
+			}
 		}
 		catch (Exception e) {
 			onException(e);
 		}
 		return null;
+	}
+	
+	/**
+	 * Set lambda function that opens debug viewer. 
+	 * @param openLambda
+	 */
+	public void setOpenDebugViewerLambda(Consumer<XdebugListenerSession> openLambda) {
+		
+		openDebugViewerLambda = openLambda;
 	}
 
 	/**
@@ -176,16 +162,28 @@ public class XdebugListener {
 	 */
 	protected void onOpenDebugViewer(XdebugListenerSession listenerSession) {
 		
-		if (openDebugViever != null) {
-			openDebugViever.accept(listenerSession);
+		if (openDebugViewerLambda != null) {
+			openDebugViewerLambda.accept(listenerSession);
 		}
 	}
 	
 	/**
-	 * TODO: <---MAKE On close debugger.
+	 * Set lambda function that closes debug viewer. 
+	 * @param openLambda
 	 */
-	public void onClose() {
+	public void setCloseDebugViewerLambda(Runnable closeLambda) {
 		
+		closeDebugViewerLambda = closeLambda;
+	}	
+	
+	/**
+	 * On close debugger.
+	 */
+	public void onCloseDebugger() {
+		
+		if (closeDebugViewerLambda != null) {
+			closeDebugViewerLambda.run();
+		}
 	}
 	
 	/**

@@ -1,28 +1,44 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import javax.swing.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.util.Enumeration;
 
-import java.awt.*;
-import java.io.*;
-import java.util.*;
-import java.awt.event.*;
-
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.SpringLayout;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.multipage.util.*;
-
-import javax.swing.event.ListSelectionEvent;
+import org.multipage.util.Obj;
+import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
  * 
- * @author
+ * @author vakol
  *
  */
 public class CssBackgroundImagesPanel extends InsertPanel implements StringValueEditor {
@@ -51,48 +67,61 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 		 * @param imageName
 		 */
 		public BackgroundLayer(String imageName) {
+			try {
 			
-			this.imageName = imageName;
-			position = "left top";
-			size = "100% 100%";
-			repeat = "no-repeat";
-			attachment = "scroll";
-			origin = "border-box";
-			clip = "border-box";
+				this.imageName = imageName;
+				position = "left top";
+				size = "100% 100%";
+				repeat = "no-repeat";
+				attachment = "scroll";
+				origin = "border-box";
+				clip = "border-box";
+			}
+			catch(Throwable expt) {
+				Safe.exception(expt);
+			};
 		}
 
 		/**
 		 * Set panel controls.
 		 * @param panel
 		 */
-		public void setControlValues(
-				CssBackgroundImagesPanel panel) {
+		public void setControlValues(CssBackgroundImagesPanel panel) {
+			try {
 			
-			startSettingControls();
-			
-			panel.setImagePosition(position);
-			panel.setImageSize(size);
-			panel.setRepeat(repeat);
-			panel.setAttachment(attachment);
-			panel.setOrigin(origin);
-			panel.setClip(clip);
-			
-			stopSettingControls();
+				startSettingControls();
+				
+				panel.setImagePosition(position);
+				panel.setImageSize(size);
+				panel.setRepeat(repeat);
+				panel.setAttachment(attachment);
+				panel.setOrigin(origin);
+				panel.setClip(clip);
+				
+				stopSettingControls();
+			}
+			catch(Throwable expt) {
+				Safe.exception(expt);
+			};
 		}
 
 		/**
 		 * Read control values.
 		 * @param panel
 		 */
-		public void getControlValues(
-				CssBackgroundImagesPanel panel) {
+		public void getControlValues(CssBackgroundImagesPanel panel) {
+			try {
 			
-			position = panel.getPosition();
-			size = panel.getImageSize();
-			repeat = panel.getRepeat();
-			attachment = panel.getAttachment();
-			origin = panel.getOrigin();
-			clip = panel.getClip();
+				position = panel.getPosition();
+				size = panel.getImageSize();
+				repeat = panel.getRepeat();
+				attachment = panel.getAttachment();
+				origin = panel.getOrigin();
+				clip = panel.getClip();
+			}
+			catch(Throwable expt) {
+				Safe.exception(expt);
+			};
 		}
 
 		/**
@@ -214,13 +243,18 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 * @param parentWindow 
 	 */
 	public CssBackgroundImagesPanel(String initialString) {
-
-		initComponents();
 		
-		// $hide>>$
-		this.initialString = initialString;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			this.initialString = initialString;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -478,27 +512,32 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 * On find image.
 	 */
 	protected void onFindResource() {
-		
-		if (getResourceName == null) {
+		try {
 			
-			Utility.show(this, "org.multipage.gui.messageNoResourcesAssociated");
-			return;
+			if (getResourceName == null) {
+				
+				Utility.show(this, "org.multipage.gui.messageNoResourcesAssociated");
+				return;
+			}
+			
+			// Use callback to obtain resource name.
+			Object outputValue = getResourceName.run(null);
+			if (!(outputValue instanceof String)) {
+				return;
+			}
+			
+			String imageName = (String) outputValue;
+			
+			// Set image name text control.
+			listBackgroundImagesModel.addElement(new BackgroundLayer(imageName));
+			
+			// Select new resource name.
+			int count = listBackgroundImagesModel.getSize();
+			listBackgroundImages.setSelectedIndex(count - 1);
 		}
-		
-		// Use callback to obtain resource name.
-		Object outputValue = getResourceName.run(null);
-		if (!(outputValue instanceof String)) {
-			return;
-		}
-		
-		String imageName = (String) outputValue;
-		
-		// Set image name text control.
-		listBackgroundImagesModel.addElement(new BackgroundLayer(imageName));
-		
-		// Select new resource name.
-		int count = listBackgroundImagesModel.getSize();
-		listBackgroundImages.setSelectedIndex(count - 1);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -522,13 +561,10 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 * Stop setting controls.
 	 */
 	public void stopSettingControls() {
-		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				
-				settingControls = false;
-			}
+
+		Safe.invokeLater(() -> {
+
+			settingControls = false;
 		});
 	}
 
@@ -536,109 +572,139 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 * On select image name.
 	 */
 	protected void onSelectImageName() {
-		
-		int [] selectedIndices = listBackgroundImages.getSelectedIndices();
-		boolean isSelected = selectedIndices.length == 1;
-		
-		BackgroundLayer selectedLayer = listBackgroundImages.getSelectedValue();
-		
-		// Save previous selection.
-		if (previousSelectedLayer != null && previousSelectedLayer != selectedLayer) {
-			previousSelectedLayer.getControlValues(this);
-		}
-		
-		// If a layer is selected, load appropriate controls' values.
-		showImagePropertyControls(isSelected);
-		if (isSelected) {
+		try {
 			
+			int [] selectedIndices = listBackgroundImages.getSelectedIndices();
+			boolean isSelected = selectedIndices.length == 1;
 			
-			if (selectedLayer != previousSelectedLayer) {
-				selectedLayer.setControlValues(this);
+			BackgroundLayer selectedLayer = listBackgroundImages.getSelectedValue();
+			
+			// Save previous selection.
+			if (previousSelectedLayer != null && previousSelectedLayer != selectedLayer) {
+				previousSelectedLayer.getControlValues(this);
 			}
+			
+			// If a layer is selected, load appropriate controls' values.
+			showImagePropertyControls(isSelected);
+			if (isSelected) {
+				
+				
+				if (selectedLayer != previousSelectedLayer) {
+					selectedLayer.setControlValues(this);
+				}
+			}
+			
+			previousSelectedLayer = listBackgroundImages.getSelectedValue();
 		}
-		
-		previousSelectedLayer = listBackgroundImages.getSelectedValue();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save current layer.
 	 */
 	private void saveCurrentLayer() {
-		
-		int [] selectedIndices = listBackgroundImages.getSelectedIndices();
-		boolean isSelected = selectedIndices.length == 1;
-		
-		if (!isSelected) {
-			return;
+		try {
+			
+			int [] selectedIndices = listBackgroundImages.getSelectedIndices();
+			boolean isSelected = selectedIndices.length == 1;
+			
+			if (!isSelected) {
+				return;
+			}
+			
+			BackgroundLayer selectedLayer = listBackgroundImages.getSelectedValue();
+			selectedLayer.getControlValues(this);
 		}
-		
-		BackgroundLayer selectedLayer = listBackgroundImages.getSelectedValue();
-		selectedLayer.getControlValues(this);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On remove images.
 	 */
 	protected void onRemoveImages() {
-		
-		int [] selectedIndices = listBackgroundImages.getSelectedIndices();
-		if (selectedIndices.length != 1) {
+		try {
 			
-			Utility.show(this, "org.multipage.gui.messageSelectSingleImageName");
-			return;
+			int [] selectedIndices = listBackgroundImages.getSelectedIndices();
+			if (selectedIndices.length != 1) {
+				
+				Utility.show(this, "org.multipage.gui.messageSelectSingleImageName");
+				return;
+			}
+			
+			if (Utility.askParam(this, "org.multipage.gui.messageRemoveBackgroundImage", listBackgroundImagesModel.get(selectedIndices[0]))) {
+				listBackgroundImagesModel.remove(selectedIndices[0]);
+			}
 		}
-		
-		if (Utility.askParam(this, "org.multipage.gui.messageRemoveBackgroundImage", listBackgroundImagesModel.get(selectedIndices[0]))) {
-			listBackgroundImagesModel.remove(selectedIndices[0]);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On rename image.
 	 */
 	protected void onRenameImage() {
-		
-		int [] selectedIndices = listBackgroundImages.getSelectedIndices();
-		if (selectedIndices.length != 1) {
+		try {
 			
-			Utility.show(this, "org.multipage.gui.messageSelectSingleImageName");
-			return;
+			int [] selectedIndices = listBackgroundImages.getSelectedIndices();
+			if (selectedIndices.length != 1) {
+				
+				Utility.show(this, "org.multipage.gui.messageSelectSingleImageName");
+				return;
+			}
+			
+			int indexToRename = selectedIndices[0];
+			BackgroundLayer layer = listBackgroundImagesModel.get(indexToRename);
+			
+			String newName = Utility.input(this, "org.multipage.gui.messageRenameBackgroundImageName", layer.imageName);
+			if (newName == null) {
+				return;
+			}
+			
+			layer.imageName = newName;
+			scrollImageNames.revalidate();
+			scrollImageNames.repaint();
 		}
-		
-		int indexToRename = selectedIndices[0];
-		BackgroundLayer layer = listBackgroundImagesModel.get(indexToRename);
-		
-		String newName = Utility.input(this, "org.multipage.gui.messageRenameBackgroundImageName", layer.imageName);
-		if (newName == null) {
-			return;
-		}
-		
-		layer.imageName = newName;
-		scrollImageNames.revalidate();
-		scrollImageNames.repaint();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On add image name.
 	 */
 	protected void onAddImage() {
-		
-		String imageName = Utility.input(this, "org.multipage.gui.textInsertBackgroundImageName");
-		if (imageName != null) {
+		try {
 			
-			listBackgroundImagesModel.addElement(new BackgroundLayer(imageName));
+			String imageName = Utility.input(this, "org.multipage.gui.textInsertBackgroundImageName");
+			if (imageName != null) {
+				
+				listBackgroundImagesModel.addElement(new BackgroundLayer(imageName));
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-
-		listBackgroundImagesModel = new DefaultListModel<BackgroundLayer>();
-		listBackgroundImages.setModel(listBackgroundImagesModel);
-		
-		setFromInitialString();
+		try {
+			
+			listBackgroundImagesModel = new DefaultListModel<BackgroundLayer>();
+			listBackgroundImages.setModel(listBackgroundImagesModel);
+			
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -654,60 +720,75 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		showImagePropertyControls(false);
-		
-		localize();
-		setIcons();
-		setToolTips();
-		
-		loadUnits();
-		loadEnumerations();
-		
-		setListeners();
-		
-		loadDialog();
+		try {
+			
+			showImagePropertyControls(false);
+			
+			localize();
+			setIcons();
+			setToolTips();
+			
+			loadUnits();
+			loadEnumerations();
+			
+			setListeners();
+			
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set listeners.
 	 */
 	private void setListeners() {
-		
-		Utility.setTextChangeListener(textHorizontalPosition, new Runnable() {
-			@Override
-			public void run() {
-				onChangeHorizontalPosition();
-			}
-		});
-		
-		Utility.setTextChangeListener(textVerticalPosition, new Runnable() {
-			@Override
-			public void run() {
-				onChangeVerticalPosition();
-			}
-		});
-		
-		Runnable sizeChanged = new Runnable() {
-			@Override
-			public void run() {
-				onChangeImageSize();
-			}
+		try {
+			
+			Utility.setTextChangeListener(textHorizontalPosition, new Runnable() {
+				@Override
+				public void run() {
+					onChangeHorizontalPosition();
+				}
+			});
+			
+			Utility.setTextChangeListener(textVerticalPosition, new Runnable() {
+				@Override
+				public void run() {
+					onChangeVerticalPosition();
+				}
+			});
+			
+			Runnable sizeChanged = new Runnable() {
+				@Override
+				public void run() {
+					onChangeImageSize();
+				}
+			};
+			
+			Utility.setTextChangeListener(textImageSizeX, sizeChanged);
+			Utility.setTextChangeListener(textImageSizeY, sizeChanged);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
 		};
-		
-		Utility.setTextChangeListener(textImageSizeX, sizeChanged);
-		Utility.setTextChangeListener(textImageSizeY, sizeChanged);
 	}
 
 	/**
 	 * Set tool tips.
 	 */
 	private void setToolTips() {
-		
-		buttonAddImage.setToolTipText(Resources.getString("org.multipage.gui.tooltipAddBackgroundImage"));
-		buttonRenameImage.setToolTipText(Resources.getString("org.multipage.gui.tooltipRenameBackgroundImage"));
-		buttonRemoveImage.setToolTipText(Resources.getString("org.multipage.gui.tooltipRemoveBackgroundImage"));
-		buttonFindImage.setToolTipText(Resources.getString("org.multipage.gui.tooltipFindBackgroundImage"));
+		try {
+			
+			buttonAddImage.setToolTipText(Resources.getString("org.multipage.gui.tooltipAddBackgroundImage"));
+			buttonRenameImage.setToolTipText(Resources.getString("org.multipage.gui.tooltipRenameBackgroundImage"));
+			buttonRemoveImage.setToolTipText(Resources.getString("org.multipage.gui.tooltipRemoveBackgroundImage"));
+			buttonFindImage.setToolTipText(Resources.getString("org.multipage.gui.tooltipFindBackgroundImage"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -715,98 +796,118 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 * @param show
 	 */
 	private void showImagePropertyControls(boolean show) {
-		
-		labelAttachment.setVisible(show);
-		labelClip.setVisible(show);
-		labelImageSize.setVisible(show);
-		labelOrigin.setVisible(show);
-		labelPositionHorizontal.setVisible(show);
-		labelPositionVertical.setVisible(show);
-		labelRepeat.setVisible(show);
-		labelX.setVisible(show);
-		
-		comboAttachment.setVisible(show);
-		comboClip.setVisible(show);
-		comboHorizontalPosition.setVisible(show);
-		comboHorizontalPositionUnits.setVisible(show);
-		comboImageSize.setVisible(show);
-		comboImageSizeUnitsX.setVisible(show);
-		comboImageSizeUnitsY.setVisible(show);
-		comboOrigin.setVisible(show);
-		comboRepeat.setVisible(show);
-		comboVerticalPosition.setVisible(show);
-		comboVerticalPositionUnits.setVisible(show);
-		
-		textHorizontalPosition.setVisible(show);
-		textImageSizeX.setVisible(show);
-		textImageSizeY.setVisible(show);
-		textVerticalPosition.setVisible(show);
+		try {
+			
+			labelAttachment.setVisible(show);
+			labelClip.setVisible(show);
+			labelImageSize.setVisible(show);
+			labelOrigin.setVisible(show);
+			labelPositionHorizontal.setVisible(show);
+			labelPositionVertical.setVisible(show);
+			labelRepeat.setVisible(show);
+			labelX.setVisible(show);
+			
+			comboAttachment.setVisible(show);
+			comboClip.setVisible(show);
+			comboHorizontalPosition.setVisible(show);
+			comboHorizontalPositionUnits.setVisible(show);
+			comboImageSize.setVisible(show);
+			comboImageSizeUnitsX.setVisible(show);
+			comboImageSizeUnitsY.setVisible(show);
+			comboOrigin.setVisible(show);
+			comboRepeat.setVisible(show);
+			comboVerticalPosition.setVisible(show);
+			comboVerticalPositionUnits.setVisible(show);
+			
+			textHorizontalPosition.setVisible(show);
+			textImageSizeX.setVisible(show);
+			textImageSizeY.setVisible(show);
+			textVerticalPosition.setVisible(show);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		menuAddImage.setIcon(Images.getIcon("org/multipage/gui/images/insert.png"));
-		buttonAddImage.setIcon(Images.getIcon("org/multipage/gui/images/insert.png"));
-		menuRenameImage.setIcon(Images.getIcon("org/multipage/gui/images/edit.png"));
-		buttonRenameImage.setIcon(Images.getIcon("org/multipage/gui/images/edit.png"));
-		menuRemoveImage.setIcon(Images.getIcon("org/multipage/gui/images/cut_icon.png"));
-		buttonRemoveImage.setIcon(Images.getIcon("org/multipage/gui/images/cut_icon.png"));
-		buttonFindImage.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
+		try {
+			
+			menuAddImage.setIcon(Images.getIcon("org/multipage/gui/images/insert.png"));
+			buttonAddImage.setIcon(Images.getIcon("org/multipage/gui/images/insert.png"));
+			menuRenameImage.setIcon(Images.getIcon("org/multipage/gui/images/edit.png"));
+			buttonRenameImage.setIcon(Images.getIcon("org/multipage/gui/images/edit.png"));
+			menuRemoveImage.setIcon(Images.getIcon("org/multipage/gui/images/cut_icon.png"));
+			buttonRemoveImage.setIcon(Images.getIcon("org/multipage/gui/images/cut_icon.png"));
+			buttonFindImage.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load enumerations.
 	 */
 	private void loadEnumerations() {
-		
-		final String [][] boxes = new String [][] {
-				{"padding-box", "org.multipage.gui.textCssBackgroundPaddingBox"},
-				{"border-box", "org.multipage.gui.textCssBackgroundBorderBox"},
-				{"content-box", "org.multipage.gui.textCssBackgroundContentBox"}
+		try {
+			
+			final String [][] boxes = new String [][] {
+					{"padding-box", "org.multipage.gui.textCssBackgroundPaddingBox"},
+					{"border-box", "org.multipage.gui.textCssBackgroundBorderBox"},
+					{"content-box", "org.multipage.gui.textCssBackgroundContentBox"}
+			};
+			
+			Utility.loadNamedItems(comboHorizontalPosition, new String [][] {
+					{"left", "org.multipage.gui.textCssBackgroundLeft"},
+					{"right", "org.multipage.gui.textCssBackgroundRight"},
+					{"center", "org.multipage.gui.textCssBackgroundCenter"}
+					});
+			Utility.loadNamedItems(comboVerticalPosition, new String [][] {
+					{"top", "org.multipage.gui.textCssBackgroundTop"},
+					{"bottom", "org.multipage.gui.textCssBackgroundBottom"},
+					{"center", "org.multipage.gui.textCssBackgroundCenter"}
+					});
+			Utility.loadNamedItems(comboImageSize, new String [][] {
+					{"auto", "org.multipage.gui.textCssBackgroundAuto"},
+					{"cover", "org.multipage.gui.textCssBackgroundCover"},
+					{"contain", "org.multipage.gui.textCssBackgroundContain"}
+			});
+			Utility.loadNamedItems(comboRepeat, new String [][] {
+					{"repeat", "org.multipage.gui.textCssBackgroundRepeat2"},
+					{"repeat-x", "org.multipage.gui.textCssBackgroundRepeatX"},
+					{"repeat-y", "org.multipage.gui.textCssBackgroundRepeatY"},
+					{"no-repeat", "org.multipage.gui.textCssBackgroundNoRepeat"}
+			});
+			Utility.loadNamedItems(comboOrigin, boxes);
+			Utility.loadNamedItems(comboClip, boxes);
+			Utility.loadNamedItems(comboAttachment, new String [][] {
+					{"scroll", "org.multipage.gui.textCssBackgroundScroll"},
+					{"fixed", "org.multipage.gui.textCssBackgroundFixed"},
+					{"local", "org.multipage.gui.textCssBackgroundLocal"}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
 		};
-		
-		Utility.loadNamedItems(comboHorizontalPosition, new String [][] {
-				{"left", "org.multipage.gui.textCssBackgroundLeft"},
-				{"right", "org.multipage.gui.textCssBackgroundRight"},
-				{"center", "org.multipage.gui.textCssBackgroundCenter"}
-				});
-		Utility.loadNamedItems(comboVerticalPosition, new String [][] {
-				{"top", "org.multipage.gui.textCssBackgroundTop"},
-				{"bottom", "org.multipage.gui.textCssBackgroundBottom"},
-				{"center", "org.multipage.gui.textCssBackgroundCenter"}
-				});
-		Utility.loadNamedItems(comboImageSize, new String [][] {
-				{"auto", "org.multipage.gui.textCssBackgroundAuto"},
-				{"cover", "org.multipage.gui.textCssBackgroundCover"},
-				{"contain", "org.multipage.gui.textCssBackgroundContain"}
-		});
-		Utility.loadNamedItems(comboRepeat, new String [][] {
-				{"repeat", "org.multipage.gui.textCssBackgroundRepeat2"},
-				{"repeat-x", "org.multipage.gui.textCssBackgroundRepeatX"},
-				{"repeat-y", "org.multipage.gui.textCssBackgroundRepeatY"},
-				{"no-repeat", "org.multipage.gui.textCssBackgroundNoRepeat"}
-		});
-		Utility.loadNamedItems(comboOrigin, boxes);
-		Utility.loadNamedItems(comboClip, boxes);
-		Utility.loadNamedItems(comboAttachment, new String [][] {
-				{"scroll", "org.multipage.gui.textCssBackgroundScroll"},
-				{"fixed", "org.multipage.gui.textCssBackgroundFixed"},
-				{"local", "org.multipage.gui.textCssBackgroundLocal"}
-		});
 	}
 
 	/**
 	 * Load units.
 	 */
 	private void loadUnits() {
-		
-		Utility.loadCssUnits(comboHorizontalPositionUnits);
-		Utility.loadCssUnits(comboVerticalPositionUnits);
-		Utility.loadCssUnits(comboImageSizeUnitsX);
-		Utility.loadCssUnits(comboImageSizeUnitsY);
+		try {
+			
+			Utility.loadCssUnits(comboHorizontalPositionUnits);
+			Utility.loadCssUnits(comboVerticalPositionUnits);
+			Utility.loadCssUnits(comboImageSizeUnitsX);
+			Utility.loadCssUnits(comboImageSizeUnitsY);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -816,37 +917,43 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	@Override
 	public String getSpecification() {
 		
-		saveCurrentLayer();
-		
-		String specification = "";
-		
-		// Get specification of all layers.
-		Enumeration<BackgroundLayer> layers = listBackgroundImagesModel.elements();
-		
-		boolean isFirst = true;
-		while (layers.hasMoreElements()) {
+		try {
+			saveCurrentLayer();
 			
-			BackgroundLayer layer = layers.nextElement();
+			String specification = "";
 			
-			String layerSpecification = String.format("url(\"[@URL thisArea, res=\"#%s\"]\")", layer.imageName);
-			layerSpecification += " " + layer.position;
-			layerSpecification += "/" + layer.size;
-			layerSpecification += " " + layer.repeat;
-			layerSpecification += " " + layer.attachment;
-			layerSpecification += " " + layer.origin;
-			layerSpecification += " " + layer.clip;
+			// Get specification of all layers.
+			Enumeration<BackgroundLayer> layers = listBackgroundImagesModel.elements();
 			
-			if (isFirst) {
-				specification = layerSpecification;
+			boolean isFirst = true;
+			while (layers.hasMoreElements()) {
+				
+				BackgroundLayer layer = layers.nextElement();
+				
+				String layerSpecification = String.format("url(\"[@URL thisArea, res=\"#%s\"]\")", layer.imageName);
+				layerSpecification += " " + layer.position;
+				layerSpecification += "/" + layer.size;
+				layerSpecification += " " + layer.repeat;
+				layerSpecification += " " + layer.attachment;
+				layerSpecification += " " + layer.origin;
+				layerSpecification += " " + layer.clip;
+				
+				if (isFirst) {
+					specification = layerSpecification;
+				}
+				else {
+					specification += "," + layerSpecification;
+				}
+				
+				isFirst = false;
 			}
-			else {
-				specification += "," + layerSpecification;
-			}
 			
-			isFirst = false;
+			return specification;
 		}
-		
-		return specification;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -855,11 +962,17 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 */
 	private String getPosition() {
 		
-		return Utility.getCssValueAndUnits(textHorizontalPosition,
-				comboHorizontalPositionUnits, comboHorizontalPosition) + " "
-				
-				+ Utility.getCssValueAndUnits(textVerticalPosition,
-				comboVerticalPositionUnits, comboVerticalPosition);
+		try {
+			return Utility.getCssValueAndUnits(textHorizontalPosition,
+					comboHorizontalPositionUnits, comboHorizontalPosition) + " "
+					
+					+ Utility.getCssValueAndUnits(textVerticalPosition,
+					comboVerticalPositionUnits, comboVerticalPosition);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -868,32 +981,38 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 */
 	private String getImageSize() {
 		
-		boolean hasAuto = textImageSizeX.getText().isEmpty() ^ textImageSizeY.getText().isEmpty();
-
-		// Use combo value.
-		if (!hasAuto) {
-			if (!Utility.isTextFieldNumber(textImageSizeX) || !Utility.isTextFieldNumber(textImageSizeY)) {
-				
-				return Utility.getSelectedNamedItem(comboImageSize);
+		try {
+			boolean hasAuto = textImageSizeX.getText().isEmpty() ^ textImageSizeY.getText().isEmpty();
+	
+			// Use combo value.
+			if (!hasAuto) {
+				if (!Utility.isTextFieldNumber(textImageSizeX) || !Utility.isTextFieldNumber(textImageSizeY)) {
+					
+					return Utility.getSelectedNamedItem(comboImageSize);
+				}
 			}
+			
+			String result = "";
+			boolean xHasAuto = textImageSizeX.getText().isEmpty();
+			boolean yHasAuto = textImageSizeY.getText().isEmpty();
+			
+			if (!xHasAuto) {
+				result += Utility.getCssValueAndUnits(textImageSizeX, comboImageSizeUnitsX);
+			}
+			if (!hasAuto) {
+				result += " ";
+			}
+			if (!yHasAuto) {
+				result += Utility.getCssValueAndUnits(textImageSizeY, comboImageSizeUnitsY);
+			}
+			
+			// Otherwise use numbers and units.
+			return result;
 		}
-		
-		String result = "";
-		boolean xHasAuto = textImageSizeX.getText().isEmpty();
-		boolean yHasAuto = textImageSizeY.getText().isEmpty();
-		
-		if (!xHasAuto) {
-			result += Utility.getCssValueAndUnits(textImageSizeX, comboImageSizeUnitsX);
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		if (!hasAuto) {
-			result += " ";
-		}
-		if (!yHasAuto) {
-			result += Utility.getCssValueAndUnits(textImageSizeY, comboImageSizeUnitsY);
-		}
-		
-		// Otherwise use numbers and units.
-		return result;
+		return "";
 	}
 
 	/**
@@ -902,7 +1021,13 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 */
 	private String getRepeat() {
 		
-		return Utility.getSelectedNamedItem(comboRepeat);
+		try {
+			return Utility.getSelectedNamedItem(comboRepeat);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -911,7 +1036,13 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 */
 	private String getOrigin() {
 		
-		return Utility.getSelectedNamedItem(comboOrigin);
+		try {
+			return Utility.getSelectedNamedItem(comboOrigin);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -920,7 +1051,13 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 */
 	private String getClip() {
 		
-		return Utility.getSelectedNamedItem(comboClip);
+		try {
+			return Utility.getSelectedNamedItem(comboClip);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -929,107 +1066,118 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 */
 	private String getAttachment() {
 		
-		return Utility.getSelectedNamedItem(comboAttachment);
+		try {
+			return Utility.getSelectedNamedItem(comboAttachment);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
 	 * Set from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		listBackgroundImagesModel.clear();
-		
-		if (initialString != null) {
+		try {
 			
-			try {
+			listBackgroundImagesModel.clear();
+			
+			if (initialString != null) {
 				
-				Obj<Integer> position = new Obj<Integer>(0);
-				
-				while (true) {
-
-					// Get image name.
-					String imageName = getBackgroundImageName(position);
-					if (imageName == null) {
-						break;
-					}
+				try {
 					
-					// Get image position. (text to first slash);
-					int begin = position.ref;
-					if (Utility.getNextMatch(initialString, position, "/") == null) {
-						break;
-					}
-					String imagePosition = initialString.substring(begin, position.ref - 1);
-					imagePosition = imagePosition.trim();
+					Obj<Integer> position = new Obj<Integer>(0);
 					
-					// Get size.
-					String size = Utility.getNextMatch(initialString, position, "[\\w\\d\\.%-]+");
-					if (size == null) {
-						break;
-					}
-					if (Utility.isCssStringNumberUnit(size)) {
+					while (true) {
+	
+						// Get image name.
+						String imageName = getBackgroundImageName(position);
+						if (imageName == null) {
+							break;
+						}
 						
-						boolean isNextNumber = isNextNonWhitespceNumber(position.ref);
+						// Get image position. (text to first slash);
+						int begin = position.ref;
+						if (Utility.getNextMatch(initialString, position, "/") == null) {
+							break;
+						}
+						String imagePosition = initialString.substring(begin, position.ref - 1);
+						imagePosition = imagePosition.trim();
 						
-						if (isNextNumber) {
-							String sizeRemainder = Utility.getNextMatch(initialString, position, "[\\w\\d\\.%]+");
-							if (sizeRemainder == null) {
-								break;
+						// Get size.
+						String size = Utility.getNextMatch(initialString, position, "[\\w\\d\\.%-]+");
+						if (size == null) {
+							break;
+						}
+						if (Utility.isCssStringNumberUnit(size)) {
+							
+							boolean isNextNumber = isNextNonWhitespceNumber(position.ref);
+							
+							if (isNextNumber) {
+								String sizeRemainder = Utility.getNextMatch(initialString, position, "[\\w\\d\\.%]+");
+								if (sizeRemainder == null) {
+									break;
+								}
+								size += " " + sizeRemainder;
 							}
-							size += " " + sizeRemainder;
+						}
+						
+						// Get repeat.
+						String repeat = Utility.getNextMatch(initialString, position, "[\\w-]+");
+						if (repeat == null) {
+							break;
+						}
+						
+						// Get attachment.
+						String attachment = Utility.getNextMatch(initialString, position, "[\\w-]+");
+						if (attachment == null) {
+							break;
+						}
+						
+						// Get origin.
+						String origin = Utility.getNextMatch(initialString, position, "[\\w-]+");
+						if (origin == null) {
+							break;
+						}
+						
+						// Get clip.
+						String clip = Utility.getNextMatch(initialString, position, "[\\w-]+");
+						if (clip == null) {
+							break;
+						}
+	
+						// Create new layer and add it to a list.
+						BackgroundLayer layer = new BackgroundLayer(imageName);
+						layer.position = imagePosition;
+						layer.size = size;
+						layer.repeat = repeat;
+						layer.attachment = attachment;
+						layer.origin = origin;
+						layer.clip = clip;
+						
+						listBackgroundImagesModel.addElement(layer);
+						
+						// Get next comma.
+						if (!isNextComma(position)) {
+							break;
 						}
 					}
+				}
+				catch (Exception e) {
 					
-					// Get repeat.
-					String repeat = Utility.getNextMatch(initialString, position, "[\\w-]+");
-					if (repeat == null) {
-						break;
-					}
-					
-					// Get attachment.
-					String attachment = Utility.getNextMatch(initialString, position, "[\\w-]+");
-					if (attachment == null) {
-						break;
-					}
-					
-					// Get origin.
-					String origin = Utility.getNextMatch(initialString, position, "[\\w-]+");
-					if (origin == null) {
-						break;
-					}
-					
-					// Get clip.
-					String clip = Utility.getNextMatch(initialString, position, "[\\w-]+");
-					if (clip == null) {
-						break;
-					}
-
-					// Create new layer and add it to a list.
-					BackgroundLayer layer = new BackgroundLayer(imageName);
-					layer.position = imagePosition;
-					layer.size = size;
-					layer.repeat = repeat;
-					layer.attachment = attachment;
-					layer.origin = origin;
-					layer.clip = clip;
-					
-					listBackgroundImagesModel.addElement(layer);
-					
-					// Get next comma.
-					if (!isNextComma(position)) {
-						break;
-					}
+					Safe.exception(e);
+				}
+				
+				// Select first layer.
+				if (listBackgroundImagesModel.size() > 0) {
+					listBackgroundImages.setSelectedIndex(0);
 				}
 			}
-			catch (Exception e) {
-				
-				System.out.println(e.getMessage());
-			}
-			
-			// Select first layer.
-			if (listBackgroundImagesModel.size() > 0) {
-				listBackgroundImages.setSelectedIndex(0);
-			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1039,15 +1187,20 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 */
 	private boolean isNextNonWhitespceNumber(int position) {
 		
-		int length = initialString.length();
-		while (position < length) {
-			
-			char character = initialString.charAt(position++);
-			if (Character.isWhitespace(character)) {
-				continue;
+		try {
+			int length = initialString.length();
+			while (position < length) {
+				
+				char character = initialString.charAt(position++);
+				if (Character.isWhitespace(character)) {
+					continue;
+				}
+				
+				return Character.isDigit(character);
 			}
-			
-			return Character.isDigit(character);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return false;
 	}
@@ -1059,33 +1212,37 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 */
 	private boolean isNextComma(Obj<Integer> position) {
 		
-		int shift = 0;
-		int length = initialString.length();
-		char character = ' ';
-		
-		do {
+		try {
+			int shift = 0;
+			int length = initialString.length();
+			char character = ' ';
 			
-			int index = position.ref + shift;
-			if (index >= length) {
-				break;
+			do {
+				
+				int index = position.ref + shift;
+				if (index >= length) {
+					break;
+				}
+				
+				character = initialString.charAt(index);
+				shift++;
+			}
+			while (Character.isWhitespace(character));
+				
+			if (character == ',') {
+				position.ref += shift;
+				return true;
 			}
 			
-			character = initialString.charAt(index);
-			shift++;
-		}
-		while (Character.isWhitespace(character));
-			
-		if (character == ',') {
+			shift--;
+			if (shift < 0) {
+				shift = 0;
+			}
 			position.ref += shift;
-			return true;
 		}
-		
-		shift--;
-		if (shift < 0) {
-			shift = 0;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		position.ref += shift;
-		
 		return false;
 	}
 
@@ -1096,35 +1253,41 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 */
 	private String getBackgroundImageName(Obj<Integer> position) {
 		
-		// Get next match.
-		String url = Utility.getNextMatch(initialString, position, "url");
-		if (url == null) {
-			return null;
-		}
-		
-		// Get opening parenthesis.
-		String leftParenthesis = Utility.getNextMatch(initialString, position, "\\(");
-		if (leftParenthesis == null) {
-			return null;
-		}
-		
-		String imageName = null;
-		
-		// Get name start.
-		String nameStart = Utility.getNextMatch(initialString, position, "res=\"#");
-		if (nameStart != null) {
+		try {
+			// Get next match.
+			String url = Utility.getNextMatch(initialString, position, "url");
+			if (url == null) {
+				return null;
+			}
 			
-			// Get image name.
-			imageName = Utility.getNextMatch(initialString, position, "[^\\\"]*");
+			// Get opening parenthesis.
+			String leftParenthesis = Utility.getNextMatch(initialString, position, "\\(");
+			if (leftParenthesis == null) {
+				return null;
+			}
+			
+			String imageName = null;
+			
+			// Get name start.
+			String nameStart = Utility.getNextMatch(initialString, position, "res=\"#");
+			if (nameStart != null) {
+				
+				// Get image name.
+				imageName = Utility.getNextMatch(initialString, position, "[^\\\"]*");
+			}
+			
+			// Get closing parenthesis.
+			String rightParenthesis = Utility.getNextMatch(initialString, position, "\\)");
+			if (rightParenthesis == null) {
+				return null;
+			}
+			
+			return imageName;
 		}
-		
-		// Get closing parenthesis.
-		String rightParenthesis = Utility.getNextMatch(initialString, position, "\\)");
-		if (rightParenthesis == null) {
-			return null;
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		
-		return imageName;
+		return "";
 	}
 
 	/**
@@ -1132,15 +1295,20 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 * @param string
 	 */
 	private void setImagePosition(String string) {
-		
-		String [] splitted = string.split(" ");
-		
-		if (splitted.length < 2) {
-			return;
+		try {
+			
+			String [] splitted = string.split(" ");
+			
+			if (splitted.length < 2) {
+				return;
+			}
+			
+			setHorizontalPosition(splitted[0]);
+			setVerticalPosition(splitted[1]);
 		}
-		
-		setHorizontalPosition(splitted[0]);
-		setVerticalPosition(splitted[1]);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1148,62 +1316,77 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 * @param string
 	 */
 	private void setHorizontalPosition(String string) {
-
-		Obj<String> number = new Obj<String>();
-		Obj<String> unit = new Obj<String>();
-		
-		// Horizontal value.
-		if (Utility.convertCssStringToNumberUnit(string, number, unit)) {
+		try {
 			
-			// Set number and unit.
-			textHorizontalPosition.setText(number.ref);
-			Utility.selectComboItem(comboHorizontalPositionUnits, unit.ref);
+			Obj<String> number = new Obj<String>();
+			Obj<String> unit = new Obj<String>();
 			
-			// Set enumeration.
-			Utility.selectComboNamedItem(comboHorizontalPosition, "left");
+			// Horizontal value.
+			if (Utility.convertCssStringToNumberUnit(string, number, unit)) {
+				
+				// Set number and unit.
+				textHorizontalPosition.setText(number.ref);
+				Utility.selectComboItem(comboHorizontalPositionUnits, unit.ref);
+				
+				// Set enumeration.
+				Utility.selectComboNamedItem(comboHorizontalPosition, "left");
+			}
+			else {
+				
+				textHorizontalPosition.setText("");
+				Utility.selectComboItem(comboHorizontalPositionUnits, "px");
+				
+				// Set enumeration.
+				Utility.selectComboNamedItem(comboHorizontalPosition, string);
+			}
 		}
-		else {
-			
-			textHorizontalPosition.setText("");
-			Utility.selectComboItem(comboHorizontalPositionUnits, "px");
-			
-			// Set enumeration.
-			Utility.selectComboNamedItem(comboHorizontalPosition, string);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On select horizontal position combo.
 	 */
 	protected void onSelectHorizontalPositionCombo() {
-		
-		if (settingControls) {
-			return;
+		try {
+			
+			if (settingControls) {
+				return;
+			}
+			
+			startSettingControls();
+			
+			textHorizontalPosition.setText("");
+			Utility.selectComboItem(comboHorizontalPositionUnits, "px");
+			
+			stopSettingControls();
 		}
-		
-		startSettingControls();
-		
-		textHorizontalPosition.setText("");
-		Utility.selectComboItem(comboHorizontalPositionUnits, "px");
-		
-		stopSettingControls();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On change horizontal position.
 	 */
 	protected void onChangeHorizontalPosition() {
-		
-		if (settingControls) {
-			return;
+		try {
+			
+			if (settingControls) {
+				return;
+			}
+			
+			startSettingControls();
+			
+			// Set enumeration.
+			Utility.selectComboNamedItem(comboHorizontalPosition, "left");
+			
+			stopSettingControls();
 		}
-		
-		startSettingControls();
-		
-		// Set enumeration.
-		Utility.selectComboNamedItem(comboHorizontalPosition, "left");
-		
-		stopSettingControls();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1211,61 +1394,74 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 * @param string
 	 */
 	private void setVerticalPosition(String string) {
-		
-		Obj<String> number = new Obj<String>();
-		Obj<String> unit = new Obj<String>();
-		
-		// Vertical value.
-		if (Utility.convertCssStringToNumberUnit(string, number, unit)) {
+		try {
 			
-			// Set number and unit.
-			textVerticalPosition.setText(number.ref);
-			Utility.selectComboItem(comboVerticalPositionUnits, unit.ref);
+			Obj<String> number = new Obj<String>();
+			Obj<String> unit = new Obj<String>();
 			
-			// Set enumeration.
-			Utility.selectComboNamedItem(comboVerticalPosition, "top");
+			// Vertical value.
+			if (Utility.convertCssStringToNumberUnit(string, number, unit)) {
+				
+				// Set number and unit.
+				textVerticalPosition.setText(number.ref);
+				Utility.selectComboItem(comboVerticalPositionUnits, unit.ref);
+				
+				// Set enumeration.
+				Utility.selectComboNamedItem(comboVerticalPosition, "top");
+			}
+			else {
+				
+				textVerticalPosition.setText("");
+				Utility.selectComboItem(comboVerticalPositionUnits, "px");
+				
+				// Set enumeration.
+				Utility.selectComboNamedItem(comboVerticalPosition, string);
+			}
 		}
-		else {
-			
-			textVerticalPosition.setText("");
-			Utility.selectComboItem(comboVerticalPositionUnits, "px");
-			
-			// Set enumeration.
-			Utility.selectComboNamedItem(comboVerticalPosition, string);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On select vertical position combo.
 	 */
 	protected void onSelectVerticalPositionCombo() {
-		
-		if (settingControls) {
-			return;
+		try {
+			
+			if (settingControls) {
+				return;
+			}
+			
+			startSettingControls();
+			
+			textVerticalPosition.setText("");
+			Utility.selectComboItem(comboVerticalPositionUnits, "px");
+			
+			stopSettingControls();
 		}
-		
-		startSettingControls();
-		
-		textVerticalPosition.setText("");
-		Utility.selectComboItem(comboVerticalPositionUnits, "px");
-		
-		stopSettingControls();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On change vertical position.
 	 */
 	protected void onChangeVerticalPosition() {
-		
-		if (settingControls) {
-			return;
+		try {
+			
+			if (settingControls) {
+				return;
+			}
+			
+			startSettingControls();
+			Utility.selectComboNamedItem(comboVerticalPosition, "top");
+			stopSettingControls();
 		}
-		
-		startSettingControls();
-		
-		Utility.selectComboNamedItem(comboVerticalPosition, "top");
-		
-		stopSettingControls();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1273,94 +1469,109 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 * @param string
 	 */
 	private void setImageSize(String string) {
-		
-		boolean numbersOk = false;
-		
-		// Split string.
-		String [] splitted = string.trim().split(" ");
-		
-		if (splitted.length >= 1) {
+		try {
 			
-			String horizontal = splitted[0];
+			boolean numbersOk = false;
 			
-			Obj<String> number = new Obj<String>();
-			Obj<String> unit = new Obj<String>();
+			// Split string.
+			String [] splitted = string.trim().split(" ");
 			
-			// Horizontal specification.
-			if (Utility.convertCssStringToNumberUnit(horizontal, number, unit)) {
+			if (splitted.length >= 1) {
 				
-				textImageSizeX.setText(number.ref);
-				Utility.selectComboItem(comboImageSizeUnitsX, unit.ref);
+				String horizontal = splitted[0];
 				
-				if (splitted.length == 2) {
-					String vertical = splitted[1];
+				Obj<String> number = new Obj<String>();
+				Obj<String> unit = new Obj<String>();
+				
+				// Horizontal specification.
+				if (Utility.convertCssStringToNumberUnit(horizontal, number, unit)) {
 					
-					// Vertical specification.
-					if (Utility.convertCssStringToNumberUnit(vertical, number, unit)) {
+					textImageSizeX.setText(number.ref);
+					Utility.selectComboItem(comboImageSizeUnitsX, unit.ref);
+					
+					if (splitted.length == 2) {
+						String vertical = splitted[1];
 						
-						textImageSizeY.setText(number.ref);
-						Utility.selectComboItem(comboImageSizeUnitsY, unit.ref);
+						// Vertical specification.
+						if (Utility.convertCssStringToNumberUnit(vertical, number, unit)) {
+							
+							textImageSizeY.setText(number.ref);
+							Utility.selectComboItem(comboImageSizeUnitsY, unit.ref);
+							
+							Utility.selectComboNamedItem(comboImageSize, "auto");
+							
+							numbersOk = true;
+						}
+					}
+					else {
+						textImageSizeY.setText("");
+						Utility.selectComboItem(comboImageSizeUnitsY, "px");
 						
 						Utility.selectComboNamedItem(comboImageSize, "auto");
-						
 						numbersOk = true;
 					}
 				}
-				else {
-					textImageSizeY.setText("");
-					Utility.selectComboItem(comboImageSizeUnitsY, "px");
-					
-					Utility.selectComboNamedItem(comboImageSize, "auto");
-					numbersOk = true;
-				}
+			}
+			
+			// Set enumeration.
+			if (!numbersOk) {
+				
+				textImageSizeX.setText("");
+				textImageSizeY.setText("");
+				Utility.selectComboItem(comboImageSizeUnitsX, "px");
+				Utility.selectComboItem(comboImageSizeUnitsY, "px");
+				
+				Utility.selectComboNamedItem(comboImageSize, string);
 			}
 		}
-		
-		// Set enumeration.
-		if (!numbersOk) {
-			
-			textImageSizeX.setText("");
-			textImageSizeY.setText("");
-			Utility.selectComboItem(comboImageSizeUnitsX, "px");
-			Utility.selectComboItem(comboImageSizeUnitsY, "px");
-			
-			Utility.selectComboNamedItem(comboImageSize, string);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On serlect image size combo.
 	 */
 	protected void onSelectImageSizeCombo() {
-		
-		if (settingControls) {
-			return;
+		try {
+			
+			if (settingControls) {
+				return;
+			}
+			
+			startSettingControls();
+			
+			textImageSizeX.setText("");
+			textImageSizeY.setText("");
+			Utility.selectComboItem(comboImageSizeUnitsX, "px");
+			Utility.selectComboItem(comboImageSizeUnitsY, "px");
+			
+			stopSettingControls();
 		}
-		
-		startSettingControls();
-		
-		textImageSizeX.setText("");
-		textImageSizeY.setText("");
-		Utility.selectComboItem(comboImageSizeUnitsX, "px");
-		Utility.selectComboItem(comboImageSizeUnitsY, "px");
-		
-		stopSettingControls();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On change image size.
 	 */
 	protected void onChangeImageSize() {
-		
-		if (settingControls) {
-			return;
+		try {
+			
+			if (settingControls) {
+				return;
+			}
+			
+			startSettingControls();
+			
+			Utility.selectComboNamedItem(comboImageSize, "auto");
+			
+			stopSettingControls();
 		}
-		
-		startSettingControls();
-		
-		Utility.selectComboNamedItem(comboImageSize, "auto");
-		
-		stopSettingControls();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1368,8 +1579,13 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 * @param string
 	 */
 	private void setRepeat(String string) {
-		
-		Utility.selectComboNamedItem(comboRepeat, string);
+		try {
+			
+			Utility.selectComboNamedItem(comboRepeat, string);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1377,8 +1593,13 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 * @param string
 	 */
 	private void setOrigin(String string) {
-		
-		Utility.selectComboNamedItem(comboOrigin, string);
+		try {
+			
+			Utility.selectComboNamedItem(comboOrigin, string);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1386,8 +1607,13 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 * @param string
 	 */
 	private void setClip(String string) {
-		
-		Utility.selectComboNamedItem(comboClip, string);
+		try {
+			
+			Utility.selectComboNamedItem(comboClip, string);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1395,26 +1621,36 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 * @param string
 	 */
 	private void setAttachment(String string) {
-		
-		Utility.selectComboNamedItem(comboAttachment, string);
+		try {
+			
+			Utility.selectComboNamedItem(comboAttachment, string);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(labelPositionHorizontal);
-		Utility.localize(labelPositionVertical);
-		Utility.localize(labelImageSize);
-		Utility.localize(labelRepeat);
-		Utility.localize(labelOrigin);
-		Utility.localize(labelClip);
-		Utility.localize(labelAttachment);
-		Utility.localize(labelBackgroundImage);
-		Utility.localize(menuAddImage);
-		Utility.localize(menuRenameImage);
-		Utility.localize(menuRemoveImage);
+		try {
+			
+			Utility.localize(labelPositionHorizontal);
+			Utility.localize(labelPositionVertical);
+			Utility.localize(labelImageSize);
+			Utility.localize(labelRepeat);
+			Utility.localize(labelOrigin);
+			Utility.localize(labelClip);
+			Utility.localize(labelAttachment);
+			Utility.localize(labelBackgroundImage);
+			Utility.localize(menuAddImage);
+			Utility.localize(menuRenameImage);
+			Utility.localize(menuRemoveImage);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -1423,7 +1659,13 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.gui.textCssBackgroundBuilder");
+		try {
+			return Resources.getString("org.multipage.gui.textCssBackgroundBuilder");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -1432,7 +1674,13 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	@Override
 	public String getResultText() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -1486,7 +1734,13 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	@Override
 	public String getStringValue() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -1494,9 +1748,14 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 */
 	@Override
 	public void setStringValue(String string) {
-		
-		initialString = string;
-		setFromInitialString();
+		try {
+			
+			initialString = string;
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -1514,27 +1773,57 @@ public class CssBackgroundImagesPanel extends InsertPanel implements StringValue
 	 * @param popup
 	 */
 	private void addPopup(Component component, final JPopupMenu popup) {
-		component.addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e);
+		try {
+			
+			component.addMouseListener(new MouseAdapter() {
+				public void mousePressed(MouseEvent e) {
+					try {
+			
+						if (e.isPopupTrigger()) {
+							showMenu(e);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-			public void mouseReleased(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e);
+				public void mouseReleased(MouseEvent e) {
+					try {
+			
+						if (e.isPopupTrigger()) {
+							showMenu(e);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-			private void showMenu(MouseEvent e) {
-				popup.show(e.getComponent(), e.getX(), e.getY());
-			}
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
-					onRenameImage();
+				private void showMenu(MouseEvent e) {
+					try {
+			
+						popup.show(e.getComponent(), e.getX(), e.getY());
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-		});
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					try {
+			
+						if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
+							onRenameImage();
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

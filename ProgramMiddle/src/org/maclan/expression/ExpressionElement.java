@@ -1,8 +1,14 @@
+/*
+ * Copyright 2010-2025 (C) vakol
+ * 
+ * Created on : 2017-04-26
+ *
+ */
 package org.maclan.expression;
 
 /**
- * Operator element.
- * @author
+ * Interface for expression elements.
+ * @author vakol
  *
  */
 public interface ExpressionElement {

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-004-26
  *
  */
 
@@ -9,12 +9,15 @@ package org.multipage.gui;
 
 import java.awt.*;
 import javax.swing.*;
+
+import org.multipage.util.Safe;
+
 import java.awt.event.*;
 import java.io.*;
 
 /**
- * 
- * @author
+ * Panel that displays CSS 3D transformation matrix editor.
+ * @author vakol
  *
  */
 public class CssTransformMatrix3dDialog extends JDialog {
@@ -112,12 +115,17 @@ public class CssTransformMatrix3dDialog extends JDialog {
 	 */
 	public static CssTransformMatrix3d showDialog(Component parent) {
 		
-		CssTransformMatrix3dDialog dialog = new CssTransformMatrix3dDialog(parent);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			CssTransformMatrix3dDialog dialog = new CssTransformMatrix3dDialog(parent);
+			dialog.setVisible(true);
 			
-			return dialog.getMatrix();
+			if (dialog.confirm) {
+				
+				return dialog.getMatrix();
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -131,13 +139,18 @@ public class CssTransformMatrix3dDialog extends JDialog {
 	public static boolean editDialog(Component parent,
 			CssTransformMatrix3d matrix) {
 		
-		CssTransformMatrix3dDialog dialog = new CssTransformMatrix3dDialog(parent);
-		dialog.setMatrix(matrix);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			CssTransformMatrix3dDialog dialog = new CssTransformMatrix3dDialog(parent);
+			dialog.setMatrix(matrix);
+			dialog.setVisible(true);
 			
-			matrix.setFrom(dialog.getMatrix());
+			if (dialog.confirm) {
+				
+				matrix.setFrom(dialog.getMatrix());
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return false;
 	}
@@ -147,23 +160,28 @@ public class CssTransformMatrix3dDialog extends JDialog {
 	 * @param matrix
 	 */
 	private void setMatrix(CssTransformMatrix3d matrix) {
-		
-		textA1.setText(String.valueOf(matrix.a1));
-		textB1.setText(String.valueOf(matrix.b1));
-		textC1.setText(String.valueOf(matrix.c1));
-		textD1.setText(String.valueOf(matrix.d1));
-		textA2.setText(String.valueOf(matrix.a2));
-		textB2.setText(String.valueOf(matrix.b2));
-		textC2.setText(String.valueOf(matrix.c2));
-		textD2.setText(String.valueOf(matrix.d2));
-		textA3.setText(String.valueOf(matrix.a3));
-		textB3.setText(String.valueOf(matrix.b3));
-		textC3.setText(String.valueOf(matrix.c3));
-		textD3.setText(String.valueOf(matrix.d3));
-		textA4.setText(String.valueOf(matrix.a4));
-		textB4.setText(String.valueOf(matrix.b4));
-		textC4.setText(String.valueOf(matrix.c4));
-		textD4.setText(String.valueOf(matrix.d4));
+		try {
+			
+			textA1.setText(String.valueOf(matrix.a1));
+			textB1.setText(String.valueOf(matrix.b1));
+			textC1.setText(String.valueOf(matrix.c1));
+			textD1.setText(String.valueOf(matrix.d1));
+			textA2.setText(String.valueOf(matrix.a2));
+			textB2.setText(String.valueOf(matrix.b2));
+			textC2.setText(String.valueOf(matrix.c2));
+			textD2.setText(String.valueOf(matrix.d2));
+			textA3.setText(String.valueOf(matrix.a3));
+			textB3.setText(String.valueOf(matrix.b3));
+			textC3.setText(String.valueOf(matrix.c3));
+			textD3.setText(String.valueOf(matrix.d3));
+			textA4.setText(String.valueOf(matrix.a4));
+			textB4.setText(String.valueOf(matrix.b4));
+			textC4.setText(String.valueOf(matrix.c4));
+			textD4.setText(String.valueOf(matrix.d4));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -172,26 +190,32 @@ public class CssTransformMatrix3dDialog extends JDialog {
 	 */
 	private CssTransformMatrix3d getMatrix() {
 		
-		CssTransformMatrix3d matrix = new CssTransformMatrix3d();
-		
-		matrix.a1 = Utility.getFloat(textA1, 0.0f);
-		matrix.b1 = Utility.getFloat(textB1, 0.0f);
-		matrix.c1 = Utility.getFloat(textC1, 0.0f);
-		matrix.d1 = Utility.getFloat(textD1, 0.0f);
-		matrix.a2 = Utility.getFloat(textA2, 0.0f);
-		matrix.b2 = Utility.getFloat(textB2, 0.0f);
-		matrix.c2 = Utility.getFloat(textC2, 0.0f);
-		matrix.d2 = Utility.getFloat(textD2, 0.0f);
-		matrix.a3 = Utility.getFloat(textA3, 0.0f);
-		matrix.b3 = Utility.getFloat(textB3, 0.0f);
-		matrix.c3 = Utility.getFloat(textC3, 0.0f);
-		matrix.d3 = Utility.getFloat(textD3, 0.0f);
-		matrix.a4 = Utility.getFloat(textA4, 0.0f);
-		matrix.b4 = Utility.getFloat(textB4, 0.0f);
-		matrix.c4 = Utility.getFloat(textC4, 0.0f);
-		matrix.d4 = Utility.getFloat(textD4, 0.0f);
-		
-		return matrix;
+		try {
+			CssTransformMatrix3d matrix = new CssTransformMatrix3d();
+			
+			matrix.a1 = Utility.getFloat(textA1, 0.0f);
+			matrix.b1 = Utility.getFloat(textB1, 0.0f);
+			matrix.c1 = Utility.getFloat(textC1, 0.0f);
+			matrix.d1 = Utility.getFloat(textD1, 0.0f);
+			matrix.a2 = Utility.getFloat(textA2, 0.0f);
+			matrix.b2 = Utility.getFloat(textB2, 0.0f);
+			matrix.c2 = Utility.getFloat(textC2, 0.0f);
+			matrix.d2 = Utility.getFloat(textD2, 0.0f);
+			matrix.a3 = Utility.getFloat(textA3, 0.0f);
+			matrix.b3 = Utility.getFloat(textB3, 0.0f);
+			matrix.c3 = Utility.getFloat(textC3, 0.0f);
+			matrix.d3 = Utility.getFloat(textD3, 0.0f);
+			matrix.a4 = Utility.getFloat(textA4, 0.0f);
+			matrix.b4 = Utility.getFloat(textB4, 0.0f);
+			matrix.c4 = Utility.getFloat(textC4, 0.0f);
+			matrix.d4 = Utility.getFloat(textD4, 0.0f);
+			
+			return matrix;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -200,12 +224,17 @@ public class CssTransformMatrix3dDialog extends JDialog {
 	 */
 	public CssTransformMatrix3dDialog(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			postCreate();
+			// $hide<<
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -428,42 +457,62 @@ public class CssTransformMatrix3dDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		localize();
-		setIcons();
-		
-		loadDialog();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			localize();
+			setIcons();
+			
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(this);
+		try {
+			
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(this);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
+		try {
+			
+			saveDialog();
+			confirm = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
-		saveDialog();
-		
-		confirm = false;
 		dispose();
 	}
 
@@ -471,10 +520,15 @@ public class CssTransformMatrix3dDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
+		try {
+			
+			saveDialog();
+			confirm = true;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
-		saveDialog();
-		
-		confirm = true;
 		dispose();
 	}
 
@@ -482,37 +536,47 @@ public class CssTransformMatrix3dDialog extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setBounds(bounds);
+			}
+			
+			textA1.setText("0.0");
+			textB1.setText("0.0");
+			textC1.setText("0.0");
+			textD1.setText("0.0");
+			textA2.setText("0.0");
+			textB2.setText("0.0");
+			textC2.setText("0.0");
+			textD2.setText("0.0");
+			textA3.setText("0.0");
+			textB3.setText("0.0");
+			textC3.setText("0.0");
+			textD3.setText("0.0");
+			textA4.setText("0.0");
+			textB4.setText("0.0");
+			textC4.setText("0.0");
+			textD4.setText("0.0");
 		}
-		else {
-			setBounds(bounds);
-		}
-		
-		textA1.setText("0.0");
-		textB1.setText("0.0");
-		textC1.setText("0.0");
-		textD1.setText("0.0");
-		textA2.setText("0.0");
-		textB2.setText("0.0");
-		textC2.setText("0.0");
-		textD2.setText("0.0");
-		textA3.setText("0.0");
-		textB3.setText("0.0");
-		textC3.setText("0.0");
-		textD3.setText("0.0");
-		textA4.setText("0.0");
-		textB4.setText("0.0");
-		textC4.setText("0.0");
-		textD4.setText("0.0");
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

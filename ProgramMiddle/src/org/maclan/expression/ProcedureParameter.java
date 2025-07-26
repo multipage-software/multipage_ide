@@ -1,10 +1,14 @@
-/**
+/*
+ * Copyright 2010-2025 (C) vakol
  * 
+ * Created on : 2017-04-26
+ *
  */
 package org.maclan.expression;
 
 /**
- * @author
+ * Class for procedure parameters.
+ * @author vakol
  *
  */
 public class ProcedureParameter {

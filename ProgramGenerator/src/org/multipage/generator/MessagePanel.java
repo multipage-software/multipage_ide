@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 06-04-2020
+ * Created on : 2020-04-06
  *
  */
 package org.multipage.generator;
@@ -9,10 +9,11 @@ package org.multipage.generator;
 import javax.swing.JPanel;
 
 import org.multipage.gui.Images;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays message.
+ * @author vakol
  *
  */
 class MessagePanel extends JPanel {
@@ -58,11 +59,15 @@ class MessagePanel extends JPanel {
 	 * Constructor.
 	 */
 	public MessagePanel() {
-
-		initComponents();
 		
-		// Set icon.
-		text.setIcon(Images.getIcon("org/multipage/generator/images/error.png"));
+		try {
+			initComponents();
+			// Set icon.
+			text.setIcon(Images.getIcon("org/multipage/generator/images/error.png"));
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -70,7 +75,12 @@ class MessagePanel extends JPanel {
 	 * @param string
 	 */
 	public void setText(String string) {
-		
-		text.setText(string);
+		try {
+			
+			text.setText(string);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

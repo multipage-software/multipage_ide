@@ -1,3 +1,9 @@
+/*
+ * Copyright 2010-2025 (C) vakol
+ * 
+ * Created on : 2017-04-26
+ *
+ */
 package org.multipage.generator;
 
 import java.util.LinkedList;
@@ -5,9 +11,11 @@ import java.util.LinkedList;
 import javax.swing.JTextPane;
 
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
  * Class for log items.
+ * @author vakol
  */
 class XdebugLogMessage extends LoggingDialog.LoggedMessage {
 	
@@ -41,9 +49,14 @@ class XdebugLogMessage extends LoggingDialog.LoggedMessage {
 	 * @param message
 	 */
 	public static void addLogMessage(String message) {
-		
-		XdebugLogMessage logMessage = new XdebugLogMessage(message);
-		listLoggedMessages.addLast(logMessage);
+		try {
+			
+			XdebugLogMessage logMessage = new XdebugLogMessage(message);
+			listLoggedMessages.addLast(logMessage);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -51,25 +64,30 @@ class XdebugLogMessage extends LoggingDialog.LoggedMessage {
 	 * @param textPane
 	 */
 	public static void displayHtmlLog(JTextPane textPane) {
-		
-		String logContent = "";
-		
-		for (XdebugLogMessage logMessage : listLoggedMessages) {
+		try {
 			
-			String messageText = logMessage.getText();
+			String logContent = "";
 			
-			// Filter messages.
-			if (!filter(messageText)) {
-				continue;
+			for (XdebugLogMessage logMessage : listLoggedMessages) {
+				
+				String messageText = logMessage.getText();
+				
+				// Filter messages.
+				if (!filter(messageText)) {
+					continue;
+				}
+				
+				// Append message text.
+				logContent += messageText + "<br/>";
 			}
 			
-			// Append message text.
-			logContent += messageText + "<br/>";
+			// Wrap content with HTML tags.
+			logContent = String.format("<html>%s</html>", logContent);
+			textPane.setText(logContent);
 		}
-		
-		// Wrap content with HTML tags.
-		logContent = String.format("<html>%s</html>", logContent);
-		textPane.setText(logContent);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -78,9 +96,15 @@ class XdebugLogMessage extends LoggingDialog.LoggedMessage {
 	 * @return
 	 */
 	private static boolean filter(String messageText) {
-
-		boolean matches = Utility.matches(messageText, filterString, caseSensitive, wholeWords, exactMatch);
-		return matches;
+		
+		try {
+			boolean matches = Utility.matches(messageText, filterString, caseSensitive, wholeWords, exactMatch);
+			return matches;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -91,10 +115,15 @@ class XdebugLogMessage extends LoggingDialog.LoggedMessage {
 	 * @param exactMatch
 	 */
 	public static void setFulltextFilter(String filterString, boolean caseSensitive, boolean wholeWords, boolean exactMatch) {
-		
-		XdebugLogMessage.filterString = !filterString.isEmpty() ?  filterString : "*";
-		XdebugLogMessage.caseSensitive = caseSensitive;
-		XdebugLogMessage.wholeWords = wholeWords;
-		XdebugLogMessage.exactMatch = exactMatch;
+		try {
+			
+			XdebugLogMessage.filterString = !filterString.isEmpty() ?  filterString : "*";
+			XdebugLogMessage.caseSensitive = caseSensitive;
+			XdebugLogMessage.wholeWords = wholeWords;
+			XdebugLogMessage.exactMatch = exactMatch;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

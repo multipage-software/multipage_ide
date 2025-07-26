@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -11,8 +11,11 @@ import java.awt.Window;
 
 import javax.swing.JDialog;
 
+import org.multipage.util.Safe;
+
 /**
- * @author
+ * Base class for dialog that displays information about application.
+ * @author vakol
  *
  */
 public class AboutDialogBase extends JDialog {
@@ -35,7 +38,12 @@ public class AboutDialogBase extends JDialog {
 	 * Delegate call.
 	 */
 	public void setVisible(boolean visible) {
-		
-		super.setVisible(visible);
+		try {
+			
+			super.setVisible(visible);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

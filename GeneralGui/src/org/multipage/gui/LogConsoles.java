@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2023 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 24-06-2023
+ * Created on : 2023-06-24
  *
  */
 package org.multipage.gui;
@@ -15,6 +15,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.rmi.UnexpectedException;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,15 +29,14 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextPane;
 import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
 import org.multipage.util.Obj;
+import org.multipage.util.Safe;
 
 /**
- * Multitask log consoles that can be also run as a standalone application with LocConsole and ConsolePropeties classes
- * included,
+ * Multitask log consoles that can be also run as a standalone application.
  * @author vakol
  *
  */
@@ -159,48 +159,62 @@ public class LogConsoles extends JFrame {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-
-		applicationState = STARTUP;
-
 		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		SwingUtilities.invokeLater(new Runnable() {
 			
-			public void run() {
-				try {
-					mainFrame  = new LogConsoles();
-					mainFrame.setAlwaysOnTop(true);
-					mainFrame.setVisible(true);
-				} 
-				catch (Exception e) {
-					e.printStackTrace();
-				}
+			if ((applicationState != UNINITIALIZED)
+					&& (applicationState != SHUTDOWN)) {
+				return;
 			}
-		});
+			
+			applicationState = STARTUP;
+	
+			try {
+				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			}
+			catch (Exception e) {
+				Safe.exception(e);
+			}
+	
+			Safe.invokeLater(() -> {
+
+				mainFrame  = new LogConsoles();
+				mainFrame.setAlwaysOnTop(true);
+				mainFrame.setVisible(true);
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Create the frame.
 	 */
 	public LogConsoles() {
-
-		initComponents();
-		postCreation();
+		
+		try {
+			initComponents();
+			postCreation();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
 	 * Close the application.
 	 */
 	protected void onClosing() {
+		try {
+			
+			saveDialog();
+			shutdownConsoles();
+			applicationState = SHUTDOWN;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
-		saveDialog();
-
-		applicationState = SHUTDOWN;
 		dispose();
 	}
 
@@ -245,36 +259,46 @@ public class LogConsoles extends JFrame {
 	 * Post creation.
 	 */
 	private void postCreation() {
-		
-		// Create toolbar.
-		createToolbar();
-
-		// Open ports for consoles.
-		int count = openPorts.length;
-		for (int index = 0; index < count; index++) {
+		try {
 			
-			int port = openPorts[index];
-			addConsoleView(consoles, "Console" + (index + 1), port);
+			// Create toolbar.
+			createToolbar();
+	
+			// Open ports for consoles.
+			int count = openPorts.length;
+			for (int index = 0; index < count; index++) {
+				
+				int port = openPorts[index];
+				addConsoleView(consoles, "Console" + (index + 1), port);
+			}
+			
+			// Add properties panel.
+			addConsolePropertiesPanel();
+			
+			// Reset consoles' dimesnions. 
+			restoreConsolesDimensions();
+			
+			// Load dialog.
+			loadDialog();
+			
+			applicationState = LISTENING;
 		}
-		
-		// Add properties panel.
-		addConsolePropertiesPanel();
-		
-		// Reset consoles' dimesnions. 
-		restoreConsolesDimensions();
-		
-		// Load dialog.
-		loadDialog();
-		
-		applicationState = LISTENING;
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Create toolbar.
 	 */
 	private void createToolbar() {
-
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/cancel_icon.png", "#Clear console", () -> onClearConsole());
+		try {
+			
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/gui/images/cancel_icon.png", "#Clear console", () -> onClearConsole());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -285,81 +309,98 @@ public class LogConsoles extends JFrame {
 	 * @return
 	 */
 	private void addConsoleView(Map<String, LogConsole> consoles, String consoleName, int port) {
-		
-		JSplitPane splitPane = null;
-		
-		if (lastCreatedSplitPanel == null) {
-			
-			// Main scroll panel for all consoles.
-			JScrollPane scrollPaneConsole = new JScrollPane();
-			panelConsolesContainer.add(scrollPaneConsole);
-			
-			// Create first split pane for consoles.
-			splitPane = new JSplitPane();
-			splitPane.setResizeWeight(0.5);
-			scrollPaneConsole.setViewportView(splitPane);
-		}
-		else {
-			// Create new split panel in the right component of the last split panel.
-			splitPane = new JSplitPane();
-			splitPane.setResizeWeight(0.5);
-			lastCreatedSplitPanel.setRightComponent(splitPane);
-		}
-		
-		// Create scroll bars in the left component of the split panel.
-		JScrollPane scrollPane = new JScrollPane();
-		splitPane.setLeftComponent(scrollPane);
-		splitPane.setDividerSize(SPLITTER_SIZE);
-		
-		// Create text panel for the console.
-		JTextPane textPane = new JTextPane();
-		textPane.setBackground(Color.BLACK);
-		textPane.setContentType("text/html");
-		textPane.addFocusListener(new FocusAdapter() {
-			@Override
-			public void focusGained(FocusEvent e) {
-				super.focusGained(e);
-				
-				// Remeber last focused console.
-				lastFocusedTextPane = textPane;
-				
-				// Select console by its name.
-				selectConsole(consoleName);
-				
-				// Display console properties.
-				displayConsoleProperties(consoleName);
-			}
-		});
-		scrollPane.setViewportView(textPane);
-		
-		// Remember last split panel.
-		lastCreatedSplitPanel = splitPane;
-		
 		try {
-			// Create new console object and put it into the consoles collection.
-			LogConsole console = new LogConsole(consoleName, splitPane, port);
-			consoles.put(consoleName, console);
-	
-			// Open console port.
-			openConsole(consoleName);
-		}
-		catch (Exception e) {
 			
-			// Display error message.
-			Utility.show2(this, e.getLocalizedMessage());
+			JSplitPane splitPane = null;
+			
+			if (lastCreatedSplitPanel == null) {
+				
+				// Main scroll panel for all consoles.
+				JScrollPane scrollPaneConsole = new JScrollPane();
+				panelConsolesContainer.add(scrollPaneConsole);
+				
+				// Create first split pane for consoles.
+				splitPane = new JSplitPane();
+				splitPane.setResizeWeight(0.5);
+				scrollPaneConsole.setViewportView(splitPane);
+			}
+			else {
+				// Create new split panel in the right component of the last split panel.
+				splitPane = new JSplitPane();
+				splitPane.setResizeWeight(0.5);
+				lastCreatedSplitPanel.setRightComponent(splitPane);
+			}
+			
+			// Create scroll bars in the left component of the split panel.
+			JScrollPane scrollPane = new JScrollPane();
+			splitPane.setLeftComponent(scrollPane);
+			splitPane.setDividerSize(SPLITTER_SIZE);
+			
+			// Create text panel for the console.
+			JTextPane textPane = new JTextPane();
+			textPane.setBackground(Color.BLACK);
+			textPane.setContentType("text/html");
+			textPane.addFocusListener(new FocusAdapter() {
+				@Override
+				public void focusGained(FocusEvent e) {
+					try {
+						
+						super.focusGained(e);
+						
+						// Remeber last focused console.
+						lastFocusedTextPane = textPane;
+						
+						// Select console by its name.
+						selectConsole(consoleName);
+						
+						// Display console properties.
+						displayConsoleProperties(consoleName);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+			scrollPane.setViewportView(textPane);
+			
+			// Remember last split panel.
+			lastCreatedSplitPanel = splitPane;
+			
+			try {
+				// Create new console object and put it into the consoles collection.
+				LogConsole console = new LogConsole(consoleName, splitPane, port);
+				consoles.put(consoleName, console);
+		
+				// Open console port.
+				openConsole(consoleName);
+			}
+			catch (Exception e) {
+				
+				// Display error message.
+				Utility.show2(this, e.getLocalizedMessage());
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 	}
 
 	/**
 	 * Add console properties panel to last created split panel.
 	 */
 	private void addConsolePropertiesPanel() {
-		
-		// Create the properties panel.
-		propertiesPanel = new ConsoleProperties();
-		
-		// Put the properties panel to right pane.
-		lastCreatedSplitPanel.setRightComponent(propertiesPanel);
+		try {
+			
+			// Create the properties panel.
+			propertiesPanel = new ConsoleProperties();
+			
+			// Put the properties panel to right pane.
+			lastCreatedSplitPanel.setRightComponent(propertiesPanel);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -367,73 +408,93 @@ public class LogConsoles extends JFrame {
 	 * @param consoleName
 	 */
 	protected void displayConsoleProperties(String consoleName) {
-		
-		// Try to get packet channel object.
-		LogConsole console = consoles.get(consoleName);
-		if (console == null) {
+		try {
 			
-			propertiesPanel.resetComponents();
-			return;
+			// Try to get packet channel object.
+			LogConsole console = consoles.get(consoleName);
+			if (console == null) {
+				
+				propertiesPanel.resetComponents();
+				return;
+			}
+			
+			// Set console properties.
+			propertiesPanel.displayProperties(console);
 		}
-		
-		// Set console properties.
-		propertiesPanel.displayProperties(console);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Restore consoles dimensions.
 	 */
 	private void restoreConsolesDimensions() {
-		
-		// Get number of consoles.
-		int consolesCount = consoles.size();
-		
-		// Scroll panel dimensions.
-		final Dimension scrollDimension = new Dimension(SCROLL_WIDTH, SCROLL_HEIGHT);
-		
-		// Set consoles' dimensions and states.
-		int index = 0;
-		for (Entry<String, LogConsole> entry : consoles.entrySet()) {
+		try {
 			
-			LogConsole console = entry.getValue();
+			// Get number of consoles.
+			int consolesCount = consoles.size();
 			
-			// Set splitter ratio.
-			double proportion;
-			if (index < consolesCount - 1) {
-				proportion = 1.0 / (1 + consolesCount - index);
+			// Scroll panel dimensions.
+			final Dimension scrollDimension = new Dimension(SCROLL_WIDTH, SCROLL_HEIGHT);
+			
+			// Set consoles' dimensions and states.
+			int index = 0;
+			for (Entry<String, LogConsole> entry : consoles.entrySet()) {
+				
+				LogConsole console = entry.getValue();
+				
+				// Set splitter ratio.
+				double proportion;
+				if (index < consolesCount - 1) {
+					proportion = 1.0 / (1 + consolesCount - index);
+				}
+				else {
+					proportion = 1.0 - PROPERTIES_PROPORTION;
+				}
+				console.splitPane.setDividerLocation(proportion);
+				
+				// Set scroll panel width.
+				console.scrollPane.setPreferredSize(scrollDimension);
+				
+				index++;
 			}
-			else {
-				proportion = 1.0 - PROPERTIES_PROPORTION;
-			}
-			console.splitPane.setDividerLocation(proportion);
-			
-			// Set scroll panel width.
-			console.scrollPane.setPreferredSize(scrollDimension);
-			
-			index++;
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds == null) {
-			bounds = new Rectangle(1000, 700);
-			Utility.centerOnScreen(this);
+		try {
+			
+			if (bounds == null) {
+				bounds = new Rectangle(1000, 700);
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setBounds(bounds);
+			}
 		}
-		else {
-			setBounds(bounds);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -442,12 +503,18 @@ public class LogConsoles extends JFrame {
 	 */
 	public static Rectangle getFrameBounds() {
 		
-		if (mainFrame == null) {
-			return new Rectangle();
+		try {
+			if (mainFrame == null) {
+				return new Rectangle();
+			}
+			
+			Rectangle bounds = mainFrame.getBounds();
+			return bounds;
 		}
-		
-		Rectangle bounds = mainFrame.getBounds();
-		return bounds;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return new Rectangle();
 	}
 	
 	/**
@@ -455,12 +522,16 @@ public class LogConsoles extends JFrame {
 	 * @param bounds
 	 */
 	public static void setFrameBounds(Rectangle bounds) {
-		
-		if (mainFrame == null) {
-			return;
+		try {
+			
+			if (mainFrame == null) {
+				return;
+			}
+			mainFrame.setBounds(bounds);
 		}
-		
-		mainFrame.setBounds(bounds);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -469,19 +540,25 @@ public class LogConsoles extends JFrame {
 	 */
 	public static Integer [] getSplitterPositions() {
 		
-		// Initialize output array.
-		int count = consoles.size();
-		Integer [] splitterPositions = new Integer [count];
-		
-		// Set array items.
-		Obj<Integer> index = new Obj<Integer>(0);
-		consoles.forEach((name, console) -> {
+		try {
+			// Initialize output array.
+			int count = consoles.size();
+			Integer [] splitterPositions = new Integer [count];
 			
-			splitterPositions[index.ref++] = console.splitPane.getDividerLocation();
-		});
-		
-		// Returns ooutput array.
-		return splitterPositions;
+			// Set array items.
+			Obj<Integer> index = new Obj<Integer>(0);
+			consoles.forEach((name, console) -> {
+				
+				splitterPositions[index.ref++] = console.splitPane.getDividerLocation();
+			});
+			
+			// Returns ooutput array.
+			return splitterPositions;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -491,22 +568,28 @@ public class LogConsoles extends JFrame {
 	 */
 	public static boolean setSplitterPositions(Integer [] splitterPositions) {
 		
-		// Get consoles count.
-		int count = consoles.size();
-		
-		// Set array items.
-		Obj<Integer> index = new Obj<Integer>(0);
-		for (Entry<String, LogConsole> entry : consoles.entrySet()) {
+		try {
+			// Get consoles count.
+			int count = consoles.size();
 			
-			if (index.ref >= count) {
-				return false;
-			}
+			// Set array items.
+			Obj<Integer> index = new Obj<Integer>(0);
+			for (Entry<String, LogConsole> entry : consoles.entrySet()) {
+				
+				if (index.ref >= count) {
+					return false;
+				}
+				
+				LogConsole console = entry.getValue();
+				console.splitPane.setDividerLocation(splitterPositions[index.ref++]);
+			};
 			
-			LogConsole console = entry.getValue();
-			console.splitPane.setDividerLocation(splitterPositions[index.ref++]);
-		};
-		
-		return true;
+			return true;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
@@ -514,13 +597,23 @@ public class LogConsoles extends JFrame {
 	 * @param consoleName
 	 */
 	protected void selectConsole(String consoleName) {
-		
-		// Try to set consoles selection states.
-		consoles.forEach((name, console) -> {
+		try {
 			
-			boolean isSelected = (name == consoleName);
-			console.setSelected(isSelected);
-		});
+			// Try to set consoles selection states.
+			consoles.forEach((name, console) -> {
+				try {
+					
+					boolean isSelected = (name == consoleName);
+					console.setSelected(isSelected);
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -529,22 +622,27 @@ public class LogConsoles extends JFrame {
 	 * @return
 	 */
 	private void onClearConsole() {
-		
-		// Find console by its text panel component.
-		LogConsole console = findConsoleObject(lastFocusedTextPane);
-		if (console == null) {
-			return;
+		try {
+			
+			// Find console by its text panel component.
+			LogConsole console = findConsoleObject(lastFocusedTextPane);
+			if (console == null) {
+				return;
+			}
+	
+			// Ask user if to delete console contents.
+			boolean confirmed = Utility.ask2(this, "Clear \"%s\" contents?", console.name);
+			if (!confirmed) {
+				return;
+			}
+	
+			// Clear console contents and display new console properties.
+			console.clear();
+			propertiesPanel.displayProperties(console);
 		}
-
-		// Ask user if to delete console contents.
-		boolean confirmed = Utility.ask2(this, "Clear \"%s\" contents?", console.name);
-		if (!confirmed) {
-			return;
-		}
-
-		// Clear console contents and display new console properties.
-		console.clear();
-		propertiesPanel.displayProperties(console);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -554,22 +652,26 @@ public class LogConsoles extends JFrame {
 	 */
 	private LogConsole findConsoleObject(JTextPane textPanel) {
 		
-		// Check input value.
-		if (textPanel == null) {
-			return null;
-		}
-		
-		// Try to find the console with input text panel.
-		for (Entry<String, LogConsole> entry : consoles.entrySet()) {
+		try {
+			// Check input value.
+			if (textPanel == null) {
+				return null;
+			}
 			
-			LogConsole console = entry.getValue();
-			JTextPane listedTextPane = console.textPane;
-			
-			if (listedTextPane.equals(textPanel)) {
-				return console;
+			// Try to find the console with input text panel.
+			for (Entry<String, LogConsole> entry : consoles.entrySet()) {
+				
+				LogConsole console = entry.getValue();
+				JTextPane listedTextPane = console.textPane;
+				
+				if (listedTextPane.equals(textPanel)) {
+					return console;
+				}
 			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return null;
 	}
 	
@@ -597,20 +699,46 @@ public class LogConsoles extends JFrame {
 	}
 	
 	/**
+     * Shutdown consoles.
+     */
+	private void shutdownConsoles() {
+		try {
+			
+			consoles.forEach((name, console) -> {
+				try {
+					
+					console.closeInputSocket();
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+	}
+	
+	/**
 	 * Get exception cause.
 	 * @param ref
 	 * @return
 	 */
 	protected Throwable getCause(Exception exception) {
-
-		if (exception == null) {
-			return new NullPointerException("Unknown exception object.");
+		
+		try {
+			if (exception == null) {
+				return new NullPointerException("Unknown exception object.");
+			}
+			Throwable cause = exception.getCause();
+			if (cause == null) {
+				return new NullPointerException("Unknown cause of exception.");
+			}
+			return cause;
 		}
-		Throwable cause = exception.getCause();
-		if (cause == null) {
-			return new NullPointerException("Unknown cause of exception.");
-		}
-		return cause;
+		catch (Throwable e) {
+            return new UnexpectedException("Unexpected exception.");
+        }
 	}
 	
 	/**
@@ -618,12 +746,18 @@ public class LogConsoles extends JFrame {
 	 */
 	public static int getJUnitProbe1() {
 		
-		LogConsole console1 = consoles.get("Console1");
-		if (console1 == null) {
-			return 0;
+		try {
+			LogConsole console1 = consoles.get("Console1");
+			if (console1 == null) {
+				return 0;
+			}
+			int count = console1.consoleRecords.size();
+			return count;
 		}
-		int count = console1.consoleRecords.size();
-		return count;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return -1;
 	}
 	
 	
@@ -631,24 +765,29 @@ public class LogConsoles extends JFrame {
 	 * JUnit testing probe.
 	 */
 	public static void runJUnitProbe2() {
-		
-		LogConsole console1 = consoles.get("Console1");
-		if (console1 == null) {
-			return;
-		}		
-		console1.clear();
-		LogConsole console2 = consoles.get("Console2");
-		if (console2 == null) {
-			return;
-		}			
-		console2.clear();
-		LogConsole console3 = consoles.get("Console3");
-		if (console3 == null) {
-			return;
-		}			
-		console3.clear();
-		console1.update();
-		console2.update();
-		console3.update();
+		try {
+			
+			LogConsole console1 = consoles.get("Console1");
+			if (console1 == null) {
+				return;
+			}		
+			console1.clear();
+			LogConsole console2 = consoles.get("Console2");
+			if (console2 == null) {
+				return;
+			}			
+			console2.clear();
+			LogConsole console3 = consoles.get("Console3");
+			if (console3 == null) {
+				return;
+			}			
+			console3.clear();
+			console1.update();
+			console2.update();
+			console3.update();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

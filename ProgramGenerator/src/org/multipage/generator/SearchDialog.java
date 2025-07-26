@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -26,7 +26,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
 import javax.swing.JTable;
 import javax.swing.SpringLayout;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableColumnModel;
@@ -49,10 +48,12 @@ import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 
 /**
- * @author
+ * Dialog for searching for areas and slots.
+ * @author vakol
  *
  */
 public class SearchDialog extends JDialog {
@@ -170,21 +171,45 @@ public class SearchDialog extends JDialog {
 	 * @param popup
 	 */
 	private static void addPopup(Component component, final JPopupMenu popup) {
-		component.addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e);
+		try {
+			
+			component.addMouseListener(new MouseAdapter() {
+				public void mousePressed(MouseEvent e) {
+					try {
+						
+						if (e.isPopupTrigger()) {
+							showMenu(e);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-			public void mouseReleased(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e);
+				public void mouseReleased(MouseEvent e) {
+					try {
+						
+						if (e.isPopupTrigger()) {
+							showMenu(e);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-			private void showMenu(MouseEvent e) {
-				popup.show(e.getComponent(), e.getX(), e.getY());
-			}
-		});
+				private void showMenu(MouseEvent e) {
+					try {
+						
+						popup.show(e.getComponent(), e.getX(), e.getY());
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -211,6 +236,7 @@ public class SearchDialog extends JDialog {
 	 * Initialize components. Created with NetBeans.
 	 */
     private void initComponents() {
+		setPreferredSize(new Dimension(600, 500));
     	
         labelSearchString = new javax.swing.JLabel();
         searchStringText = new TextFieldEx();
@@ -259,7 +285,7 @@ public class SearchDialog extends JDialog {
 
         globalAreaButton.setText("org.multipage.generator.textGlobalArea");
         globalAreaButton.setMargin(new Insets(0, 0, 0, 0));
-        globalAreaButton.setPreferredSize(new java.awt.Dimension(80, 25));
+        globalAreaButton.setPreferredSize(new Dimension(100, 25));
         
         radioAreas = new JRadioButton("org.multipage.generator.textSearchAreas");
         radioAreas.setOpaque(false);
@@ -339,18 +365,28 @@ public class SearchDialog extends JDialog {
      * On areas.
      */
     protected void onAreas() {
-		
-		// Switch table.
-    	switchTable(AREAS);
+		try {
+			
+			// Switch table.
+	    	switchTable(AREAS);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
     
     /**
      * On slots.
      */
 	protected void onSlots() {
-		
-    	// Switch table.
-    	switchTable(SLOTS);
+		try {
+			
+			// Switch table.
+	    	switchTable(SLOTS);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -358,37 +394,55 @@ public class SearchDialog extends JDialog {
 	 * @param searchType
 	 */
 	private void switchTable(int searchType) {
-		
-		// Clear table.
-    	Utility.clearTable(resultsTable);
-    	
-    	// Set table type.
-		setTableType(searchType);
-		
-		// Update search results.
-		updateSearchResults();
+		try {
+			
+			// Clear table.
+	    	Utility.clearTable(resultsTable);
+	    	
+	    	// Set table type.
+			setTableType(searchType);
+			
+			// Update search results.
+			updateSearchResults();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
      * Localize components texts.
      */
 	private void localize() {
-
-		Utility.localize(this);
-		Utility.localize(labelSearchString);
-		Utility.localize(radioAreas);
-		Utility.localize(radioSlots);
-		Utility.localize(searchResultsLabel);
-		Utility.localize(caseSensitive);
-		Utility.localize(openEditor);
-		Utility.localize(wholeWordsButton);
-		Utility.localize(exactMatch);
-		Utility.localize(globalAreaButton);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(labelSearchString);
+			Utility.localize(radioAreas);
+			Utility.localize(radioSlots);
+			Utility.localize(searchResultsLabel);
+			Utility.localize(caseSensitive);
+			Utility.localize(openEditor);
+			Utility.localize(wholeWordsButton);
+			Utility.localize(exactMatch);
+			Utility.localize(globalAreaButton);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
+	/**
+	 * Constructor.
+	 */
 	public SearchDialog() {
 		
-		initComponents();
+		try {
+			initComponents();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -398,56 +452,72 @@ public class SearchDialog extends JDialog {
     public SearchDialog(java.awt.Frame parent, AreasModel model) {
         super(parent, false);
         
-        setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-        setPreferredSize(new Dimension(600, 600));
-		setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
-
-        this.model = model;
-        
-        // Load table model.
-        initComponents();
-        // Set initial focus.
-        searchStringText.requestFocusInWindow();
-        // Set component texts.
-        localize();
-        // Load icons.
-        setIcons();
-        // Set background color.
-        setBackgroundColor();
-        // Add listeners.
-        setListeners();
-        // Initialize popup menu.
-        initPopupMenu();
-        // Load dialog state.
-        loadDialog();
-        // Load table models.
-        loadTableModels();
-        // Set search type.
-        setTableType(searchType);
+        try {
+	        setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+	        setPreferredSize(new Dimension(600, 600));
+			setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
+	
+	        this.model = model;
+	        
+	        // Load table model.
+	        initComponents();
+	        // Set initial focus.
+	        searchStringText.requestFocusInWindow();
+	        // Set component texts.
+	        localize();
+	        // Load icons.
+	        setIcons();
+	        // Set colors.
+	        setColors();
+	        // Add listeners.
+	        setListeners();
+	        // Initialize popup menu.
+	        initPopupMenu();
+	        // Load dialog state.
+	        loadDialog();
+	        // Load table models.
+	        loadTableModels();
+	        // Set search type.
+	        setTableType(searchType);
+	    }
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
     }
 
 	/**
      * Initialize popup trayMenu.
      */
     private void initPopupMenu() {
-    	
-    	final Component thisComponent = this;
-		
-		AreaLocalMenu areaMenu = ProgramGenerator.newAreaLocalMenu(new AreaLocalMenuListener() {
-			@Override
-			protected Area getCurrentArea() {
-				// Get selected area.
-				return getSelectedArea();
-			}
-
-			@Override
-			public Component getComponent() {
-				// Get this component.
-				return thisComponent;
-			}
-		});
-		
-		areaMenu.addTo(this, popupMenu);
+    	try {
+			
+			final Component thisComponent = this;
+			
+			AreaLocalMenu areaMenu = ProgramGenerator.newAreaLocalMenu(new AreaLocalMenu.Callbacks() {
+				@Override
+				protected Area getCurrentArea() {
+					try {
+						// Get selected area.
+						return getSelectedArea();
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return null;
+				}
+	
+				@Override
+				public Component getComponent() {
+					// Get this component.
+					return thisComponent;
+				}
+			});
+			
+			areaMenu.addTo(this, popupMenu);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};	
 	}
 
     /**
@@ -456,33 +526,44 @@ public class SearchDialog extends JDialog {
      */
 	protected Area getSelectedArea() {
 		
-		int selectedRow = resultsTable.getSelectedRow();
-		if (selectedRow == -1) {
-			return null;
-		}
-		selectedRow = resultsTable.getRowSorter().convertRowIndexToModel(selectedRow);
-		
-		Area area;
-		switch (searchType) {
-		
-		case SLOTS:
-			area = (Area) tableModelForSlots.getValueAt(selectedRow, 2);
-			break;
+		try {
+			int selectedRow = resultsTable.getSelectedRow();
+			if (selectedRow == -1) {
+				return null;
+			}
+			selectedRow = resultsTable.getRowSorter().convertRowIndexToModel(selectedRow);
 			
-		case AREAS:
-		default:
-			area = (Area) tableModelForAreas.getValueAt(selectedRow, 0);
+			Area area = null;
+			switch (searchType) {
+			
+			case SLOTS:
+				area = (Area) tableModelForSlots.getValueAt(selectedRow, 2);
+				break;
+				
+			case AREAS:
+			default:
+				area = (Area) tableModelForAreas.getValueAt(selectedRow, 0);
+			}
+			
+			return area;
 		}
-		
-		return area;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
      * On close.
      */
 	protected void onClose() {
-		
-		saveDialog();
+		try {
+			
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
 		dispose();
 	}
@@ -491,16 +572,21 @@ public class SearchDialog extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
-			bounds = getBounds();
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+				bounds = getBounds();
+			}
+			else {
+				setBounds(bounds);
+			}
+			
+			openEditor.setSelected(openEditorFlag);
 		}
-		else {
-			setBounds(bounds);
-		}
-		
-		openEditor.setSelected(openEditorFlag);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
     /**
@@ -509,8 +595,14 @@ public class SearchDialog extends JDialog {
      */
     private static String decorateId(Long id) {
     	
-    	String idText = id != null ? String.format("[%d]", id) : "[?]";
-    	return idText;
+    	try {
+	    	String idText = id != null ? String.format("[%d]", id) : "[?]";
+	    	return idText;
+	    }
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
     }
     
     /**
@@ -520,8 +612,14 @@ public class SearchDialog extends JDialog {
      */
 	private static String decorateCount(Integer count) {
 		
-    	String countText = count != null ? String.format("#%d#", count) : "#?#";
-    	return countText;
+		try {
+	    	String countText = count != null ? String.format("#%d#", count) : "#?#";
+	    	return countText;
+	    }
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -529,148 +627,162 @@ public class SearchDialog extends JDialog {
      */
 	@SuppressWarnings("serial")
 	private void loadTableModels() {
-		
-		resultsTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		
-		// Create areas model.
-		columnNamesForAreas = new String [] {
-                Resources.getString("org.multipage.generator.textSearchResultAreas"),
-                Resources.getString("org.multipage.generator.textSearchResultAreaAliases"),
-                Resources.getString("org.multipage.generator.textSearchResultId"),
-                Resources.getString("org.multipage.generator.textSearchResultNumSlots"),
-                Resources.getString("org.multipage.generator.textSearchResultParentArea")
-            };
-		
-		int columnCountForAreas = columnNamesForAreas.length;
-		
-		// Create model with disabled editing of table cells.
-		tableModelForAreas = new DefaultTableModel(columnNamesForAreas, columnCountForAreas) {
-			@Override
-			public boolean isCellEditable(int row, int column) {
-				return false;
-			}
-		};
-		
-		// Initialize table.
-		tableModelForAreas.setRowCount(0);
-		
-		// Create area columns model.
-		columnModelForAreas = new DefaultTableColumnModel();
-		
-		for (int index = 0; index < columnCountForAreas; index++) {
+		try {
 			
-			TableColumn column = new TableColumn(index, columnsWidthsForAreas[index]);
-			column.setPreferredWidth(columnsWidthsForAreas[index]);
-			columnModelForAreas.addColumn(column);
-		}
-		
-		// Create sort model for areas.
-		sortModelForAreas = new TableRowSorter<javax.swing.table.TableModel>(tableModelForAreas);
-		
-		// Create slots model.
-		columnNamesForSlots = new String [] {
-                Resources.getString("org.multipage.generator.textSearchResultSlotAliases"),
-                Resources.getString("org.multipage.generator.textSearchResultId"),
-                Resources.getString("org.multipage.generator.textSearchResultSlotsAreas"),
-            };
-		
-		int columnCountForSlots = columnNamesForSlots.length;
-		
-		// Create model with disabled editing of table cells.
-		tableModelForSlots = new DefaultTableModel(columnNamesForSlots, columnCountForSlots) {
-			@Override
-			public boolean isCellEditable(int row, int column) {
-				return false;
-			}
-		};
-		
-		// Initialize table.
-		tableModelForSlots.setRowCount(0);
-		
-		// Create slot columns model.
-		columnModelForSlots = new DefaultTableColumnModel();
-		
-		for (int index = 0; index < columnCountForSlots; index++) {
+			resultsTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 			
-			TableColumn column = new TableColumn(index, columnsWidthsForSlots[index]);
-			column.setPreferredWidth(columnsWidthsForSlots[index]);
-			columnModelForSlots.addColumn(column);
+			// Create areas model.
+			columnNamesForAreas = new String [] {
+	                Resources.getString("org.multipage.generator.textSearchResultAreas"),
+	                Resources.getString("org.multipage.generator.textSearchResultAreaAliases"),
+	                Resources.getString("org.multipage.generator.textSearchResultId"),
+	                Resources.getString("org.multipage.generator.textSearchResultNumSlots"),
+	                Resources.getString("org.multipage.generator.textSearchResultParentArea")
+	            };
+			
+			int columnCountForAreas = columnNamesForAreas.length;
+			
+			// Create model with disabled editing of table cells.
+			tableModelForAreas = new DefaultTableModel(columnNamesForAreas, columnCountForAreas) {
+				@Override
+				public boolean isCellEditable(int row, int column) {
+					return false;
+				}
+			};
+			
+			// Initialize table.
+			tableModelForAreas.setRowCount(0);
+			
+			// Create area columns model.
+			columnModelForAreas = new DefaultTableColumnModel();
+			
+			for (int index = 0; index < columnCountForAreas; index++) {
+				
+				TableColumn column = new TableColumn(index, columnsWidthsForAreas[index]);
+				column.setPreferredWidth(columnsWidthsForAreas[index]);
+				columnModelForAreas.addColumn(column);
+			}
+			
+			// Create sort model for areas.
+			sortModelForAreas = new TableRowSorter<javax.swing.table.TableModel>(tableModelForAreas);
+			
+			// Create slots model.
+			columnNamesForSlots = new String [] {
+	                Resources.getString("org.multipage.generator.textSearchResultSlotAliases"),
+	                Resources.getString("org.multipage.generator.textSearchResultId"),
+	                Resources.getString("org.multipage.generator.textSearchResultSlotsAreas"),
+	            };
+			
+			int columnCountForSlots = columnNamesForSlots.length;
+			
+			// Create model with disabled editing of table cells.
+			tableModelForSlots = new DefaultTableModel(columnNamesForSlots, columnCountForSlots) {
+				@Override
+				public boolean isCellEditable(int row, int column) {
+					return false;
+				}
+			};
+			
+			// Initialize table.
+			tableModelForSlots.setRowCount(0);
+			
+			// Create slot columns model.
+			columnModelForSlots = new DefaultTableColumnModel();
+			
+			for (int index = 0; index < columnCountForSlots; index++) {
+				
+				TableColumn column = new TableColumn(index, columnsWidthsForSlots[index]);
+				column.setPreferredWidth(columnsWidthsForSlots[index]);
+				columnModelForSlots.addColumn(column);
+			}
+			
+			// Create sort model for slots.
+			sortModelForSlots = new TableRowSorter<javax.swing.table.TableModel>(tableModelForSlots);
 		}
-		
-		// Create sort model for slots.
-		sortModelForSlots = new TableRowSorter<javax.swing.table.TableModel>(tableModelForSlots);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set search type.
 	 */
 	private void setTableType(int searchType) {
-		
-		// Save column widths.
-		saveColumnWidths(SearchDialog.searchType);
-		
-		// Set the dialog controls and labels. 
-		switch (searchType) {
+		try {
 			
-		case SLOTS:
+			// Save column widths.
+			saveColumnWidths(SearchDialog.searchType);
 			
-			SearchDialog.searchType = SLOTS;
-			
-			radioSlots.setSelected(true);
-			
-			labelSearchString.setText(Resources.getString("org.multipage.generator.textSearchSlotsLabel"));
-			searchResultsLabel.setText(Resources.getString("org.multipage.generator.textSearchResultsForSlots"));
-			
-			resultsTable.setColumnModel(columnModelForSlots);
-			resultsTable.setRowSorter(sortModelForSlots);
-			resultsTable.setModel(tableModelForSlots);
-			
-			break;
-			
-		case AREAS:
-		default:
-			
-			SearchDialog.searchType = AREAS;
-			
-			radioAreas.setSelected(true);
-			
-			labelSearchString.setText(Resources.getString("org.multipage.generator.textSearchAreasLabel"));
-			searchResultsLabel.setText(Resources.getString("org.multipage.generator.textSearchResultsForAreas"));
-			
-			resultsTable.setColumnModel(columnModelForAreas);
-			resultsTable.setRowSorter(sortModelForAreas);
-			resultsTable.setModel(tableModelForAreas);
-			
-			break;
-		}
-		
-		// Load column widths.
-		loadColumnWidths(SearchDialog.searchType);
-		
-		// Set columns listener.
-		resultsTable.getTableHeader().addMouseListener(new MouseAdapter() {
-
-			@Override
-			public void mouseReleased(MouseEvent e) {
+			// Set the dialog controls and labels. 
+			switch (searchType) {
 				
-				super.mouseReleased(e);
+			case SLOTS:
 				
-				// Get clicked column index.
-				int clickedTableColumn = resultsTable.columnAtPoint(e.getPoint());
-				if (clickedTableColumn != -1) {
-					
-					// Sort table by the clicked column contents.
-					Utility.sortTable(resultsTable, clickedTableColumn);
-				}
+				SearchDialog.searchType = SLOTS;
+				
+				radioSlots.setSelected(true);
+				
+				labelSearchString.setText(Resources.getString("org.multipage.generator.textSearchSlotsLabel"));
+				searchResultsLabel.setText(Resources.getString("org.multipage.generator.textSearchResultsForSlots"));
+				
+				resultsTable.setColumnModel(columnModelForSlots);
+				resultsTable.setRowSorter(sortModelForSlots);
+				resultsTable.setModel(tableModelForSlots);
+				
+				break;
+				
+			case AREAS:
+			default:
+				
+				SearchDialog.searchType = AREAS;
+				
+				radioAreas.setSelected(true);
+				
+				labelSearchString.setText(Resources.getString("org.multipage.generator.textSearchAreasLabel"));
+				searchResultsLabel.setText(Resources.getString("org.multipage.generator.textSearchResultsForAreas"));
+				
+				resultsTable.setColumnModel(columnModelForAreas);
+				resultsTable.setRowSorter(sortModelForAreas);
+				resultsTable.setModel(tableModelForAreas);
+				
+				break;
 			}
 			
-		});
-		
-		// Set table cell renderer.
-		setTableCellRenderers(searchType);
-		
-		// Update GUI.
-		resultsTable.updateUI();
+			// Load column widths.
+			loadColumnWidths(SearchDialog.searchType);
+			
+			// Set columns listener.
+			resultsTable.getTableHeader().addMouseListener(new MouseAdapter() {
+	
+				@Override
+				public void mouseReleased(MouseEvent e) {
+					try {
+						
+						super.mouseReleased(e);
+						
+						// Get clicked column index.
+						int clickedTableColumn = resultsTable.columnAtPoint(e.getPoint());
+						if (clickedTableColumn != -1) {
+							
+							// Sort table by the clicked column contents.
+							Utility.sortTable(resultsTable, clickedTableColumn);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+			
+			// Set table cell renderer.
+			setTableCellRenderers(searchType);
+			
+			// Update GUI.
+			resultsTable.updateUI();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -678,186 +790,272 @@ public class SearchDialog extends JDialog {
 	 * @param searchType
 	 */
 	private void loadColumnWidths(int searchType) {
-		
-		// Set column widths.
-		TableColumn column = null;
-		
-		switch (searchType) {
-		
-		case SLOTS:
+		try {
 			
-			int columnCount = columnNamesForSlots.length;
+			// Set column widths.
+			TableColumn column = null;
 			
-			for (int index = 0; index < columnCount; index++) {
+			switch (searchType) {
+			
+			case SLOTS:
 				
-				column = columnModelForSlots.getColumn(index);
-				int width = columnsWidthsForSlots[index];
-				column.setPreferredWidth(width);
-				column.setWidth(width);
+				int columnCount = columnNamesForSlots.length;
 				
+				for (int index = 0; index < columnCount; index++) {
+					
+					column = columnModelForSlots.getColumn(index);
+					int width = columnsWidthsForSlots[index];
+					column.setPreferredWidth(width);
+					column.setWidth(width);
+					
+				}
+				
+				resultsTable.setColumnModel(columnModelForSlots);
+				break;
+				
+			case AREAS:
+				
+				columnCount = columnNamesForAreas.length;
+				
+				for (int index = 0; index < columnCount; index++) {
+					
+					column = columnModelForAreas.getColumn(index);
+					int width = columnsWidthsForAreas[index];
+					column.setPreferredWidth(width);
+					column.setWidth(width);
+					
+				}
+				
+				resultsTable.setColumnModel(columnModelForAreas);
+				break;
 			}
-			
-			resultsTable.setColumnModel(columnModelForSlots);
-			break;
-			
-		case AREAS:
-			
-			columnCount = columnNamesForAreas.length;
-			
-			for (int index = 0; index < columnCount; index++) {
-				
-				column = columnModelForAreas.getColumn(index);
-				int width = columnsWidthsForAreas[index];
-				column.setPreferredWidth(width);
-				column.setWidth(width);
-				
-			}
-			
-			resultsTable.setColumnModel(columnModelForAreas);
-			break;
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Save column widths.
 	 */
 	private void saveColumnWidths(int searchType) {
-		
-		// Set column widths.
-		TableColumn column = null;
-		
-		switch (searchType) {
-		
-		case SLOTS:
+		try {
 			
-			int columnCount = columnNamesForSlots.length;
+			// Set column widths.
+			TableColumn column = null;
 			
-			for (int index = 0; index < columnCount; index++) {
+			switch (searchType) {
+			case SLOTS:
+				int columnCount = columnNamesForSlots.length;
+				for (int index = 0; index < columnCount; index++) {
+					
+					column = columnModelForSlots.getColumn(index);
+					columnsWidthsForSlots[index] = column.getWidth();
+				}
+				break;
 				
-				column = columnModelForSlots.getColumn(index);
-				columnsWidthsForSlots[index] = column.getWidth();
+			case AREAS:
+				columnCount = columnNamesForAreas.length;
+				for (int index = 0; index < columnCount; index++) {
+					
+					column = columnModelForAreas.getColumn(index);
+					columnsWidthsForAreas[index] = column.getWidth();
+				}
+				break;
 			}
-			
-			break;
-			
-		case AREAS:
-			
-			columnCount = columnNamesForAreas.length;
-			
-			for (int index = 0; index < columnCount; index++) {
-				
-				column = columnModelForAreas.getColumn(index);
-				columnsWidthsForAreas[index] = column.getWidth();
-			}
-			
-			break;
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
-		
-		// Save column widths.
-		saveColumnWidths();
-		
-		openEditorFlag = openEditor.isSelected();
+		try {
+			
+			bounds = getBounds();
+			// Save column widths.
+			saveColumnWidths();
+			openEditorFlag = openEditor.isSelected();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save column widths.
 	 */
     private void saveColumnWidths() {
-		
-		saveColumnWidths(AREAS);
-		saveColumnWidths(SLOTS);
+		try {
+			
+			saveColumnWidths(AREAS);
+			saveColumnWidths(SLOTS);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
     
 	/**
      * Load icons.
      */
     private void setIcons() {
-
-		reloadButton.setIcon(Images.getIcon("org/multipage/generator/images/update_icon.png"));
-		clearButton.setIcon(Images.getIcon("org/multipage/generator/images/remove_icon.png"));
-		globalAreaButton.setIcon(Images.getIcon("org/multipage/generator/images/center.png"));
+    	try {
+			
+			reloadButton.setIcon(Images.getIcon("org/multipage/generator/images/update_icon.png"));
+			clearButton.setIcon(Images.getIcon("org/multipage/generator/images/remove_icon.png"));
+			globalAreaButton.setIcon(Images.getIcon("org/multipage/generator/images/center.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
     
     /**
-     * Set background color.
+     * Set component colors.
      */
-    private void setBackgroundColor() {
-		
-    	// Use customized area selection color.
-		this.getContentPane().setBackground(CustomizedColors.get(ColorId.SELECTION));
+    private void setColors() {
+		try {
+			
+			// Use customized area selection color.
+			this.getContentPane().setBackground(CustomizedColors.get(ColorId.SEARCH_DIALOG));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
     
 	/**
      * Add listeners.
      */
     public void setListeners() {
-    	
-        searchStringText.getDocument().addDocumentListener(new DocumentListener() {
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				updateSearchResults();
-			}
-			@Override
-			public void removeUpdate(DocumentEvent e) {			
-				updateSearchResults();
-			}
-			@Override
-			public void changedUpdate(DocumentEvent e) {			
-				updateSearchResults();
-			}
-	    });
-        caseSensitive.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-            	updateSearchResults();
-            }
-        });
-        wholeWordsButton.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-            	updateSearchResults();
-            }
-        });
-        exactMatch.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-            	updateSearchResults();
-            }
-        });
-        resultsTable.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-				// Invoke method.
-            	if (evt.getButton() == MouseEvent.BUTTON1 && evt.getClickCount() == 2) {
-            		onSelectionChanged(resultsTable.getSelectedRow());
-            	}
-            }
-        });
-        reloadButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				updateSearchResults();
-			}
-        });
-        clearButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// Reset search string and invoke change method.
-				searchStringText.setText("");
-				updateSearchResults();
-			}
-		});
-        globalAreaButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// Set focus on global area.
-				GeneratorMainFrame.getFrame().getVisibleAreasEditor().focusGlobalArea();
-			}
-		});
+    	try {
+			
+			searchStringText.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					try {
+						
+						updateSearchResults();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					try {
+						
+						updateSearchResults();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					try {
+						
+						updateSearchResults();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+		    });
+	        caseSensitive.addItemListener(new java.awt.event.ItemListener() {
+	            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+	            	try {
+						
+						updateSearchResults();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+	            }
+	        });
+	        wholeWordsButton.addItemListener(new java.awt.event.ItemListener() {
+	            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+	            	try {
+						
+						updateSearchResults();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+	            }
+	        });
+	        exactMatch.addItemListener(new java.awt.event.ItemListener() {
+	            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+	            	try {
+						
+						updateSearchResults();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+	            }
+	        });
+	        resultsTable.addMouseListener(new java.awt.event.MouseAdapter() {
+	            public void mouseClicked(java.awt.event.MouseEvent evt) {
+	            	try {
+						
+						// Invoke method.
+		            	if (evt.getButton() == MouseEvent.BUTTON1 && evt.getClickCount() == 2) {
+		            		onSelectionChanged(resultsTable.getSelectedRow());
+		            	}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+	            }
+	        });
+	        reloadButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						
+						updateSearchResults();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+	        });
+	        clearButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						
+						// Reset search string and invoke change method.
+						searchStringText.setText("");
+						updateSearchResults();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+	        globalAreaButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						
+						// Set focus on global area.
+						GeneratorMainFrame.getFrame().getVisibleAreasEditor().focusGlobalArea();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
     }
 
 	/**
@@ -866,93 +1064,97 @@ public class SearchDialog extends JDialog {
      */
 	protected void onSelectionChanged(int selectedRow) {
 		
-		// If no selection, exit the method.
-		if (selectedRow == -1) {
-			return;
-		}
-		selectedRow = resultsTable.getRowSorter().convertRowIndexToModel(selectedRow);
-		
-		// Get flag.
-		boolean openEditoFlag = openEditor.isSelected();
-		
-		// Do action depending on search type.
-		switch (searchType) {
-		
-		case SLOTS:
+		try {
 			
-			// Get selected slot.
-			Object item = tableModelForSlots.getValueAt(selectedRow, 0);
-			if (item == null) {
+			// If no selection, exit the method.
+			if (selectedRow == -1) {
 				return;
 			}
+			selectedRow = resultsTable.getRowSorter().convertRowIndexToModel(selectedRow);
 			
-			Slot selectedSlot = (Slot) item;
+			// Get flag.
+			boolean openEditoFlag = openEditor.isSelected();
 			
-			// Open slot editor.
-			if (openEditoFlag) {
-				SlotEditorFrame.showDialog(this, selectedSlot, false, true, null);
-			}
+			// Do action depending on search type.
+			switch (searchType) {
 			
-			// Focus area.
-			AreaId areaIdHolder = (AreaId) selectedSlot.getHolder();
-			if (areaIdHolder != null) {
+			case SLOTS:
 				
-				Long areaId = areaIdHolder.getId();
-				if (areaId != null) {
-					
-					// Transmit focus area signal.
-					ApplicationEvents.transmit(this, GuiSignal.focusArea, areaId);
+				// Get selected slot.
+				Object item = tableModelForSlots.getValueAt(selectedRow, 0);
+				if (item == null) {
+					return;
 				}
+				
+				Slot selectedSlot = (Slot) item;
+				
+				// Open slot editor.
+				if (openEditoFlag) {
+					SlotEditorFrame.showDialog(this, selectedSlot, false, true, null);
+				}
+				
+				// Focus area.
+				AreaId areaIdHolder = (AreaId) selectedSlot.getHolder();
+				if (areaIdHolder != null) {
+					
+					Long areaId = areaIdHolder.getId();
+					if (areaId != null) {
+						
+						// Transmit focus area signal.
+						ApplicationEvents.transmit(this, GuiSignal.focusArea, areaId);
+					}
+				}
+				break;
+				
+			case AREAS:
+			default:
+				
+				// Get selected coordinates.
+				item = tableModelForAreas.getValueAt(selectedRow, 4);
+				if (item == null) {
+					return;
+				}
+				
+				// Get selected area.
+				Area area = getSelectedArea();
+				if (area == null) {
+					return;
+				}
+				long areaId = area.getId();
+				
+				// Get selected area and shapes.
+				AreaCoordinatesTableItem coordinatesItem = (AreaCoordinatesTableItem) item;
+				
+				// Open area editor.
+				if (openEditoFlag) {
+					AreaEditorFrame.showDialog(this, area);
+				}
+				
+				// Transmit focus area signal.
+				ApplicationEvents.transmit(this, GuiSignal.focusArea, areaId, coordinatesItem);
 			}
-			break;
-			
-		case AREAS:
-		default:
-			
-			// Get selected coordinates.
-			item = tableModelForAreas.getValueAt(selectedRow, 4);
-			if (item == null) {
-				return;
-			}
-			
-			// Get selected area.
-			Area area = getSelectedArea();
-			if (area == null) {
-				return;
-			}
-			long areaId = area.getId();
-			
-			// Get selected area and shapes.
-			AreaCoordinatesTableItem coordinatesItem = (AreaCoordinatesTableItem) item;
-			
-			// Open area editor.
-			if (openEditoFlag) {
-				AreaEditorFrame.showDialog(this, area);
-			}
-			
-			// Transmit focus area signal.
-			ApplicationEvents.transmit(this, GuiSignal.focusArea, coordinatesItem, areaId);
 		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}			
 	}
 
 	/**
      * Update search results.
      */
     private void updateSearchResults() {
-    	
-    	// Clear table.
-    	Utility.clearTable(resultsTable);
-    	
-    	// Invoke the method content asynchronously.
-    	SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-		
-		    	// Get search text and load table.
+    	try {
+			
+			// Clear table.
+	    	Utility.clearTable(resultsTable);
+	    	
+	    	// Invoke the method content asynchronously.
+	    	Safe.invokeLater(() -> {
+					
+				// Get search text and load table.
 		 		String searchText = searchStringText.getText();
 		 		
 		 		switch (searchType) {
-		 		
 		 		case SLOTS:
 		 			loadSlotsTable(searchText);
 		 			break;
@@ -960,10 +1162,12 @@ public class SearchDialog extends JDialog {
 		 		case AREAS:
 		 		default:
 		 			loadAreasTable(searchText);
-		 			
 		 		}
-			}
-    	});
+	    	});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
     }
     
 	/**
@@ -971,38 +1175,43 @@ public class SearchDialog extends JDialog {
      * @param searchText 
      */
 	private void loadAreasTable(String searchText) {
-		
-    	// Sort the table.
-		Utility.sortTable(resultsTable, -1);
-		
-		// Do loop for all area shapes in the model.
-		for (Area area : model.getAreas()) {
+		try {
 			
-			String areaAlias = area.getAlias();
-			long areaId = area.getId();
-			String areaIdText = decorateId(areaId);
-			int slotCount = area.getSlotAliasesCount();
-			String slotCountText = decorateCount(slotCount);
+			// Sort the table.
+			Utility.sortTable(resultsTable, -1);
 			
-			// If the area description contains the search string.
-			if (Utility.matches(new String [] { area.getDescription(), areaAlias, areaIdText, slotCountText },
-					searchText, caseSensitive.isSelected(),
-					wholeWordsButton.isSelected(), exactMatch.isSelected())) {
+			// Do loop for all area shapes in the model.
+			for (Area area : model.getAreas()) {
 				
-				Object user = area.getUser();
-				if (user != null && user instanceof AreaShapes) {
+				String areaAlias = area.getAlias();
+				long areaId = area.getId();
+				String areaIdText = decorateId(areaId);
+				int slotCount = area.getSlotAliasesCount();
+				String slotCountText = decorateCount(slotCount);
+				
+				// If the area description contains the search string.
+				if (Utility.matches(new String [] { area.getDescription(), areaAlias, areaIdText, slotCountText },
+						searchText, caseSensitive.isSelected(),
+						wholeWordsButton.isSelected(), exactMatch.isSelected())) {
 					
-					AreaShapes shapes = (AreaShapes) user;
-					
-					// Do loop for all shape coordinates.
-					for (AreaCoordinates coordinate : shapes.getCoordinates()) {
+					Object user = area.getUser();
+					if (user != null && user instanceof AreaShapes) {
 						
-						tableModelForAreas.addRow(new Object [] 
-						        { area, areaAlias, areaId, slotCount, new AreaCoordinatesTableItem(coordinate) });
+						AreaShapes shapes = (AreaShapes) user;
+						
+						// Do loop for all shape coordinates.
+						for (AreaCoordinates coordinate : shapes.getCoordinates()) {
+							
+							tableModelForAreas.addRow(new Object [] 
+							        { area, areaAlias, areaId, slotCount, new AreaCoordinatesTableItem(coordinate) });
+						}
 					}
 				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -1010,50 +1219,55 @@ public class SearchDialog extends JDialog {
 	 * @param searchText
 	 */
     protected void loadSlotsTable(String searchText) {
-    	
-    	// Sort the table.
-    	Utility.sortTable(resultsTable, -1);
-		
-    	LinkedList<Slot> slots = null;
-		try {
+    	try {
 			
-			ProgramBasic.loginMiddle();
-			slots = ProgramBasic.getSlots();
-		}
-		catch (Exception e) {
-			Utility.show2(this, e.getLocalizedMessage());
-		}
-		finally {
-			ProgramBasic.logoutMiddle();
-		}
-		
-		if (slots == null || slots.isEmpty()) {
-			return;
-		}
-		
-		// Do loop for all area shapes in the model.
-		for (Slot slot : slots) {
+			// Sort the table.
+	    	Utility.sortTable(resultsTable, -1);
 			
-			// Get holder.
-			SlotHolder slotHolder = slot.getHolder();
-			if (slotHolder instanceof AreaId) {
-				slotHolder = ProgramGenerator.getArea((AreaId) slotHolder);
-			}
-			
-			long slotId = slot.getId();
-			String slotIdText = decorateId(slotId);
-			String slotAlias = slot.getAlias();
-			String slotHolderDescription = slotHolder.getDescriptionForced(true);
-			
-			// If the area description contains the search string.
-			if (Utility.matches(new String [] { slotAlias, slotIdText, slotHolderDescription },
-					searchText, caseSensitive.isSelected(),
-					wholeWordsButton.isSelected(), exactMatch.isSelected())) {
+	    	LinkedList<Slot> slots = null;
+			try {
 				
-				// Do loop for all shape coordinates.
-				tableModelForSlots.addRow(new Object [] { slot, slotId, slotHolder });
+				ProgramBasic.loginMiddle();
+				slots = ProgramBasic.getSlots();
+			}
+			catch (Exception e) {
+				Utility.show2(this, e.getLocalizedMessage());
+			}
+			finally {
+				ProgramBasic.logoutMiddle();
+			}
+			
+			if (slots == null || slots.isEmpty()) {
+				return;
+			}
+			
+			// Do loop for all area shapes in the model.
+			for (Slot slot : slots) {
+				
+				// Get holder.
+				SlotHolder slotHolder = slot.getHolder();
+				if (slotHolder instanceof AreaId) {
+					slotHolder = ProgramGenerator.getArea((AreaId) slotHolder);
+				}
+				
+				long slotId = slot.getId();
+				String slotIdText = decorateId(slotId);
+				String slotAlias = slot.getAlias();
+				String slotHolderDescription = slotHolder.getDescriptionForced(true);
+				
+				// If the area description contains the search string.
+				if (Utility.matches(new String [] { slotAlias, slotIdText, slotHolderDescription },
+						searchText, caseSensitive.isSelected(),
+						wholeWordsButton.isSelected(), exactMatch.isSelected())) {
+					
+					// Do loop for all shape coordinates.
+					tableModelForSlots.addRow(new Object [] { slot, slotId, slotHolder });
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
     
 	/**
@@ -1061,85 +1275,37 @@ public class SearchDialog extends JDialog {
 	 * @param searchType
 	 */
 	private void setTableCellRenderers(int searchType) {
-		
-		switch (searchType) {
-		
-		case SLOTS:
+		try {
 			
-			// Set cell renderer for slot.
-			Utility.setTableCellRenderer(resultsTable, 0, value -> isSelected -> hasFocus -> row -> ((Slot) value).getAlias());
-			// Set cell renderer for slot IDs.
-			Utility.setTableCellRenderer(resultsTable, 1, value -> isSelected -> hasFocus -> row -> decorateId((Long) value));
-			// Set cell renderer for slot holder.
-			Utility.setTableCellRenderer(resultsTable, 2, value -> isSelected -> hasFocus -> row -> ((Area) value).getDescriptionForcedAndDecorated(true));
+			switch (searchType) {
 			
-			break;
-			
-		case AREAS:
-		default:
-			// Create cell renderer for area IDs.
-			Utility.setTableCellRenderer(resultsTable, 0, value -> isSelected -> hasFocus -> row -> value);
-			// Create cell renderer for area IDs.
-			Utility.setTableCellRenderer(resultsTable, 1, value -> isSelected -> hasFocus -> row -> value);
-			// Create cell renderer for area IDs.
-			Utility.setTableCellRenderer(resultsTable, 2, value -> isSelected -> hasFocus -> row -> decorateId((Long) value));
-			// Create cell renderer for slot count.
-			Utility.setTableCellRenderer(resultsTable, 3, value -> isSelected -> hasFocus -> row -> decorateCount((Integer) value));
-			// Create cell renderer for parent areas.
-			Utility.setTableCellRenderer(resultsTable, 4, value -> isSelected -> hasFocus -> row -> ((AreaCoordinatesTableItem) value).toDecoratedString());
-		}
-	}
-}
-
-/**
- * 
- * @author
- */
-class AreaCoordinatesTableItem  {
-	
-	AreaCoordinates coordinate;
-
-	/**
-	 * Constructor.
-	 * @param coordinate
-	 */
-	public AreaCoordinatesTableItem(AreaCoordinates coordinate) {
-		
-		this.coordinate = coordinate;
-	}
-	
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		
-		if (coordinate != null) {
-			
-			Area parentArea = coordinate.getParentArea();
-			
-			if (parentArea != null) {
-				return parentArea.getDescriptionForDiagram();
+			case SLOTS:
+				
+				// Set cell renderer for slot.
+				Utility.setTableCellRenderer(resultsTable, 0, value -> isSelected -> hasFocus -> row -> ((Slot) value).getAlias());
+				// Set cell renderer for slot IDs.
+				Utility.setTableCellRenderer(resultsTable, 1, value -> isSelected -> hasFocus -> row -> decorateId((Long) value));
+				// Set cell renderer for slot holder.
+				Utility.setTableCellRenderer(resultsTable, 2, value -> isSelected -> hasFocus -> row -> ((Area) value).getDescriptionForcedAndDecorated(true));
+				
+				break;
+				
+			case AREAS:
+			default:
+				// Create cell renderer for area IDs.
+				Utility.setTableCellRenderer(resultsTable, 0, value -> isSelected -> hasFocus -> row -> value);
+				// Create cell renderer for area IDs.
+				Utility.setTableCellRenderer(resultsTable, 1, value -> isSelected -> hasFocus -> row -> value);
+				// Create cell renderer for area IDs.
+				Utility.setTableCellRenderer(resultsTable, 2, value -> isSelected -> hasFocus -> row -> decorateId((Long) value));
+				// Create cell renderer for slot count.
+				Utility.setTableCellRenderer(resultsTable, 3, value -> isSelected -> hasFocus -> row -> decorateCount((Integer) value));
+				// Create cell renderer for parent areas.
+				Utility.setTableCellRenderer(resultsTable, 4, value -> isSelected -> hasFocus -> row -> ((AreaCoordinatesTableItem) value).toDecoratedString());
 			}
 		}
-		
-		return "";
-	}
-	
-	/**
-	 * Convert to decorated string.
-	 */
-	public String toDecoratedString() {
-		
-		if (coordinate != null) {
-			
-			Area parentArea = coordinate.getParentArea();
-			
-			if (parentArea != null) {
-				return parentArea.getDescriptionForcedAndDecorated(true);
-			}
-		}
-		
-		return "";
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

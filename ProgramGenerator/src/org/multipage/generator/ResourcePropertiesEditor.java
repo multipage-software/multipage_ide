@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -31,10 +31,11 @@ import javax.swing.border.EmptyBorder;
 import org.maclan.Resource;
 import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Displays resource properties.
+ * @author vakol
  *
  */
 public class ResourcePropertiesEditor extends ResourcePropertiesEditorBase {
@@ -77,36 +78,41 @@ public class ResourcePropertiesEditor extends ResourcePropertiesEditorBase {
 	public ResourcePropertiesEditor(Component parentComponent, Resource resource) {
 		super(Utility.findWindow(parentComponent), ModalityType.DOCUMENT_MODAL);
 		
-		this.parentWindow = Utility.findWindow(parentComponent);
-
-		// Initialize components.
-		initComponents();
-		// Post create.
-		// $hide>>$
-		setComponentsReferences(
-				okButton,
-				cancelButton,
-				labelResourceName,
-				textResourceName,
-				labelResourceIdentifier,
-				textIdentifier,
-				labelNamespace,
-				panelNamespace,
-				checkboxVisible,
-				labelMimeType,
-				comboBoxMime,
-				buttonLoadData,
-				labelFile,
-				buttonDefaultData,
-				labelLocalDescription,
-				textLocalDescription,
-				buttonAssign,
-				buttonClearAssignment,
-				labelAssigned,
-				buttonFindMime
-				);
-		postCreate(resource);
-		// $hide<<$
+		try {
+			this.parentWindow = Utility.findWindow(parentComponent);
+	
+			// Initialize components.
+			initComponents();
+			// Post create.
+			// $hide>>$
+			setComponentsReferences(
+					okButton,
+					cancelButton,
+					labelResourceName,
+					textResourceName,
+					labelResourceIdentifier,
+					textIdentifier,
+					labelNamespace,
+					panelNamespace,
+					checkboxVisible,
+					labelMimeType,
+					comboBoxMime,
+					buttonLoadData,
+					labelFile,
+					buttonDefaultData,
+					labelLocalDescription,
+					textLocalDescription,
+					buttonAssign,
+					buttonClearAssignment,
+					labelAssigned,
+					buttonFindMime
+					);
+			postCreate(resource);
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**

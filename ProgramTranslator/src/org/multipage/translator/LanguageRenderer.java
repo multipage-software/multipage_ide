@@ -1,27 +1,32 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.translator;
 
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
+
+import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SpringLayout;
 
 import org.multipage.gui.GraphUtility;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
-
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.image.BufferedImage;
-import java.awt.Font;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Renderer panel that displays language.
+ * @author vakol
  *
  */
 public class LanguageRenderer extends JPanel {
@@ -63,12 +68,18 @@ public class LanguageRenderer extends JPanel {
 	 * Create the panel.
 	 */
 	public LanguageRenderer() {
-		// Initialize components.
-		initComponents();
-		// $hide>>$
-		// Localize components.
-		localize();
-		// $hide<<$
+		
+		try {
+			// Initialize components.
+			initComponents();
+			// $hide>>$
+			// Localize components.
+			localize();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -140,28 +151,33 @@ public class LanguageRenderer extends JPanel {
 	public void setProperties(String description, long id, String alias,
 			BufferedImage image, boolean isStart, int index, boolean isSelected,
 			boolean hasFocus) {
-		
-		labelDescription.setText(description);
-		labelId.setText(id != 0L ? String.valueOf(id)
-				: Resources.getString("org.multipage.translator.textDefaultLanguage"));
-		labelAlias.setText(alias);
-		
-		checkBoxIsStart.setSelected(isStart);
-		
-		this.isSelected = isSelected;
-		this.hasFocus = hasFocus;
-		
-		if (image != null) {
-			labelIcon.setIcon(new ImageIcon(image));
+		try {
+			
+			labelDescription.setText(description);
+			labelId.setText(id != 0L ? String.valueOf(id)
+					: Resources.getString("org.multipage.translator.textDefaultLanguage"));
+			labelAlias.setText(alias);
+			
+			checkBoxIsStart.setSelected(isStart);
+			
+			this.isSelected = isSelected;
+			this.hasFocus = hasFocus;
+			
+			if (image != null) {
+				labelIcon.setIcon(new ImageIcon(image));
+			}
+			else {
+				labelIcon.setIcon(null);
+			}
+			
+			// Get background color.
+			Color backGroundColor = id == 0L ? colorDefault : Utility.itemColor(index);
+			// Set color.
+			setBackground(backGroundColor);
 		}
-		else {
-			labelIcon.setIcon(null);
-		}
-		
-		// Get background color.
-		Color backGroundColor = id == 0L ? colorDefault : Utility.itemColor(index);
-		// Set color.
-		setBackground(backGroundColor);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -169,19 +185,30 @@ public class LanguageRenderer extends JPanel {
 	 */
 	@Override
 	public void paint(Graphics g) {
-		// Call parent.
-		super.paint(g);
-		// Draw selection.
-		GraphUtility.drawSelection(g, this, isSelected, hasFocus);
+		
+		try {
+			// Call parent.
+			super.paint(g);
+			// Draw selection.
+			GraphUtility.drawSelection(g, this, isSelected, hasFocus);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(labelAliasLabel);
-		Utility.localize(labelIdLabel);
-		Utility.localize(checkBoxIsStart);
+		try {
+			
+			Utility.localize(labelAliasLabel);
+			Utility.localize(labelIdLabel);
+			Utility.localize(checkBoxIsStart);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

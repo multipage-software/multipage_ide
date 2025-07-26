@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2023 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 24-06-2023
+ * Created on : 2023-06-24
  *
  */
 package org.multipage.util;
@@ -10,8 +10,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
+import org.multipage.util.Safe;
+
 /**
- * Repeated task object.
+ * Class implements repeated tasks.
  * @author vakol
  *
  */
@@ -46,6 +48,11 @@ public class RepeatedTask {
 	protected boolean running = false;
 	
 	/**
+	 * The flag is true if the task timeout is reached.
+	 */
+	private boolean isTimeout = false;
+	
+	/**
 	 * Stop flag that terminates the main loop.
 	 */
 	private boolean stop = false;
@@ -55,11 +62,13 @@ public class RepeatedTask {
 	 * @param taskName
 	 * @param startDelayMs
 	 * @param idleTimeMs
-	 * @param taskLambda (exit, exception) -> running
+	 * @param timeoutMs
+	 * @param taskLambda (exit, exception) -> returns flag "continue running"
 	 * @throws InterruptedException 
 	 */
-	public static void loopBlocking(String taskName, long startDelayMs, long idleTimeMs, BiFunction<Boolean, Obj<Exception>, Boolean> taskLambda)
-			throws Exception {
+	public static void loopBlocking(String taskName, long startDelayMs, long idleTimeMs, long timeoutMs,
+			BiFunction<Boolean, Obj<Exception>, Boolean> taskLambda)
+					throws Exception {
 		
 		// Check if the name already exists.
 		if (allTasks.containsKey(taskName)) {
@@ -81,8 +90,7 @@ public class RepeatedTask {
 		
 		// Run main loop of this task.
 		Obj<Exception> exception = new Obj<Exception>(null);
-			
-		// Task loop.
+		
 		try {
 			
 			// Delay start.
@@ -90,12 +98,34 @@ public class RepeatedTask {
 				Thread.sleep(startDelayMs);
 			}
 			
+			// Get task end time.
+			long endTimeMs = -1L;
+			boolean isTimeoutChecked = (timeoutMs >= 0L);
+			
+			if (isTimeoutChecked) {
+				long startTimeMs = System.currentTimeMillis();
+				endTimeMs = startTimeMs + timeoutMs;
+			}
+			
+			// Task loop.
 			task.running = true;
 			while (task.running && !task.stop) {
 				
 				// Invoke lambda function.
 				exception.ref = null;
 	        	task.running = taskLambda.apply(task.running, exception);
+	        	
+	        	// Check timeout and possibly end the task loop.
+	        	if (isTimeoutChecked) {
+	        		
+	        		long currentTimeMs = System.currentTimeMillis();
+	        		if (currentTimeMs >= endTimeMs) {
+	        			
+	        			task.isTimeout = true;
+	        			task.stop = true;
+		        		break;
+	        		}
+	        	}
 	        	
 	        	// Idle timeout.
 	        	Thread.sleep(idleTime);
@@ -127,13 +157,15 @@ public class RepeatedTask {
 	 * @param taskName
 	 * @param startDelayMs
 	 * @param idleTimeMs
+	 * @param timeoutMs
 	 * @param taskLambda
 	 * @throws Exception 
 	 */
-	public static void loopNonBlocking(String taskName, long startDelayMs, long idleTimeMs, BiFunction<Boolean, Obj<Exception>, Boolean> taskLambda)
-			throws Exception {
+	public static RepeatedTask loopNonBlocking(String taskName, long startDelayMs, long idleTimeMs, long timeoutMs,
+			BiFunction<Boolean, Obj<Exception>, Boolean> taskLambda)
+					throws Exception {
 		
-		// Check if the name already exists.
+		// Check if the same name already exists.
 		if (allTasks.containsKey(taskName)) {
 			throw new Exception("Task name '" + taskName + "' already exists.");
 		}
@@ -142,7 +174,7 @@ public class RepeatedTask {
 		RepeatedTask task = new RepeatedTask();
 		task.name = taskName;
 		
-		// Trim idle timeout.
+		// Trim idle time.
 		if (idleTimeMs < 0) {
 			idleTimeMs = DEFAULT_IDLE_TIMEOUT_MS;
 		}
@@ -151,7 +183,7 @@ public class RepeatedTask {
 		// Put the new task into the list of all tasks.
 		allTasks.put(taskName, task);
 		
-		// Run main loop of this task.
+		// Run main loop thread of this task.
 		Obj<Exception> exception = new Obj<Exception>(null);
 		task.thread = new Thread(() -> {
 			
@@ -163,6 +195,16 @@ public class RepeatedTask {
 					Thread.sleep(startDelayMs);
 				}
 				
+				// Get task end time.
+				long endTimeMs = -1L;
+				boolean isTimeoutChecked = (timeoutMs >= 0L);
+				
+				if (isTimeoutChecked) {
+					long startTimeMs = System.currentTimeMillis();
+					endTimeMs = startTimeMs + timeoutMs;
+				}
+				
+				// Task loop.
 				task.running = true;
 				while (task.running && !task.stop) {
 					
@@ -170,14 +212,26 @@ public class RepeatedTask {
 					exception.ref = null;
 		        	task.running = taskLambda.apply(task.running, exception);
 
-		        	// Idle timeout.
-		        	Thread.sleep(idleTime);
-		        	
-		        	// Exit n exception.
-		        	if (exception.ref != null) {
+		        	// Exit loop.
+		        	if (!task.running || exception.ref != null) {
 		        		task.stop = true;
 		        		break;
 		        	}
+
+		        	// Check timeout and possibly end the task loop.
+		        	if (isTimeoutChecked) {
+		        		
+		        		long currentTimeMs = System.currentTimeMillis();
+		        		if (currentTimeMs >= endTimeMs) {
+		        			
+		        			task.isTimeout = true;
+		        			task.stop = true;
+			        		break;
+		        		}
+		        	}
+
+		        	// Idle timeout.
+		        	Thread.sleep(idleTime);
 		        }
 			}
 			catch (Exception e) {
@@ -197,6 +251,7 @@ public class RepeatedTask {
 		}, task.name);
 		
 		task.thread.start();
+		return task;
 	}
 	
 	/**
@@ -205,8 +260,23 @@ public class RepeatedTask {
 	 */
 	private boolean isRunning() {
 		
-		boolean isRunning = allTasks.containsKey(name);
-		return isRunning;
+		try {
+			boolean isRunning = allTasks.containsKey(name);
+			return isRunning;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
+	}
+	
+	/**
+	 * Returns true if the task timeout is reached.
+	 * @return
+	 */
+	public boolean isTimeout() {
+		
+		return isTimeout;
 	}
 	
 	/**
@@ -215,15 +285,26 @@ public class RepeatedTask {
 	 */
 	private static boolean existsRunningTask() {
 		
-		Obj<Boolean> existsRunningTask = new Obj<Boolean>(false);
-		
-		allTasks.forEach((name, task) -> {
+		try {
+			Obj<Boolean> existsRunningTask = new Obj<Boolean>(false);
 			
-			if (task.running) {
-				existsRunningTask.ref = true;
-			}
-		});
-		return existsRunningTask.ref;
+			allTasks.forEach((name, task) -> {
+				try {
+					
+					if (task.running) {
+						existsRunningTask.ref = true;
+					}
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+			return existsRunningTask.ref;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
@@ -232,30 +313,36 @@ public class RepeatedTask {
 	 */
 	public static boolean stopTask(String taskName) {
 		
-		// Get the task by name.
-		RepeatedTask task = allTasks.get(taskName);
-		if (task == null) {
-			return true;
-		}
-		
-		// Set stop flag for the task.
-		task.stop = true;
-		System.err.format("Stopping task \"%s\"\n", task.name);
-		
-		// Wait until the task is stopped.
-		int timeSpanMs = 0;
-		while (task.isRunning()) {
+		try {
+			// Get the task by name.
+			RepeatedTask task = allTasks.get(taskName);
+			if (task == null) {
+				return true;
+			}
 			
-			try {
-				Thread.sleep(STOPPING_TASKS_IDLE_MS);
-				timeSpanMs += STOPPING_TASKS_IDLE_MS;
+			// Set stop flag for the task.
+			task.stop = true;
+			System.err.format("Stopping task \"%s\"\n", task.name);
+			
+			// Wait until the task is stopped.
+			int timeSpanMs = 0;
+			while (task.isRunning()) {
 				
-				if (timeSpanMs >= STOP_TIMEOUT_MS) {
-					return false;
+				try {
+					Thread.sleep(STOPPING_TASKS_IDLE_MS);
+					timeSpanMs += STOPPING_TASKS_IDLE_MS;
+					
+					if (timeSpanMs >= STOP_TIMEOUT_MS) {
+						return false;
+					}
+				}
+				catch (Exception e) {
 				}
 			}
-			catch (Exception e) {
-			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+			return false;
 		}
 		return true;
 	}
@@ -266,31 +353,37 @@ public class RepeatedTask {
 	 */
 	public static boolean stopAllTasks() {
 		
-		System.err.println("Stopping tasks");
-		
-		// Stop flag for each task.
-		allTasks.forEach((name, task) -> {
+		try {
+			System.err.println("Stopping tasks");
 			
-			task.stop = true;
-			System.err.format("Stopping task \"%s\"\n", name);
-		});
-		
-		// Wait until all task are stopped.
-		int timeSpanMs = 0;
-		while (existsRunningTask()) {
-			
-			try {
-				Thread.sleep(STOPPING_TASKS_IDLE_MS);
-				timeSpanMs += STOPPING_TASKS_IDLE_MS;
+			// Stop flag for each task.
+			allTasks.forEach((name, task) -> {
 				
-				if (timeSpanMs >= STOP_TIMEOUT_MS) {
-					return false;
+				task.stop = true;
+				System.err.format("Stopping task \"%s\"\n", name);
+			});
+			
+			// Wait until all task are stopped.
+			int timeSpanMs = 0;
+			while (existsRunningTask()) {
+				
+				try {
+					Thread.sleep(STOPPING_TASKS_IDLE_MS);
+					timeSpanMs += STOPPING_TASKS_IDLE_MS;
+					
+					if (timeSpanMs >= STOP_TIMEOUT_MS) {
+						return false;
+					}
+					
+					System.err.print('#');
 				}
-				
-				System.err.print('#');
+				catch (Exception e) {
+				}
 			}
-			catch (Exception e) {
-			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+			return false;
 		}
 		return true;
 	}

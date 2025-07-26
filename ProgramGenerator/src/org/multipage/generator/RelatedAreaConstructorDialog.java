@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -30,10 +30,11 @@ import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays editor for related area in the constructor.
+ * @author vakol
  *
  */
 public class RelatedAreaConstructorDialog extends JDialog {
@@ -82,12 +83,17 @@ public class RelatedAreaConstructorDialog extends JDialog {
 	public static WizardReturned showDialog(Component parent, boolean isLastDialog,
 			Area relatedArea, Obj<Area> selectedRelatedArea) {
 		
-		RelatedAreaConstructorDialog dialog = new RelatedAreaConstructorDialog(
-				Utility.findWindow(parent), isLastDialog, selectedRelatedArea);
-		
-		dialog.setVisible(true);
-		
-		return returned;
+		try {
+			RelatedAreaConstructorDialog dialog = new RelatedAreaConstructorDialog(
+					Utility.findWindow(parent), isLastDialog, selectedRelatedArea);
+			
+			dialog.setVisible(true);
+			return returned;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return WizardReturned.UNKNOWN;
 	}
 	
 	/**
@@ -99,13 +105,17 @@ public class RelatedAreaConstructorDialog extends JDialog {
 	public RelatedAreaConstructorDialog(Window parentWindow, boolean isLastDialog,
 			Obj<Area> selectedRelatedArea) {
 		super(parentWindow, ModalityType.DOCUMENT_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		this.selectedRelatedArea = selectedRelatedArea;
-		postCreate(isLastDialog);
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			this.selectedRelatedArea = selectedRelatedArea;
+			postCreate(isLastDialog);
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -221,15 +231,20 @@ public class RelatedAreaConstructorDialog extends JDialog {
 	 * @param isLastDialog 
 	 */
 	private void postCreate(boolean isLastDialog) {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		Utility.centerOnScreen(this);
-		
-		localize(isLastDialog);
-		setIcons();
-		setToolTips();
-		
-		loadRelatedAreaDescription();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			Utility.centerOnScreen(this);
+			
+			localize(isLastDialog);
+			setIcons();
+			setToolTips();
+			
+			loadRelatedAreaDescription();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -237,44 +252,64 @@ public class RelatedAreaConstructorDialog extends JDialog {
 	 * @param isLastDialog 
 	 */
 	private void localize(boolean isLastDialog) {
-		
-		Utility.localize(this);
-		buttonNext.setText(Resources.getString(isLastDialog ? "textOk" : "org.multipage.generator.textNext"));
-		Utility.localize(buttonCancel);
-		Utility.localize(buttonPrevious);
-		Utility.localize(buttonSkip);
-		Utility.localize(labelRelatedArea);
-		Utility.localize(labelMessage);
+		try {
+			
+			Utility.localize(this);
+			buttonNext.setText(Resources.getString(isLastDialog ? "textOk" : "org.multipage.generator.textNext"));
+			Utility.localize(buttonCancel);
+			Utility.localize(buttonPrevious);
+			Utility.localize(buttonSkip);
+			Utility.localize(labelRelatedArea);
+			Utility.localize(labelMessage);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonNext.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
-		buttonPrevious.setIcon(Images.getIcon("org/multipage/generator/images/previous_icon.png"));
-		buttonSkip.setIcon(Images.getIcon("org/multipage/generator/images/skip.png"));
-		buttonSelectRelatedArea.setIcon(Images.getIcon("org/multipage/generator/images/area_node.png"));
+		try {
+			
+			buttonNext.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+			buttonPrevious.setIcon(Images.getIcon("org/multipage/generator/images/previous_icon.png"));
+			buttonSkip.setIcon(Images.getIcon("org/multipage/generator/images/skip.png"));
+			buttonSelectRelatedArea.setIcon(Images.getIcon("org/multipage/generator/images/area_node.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set tool tips.
 	 */
 	protected void setToolTips() {
-
-		buttonSelectRelatedArea.setToolTipText(Resources.getString("org.multipage.generator.tooltipSelectRelatedArea"));
+		try {
+			
+			buttonSelectRelatedArea.setToolTipText(Resources.getString("org.multipage.generator.tooltipSelectRelatedArea"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load related area description.
 	 */
 	private void loadRelatedAreaDescription() {
-		
-		if (selectedRelatedArea.ref != null) {
-			textRelatedArea.setText(selectedRelatedArea.ref.getDescriptionForced());
+		try {
+			
+			if (selectedRelatedArea.ref != null) {
+				textRelatedArea.setText(selectedRelatedArea.ref.getDescriptionForced());
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -317,17 +352,22 @@ public class RelatedAreaConstructorDialog extends JDialog {
 	 * On select related area.
 	 */
 	protected void onSelectRelatedArea() {
-		
-		// Select area.
-		Area rootArea = ProgramGenerator.getArea(0);
-		
-		Area relatedArea = SelectSubAreaDialog.showDialog(this, rootArea, selectedRelatedArea.ref);
-		if (relatedArea == null) {
-			return;
+		try {
+			
+			// Select area.
+			Area rootArea = ProgramGenerator.getArea(0);
+			
+			Area relatedArea = SelectSubAreaDialog.showDialog(this, rootArea, selectedRelatedArea.ref);
+			if (relatedArea == null) {
+				return;
+			}
+			
+			// Set new selected area.
+			selectedRelatedArea.ref = relatedArea;
+			textRelatedArea.setText(relatedArea.getDescriptionForced());
 		}
-		
-		// Set new selected area.
-		selectedRelatedArea.ref = relatedArea;
-		textRelatedArea.setText(relatedArea.getDescriptionForced());
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

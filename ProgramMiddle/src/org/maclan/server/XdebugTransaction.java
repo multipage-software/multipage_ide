@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2024 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 16-05-2023
+ * Created on : 2023-05-16
  *
  */
 package org.maclan.server;
@@ -13,8 +13,8 @@ import org.multipage.util.Obj;
 import org.multipage.util.Resources;
 
 /**
- * Xdebug transaction object. The transaction sends a command and waits for response.
- * @author vacla
+ * Xdebug transaction. The transaction object sends commands and waits for responses.
+ * @author vakol
  *
  */
 public class XdebugTransaction {
@@ -136,6 +136,25 @@ public class XdebugTransaction {
 	public Consumer<XdebugClientResponse> getResponseLambda() {
 		
 		return responseLambda;
+	}
+	
+	/**
+	 * Returns true value if response lambda is not null.
+	 * @return
+	 */
+	public boolean isResponseLambda() {
+		
+		boolean isResponse = (responseLambda != null);
+		return isResponse;
+	}
+	
+	/**
+	 * Set transaction ID.
+	 * @param transactionId
+	 */
+	public void setTransactionId(int transactionId) {
+		
+		id = transactionId;
 	}
 	
 	/**

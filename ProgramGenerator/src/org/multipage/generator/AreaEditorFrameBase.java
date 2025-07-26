@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2021 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 09-04-2021
+ * Created on : 2021-04-09
  *
  */
 
@@ -15,13 +15,17 @@ import java.awt.event.WindowAdapter;
 import javax.swing.JFrame;
 
 import org.maclan.Area;
+import org.multipage.gui.UpdatableComponent;
 import org.multipage.gui.Utility;
+import org.multipage.util.Closable;
+import org.multipage.util.Safe;
 
 /**
- * @author
+ * Base class for area editor frame.
+ * @author vakol
  *
  */
-public abstract class AreaEditorFrameBase extends AreaEditorCommonBase {
+public abstract class AreaEditorFrameBase extends AreaEditorBase implements UpdatableComponent, Closable {
 
 	/**
 	 * Version.
@@ -31,7 +35,7 @@ public abstract class AreaEditorFrameBase extends AreaEditorCommonBase {
 	/**
 	 * Frame object.
 	 */
-	private JFrame frame = new JFrame();
+	protected JFrame frame = new JFrame();
 		
 	/**
 	 * Constructor.
@@ -40,34 +44,84 @@ public abstract class AreaEditorFrameBase extends AreaEditorCommonBase {
 	 */
 	public AreaEditorFrameBase(Component parentComponent, Area area) {
 		super(parentComponent, area);
-		
-		// Set lambda functions that are used in the base class methods.
-		getWindowLambda = () -> {
-			return Utility.findWindow(frame);
-		};
-		
-		getTitleLambda = () -> {
-			return frame.getTitle();
-		};
-		
-		setTitleLambda = title -> {
-			frame.setTitle(title);
-		};
-		
-		setIconImageLambda = icon -> {
-			frame.setIconImage(icon);
-		};
-		
-		getBoundsLambda = () -> {
-			return frame.getBounds();
-		};
-		
-		setBoundsLambda = bounds -> {
-			frame.setBounds(bounds);
-		};
-		
-		disposeLambda = () -> {
-			frame.dispose();
+		try {
+			
+			// Set lambda functions that are used in the base class methods.
+			getWindowLambda = () -> {
+				try {
+					return Utility.findWindow(frame);
+				}
+				catch (Throwable e) {
+					Safe.exception(e);
+				}
+				return null;
+			};
+			
+			getTitleLambda = () -> {
+				try {
+					return frame.getTitle();
+				}
+				catch (Throwable e) {
+					Safe.exception(e);
+				}
+				return "";
+			};
+			
+			setTitleLambda = title -> {
+				try {
+					
+					frame.setTitle(title);
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			};
+			
+			setIconImageLambda = icon -> {
+				try {
+					
+					frame.setIconImage(icon);
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			};
+			
+			getBoundsLambda = () -> {
+				try {
+					return frame.getBounds();
+				}
+				catch (Throwable e) {
+					Safe.exception(e);
+				}
+				return null;
+			};
+			
+			setBoundsLambda = bounds -> {
+				try {
+					
+					frame.setBounds(bounds);
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			};
+			
+			disposeLambda = () -> {
+				try {
+					
+					close();
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			};
+			
+			// Register this object for updates.
+			GeneratorMainFrame.registerForUpdate(this);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
 		};
 	}
 	
@@ -76,9 +130,14 @@ public abstract class AreaEditorFrameBase extends AreaEditorCommonBase {
 	 * @param flag
 	 */
 	public void setVisible(boolean flag) {
-		
-		// Delegate the call.
-		frame.setVisible(flag);
+		try {
+			
+			// Delegate the call.
+			frame.setVisible(flag);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -86,9 +145,14 @@ public abstract class AreaEditorFrameBase extends AreaEditorCommonBase {
 	 * @param contentPane
 	 */
 	protected void setContentPane(Container contentPane) {
-		
-		// Delegate the call.
-		frame.setContentPane(contentPane);
+		try {
+			
+			// Delegate the call.
+			frame.setContentPane(contentPane);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -99,10 +163,14 @@ public abstract class AreaEditorFrameBase extends AreaEditorCommonBase {
 	 * @param height
 	 */
 	protected void setBounds(int x, int y, int width, int height) {
-		
-		// Delegate the call.
-		frame.setBounds(x, y, width, height);
-		
+		try {
+			
+			// Delegate the call.
+			frame.setBounds(x, y, width, height);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -110,9 +178,14 @@ public abstract class AreaEditorFrameBase extends AreaEditorCommonBase {
 	 * @param operation
 	 */
 	protected void setDefaultCloseOperation(int operation) {
-		
-		// Delegate the call.
-		frame.setDefaultCloseOperation(operation);
+		try {
+			
+			// Delegate the call.
+			frame.setDefaultCloseOperation(operation);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -120,9 +193,14 @@ public abstract class AreaEditorFrameBase extends AreaEditorCommonBase {
 	 * @param windowAdapter
 	 */
 	protected void addWindowListener(WindowAdapter windowAdapter) {
-		
-		// Delegate the call.
-		frame.addWindowListener(windowAdapter);
+		try {
+			
+			// Delegate the call.
+			frame.addWindowListener(windowAdapter);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -130,8 +208,45 @@ public abstract class AreaEditorFrameBase extends AreaEditorCommonBase {
 	 * @param dimension
 	 */
 	protected void setMinimumSize(Dimension dimension) {
-		
-		// Delegate the call.
-		frame.setMinimumSize(dimension);
+		try {
+			
+			// Delegate the call.
+			frame.setMinimumSize(dimension);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+	}
+	
+	/**
+     * Callback method for updating of application components.
+     */
+	@Override
+	public void updateComponents() {
+		try {
+			
+			// Update parent class components.
+			super.updateComponents();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+	}
+	
+	/**
+	 * Close object.
+	 */
+	@Override
+	public void close() {
+		try {
+			
+			// Unregister this object from updates.
+			GeneratorMainFrame.unregisterFromUpdate(this);
+			
+			frame.dispose();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 }

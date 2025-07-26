@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -13,8 +13,11 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.tree.*;
 
+import org.multipage.util.Safe;
+
 /**
- * @author
+ * Class for paths in tree containing nodes that are identified by ID.
+ * @author vakol
  *
  */
 public class IdentifierTreePath implements Serializable {
@@ -34,30 +37,35 @@ public class IdentifierTreePath implements Serializable {
 	 * @param path
 	 */
 	public IdentifierTreePath(TreePath path) {
-		
-		int nodeCount = path.getPathCount();
-		
-		// Create identifier array.
-		identifierPath = new long [nodeCount];
-		int index = 0;
-		
-		for (Object node : path.getPath()) {
+		try {
 			
-			identifierPath[index] = -1;
+			int nodeCount = path.getPathCount();
 			
-			if (node instanceof IdentifiedTreeNode) {
-				identifierPath[index] = ((IdentifiedTreeNode) node).getId();
-			}
-			if (node instanceof DefaultMutableTreeNode) {
-				Object userObject = ((DefaultMutableTreeNode) node).getUserObject();
+			// Create identifier array.
+			identifierPath = new long [nodeCount];
+			int index = 0;
+			
+			for (Object node : path.getPath()) {
 				
-				if (userObject instanceof IdentifiedTreeNode) {
-					identifierPath[index] = ((IdentifiedTreeNode) userObject).getId();
+				identifierPath[index] = -1;
+				
+				if (node instanceof IdentifiedTreeNode) {
+					identifierPath[index] = ((IdentifiedTreeNode) node).getId();
 				}
+				if (node instanceof DefaultMutableTreeNode) {
+					Object userObject = ((DefaultMutableTreeNode) node).getUserObject();
+					
+					if (userObject instanceof IdentifiedTreeNode) {
+						identifierPath[index] = ((IdentifiedTreeNode) userObject).getId();
+					}
+				}
+				
+				index++;
 			}
-			
-			index++;
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -65,28 +73,33 @@ public class IdentifierTreePath implements Serializable {
 	 * @param tree
 	 */
 	public void expandTreePath(JTree tree) {
-
-		// Get tree model.
-		TreeModel model = tree.getModel();
-		
-		int level = 0;
-		
-		// Get root node.
-		Object rootNode = model.getRoot();
-		
-		LinkedList<Object> pathNodesList = new LinkedList<Object>();
-		
-		// Load path nodes list.
-		if (loadTreePathRecursive(rootNode, level, pathNodesList)) {
+		try {
 			
-			pathNodesList.addFirst(rootNode);
+			// Get tree model.
+			TreeModel model = tree.getModel();
 			
-			// Create tree path.
-			TreePath treePath = new TreePath(pathNodesList.toArray());
+			int level = 0;
 			
-			// Expand given path.
-			tree.expandPath(treePath);
+			// Get root node.
+			Object rootNode = model.getRoot();
+			
+			LinkedList<Object> pathNodesList = new LinkedList<Object>();
+			
+			// Load path nodes list.
+			if (loadTreePathRecursive(rootNode, level, pathNodesList)) {
+				
+				pathNodesList.addFirst(rootNode);
+				
+				// Create tree path.
+				TreePath treePath = new TreePath(pathNodesList.toArray());
+				
+				// Expand given path.
+				tree.expandPath(treePath);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -97,55 +110,59 @@ public class IdentifierTreePath implements Serializable {
 	 */
 	private boolean loadTreePathRecursive(Object node, int level, LinkedList<Object> pathNodesList) {
 		
-		IdentifiedTreeNode identifiedNode = null;
-		List children = null;
-		
-		// Get node content.
-		if (node instanceof IdentifiedTreeNode) {
+		try {
+			IdentifiedTreeNode identifiedNode = null;
+			List children = null;
 			
-			identifiedNode = (IdentifiedTreeNode) node;
-			children = identifiedNode.getChildren();
-		}
-		
-		if (node instanceof DefaultMutableTreeNode) {
-			
-			DefaultMutableTreeNode mutableNode = (DefaultMutableTreeNode) node;
-			Object userObject = mutableNode.getUserObject();
-			
-			if (userObject instanceof IdentifiedTreeNode) {
+			// Get node content.
+			if (node instanceof IdentifiedTreeNode) {
 				
-				identifiedNode = (IdentifiedTreeNode) userObject;
-				children = Collections.list(mutableNode.children());
+				identifiedNode = (IdentifiedTreeNode) node;
+				children = identifiedNode.getChildren();
 			}
-		}
-		
-		if (identifiedNode == null) {
-			return false;
-		}
-		
-		// Check node ID.
-		if (identifiedNode.getId() != identifierPath[level]) {
-			return false;
-		}
-		
-		// If it is the last level, exit with true value.
-		if (level >= identifierPath.length - 1) {
 			
-			return true;
-		}
-		
-		// Increment level.
-		level++;
-		
-		// Do loop for all children. Call this method recursively.
-		for (Object child : children) {
-			if (loadTreePathRecursive(child, level, pathNodesList)) {
+			if (node instanceof DefaultMutableTreeNode) {
 				
-				pathNodesList.addFirst(child);
+				DefaultMutableTreeNode mutableNode = (DefaultMutableTreeNode) node;
+				Object userObject = mutableNode.getUserObject();
+				
+				if (userObject instanceof IdentifiedTreeNode) {
+					
+					identifiedNode = (IdentifiedTreeNode) userObject;
+					children = Collections.list(mutableNode.children());
+				}
+			}
+			
+			if (identifiedNode == null) {
+				return false;
+			}
+			
+			// Check node ID.
+			if (identifiedNode.getId() != identifierPath[level]) {
+				return false;
+			}
+			
+			// If it is the last level, exit with true value.
+			if (level >= identifierPath.length - 1) {
+				
 				return true;
 			}
+			
+			// Increment level.
+			level++;
+			
+			// Do loop for all children. Call this method recursively.
+			for (Object child : children) {
+				if (loadTreePathRecursive(child, level, pathNodesList)) {
+					
+					pathNodesList.addFirst(child);
+					return true;
+				}
+			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return false;
 	}
 
@@ -154,27 +171,32 @@ public class IdentifierTreePath implements Serializable {
 	 * @param tree
 	 */
 	public void addSelection(JTree tree) {
-		
-		// Get tree model.
-		TreeModel model = tree.getModel();
-		
-		int level = 0;
-		
-		// Get root node.
-		Object rootNode = model.getRoot();
-		
-		LinkedList<Object> pathNodesList = new LinkedList<Object>();
-		
-		// Load path nodes list.
-		if (loadTreePathRecursive(rootNode, level, pathNodesList)) {
+		try {
 			
-			pathNodesList.addFirst(rootNode);
+			// Get tree model.
+			TreeModel model = tree.getModel();
 			
-			// Create tree path.
-			TreePath treePath = new TreePath(pathNodesList.toArray());
+			int level = 0;
 			
-			// Add given path selection.
-			tree.addSelectionPath(treePath);
+			// Get root node.
+			Object rootNode = model.getRoot();
+			
+			LinkedList<Object> pathNodesList = new LinkedList<Object>();
+			
+			// Load path nodes list.
+			if (loadTreePathRecursive(rootNode, level, pathNodesList)) {
+				
+				pathNodesList.addFirst(rootNode);
+				
+				// Create tree path.
+				TreePath treePath = new TreePath(pathNodesList.toArray());
+				
+				// Add given path selection.
+				tree.addSelectionPath(treePath);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

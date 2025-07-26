@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -11,8 +11,11 @@ import java.awt.Graphics;
 
 import javax.swing.JLabel;
 
+import org.multipage.util.Safe;
+
 /**
- * @author
+ * Renderer that displays label.
+ * @author vakol
  *
  */
 public class RendererJLabel extends JLabel {
@@ -36,20 +39,30 @@ public class RendererJLabel extends JLabel {
 	 * Constructor.
 	 */
 	public RendererJLabel() {
-		
-		setOpaque(false);
+		try {
+			
+			setOpaque(false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set properties.
 	 */
 	public RendererJLabel set(boolean isSelected, boolean hasFocus, int index) {
+		try {
+			
+			this.isSelected = isSelected;
+			this.hasFocus = hasFocus;
 		
-		this.isSelected = isSelected;
-		this.hasFocus = hasFocus;
-		
-		setBackground(Utility.itemColor(index));
-		
+			setBackground(Utility.itemColor(index));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+
 		return this;
 	}
 
@@ -58,9 +71,13 @@ public class RendererJLabel extends JLabel {
 	 */
 	@Override
 	public void paint(Graphics g) {
-		
-		super.paint(g);
-		
-		GraphUtility.drawSelection(g, this, isSelected, hasFocus);
+		try {
+			
+			super.paint(g);
+			GraphUtility.drawSelection(g, this, isSelected, hasFocus);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

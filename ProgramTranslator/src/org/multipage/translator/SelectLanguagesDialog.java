@@ -1,26 +1,42 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.translator;
 
-import java.util.*;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.LinkedList;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JToolBar;
+import javax.swing.SpringLayout;
 
-import org.maclan.*;
-import org.multipage.gui.*;
-import org.multipage.util.*;
-
-import java.awt.*;
-import java.awt.event.*;
+import org.maclan.Language;
+import org.multipage.gui.CheckBoxCallback;
+import org.multipage.gui.CheckBoxList;
+import org.multipage.gui.CheckBoxListManager;
+import org.multipage.gui.Images;
+import org.multipage.gui.ToolBarKit;
+import org.multipage.gui.Utility;
+import org.multipage.util.Obj;
+import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that enables to select a language.
+ * @author vakol
  *
  */
 public class SelectLanguagesDialog extends JDialog {
@@ -70,8 +86,7 @@ public class SelectLanguagesDialog extends JDialog {
 	/**
 	 * List component.
 	 */
-	private CheckBoxList<Language> list =
-		new CheckBoxList<Language>();
+	private CheckBoxList<Language> list = new CheckBoxList<Language>();
 	
 	// $hide<<$
 	/**
@@ -93,13 +108,19 @@ public class SelectLanguagesDialog extends JDialog {
 			LinkedList<Language> availableLanguages, long startLanguageId,
 			long selectedLanguageId, int type,
 			LinkedList<Language> selectedLanguages) {
-
-		SelectLanguagesDialog dialog = new SelectLanguagesDialog(parentWindow);
-		dialog.initializeDialog(availableLanguages, startLanguageId,
-				selectedLanguageId, type, selectedLanguages);
-		dialog.setVisible(true);
-
-		return dialog.confirm;
+		
+		try {
+			SelectLanguagesDialog dialog = new SelectLanguagesDialog(parentWindow);
+			dialog.initializeDialog(availableLanguages, startLanguageId,
+					selectedLanguageId, type, selectedLanguages);
+			dialog.setVisible(true);
+	
+			return dialog.confirm;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -108,9 +129,14 @@ public class SelectLanguagesDialog extends JDialog {
 	 */
 	public SelectLanguagesDialog(Window parentWindow) {
 		super(parentWindow, ModalityType.APPLICATION_MODAL);
-
-		// Initialize components.
-		initComponents();
+		
+		try {
+			// Initialize components.
+			initComponents();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -184,45 +210,61 @@ public class SelectLanguagesDialog extends JDialog {
 	private void initializeDialog(LinkedList<Language> availableLanguages,
 			long startLanguageId, long selectedLanguageId, int type,
 			LinkedList<Language> selectedLanguages) {
-
-		this.selectedLanguages = selectedLanguages;
-		this.startLanguageId = startLanguageId;
-		this.selectedLanguageId = selectedLanguageId;
-		this.type = type;
-		this.availableLanguages = availableLanguages;
-		
-		// Set title.
-		setTitle();
-		// Localize components.
-		localize();
-		// Set icons.
-		setIcons();
-		// Center dialog.
-		Utility.centerOnScreen(this);
-		// Set list.
-		setList();
-		// Set tool bar.
-		setToolBar();
+		try {
+			
+			this.selectedLanguages = selectedLanguages;
+			this.startLanguageId = startLanguageId;
+			this.selectedLanguageId = selectedLanguageId;
+			this.type = type;
+			this.availableLanguages = availableLanguages;
+			
+			// Set title.
+			setTitle();
+			// Localize components.
+			localize();
+			// Set icons.
+			setIcons();
+			// Center dialog.
+			Utility.centerOnScreen(this);
+			// Set list.
+			setList();
+			// Set tool bar.
+			setToolBar();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set title.
 	 */
 	private void setTitle() {
-
-		String title = Resources.getString(type == EXPORT ?
-				"org.multipage.translator.textSelectLanguagesExportDialog" : "org.multipage.translator.textSelectLanguagesImportDialog");
-		setTitle(title);
+		try {
+			
+			String title = Resources.getString(type == EXPORT ?
+					"org.multipage.translator.textSelectLanguagesExportDialog" : "org.multipage.translator.textSelectLanguagesImportDialog");
+			setTitle(title);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On OK.
 	 */
 	protected void onOk() {
-
-		// Get selected objects.
-		list.getSelectedObjects(selectedLanguages);
-		confirm = true;
+		try {
+			
+			// Get selected objects.
+			list.getSelectedObjects(selectedLanguages);
+			confirm = true;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -230,7 +272,7 @@ public class SelectLanguagesDialog extends JDialog {
 	 * On cancel.
 	 */
 	protected void onCancel() {
-
+		
 		confirm = false;
 		dispose();
 	}
@@ -239,34 +281,39 @@ public class SelectLanguagesDialog extends JDialog {
 	 * Set list.
 	 */
 	private void setList() {
-
-		scrollListContainer.setViewportView(list);
-		list.setContentManager(new CheckBoxListManager<Language>() {
-			// Load item.
-			@Override
-			protected boolean loadItem(int index, Obj<Language> object,
-					Obj<String> text, Obj<Boolean> selected) {
-				
-				try {
-					Language language = availableLanguages.get(index);
-					object.ref = language;
-					text.ref = language.toString();
-					selected.ref = isDefaultSelection(language.id);
-				}
-				catch (IndexOutOfBoundsException e) {
-					
-					return false;
-				}
-				return true;
-			}
-			// Set item.
-			@Override
-			protected boolean processChange(Language object, boolean selected) {
-
-				return true;
-			}
+		try {
 			
-		});
+			scrollListContainer.setViewportView(list);
+			list.setContentManager(new CheckBoxListManager<Language>() {
+				// Load item.
+				@Override
+				protected boolean loadItem(int index, Obj<Language> object,
+						Obj<String> text, Obj<Boolean> selected) {
+					
+					try {
+						Language language = availableLanguages.get(index);
+						object.ref = language;
+						text.ref = language.toString();
+						selected.ref = isDefaultSelection(language.id);
+					}
+					catch (IndexOutOfBoundsException e) {
+						
+						return false;
+					}
+					return true;
+				}
+				// Set item.
+				@Override
+				protected boolean processChange(Language object, boolean selected) {
+	
+					return true;
+				}
+				
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -276,55 +323,76 @@ public class SelectLanguagesDialog extends JDialog {
 	 */
 	protected Boolean isDefaultSelection(long languageId) {
 		
-		boolean selected;
-		
-		if (type == EXPORT) {
-			selected = languageId == selectedLanguageId
-				|| languageId == startLanguageId;
-		}
-		else {
-			if (availableLanguages.size() > 1) {
-				selected = languageId != startLanguageId;
+		try {
+			boolean selected;
+			
+			if (type == EXPORT) {
+				selected = languageId == selectedLanguageId
+					|| languageId == startLanguageId;
 			}
 			else {
-				return true;
+				if (availableLanguages.size() > 1) {
+					selected = languageId != startLanguageId;
+				}
+				else {
+					return true;
+				}
 			}
+			
+			return selected;
 		}
-		
-		return selected;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return true;
 	}
 
 	/**
 	 * Set tool bar.
 	 */
 	private void setToolBar() {
-
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/translator/images/select_all.png",
-				this, "selectAll", "org.multipage.translator.tooltipSelectAllLanguages");
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/translator/images/deselect_all.png",
-				this, "deselectAll", "org.multipage.translator.tooltipUnselectAllLanguages");
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/translator/images/default_icon.png", 
-				this, "selectDefault", "org.multipage.translator.tooltipSelectDefaultLanguage");
+		try {
+			
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/translator/images/select_all.png",
+					this, "selectAll", "org.multipage.translator.tooltipSelectAllLanguages");
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/translator/images/deselect_all.png",
+					this, "deselectAll", "org.multipage.translator.tooltipUnselectAllLanguages");
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/translator/images/default_icon.png", 
+					this, "selectDefault", "org.multipage.translator.tooltipSelectDefaultLanguage");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(labelLanguages);
+		try {
+			
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(labelLanguages);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		setIconImage(Images.getImage("org/multipage/translator/images/main_icon.png"));
-		buttonOk.setIcon(Images.getIcon("org/multipage/translator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/translator/images/cancel_icon.png"));
+		try {
+			
+			setIconImage(Images.getImage("org/multipage/translator/images/main_icon.png"));
+			buttonOk.setIcon(Images.getIcon("org/multipage/translator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/translator/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -332,8 +400,13 @@ public class SelectLanguagesDialog extends JDialog {
 	 */
 	@SuppressWarnings("unused")
 	private void selectAll() {
-		
-		list.selectAll(true);
+		try {
+			
+			list.selectAll(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -341,8 +414,13 @@ public class SelectLanguagesDialog extends JDialog {
 	 */
 	@SuppressWarnings("unused")
 	private void deselectAll() {
-		
-		list.selectAll(false);
+		try {
+			
+			list.selectAll(false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -350,17 +428,28 @@ public class SelectLanguagesDialog extends JDialog {
 	 */
 	@SuppressWarnings("unused")
 	private void selectDefault() {
-		
-		// Get selectedLanguages count.
-		final int count = selectedLanguages.size();
-		
-		list.selectObject(new CheckBoxCallback<Language>() {
-			// Match object.
-			@Override
-			public boolean matches(Language language) {
-
-				return isDefaultSelection(language.id);
-			}
-		});
+		try {
+			
+			// Get selected languages count.
+			final int count = selectedLanguages.size();
+			
+			list.selectObject(new CheckBoxCallback<Language>() {
+				// Match object.
+				@Override
+				public boolean matches(Language language) {
+					
+					try {
+						return isDefaultSelection(language.id);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return false;
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

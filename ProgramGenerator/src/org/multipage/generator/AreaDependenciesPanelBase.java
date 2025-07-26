@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -21,20 +21,18 @@ import javax.swing.JTable;
 import org.maclan.Area;
 import org.maclan.MiddleResult;
 import org.multipage.basic.ProgramBasic;
-import org.multipage.gui.ApplicationEvents;
-import org.multipage.gui.GuiSignal;
 import org.multipage.gui.Images;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * @author
+ * Editor panel that shows information about area dependencies.
+ * @author vakol
  *
  */
 public class AreaDependenciesPanelBase extends JPanel implements EditorTabActions {
-	public AreaDependenciesPanelBase() {
-	}
-
+	
 	/**
 	 * Version.
 	 */
@@ -61,7 +59,7 @@ public class AreaDependenciesPanelBase extends JPanel implements EditorTabAction
 	private JRadioButton buttonSubAreas;
 	private JRadioButton buttonSuperAreas;
 	private JPopupMenu popupMenu;
-	private RelatedAreaPanel panelRelatedArea;
+	protected RelatedAreaPanel panelRelatedArea;
 
 	/**
 	 * Set components' references.
@@ -101,49 +99,71 @@ public class AreaDependenciesPanelBase extends JPanel implements EditorTabAction
 		 this.popupMenu = popupMenu;
 		 this.panelRelatedArea = panelRelatedArea;
 	}
+	
+	/**
+	 * Constructor.
+	 */
+	public AreaDependenciesPanelBase() {
+	}
 
 	/**
 	 * Post creation.
 	 */
 	protected void postCreate() {
-
-		// Set table property.
-		tableAreas.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
-		// Localize components.
-		localize();
-		// Set icons.
-		setIcons();
-		// Set tool tips.
-		setToolTips();
-		// Select button.
-		buttonSubAreas.setSelected(selectedSubAreas);
-		buttonSuperAreas.setSelected(!selectedSubAreas);
-		// Create popup trayMenu.
-		createPopupMenu();
+		try {
+			
+			// Set table property.
+			tableAreas.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+			// Localize components.
+			localize();
+			// Set icons.
+			setIcons();
+			// Set tool tips.
+			setToolTips();
+			// Select button.
+			buttonSubAreas.setSelected(selectedSubAreas);
+			buttonSuperAreas.setSelected(!selectedSubAreas);
+			// Create popup trayMenu.
+			createPopupMenu();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Create popup trayMenu.
 	 */
 	private void createPopupMenu() {
-		
-		final Component thisComponent = this;
-		
-		AreaLocalMenu menu = ProgramGenerator.newAreaLocalMenu(new AreaLocalMenuListener() {
-			@Override
-			protected Area getCurrentArea() {
-				// Get selected area.
-				return getSelectedArea();
-			}
-
-			@Override
-			public Component getComponent() {
-				// Get this component.
-				return thisComponent;
-			}
-		});
-		
-		menu.addTo(this, popupMenu);
+		try {
+			
+			final Component thisComponent = this;
+			
+			AreaLocalMenu menu = ProgramGenerator.newAreaLocalMenu(new AreaLocalMenu.Callbacks() {
+				@Override
+				protected Area getCurrentArea() {
+					try {
+						// Get selected area.
+						return getSelectedArea();
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return null;
+				}
+	
+				@Override
+				public Component getComponent() {
+					// Get this component.
+					return thisComponent;
+				}
+			});
+			
+			menu.addTo(this, popupMenu);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -152,174 +172,210 @@ public class AreaDependenciesPanelBase extends JPanel implements EditorTabAction
 	 */
 	protected Area getSelectedArea() {
 		
-		int row = tableAreas.getSelectedRow();
-		if (row == -1) {
-			Utility.show(this, "org.multipage.generator.messageSelectArea");
-			return null;
+		try {
+			int row = tableAreas.getSelectedRow();
+			if (row == -1) {
+				Utility.show(this, "org.multipage.generator.messageSelectArea");
+				return null;
+			}
+			
+			return (Area) tableAreas.getValueAt(row, 0);
 		}
-		
-		return (Area) tableAreas.getValueAt(row, 0);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(labelAreaDependencies);
-		Utility.localize(buttonSubAreas);
-		Utility.localize(buttonSuperAreas);
+		try {
+			
+			Utility.localize(labelAreaDependencies);
+			Utility.localize(buttonSubAreas);
+			Utility.localize(buttonSuperAreas);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
-	 * Set currentArea.
+	 * Set current area.
 	 * @param currentArea
 	 */
 	public void setArea(Area area) {
-
-		this.currentArea = area;
-		
-		panelRelatedArea.setArea(area);
-		
-		// Load related area.
-		panelRelatedArea.loadRelatedArea();
+		try {
+			
+			this.currentArea = area;
+			panelRelatedArea.setArea(area);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On currentArea change.
 	 */
 	protected void onAreaChange() {
-
-		selectedSubAreas = buttonSubAreas.isSelected();
-		
-		// Load areas.
-		loadAreas();
+		try {
+			
+			selectedSubAreas = buttonSubAreas.isSelected();
+			GeneratorMainFrame.updateAll();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
-
-	/**
-	 * Load areas.
-	 * @param currentArea
-	 */
-	protected void loadAreas() {
-		
-		// Override the method.
-	}
-
+	
 	/**
 	 * Swap areas priority
 	 * @param row1
 	 * @param row2
 	 */
 	private void swapAreaPriorities(int row1, int row2) {
-		
-		boolean useSubAreas = buttonSubAreas.isSelected();
-
-		// Get area1 and area2.
-		Area area1 = (Area) tableAreas.getModel().getValueAt(row1, 0);
-		Area area2 = (Area) tableAreas.getModel().getValueAt(row2, 0);
-		
-		// Swap sub areas priorities.
-		MiddleResult result;
-		if (useSubAreas) {
-			result = ProgramBasic.getMiddle().swapAreaSubAreasPriorities(
-					ProgramBasic.getLoginProperties(), currentArea,
-					area1, area2);
+		try {
+			
+			boolean useSubAreas = buttonSubAreas.isSelected();
+	
+			// Get area1 and area2.
+			Area area1 = (Area) tableAreas.getModel().getValueAt(row1, 0);
+			Area area2 = (Area) tableAreas.getModel().getValueAt(row2, 0);
+			
+			// Swap sub areas priorities.
+			MiddleResult result;
+			if (useSubAreas) {
+				result = ProgramBasic.getMiddle().swapAreaSubAreasPriorities(
+						ProgramBasic.getLoginProperties(), currentArea,
+						area1, area2);
+			}
+			else {
+				result = ProgramBasic.getMiddle().swapAreaSuperAreasPriorities(
+						ProgramBasic.getLoginProperties(), currentArea,
+						area1, area2);
+			}
+			if (result.isNotOK()) {
+				result.show(this);
+				return;
+			}
+			
+			// Update information.
+			onAreaChange();
 		}
-		else {
-			result = ProgramBasic.getMiddle().swapAreaSuperAreasPriorities(
-					ProgramBasic.getLoginProperties(), currentArea,
-					area1, area2);
-		}
-		if (result.isNotOK()) {
-			result.show(this);
-			return;
-		}
-		
-		// Update information.
-		onAreaChange();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On currentArea up.
 	 */
 	protected void onUp() {
-		
-		// Get selected currentArea.
-		int selectedRow = tableAreas.getSelectedRow();
-		if (selectedRow == -1) {
-			Utility.show(this, "org.multipage.generator.textSelectAreaPriority");
-			return;
+		try {
+			
+			// Get selected currentArea.
+			int selectedRow = tableAreas.getSelectedRow();
+			if (selectedRow == -1) {
+				Utility.show(this, "org.multipage.generator.textSelectAreaPriority");
+				return;
+			}
+			
+			// Get previous row.
+			int previousRow = selectedRow - 1;
+			if (previousRow < 0) {
+				return;
+			}
+			
+			// Swap priorities.
+			swapAreaPriorities(selectedRow, previousRow);
 		}
-		
-		// Get previous row.
-		int previousRow = selectedRow - 1;
-		if (previousRow < 0) {
-			return;
-		}
-		
-		// Swap priorities.
-		swapAreaPriorities(selectedRow, previousRow);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On currentArea down.
 	 */
 	protected void onDown() {
-		
-		// Get selected currentArea.
-		int selectedRow = tableAreas.getSelectedRow();
-		if (selectedRow == -1) {
-			Utility.show(this, "org.multipage.generator.textSelectAreaPriority");
-			return;
+		try {
+			
+			// Get selected currentArea.
+			int selectedRow = tableAreas.getSelectedRow();
+			if (selectedRow == -1) {
+				Utility.show(this, "org.multipage.generator.textSelectAreaPriority");
+				return;
+			}
+	
+			// Get next row.
+			int nextRow = selectedRow + 1;
+			if (nextRow >= tableAreas.getModel().getRowCount()) {
+				return;
+			}
+			
+			// Swap priorities.
+			swapAreaPriorities(selectedRow, nextRow);
 		}
-
-		// Get next row.
-		int nextRow = selectedRow + 1;
-		if (nextRow >= tableAreas.getModel().getRowCount()) {
-			return;
-		}
-		
-		// Swap priorities.
-		swapAreaPriorities(selectedRow, nextRow);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On reset siblings order.
 	 */
 	protected void onReset() {
-		
-		long currentAreaId = currentArea.getId();
-
-		// Reset sub areas priorities.
-		MiddleResult result = ProgramBasic.getMiddle().resetSubAreasPriorities(
-				ProgramBasic.getLoginProperties(), currentAreaId);
-		if (result.isNotOK()) {
-			result.show(this);
-			return;
+		try {
+			
+			long currentAreaId = currentArea.getId();
+	
+			// Reset sub areas priorities.
+			MiddleResult result = ProgramBasic.getMiddle().resetSubAreasPriorities(
+					ProgramBasic.getLoginProperties(), currentAreaId);
+			if (result.isNotOK()) {
+				result.show(this);
+				return;
+			}
+			
+			// Update information.
+			onAreaChange();
 		}
-		
-		// Update information.
-		onAreaChange();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	protected void setIcons() {
-
-		buttonDefault.setIcon(Images.getIcon("org/multipage/generator/images/reset_order.png"));
-		buttonUp.setIcon(Images.getIcon("org/multipage/generator/images/up.png"));
-		buttonDown.setIcon(Images.getIcon("org/multipage/generator/images/down.png"));
+		try {
+			
+			buttonDefault.setIcon(Images.getIcon("org/multipage/generator/images/reset_order.png"));
+			buttonUp.setIcon(Images.getIcon("org/multipage/generator/images/up.png"));
+			buttonDown.setIcon(Images.getIcon("org/multipage/generator/images/down.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set tool tips.
 	 */
 	protected void setToolTips() {
-
-		buttonDefault.setToolTipText(Resources.getString("org.multipage.generator.tooltipSetDefaultOrder"));
-		buttonUp.setToolTipText(Resources.getString("org.multipage.generator.tooltipShiftAreaUp"));
-		buttonDown.setToolTipText(Resources.getString("org.multipage.generator.tooltipShiftAreaDown"));
+		try {
+			
+			buttonDefault.setToolTipText(Resources.getString("org.multipage.generator.tooltipSetDefaultOrder"));
+			buttonUp.setToolTipText(Resources.getString("org.multipage.generator.tooltipShiftAreaUp"));
+			buttonDown.setToolTipText(Resources.getString("org.multipage.generator.tooltipShiftAreaDown"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -327,7 +383,13 @@ public class AreaDependenciesPanelBase extends JPanel implements EditorTabAction
 	 */
 	public boolean close() {
 		
-		return !tableAreas.isEditing();
+		try {
+			return !tableAreas.isEditing();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -335,12 +397,14 @@ public class AreaDependenciesPanelBase extends JPanel implements EditorTabAction
 	 */
 	@Override
 	public void onLoadPanelInformation() {
-
-		// Invoke currentArea change method.
-		onAreaChange();
-		
-		// Load related area.
-		panelRelatedArea.loadRelatedArea();
+		try {
+			
+			// Invoke currentArea change method.
+			onAreaChange();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -357,21 +421,46 @@ public class AreaDependenciesPanelBase extends JPanel implements EditorTabAction
 	 * @param popup
 	 */
 	protected static void addPopup(Component component, final JPopupMenu popup) {
-		component.addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e);
+		try {
+			
+			component.addMouseListener(new MouseAdapter() {
+				public void mousePressed(MouseEvent e) {
+					try {
+						
+						if (e.isPopupTrigger()) {
+							showMenu(e);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-			public void mouseReleased(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e);
+				public void mouseReleased(MouseEvent e) {
+					try {
+						
+						if (e.isPopupTrigger()) {
+							showMenu(e);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+						
 				}
-			}
-			private void showMenu(MouseEvent e) {
-				popup.show(e.getComponent(), e.getX(), e.getY());
-			}
-		});
+				private void showMenu(MouseEvent e) {
+					try {
+						
+						popup.show(e.getComponent(), e.getX(), e.getY());
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -379,15 +468,42 @@ public class AreaDependenciesPanelBase extends JPanel implements EditorTabAction
 	 * @param e
 	 */
 	protected void onTableClick(MouseEvent e) {
-		
-		if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
+		try {
 			
-			// Focus selected area.
-			Area area = getSelectedArea();
-			if (area != null) {
+			if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
 				
-				GeneratorMainFrame.getFrame().getVisibleAreasEditor().focusArea(area.getId());
+				// Focus selected area.
+				Area area = getSelectedArea();
+				if (area != null) {
+					
+					GeneratorMainFrame.getFrame().getVisibleAreasEditor().focusArea(area.getId());
+				}
 			}
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+	}
+	
+	/**
+	 * On close the window.
+	 */
+	public void onClose() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	/**
+	 * Method for updating the dialog components.
+	 */
+	public void updateComponents() {
+		try {
+			
+			// Load related area.
+			panelRelatedArea.updateComponents();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 	}
 }

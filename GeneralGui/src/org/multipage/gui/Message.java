@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2021 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 28-05-2021
+ * Created on : 2021-05-28
  *
  */
 
@@ -11,7 +11,9 @@ import java.util.LinkedList;
 import java.util.function.Function;
 
 /**
- * Message object.
+ * Message object used in application events system.
+ * @author vakol
+ * 
  */
 public class Message {
 	
@@ -322,7 +324,7 @@ public class Message {
 	 * @param previousMessageLambda
 	 * @return
 	 */
-	public boolean isCyclic(NonCyclingReceiver updatedModule, int subsequentMessageTimeoutMs, Function<Message, Boolean> previousMessageLambda) {
+	public boolean isCyclic(PreventEventEchos updatedModule, int subsequentMessageTimeoutMs, Function<Message, Boolean> previousMessageLambda) {
 		
 		// Check input.
 		if (updatedModule == null || signal == null) {
@@ -405,11 +407,11 @@ public class Message {
 		
 		final int DEFAULT_SUBSEQUENT_MESASGE_TIMEOUT_MS = 1000;
 		
-		if (!(receiverObject instanceof NonCyclingReceiver)) {
+		if (!(receiverObject instanceof PreventEventEchos)) {
 			return false;
 		}
 		
-		NonCyclingReceiver nonCyclicreceiver = (NonCyclingReceiver) receiverObject;
+		PreventEventEchos nonCyclicreceiver = (PreventEventEchos) receiverObject;
 
 		// Delegate this call with default timeout.
 		return isCyclic(nonCyclicreceiver, DEFAULT_SUBSEQUENT_MESASGE_TIMEOUT_MS, null);
@@ -421,7 +423,7 @@ public class Message {
 	 * @param previousMessageLambda
 	 * @return
 	 */
-	public boolean isCyclic(NonCyclingReceiver updatedModule, Function<Message, Boolean> previousMessageLambda) {
+	public boolean isCyclic(PreventEventEchos updatedModule, Function<Message, Boolean> previousMessageLambda) {
 		
 		final int DEFAULT_SUBSEQUENT_MESASGE_TIMEOUT_MS = 1000;
 		

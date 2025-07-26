@@ -1,12 +1,11 @@
 /*
- * Copyright 2010-2024 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 package org.maclan.server;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
@@ -49,6 +48,7 @@ import org.maclan.MiddleUtility;
 import org.maclan.MimeType;
 import org.maclan.Resource;
 import org.maclan.Slot;
+import org.maclan.SlotHolder;
 import org.maclan.SlotType;
 import org.maclan.StartResource;
 import org.maclan.VersionObj;
@@ -57,38 +57,9 @@ import org.maclan.expression.ProcedureParameter;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
-import org.multipage.util.j;
 
 /**
- * Area Server helper class.
- * @author
- */
-class AreasListGetter {
-
-	/**
-	 * Get area list.
-	 * @param area 
-	 * @return
-	 */
-	LinkedList<Area> getAreaList(Area area) throws Exception {
-
-		return null;
-	}
-
-	/**
-	 * Get relation.
-	 * @param area
-	 * @param relatedAreaId
-	 * @return
-	 */
-	AreaRelation getRelation(Area area, long relatedAreaId) {
-		
-		return null;
-	}
-}
-
-/**
- * Area Server class.
+ * Class for Area Server object.
  * @author vakol
  */
 public class AreaServer {
@@ -96,10 +67,10 @@ public class AreaServer {
 	/**
 	 * Left and right bracket tags.
 	 */
-	public static final String leftBracketTag =  "@lb;";
-	public static final String rightBracketTag =  "@rb;";
-	public static final String leftHtmlBracketTag =  "@l;";
-	public static final String rightHtmlBracketTag =  "@r;";
+	public static final String leftBracketTag = "@lb;";
+	public static final String rightBracketTag = "@rb;";
+	public static final String leftHtmlBracketTag = "@l;";
+	public static final String rightHtmlBracketTag = "@r;";
 	public static final String atTag = "@at;";
 	public static final String newLineTag = "@nl;";
 	
@@ -394,82 +365,40 @@ public class AreaServer {
 	/**
 	 * Flag indicating that the Area Server is debugged.
 	 */
-	private boolean isDebugged = false;
+	private boolean enabledDebugger = false;
 	
 	/**
 	 * Set flag indicating that the Area Server is debugged.
-	 * @param isDebugged
+	 * @param isDebuggerEnabled
 	 */
-	public void setDebugged(boolean isDebugged) {
-		this.isDebugged = isDebugged;
+	public void setDebuggerEnabled(boolean isDebuggerEnabled) {
+		
+		this.enabledDebugger = isDebuggerEnabled;
 	}
 	
 	/**
 	 * Get flag indicating that the Area Server is debugged.
 	 * @return
 	 */
-	public boolean isDebugged() {
-		return isDebugged;
+	public boolean isDebuggerEnabled() {
+		
+		return enabledDebugger;
 	}
 	
 	/**
-	 * Clone server.
-	 * @param area
-	 * @param textValue
-	 * @return
+	 * Set the "debugger can visit" flag.
+	 * @param canVisit
 	 */
-	protected AreaServerState cloneServerState(Area area, String textValue) {
+	public void setDebuggerCanVisit(boolean canVisit) {
 		
-		AreaServerState clonedState = new AreaServerState();
-		clonedState.parentState = state.parentState;
-		clonedState.responseTimeoutMilliseconds = state.responseTimeoutMilliseconds;
-		clonedState.responseStartTime = state.responseStartTime;
-		clonedState.rendering = state.rendering;
-		clonedState.renderingFlags = state.renderingFlags;
-		clonedState.renderingResources = state.renderingResources;
-		clonedState.commonResourceFileNames = state.commonResourceFileNames;
-		clonedState.middle = state.middle;
-		clonedState.blocks = state.blocks;
-		clonedState.request = state.request;
-		clonedState.response = state.response;
-		clonedState.languages = state.languages;
-		clonedState.analysis = state.analysis;
-		clonedState.text = new StringBuilder(textValue);
-		clonedState.encoding = state.encoding;
-		clonedState.level = state.level;
-		clonedState.area = area;
-		clonedState.requestedArea = state.requestedArea;
-		clonedState.startArea = state.startArea;
-		clonedState.position = 0;
-		clonedState.tagStartPosition = 0;
-		clonedState.currentLanguage = state.currentLanguage;
-		clonedState.currentVersionId = state.currentVersionId;
-		clonedState.processProperties = state.processProperties;
-		clonedState.breakPointName = state.breakPointName;
-		clonedState.showLocalizedTextIds = state.showLocalizedTextIds;
-		clonedState.listener = state.listener;
-		clonedState.bookmarkReplacement = state.bookmarkReplacement;
-		clonedState.foundIncludeIdentifiers = state.foundIncludeIdentifiers;
-		clonedState.relatedAreaVersions = state.relatedAreaVersions;
-		clonedState.enablePhp = state.enablePhp;
-		clonedState.scriptingEngine = state.scriptingEngine;
-		clonedState.tabulator = state.tabulator;
-		clonedState.cssRulesCache = state.cssRulesCache;
-		clonedState.cssLookupTable = state.cssLookupTable;
-		clonedState.unzippedResourceIds = state.unzippedResourceIds;
-		clonedState.webInterfaceDirectory = state.webInterfaceDirectory;
-		clonedState.redirection = state.redirection;
-		clonedState.resourcesRenderFolder = state.resourcesRenderFolder;
-		clonedState.updatedSlots = state.updatedSlots;
-		clonedState.defaultVersionId = state.defaultVersionId;
-		clonedState.trayMenu = state.trayMenu;
-		clonedState.newLine = state.newLine;
-		clonedState.enableMetaTags = state.enableMetaTags;
-		clonedState.debugInfo = state.debugInfo;
+		DebugInfo debugInfo = state.getDebugInfo();
+		if (debugInfo == null) {
+			return;
+		}
 		
-		return clonedState;
+		debugInfo.setCanDebug(canVisit);
 	}
-
+	
 	/**
 	 * Tag processors.
 	 */
@@ -897,7 +826,10 @@ public class AreaServer {
 					// Process inner text.
 					String processedInnerText = server.processTextCloned(innerText);
 					
-					// Break.
+					// Get error flag.
+					boolean error = server.isThrownException();
+					
+					// Initialization of break variables.
 					boolean breakLoop = false;
 					boolean discard = false;
 					
@@ -908,7 +840,7 @@ public class AreaServer {
 						breakLoop = block.isBreaked();
 					}
 					
-					// Discard.
+					// Get discard flag.
 					if (breakLoop) {
 						if (discardVariable != null && discardVariable.value instanceof Boolean) {
 							discard = (Boolean) discardVariable.value;
@@ -922,7 +854,8 @@ public class AreaServer {
 					boolean transparent = properties.containsKey("transparent");
 					server.state.blocks.popBlockDescriptor(transparent);
 					
-					if (!discard) {
+					// When not to discard the result...
+					if (!discard || error) {
 						
 						// Add divider text.
 						if (divider != null && !isFirstIteration) {
@@ -934,7 +867,7 @@ public class AreaServer {
 					}
 					
 					// Break the loop.
-					if (breakLoop) {
+					if (breakLoop || error) {
 						break;
 					}
 					
@@ -1243,7 +1176,7 @@ public class AreaServer {
 		
 		// Get version ID.
 		if (versionId == null) {
-			versionId = server.evaluateProperty(properties, propertyPrefix + "versionId", Long.class, null, DEFAULT);
+			versionId = server.evaluateProperty(properties, propertyPrefix + "versionId", Long.class, 0L, DEFAULT);
 		}
 			
 		// Load area of given version.
@@ -1348,6 +1281,11 @@ public class AreaServer {
 				// Get slot name.
 				String slotAlias = null;
 				boolean slotExists = properties.containsKey("slot");
+				
+				if (slotExists) {
+					slotAlias = properties.getProperty("slot");
+				}
+				
 				if (!slotExists && !existsAreaSpecification.ref) {
 					try {
 						// Get the first property. It determines the name of required slot.
@@ -1355,7 +1293,7 @@ public class AreaServer {
 					}
 					catch (NoSuchElementException e) {
 						// Missing slot name specification.
-						Utility.throwException("org.maclan.server.messageMissingSlota");
+						Utility.throwException("org.maclan.server.messageMissingSlot");
 					}
 				}
 				else {				
@@ -1392,6 +1330,20 @@ public class AreaServer {
 					// If slot is not found, throw exception.
 					if (slot.ref == null) {
 						throwError("server.messageSlotNotFoundOrNotInheritable", slotAlias);
+					}
+					
+					// Set debugger info.
+					if (server.isDebuggerEnabled()) {
+						
+						long slotId = slot.ref.getId();
+						String slotName = slot.ref.getAlias();
+						
+						SlotHolder slotHolder = slot.ref.getHolder();
+						Long areaId = slotHolder.getId();
+						String areaName = slotHolder.getDescriptionForced();
+						
+						DebugSourceInfo sourceInfo = DebugSourceInfo.newSlot(slotId, slotName, areaId, areaName);
+						DebugInfo.setDebugInfo(server, sourceInfo);
 					}
 					
 					// Create text representation of slot ID. It starts with an "S" letter (which means slot).
@@ -2050,6 +2002,52 @@ public class AreaServer {
 	}
 	
 	/**
+	 * Get current version object.
+	 * @return
+	 * @throws Exception
+	 */
+	public VersionObj geCurrentVersion() throws Exception {
+		
+		long currentVersionId = getCurrentVersionId();
+		
+        VersionObj currentVersion = getVersion(currentVersionId);
+        return currentVersion;
+	}
+	
+	/**
+	 * Get current server level.
+	 * @return
+	 */
+	public long getServerLevel() {
+		
+		return state.level;
+	}
+	
+	/**
+	 * Get code source information.
+	 * @param stateHashCode 
+	 * @return
+	 */
+	public DebugSourceInfo getSourceInfo(int stateHashCode) {
+		
+		// Find Area Server state with given hash code.
+		AreaServerState foundState = findState(stateHashCode);
+		if (foundState == null) {
+			return null;
+		}
+		
+		// Get debug info.
+		DebugInfo debugInfo = foundState.debugInfo;
+        if (debugInfo == null) {
+            return null;
+        }
+        
+        // Get source info.
+        DebugSourceInfo sourceInfo = debugInfo.getSourceInfo();
+		return sourceInfo;
+	}
+	
+	/**
 	 * Get language.
 	 * @param languageId
 	 * @return
@@ -2099,7 +2097,7 @@ public class AreaServer {
 				long areaId = area.getId();
 				
 				// Get resource ID.
-				String resourceName = server.evaluateProperty(properties, "res", String.class, null, REQUIRED_VALUE);
+				String resourceName = server.evaluateProperty(properties, "res", String.class, null, NULL);
 				if (resourceName != null) {
 					
 					// Get file name.
@@ -2130,14 +2128,24 @@ public class AreaServer {
 				}
 				
 				// Get version ID.
-				Long versionId = area.getVersionId();
+				Long versionId = null;
+
+				String versionAlias = server.evaluateProperty(properties, "versionAlias", String.class, null, NULL);
+				if (versionAlias != null) {
+					
+					VersionObj version = server.getVersion(versionAlias);
+					versionId = version.getId();
+				}
+				else {
+                    versionId = area.getVersionId();
+                }
 				
 				// Get other properties.
-				TagProperties otherProperties = excludeProperties(properties, areaPropertiesArray, "res", "file", "download", "langId", "langAlias", "localhost");
+				TagProperties otherProperties = excludeProperties(properties, areaPropertiesArray, "res", "file", "download", "langId", "langAlias", "versionAlias", "localhost");
+				boolean useLocalhost = !server.isRendering() && properties.containsKey("localhost");
 				
 				// Get area URL.
-				String areaUrl = server.getAreaUrl(areaId, languageId, versionId,
-						!server.isRendering() && properties.containsKey("localhost"), otherProperties);
+				String areaUrl = server.getAreaUrl(areaId, languageId, versionId, useLocalhost, otherProperties);
 				
 				// Return area URL.
 				return areaUrl;
@@ -2184,7 +2192,7 @@ public class AreaServer {
 
 	/**
 	 * Get resource URL.
-	 * @param area
+	 * @param areaProperty
 	 * @param resourceName
 	 * @param fileName
 	 * @param useOriginalFileName
@@ -2489,6 +2497,25 @@ public class AreaServer {
 		}
 		
 		return startResource.ref;
+	}
+	
+	/**
+	 * Get current start resource.
+	 * @return
+	 */
+	public StartResource getCurrentStartResource() {
+		
+		try {
+			long areaId = state.area.getId();
+			long versionId = state.currentVersionId;
+			
+			StartResource startResource = getStartResource(areaId, versionId);
+			return startResource;
+		}
+		catch (Exception e) {
+            e.printStackTrace();
+        }
+		return null;
 	}
 
 	/**
@@ -3638,7 +3665,7 @@ public class AreaServer {
 	 */
 	private static void remarksProcessor() {
 
-		fullTagProcessors.put("REM", new FullTagProcessor(){
+		fullTagProcessors.put("REM", new FullTagProcessor() {
 			@Override
 			public String processText(AreaServer server, String innerText, TagProperties properties)
 					throws Exception {
@@ -3877,23 +3904,10 @@ public class AreaServer {
 					return "";
 				}
 				
-				// Check debug flag and if it is true, run the debugger.
-				Obj<String> ideHost = new Obj<String>();
-				Obj<Integer> xdebugPort = new Obj<Integer>();
-				boolean debugging = server.state.listener.getXdebugHostPort(ideHost, xdebugPort);
-				if (debugging) {
-					
-					XdebugClient debugClient = server.state.getDebugClient();
-					
-					// Connect to debugger via Xdebug protocol.
-					if (debugClient == null) {
-						debugClient = DebugInfo.connectXdebug(server, ideHost.ref, xdebugPort.ref);
-					}
-					
-					// Add debug information about Xdebug protocol client.
-					DebugInfo.setDebugInfo(server, debugClient);
-				}
-				else {
+				// If debugger is connected set throw exception.
+				boolean debuggerSuccess = server.isDebuggerConnected();
+				if (!debuggerSuccess) {
+
 					if (breakName != null) {
 						AreaServer.throwError("server.messageProgramBreakName", breakName);
 					}
@@ -3906,6 +3920,29 @@ public class AreaServer {
 		});
 	}
 	
+	/**
+	 * Check if debugger is connected.
+	 * @return
+	 */
+	protected boolean isDebuggerConnected() {
+		
+		// Get debug flag.
+		boolean isDebugged = isDebuggerEnabled();
+		if (isDebugged) {
+			
+			// Check current Xdebug client.
+			DebugInfo debugInfo = state.debugInfo;
+			if (debugInfo != null) {
+				
+				XdebugClient debugClient = debugInfo.getDebugClient();
+				boolean debuggerSuccess = (debugClient != null);
+				
+				return debuggerSuccess;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * Get server info.
 	 * @param decorated 
@@ -4284,24 +4321,44 @@ public class AreaServer {
 	 * @param name
 	 * @param type
 	 * @param defaultValue
-	 * @param falgs - NULL | FLAG
+	 * @param flags - NULL | FLAG
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
 	protected <T> T evaluateProperty(TagProperties properties, String name, Class<T> type, T defaultValue, int flags)
 			throws Exception {
 		
-		// Get value string.
-		String expressionString = properties.getProperty(name);
+		String expressionString = null;
+		boolean propertyExists = false;
+		boolean valueExists = false;
+		boolean badComputedValue = false;
+		
+		// Check if property is already evaluated.
+		Object computedValue = properties.getComputed(name);
+		if (computedValue != null) {
+			
+			// Return evaluated value.
+			if (computedValue.getClass().equals(type)) {
+				return (T) computedValue;
+			}
+			
+			propertyExists = true;
+			valueExists = true;
+			badComputedValue = true;
+		}
+		else {
+			// Get value string.
+			expressionString = properties.getProperty(name);
+			
+			// Get conditions.
+			propertyExists = properties.containsKey(name);
+			valueExists = expressionString != null && !expressionString.isEmpty();
+		}
 		
 		// Get flags.
 		boolean enableFlag = (flags & FLAG) != 0;
 		boolean requiredProperty = (flags & REQUIRED_PROPERTY) != 0;
 		boolean requiredValue = (flags & REQUIRED_VALUE) != 0;
-		
-		// Get conditions.
-		boolean propertyExists = properties.containsKey(name);
-		boolean valueExists = expressionString != null && !expressionString.isEmpty();
 		
 		// If the property is required, check its existence.
 		if (requiredProperty && !propertyExists) {
@@ -4325,7 +4382,7 @@ public class AreaServer {
 		}
 		
 		// If the propety doesn't exist, return the default value.
-		if (!propertyExists) {
+		if (!propertyExists || badComputedValue) {
 			return defaultValue;
 		}
 
@@ -4401,22 +4458,22 @@ public class AreaServer {
 	 * @param textValue
 	 * @return
 	 */
-	public String processTextCloned(Area area1, String textValue)
+	public String processTextCloned(Area area, String textValue)
 		throws Exception {
 		
-		return processTextCloned(area1, textValue, true);
+		return processTextCloned(area, textValue, true);
 	}
 	
 	/**
 	 * Process text. Get error (do not throw exception).
-	 * @param area1
+	 * @param area
 	 * @param textValue
 	 * @return
 	 */
-	public String processTextClonedWithErrors(Area area1, String textValue)
+	public String processTextClonedWithErrors(Area area, String textValue)
 		throws Exception {
 		
-		return processTextCloned(area1, textValue, false);
+		return processTextCloned(area, textValue, false);
 	}
 
 	/**
@@ -4431,7 +4488,7 @@ public class AreaServer {
 		
 		// Save original server state and clone server state.
 		AreaServerState originalState = this.state;
-		AreaServerState subState = cloneServerState(area, textValue);
+		AreaServerState subState = state.cloneState(area, textValue); //cloneServerState(area, textValue);
 		subState.parentState = originalState;
 		
 		// Get current block reference.
@@ -4447,7 +4504,7 @@ public class AreaServer {
 			// Get back old state.
 			this.state.parentState = null;
 			this.state = originalState;
-			this.state.progateFromSubstate(subState);
+			this.state.progateFromSubState(subState);
 		}
 		catch (Exception e) {
 			
@@ -4465,7 +4522,7 @@ public class AreaServer {
 			// Get back old state.
 			this.state = originalState;
 			// Propagate sub state.
-			this.state.progateFromSubstate(subState);
+			this.state.progateFromSubState(subState);
 			// Return to current block.
 			this.state.blocks.popToBlockDescriptor(currentBlock);
 			
@@ -4473,7 +4530,8 @@ public class AreaServer {
 		}
 		
 		// Return sub state text.
-		return subState.text.toString();
+		String subStateText = subState.text.toString();
+		return subStateText;
 	}
 
 	/**
@@ -4792,8 +4850,7 @@ public class AreaServer {
 		// Load inherited start resource.
 		Obj<StartResource> startResource = new Obj<StartResource>();
 		
-		result = middle.loadAreaInheritedStartResource(state.area,
-				state.currentVersionId, startResource);
+		result = middle.loadAreaInheritedStartResource(state.area, state.currentVersionId, startResource);
 		if (result.isOK()) {
 			
 			this.state.startArea = startResource.ref.foundArea;
@@ -4825,8 +4882,7 @@ public class AreaServer {
 
 				// Get resource saving method.
 				Obj<Boolean> savedAsText = new Obj<Boolean>();
-				result = middle.loadResourceSavingMethod(
-						startResourceId, savedAsText);
+				result = middle.loadResourceSavingMethod(startResourceId, savedAsText);
 				if (result.isOK()) {
 					
 					if (savedAsText.ref) {
@@ -4843,9 +4899,16 @@ public class AreaServer {
 							state.level = 1L;
 							
 							// Add debug information about code source.
-							if (isDebugged()) {
-								TagsSource source = TagsSource.newResource(startResourceId);
-								DebugInfo.setDebugInfo(this, source);
+							if (isDebuggerEnabled()) {
+								
+								Resource resource = loadResource(startResourceId);
+								String resourceDescription = resource.getDescription();
+								
+								Long areaId = state.startArea.getId();
+								String areaName = state.startArea.getDescriptionForced();
+								
+								DebugSourceInfo sourceInfo = DebugSourceInfo.newResource(startResourceId, resourceDescription, areaId, areaName);
+								DebugInfo.setDebugInfo(this, sourceInfo);
 							}
 						
 							// Process page text for the area.
@@ -4912,16 +4975,17 @@ public class AreaServer {
 							// Do post processing
 							textString = response2.postProcessText(textString);
 
-							// Debugger entry point.
-							DebugInfo.debugPoint(this);
-							// After the break point close the debugger.
+							// Debugger final entry point.
+							DebugInfo.setFinalDebugInfo(this);
+							DebugInfo.finalDebugPoint(this);
+							// After the final break point, close the debugger.
 							closeDebugger();
 							
 							// Try to execute Area Server API operation.
 							if (executeApiOperation(processResponse, ApiCallType.apiCallForAreaServerResult, textString)) {
 								
 								// On error
-								// Finalize page loading
+								// Finalize page loading.
 								finalizeAreaPageLoading(result, response2);
 								
 								return processResponse.ref;
@@ -4946,24 +5010,33 @@ public class AreaServer {
 		finalizeAreaPageLoading(result, response2);
 		return true;
 	}
-	
+
 	/**
 	 * Close Area Server debugger if it is open.
 	 */
 	private void closeDebugger() {
 		
-		DebugInfo debugInfo = state.debugInfo;
-		if (debugInfo == null) {
-			return;
+		try {
+			DebugInfo debugInfo = state.debugInfo;
+			if (debugInfo == null) {
+				return;
+			}
+			
+			XdebugClient client = debugInfo.getDebugClient();
+			if (client == null) {
+				return;
+			}
+			
+			boolean isConnected = client.isConnected();
+			if (isConnected) {
+				client.close();
+			}
+			
+			debugInfo.setDebugClient(null);
 		}
-		
-		XdebugClient client = debugInfo.getDebugClient();
-		if (client == null) {
-			return;
-		}
-		
-		client.close();
-		debugInfo.setDebugClient(null);
+		catch (Exception e) {
+            e.printStackTrace();
+        }
 	}
 
 	/**
@@ -5162,26 +5235,26 @@ public class AreaServer {
 		String xml = null;
 		String errorMessage = null;
 		
-		// Open root tag
+		// Open root tag.
 		xml = String.format("<?xml version=\"1.0\" encoding=\"%s\"?>\n", encoding);
 		xml += "<Result>\n";
 		
 		try {
 			
-			// If the Area Server result is bad, throw exception
+			// If the Area Server result is bad, throw exception.
 			if (state.exceptionThrown != null) {
 				String messageText = state.exceptionThrown.getMessageText();
 				Utility.throwException("org.maclan.server.messageErrorInMaclan", messageText);
 			}
 			
-			// Insert menu item tags
+			// Insert menu item tags.
 			for (TrayMenuResult.Item item : state.trayMenu.getItems()) {
 				
-				// Evaluate item statements
+				// Evaluate item statements.
 				item.name = evaluateText(item.name, String.class, false);
 				item.action = evaluateText(item.action, String.class, false);
 				
-				// Escape special characters for use in XML document
+				// Escape special characters for use in XML document.
 				item.name = org.apache.commons.text.StringEscapeUtils.escapeXml10(item.name);
 				item.action = org.apache.commons.text.StringEscapeUtils.escapeXml10(item.action);
 				
@@ -5190,12 +5263,12 @@ public class AreaServer {
 		}
 		catch (Exception e) {
 			
-			// Process exception
+			// Process exception.
 			errorMessage = Resources.getString("org.maclan.server.messageErrorWhenLoadingMenu");
 			errorMessage = String.format("%s %s", errorMessage, e.getLocalizedMessage());
 		}
 		
-		// Process error message
+		// Process error message.
 		if (errorMessage != null) {
 			this.state.response.setErrorHeader2(errorMessage);
 			errorMessage = org.apache.commons.text.StringEscapeUtils.escapeXml10(errorMessage);
@@ -5204,7 +5277,7 @@ public class AreaServer {
 			
 		}
 		
-		// Close the root tag
+		// Close the root tag.
 		xml += "</Result>";
 		
 		// Write the response
@@ -5720,6 +5793,22 @@ public class AreaServer {
 	}
 	
 	/**
+	 * Returns true value if an exception was thrown.
+	 * @return
+	 */
+	private boolean isThrownException() {
+		
+		// Check state.
+		if (state == null) {
+			return false;
+		}
+		
+		// Check if an exception exists.
+		boolean isException = state.exceptionThrown != null;
+		return isException;
+	}
+	
+	/**
 	 * Compile error message.
 	 * @param exception
 	 * @param level
@@ -5908,7 +5997,7 @@ public class AreaServer {
 	 * Process area server text.
 	 * @param text
 	 * @param position
-	 * @param area
+	 * @param areaProperty
 	 */
 	private void processAreaServerTextAndTags()
 		throws Exception {
@@ -6170,7 +6259,7 @@ public class AreaServer {
 	/**
 	 * Process area single tags.
 	 * @param tagName 
-	 * @param area
+	 * @param areaProperty
 	 * @return
 	 */
 	private boolean processSimpleSingleTags(String tagName)
@@ -6186,13 +6275,13 @@ public class AreaServer {
 		ServerUtilities.findTagEnd(state.text, positionOut);
 		state.position = positionOut.ref;
 		
-		// Call processor.
-		String replace = processor.processTag(this);
-		
 		// Add debug information about current tag.
-		DebugInfo.setDebugInfo(this, tagName, null, state.tagStartPosition, state.position, null, replace);
+		DebugInfo.setDebugInfo(this, tagName, null, state.tagStartPosition, state.position, null);
 		// Debug point for simple tags.
 		DebugInfo.debugPoint(this);
+		
+		// Call processor.
+		String replace = processor.processTag(this);
 		
 		// Use replace text.
 		state.text.replace(state.tagStartPosition, state.position, replace);
@@ -6229,13 +6318,38 @@ public class AreaServer {
 
 		state.position = startTagPosition.ref;
 		
-		// Call tag processor.
-		String replace = processor.processTag(this, properties);
+		// Get debug flag.
+		boolean isDebugged = isDebuggerEnabled();
+		if (isDebugged) {
+			// On BREAK tag try to connect to debugger with Xdebug protocol.
+			if ("BREAK".equals(tagName)) {
+			
+				// Connect debugger.
+				Obj<String> ideHost = new Obj<String>();
+				Obj<Integer> xdebugPort = new Obj<Integer>();
+				boolean debugProperties = state.listener.getXdebugHostPort(ideHost, xdebugPort);
+				if (debugProperties) {
+					
+					XdebugClient debugClient = state.getDebugClient();
+					
+					// Connect to debugger with Xdebug protocol.
+					if (debugClient == null) {
+						debugClient = DebugInfo.connectXdebug(this, ideHost.ref, xdebugPort.ref);
+					}
+					
+					// Add debug information about Xdebug protocol client.
+					DebugInfo.setBreakDebugInfo(this, debugClient);
+				}					
+			}			
+		}
 		
 		// Add debug information about current tag.
-		DebugInfo.setDebugInfo(this, tagName, properties, state.tagStartPosition, state.position, null, replace);
+		DebugInfo.setDebugInfo(this, tagName, properties, state.tagStartPosition, state.position, null);
 		// Debug point for complex single tags.
 		DebugInfo.debugPoint(this);
+		
+		// Call tag processor.
+		String replace = processor.processTag(this, properties);
 		
 		state.text.replace(state.tagStartPosition, state.position, replace);
 		state.position = state.tagStartPosition;
@@ -6345,15 +6459,18 @@ public class AreaServer {
 		// Call parser.
 		FullTagParser parser = new FullTagParser(this, tagName, state.text, state.tagStartPosition);
 		parser.parseFullCommand(innerText);
-
-		// Call processor.
-		String replace = processor.processText(this, innerText.toString(), properties);
-		state.position = parser.getPosition();
+		
+		int parserPosition = parser.getPosition();
+		String innerTextString = innerText.toString();
 		
 		// Add debug information about current tag and replacement.
-		DebugInfo.setDebugInfo(this, tagName, properties, state.tagStartPosition, state.position, innerText.toString(), replace);
+		DebugInfo.setDebugInfo(this, tagName, properties, state.tagStartPosition, parserPosition, innerTextString);
 		// Debug point for full tags.
 		DebugInfo.debugPoint(this);
+
+		// Call processor.
+		String replace = processor.processText(this, innerTextString, properties);
+		state.position = parserPosition;
 		
 		// Replace statement with its result.
 		state.text.replace(state.tagStartPosition, state.position, replace);
@@ -6463,6 +6580,9 @@ public class AreaServer {
 						itemInnerText = server.processTextCloned(innerText);
 					}
 					
+					// Get error flag.
+					boolean error = server.isThrownException();
+					
 					// On break.
 					boolean breakLoop = false;
 					boolean discard = false;
@@ -6487,7 +6607,7 @@ public class AreaServer {
 					server.state.blocks.popBlockDescriptor(false, false);
 
 					// If not discard, append new text.
-					if (!discard) {
+					if (!discard || error) {
 						compiledText.append(itemInnerText);
 						// Add divider.
 						if (dividerText != null && index < count) {
@@ -6495,7 +6615,7 @@ public class AreaServer {
 						}
 					}
 					
-					if (breakLoop) {
+					if (breakLoop || error) {
 						break;
 					}
 				}
@@ -6513,7 +6633,7 @@ public class AreaServer {
 			}
 		});
 	}
-	
+
 	/**
 	 * PROCEDURE tag processor.
 	 */
@@ -6637,7 +6757,7 @@ public class AreaServer {
 					
 					// Process slot text value.
 					processedSlotText = processTextCloned(slotTextValue);
-					if (state.exceptionThrown != null) {
+					if (state.exceptionThrown == null) {
 						
 						// Try to find procedure.
 						procedure = state.blocks.getProcedure(procedureName);
@@ -6709,15 +6829,13 @@ public class AreaServer {
 		// Get inner text.
 		String procedureInnerText = procedure.getInnerText();
 		
-		String replaceText = "";
-		
 		// Add debug information about current procedure call and about resulting replacement.
-		DebugInfo.setDebugInfo(this, tagName, properties, state.tagStartPosition, state.position, procedureInnerText, replaceText);
+		DebugInfo.setDebugInfo(this, tagName, properties, state.tagStartPosition, state.position, procedureInnerText);
 		// Debug point for procedure call tags.
 		DebugInfo.debugPoint(this);
 		
 		// Process the inner text.
-		replaceText = processTextCloned(processedSlotText + procedureInnerText);
+		String replaceText = processTextCloned(processedSlotText + procedureInnerText);
 		
 		// Get transparency of the blocks
 		boolean transparent = procedure.isTransparent() || properties.containsKey("$transparent");
@@ -7407,7 +7525,7 @@ public class AreaServer {
 	/**
 	 * Returns area resource.
 	 * @param resourceId
-	 * @param area
+	 * @param areaProperty
 	 * @return
 	 */
 	private AreaResource resource(long resourceId, long areaId)
@@ -7789,6 +7907,17 @@ public class AreaServer {
 		
 		return state.requestedArea;
 	}
+	
+	/**
+	 * Get server URL.
+	 * @return
+	 */
+	public String getServerUrl() 
+			throws Exception {
+		
+		String servertUrl = state.request.getServerUrl();
+		return servertUrl;
+	}
 
 	/**
 	 * Get current version ID.
@@ -7920,6 +8049,21 @@ public class AreaServer {
 			throw new Exception(result.getMessage());
 		}
 	}
+	
+	/**
+	 * Load resource.
+	 * @param resourceId
+	 * @return
+	 */
+	private Resource loadResource(long resourceId)
+	    throws Exception {
+		
+		Obj<Resource> resource = new Obj<>();
+		MiddleResult result = state.middle.loadResource(resourceId, resource);
+		result.throwPossibleException();
+		
+		return resource.ref;
+	}
 
 	/**
 	 * Get constructor area of given area.
@@ -7974,8 +8118,7 @@ public class AreaServer {
 	 * @param returnedValue
 	 * @return
 	 */
-	public boolean callProcedure(String name, final Object[] parameters,
-			Obj<Object> returnedValue)
+	public boolean callProcedure(String name, final Object[] parameters, Obj<Object> returnedValue)
 					throws Exception {
 		
 		returnedValue.ref = null;

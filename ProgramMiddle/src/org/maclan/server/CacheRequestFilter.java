@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2018 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 05-04-2018
+ * Created on : 2018-04-05
  *
  */
 package org.maclan.server;
@@ -16,7 +16,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
 /**
- * @author user
+ * Filter object for cached request.
+ * @author vakol
  *
  */
 public class CacheRequestFilter implements Filter {
@@ -29,10 +30,10 @@ public class CacheRequestFilter implements Filter {
 			throws IOException, ServletException {
 			
 		// Chain filters for Jetty and Apache
-		if (request instanceof org.eclipse.jetty.server.Request) {
+		if (request instanceof javax.servlet.http.HttpServletRequest) {
 			
 			// Cache request when input stream needed.
-			CachedHttpServletRequest cachedRequest = new CachedHttpServletRequest((org.eclipse.jetty.server.Request) request);
+			CachedHttpServletRequest cachedRequest = new CachedHttpServletRequest((javax.servlet.http.HttpServletRequest) request);
 			chain.doFilter(cachedRequest, response);
 		}
 		else {

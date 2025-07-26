@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -32,10 +32,11 @@ import org.multipage.gui.Images;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays selection of resource saving method.
+ * @author vakol
  *
  */
 public class SelectResourceSavingMethod extends JDialog {
@@ -75,20 +76,26 @@ public class SelectResourceSavingMethod extends JDialog {
 	 */
 	public static boolean showDialog(Component parentComponent, File file,
 			Obj<Boolean> saveAsText, Obj<String> encoding) {
-
-		SelectResourceSavingMethod dialog = new SelectResourceSavingMethod(parentComponent,
-				file);
-		dialog.setVisible(true);
 		
-		if (dialog.confirm) {
-			// Set output values.
-			saveAsText.ref = dialog.buttonText.isSelected();
-			if (saveAsText.ref) {
-				encoding.ref = (String) dialog.comboEncodings.getSelectedItem();
+		try {
+			SelectResourceSavingMethod dialog = new SelectResourceSavingMethod(parentComponent,
+					file);
+			dialog.setVisible(true);
+			
+			if (dialog.confirm) {
+				// Set output values.
+				saveAsText.ref = dialog.buttonText.isSelected();
+				if (saveAsText.ref) {
+					encoding.ref = (String) dialog.comboEncodings.getSelectedItem();
+				}
 			}
+			
+			return dialog.confirm;
 		}
-		
-		return dialog.confirm;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -98,12 +105,18 @@ public class SelectResourceSavingMethod extends JDialog {
 	 */
 	public SelectResourceSavingMethod(Component parentComponent, File file) {
 		super(Utility.findWindow(parentComponent), ModalityType.DOCUMENT_MODAL);
-		// Initialize components.
-		initComponents();
-		// Post creation.
-		// $hide>>$
-		postCreation(file);
-		// $hide<<$
+		
+		try {
+			// Initialize components.
+			initComponents();
+			// Post creation.
+			// $hide>>$
+			postCreation(file);
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -242,19 +255,24 @@ public class SelectResourceSavingMethod extends JDialog {
 	 * @param file 
 	 */
 	private void postCreation(File file) {
-		
-		this.file = file;
-
-		// Localize components.
-		localize();
-		// Center dialog.
-		Utility.centerOnScreen(this);
-		// Set icons.
-		setIcons();
-		// Load encodings.
-		Utility.loadEncodings(comboEncodings, "UTF-8");
-		// Set file.
-		setFile(file);
+		try {
+			
+			this.file = file;
+	
+			// Localize components.
+			localize();
+			// Center dialog.
+			Utility.centerOnScreen(this);
+			// Set icons.
+			setIcons();
+			// Load encodings.
+			Utility.loadEncodings(comboEncodings, "UTF-8");
+			// Set file.
+			setFile(file);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -262,53 +280,63 @@ public class SelectResourceSavingMethod extends JDialog {
 	 * @param file
 	 */
 	private void setFile(File file) {
-		
-		this.file = file;
-		
-		// Display file name.
-		labelDisplayFileName.setText(file.getName());
-		
-		// Get file length.
-		long fileLength = file.length();
-		
-		boolean tooLong = fileLength > Settings.getMaximumTextResSize();
-
-		// If the file length is too large or binary, do not save the file as text.
-		if (tooLong	|| !Utility.isTextFileExtension(file)) {
+		try {
 			
-			buttonBinary.setSelected(true);
-			// If the file is too long, disable controls.
-			if (tooLong) {
-				buttonBinary.setEnabled(false);
-				buttonText.setEnabled(false);
-				// Inform user.
-				labelSelectMethod.setText(
-						Resources.getString("org.multipage.generator.messageFileTooLongStoredAsBinary"));
+			this.file = file;
+			
+			// Display file name.
+			labelDisplayFileName.setText(file.getName());
+			
+			// Get file length.
+			long fileLength = file.length();
+			
+			boolean tooLong = fileLength > Settings.getMaximumTextResSize();
+	
+			// If the file length is too large or binary, do not save the file as text.
+			if (tooLong	|| !Utility.isTextFileExtension(file)) {
+				
+				buttonBinary.setSelected(true);
+				// If the file is too long, disable controls.
+				if (tooLong) {
+					buttonBinary.setEnabled(false);
+					buttonText.setEnabled(false);
+					// Inform user.
+					labelSelectMethod.setText(
+							Resources.getString("org.multipage.generator.messageFileTooLongStoredAsBinary"));
+				}
+				isTextFile(false);
 			}
-			isTextFile(false);
+			else {
+				buttonBinary.setEnabled(true);
+				buttonText.setEnabled(true);
+				buttonText.setSelected(true);
+				buttonBinary.setSelected(false);
+				isTextFile(true);
+			}
 		}
-		else {
-			buttonBinary.setEnabled(true);
-			buttonText.setEnabled(true);
-			buttonText.setSelected(true);
-			buttonBinary.setSelected(false);
-			isTextFile(true);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(labelSelectMethod);
-		Utility.localize(buttonText);
-		Utility.localize(buttonBinary);
-		Utility.localize(buttonCheckFile);
-		Utility.localize(labelFileName);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(labelSelectMethod);
+			Utility.localize(buttonText);
+			Utility.localize(buttonBinary);
+			Utility.localize(buttonCheckFile);
+			Utility.localize(labelFileName);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -335,34 +363,44 @@ public class SelectResourceSavingMethod extends JDialog {
 	 * Sets icons.
 	 */
 	private void setIcons() {
-
-		buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
-		buttonOpenFile.setIcon(Images.getIcon("org/multipage/generator/images/load_icon.png"));
-		buttonCheckFile.setIcon(Images.getIcon("org/multipage/generator/images/check_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+			buttonOpenFile.setIcon(Images.getIcon("org/multipage/generator/images/load_icon.png"));
+			buttonCheckFile.setIcon(Images.getIcon("org/multipage/generator/images/check_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On check file.
 	 */
 	protected void onCheckFile() {
-		
-		// Get current encoding.
-		String encodingText = (String) comboEncodings.getSelectedItem();
-
-		// Check file content.
-		Obj<Boolean> isTextFile = new Obj<Boolean>();
-		Obj<String> encoding = new Obj<String>(encodingText);
-		
-		if (!CheckTextFile.showDialog(GeneratorMainFrame.getFrame(),
-				file, isTextFile, encoding)) {
-			return;
+		try {
+			
+			// Get current encoding.
+			String encodingText = (String) comboEncodings.getSelectedItem();
+	
+			// Check file content.
+			Obj<Boolean> isTextFile = new Obj<Boolean>();
+			Obj<String> encoding = new Obj<String>(encodingText);
+			
+			if (!CheckTextFile.showDialog(GeneratorMainFrame.getFrame(),
+					file, isTextFile, encoding)) {
+				return;
+			}
+			
+			// Select encoding.
+			Utility.selectComboItem(comboEncodings, encoding.ref);
+			// Set file type.
+			setRadioButton(isTextFile.ref);
 		}
-		
-		// Select encoding.
-		Utility.selectComboItem(comboEncodings, encoding.ref);
-		// Set file type.
-		setRadioButton(isTextFile.ref);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -370,14 +408,19 @@ public class SelectResourceSavingMethod extends JDialog {
 	 * @param isText
 	 */
 	private void setRadioButton(Boolean isText) {
-
-		if (isText) {
-			buttonText.setSelected(true);
+		try {
+			
+			if (isText) {
+				buttonText.setSelected(true);
+			}
+			else {
+				buttonBinary.setSelected(true);
+			}
+			isTextFile(isText);
 		}
-		else {
-			buttonBinary.setSelected(true);
-		}
-		isTextFile(isText);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -385,25 +428,35 @@ public class SelectResourceSavingMethod extends JDialog {
 	 * @param isText
 	 */
 	protected void isTextFile(boolean isText) {
-
-		comboEncodings.setEnabled(isText);
-		buttonCheckFile.setEnabled(isText);
+		try {
+			
+			comboEncodings.setEnabled(isText);
+			buttonCheckFile.setEnabled(isText);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On file open.
 	 */
 	protected void onFileOpen() {
-		
-		// Get path.
-		String path = file.getPath();
-		// Choose file.
-		File choosenFile = GeneratorUtility.chooseFile(this, path, true);
-		if (choosenFile == null) {
-			return;
+		try {
+			
+			// Get path.
+			String path = file.getPath();
+			// Choose file.
+			File choosenFile = GeneratorUtility.chooseFile(this, path, true);
+			if (choosenFile == null) {
+				return;
+			}
+			
+			// Set file.
+			setFile(choosenFile);
 		}
-		
-		// Set file.
-		setFile(choosenFile);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

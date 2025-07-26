@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -34,10 +34,11 @@ import org.multipage.gui.Images;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays area resources.
+ * @author vakol
  *
  */
 public class AreaResourcesDialog extends JDialog {
@@ -134,14 +135,20 @@ public class AreaResourcesDialog extends JDialog {
 	 */
 	public static boolean showDialog(Component parent, LinkedList<Resource> selectedResources) {
 		
-		selectedResources.clear();
-		
-		AreaResourcesDialog dialog = new AreaResourcesDialog(Utility.findWindow(parent));
-		
-		dialog.selectedResources = selectedResources;
-		dialog.setVisible(true);
-		
-		return dialog.confirm;
+		try {
+			selectedResources.clear();
+			
+			AreaResourcesDialog dialog = new AreaResourcesDialog(Utility.findWindow(parent));
+			
+			dialog.selectedResources = selectedResources;
+			dialog.setVisible(true);
+			
+			return dialog.confirm;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -150,12 +157,16 @@ public class AreaResourcesDialog extends JDialog {
 	 */
 	public AreaResourcesDialog(Window parentWindow) {
 		super(parentWindow, ModalityType.DOCUMENT_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -211,42 +222,57 @@ public class AreaResourcesDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		localize();
-		setIcons();
-		
-		createResouresEditor();
-		createAreasTree();
-		
-		loadData();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			localize();
+			setIcons();
+			
+			createResouresEditor();
+			createAreasTree();
+			
+			loadData();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load data.
 	 */
 	private void loadData() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setBounds(bounds);
+			}
+			
+			if (splitterPosition != -1) {
+				splitMain.setDividerLocation(splitterPosition);
+			}
 		}
-		else {
-			setBounds(bounds);
-		}
-		
-		if (splitterPosition != -1) {
-			splitMain.setDividerLocation(splitterPosition);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Create resources editor.
 	 */
 	private void createResouresEditor() {
-		
-		resourcesEditor = new AreaResourcesEditor();
-		splitMain.setRightComponent(resourcesEditor);
+		try {
+			
+			resourcesEditor = new AreaResourcesEditor();
+			splitMain.setRightComponent(resourcesEditor);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -254,63 +280,94 @@ public class AreaResourcesDialog extends JDialog {
 	 */
 	@SuppressWarnings("serial")
 	private void createAreasTree() {
-		
-		areasTreePanel = new AreasTreePanel() {
-			@Override
-			protected void onAreasSelected(TreeSelectionEvent e) {
-				
-				// Get selected area.
-				Area selectedArea = getSelectedArea();
-				
-				// Set resources list.
-				if (resourcesEditor != null) {
-					resourcesEditor.loadArea(selectedArea);
+		try {
+			
+			areasTreePanel = new AreasTreePanel() {
+				@Override
+				protected void onAreasSelected(TreeSelectionEvent e) {
+					try {
+						
+						// Get selected area.
+						Area selectedArea = getSelectedArea();
+						
+						// Set resources list.
+						if (resourcesEditor != null) {
+							resourcesEditor.loadArea(selectedArea);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
+			};
+			
+			splitMain.setLeftComponent(areasTreePanel);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
 		};
-		
-		splitMain.setLeftComponent(areasTreePanel);
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
-		splitterPosition = splitMain.getDividerLocation();
+		try {
+			
+			bounds = getBounds();
+			splitterPosition = splitMain.getDividerLocation();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On OK.
 	 */
 	protected void onOK() {
-
-		if (!loadSelectedResources(selectedResources)) {
-			return;
+		try {
+			
+			if (!loadSelectedResources(selectedResources)) {
+				return;
+			}
+			
+			saveDialog();
+			confirm = true;
 		}
-		
-		saveDialog();
-		confirm = true;
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -318,9 +375,15 @@ public class AreaResourcesDialog extends JDialog {
 	 * On cancel.
 	 */
 	protected void onCancel() {
-		
-		saveDialog();
-		confirm = false;
+		try {
+			
+			saveDialog();
+			confirm = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 	
@@ -330,16 +393,21 @@ public class AreaResourcesDialog extends JDialog {
 	 */
 	private boolean loadSelectedResources(LinkedList<Resource> selectedResources) {
 		
-		// Get selected resources.
-		java.util.List<AreaResource> resources = resourcesEditor.getSelectedResources();
-		
-		if (resources == null || resources.size() == 0) {
-			Utility.show(this, "org.multipage.generator.messageSelectResources");
-			return false;
+		try {
+			// Get selected resources.
+			java.util.List<AreaResource> resources = resourcesEditor.getSelectedResources();
+			
+			if (resources == null || resources.size() == 0) {
+				Utility.show(this, "org.multipage.generator.messageSelectResources");
+				return false;
+			}
+			
+			selectedResources.addAll(resources);
+			return true;
 		}
-		
-		selectedResources.addAll(resources);
-		
-		return true;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 }

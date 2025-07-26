@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -17,7 +17,8 @@ import javax.swing.JOptionPane;
 import org.multipage.util.Resources;
 
 /**
- * @author
+ * Middle layer result values.
+ * @author vakol
  *
  */
 public class MiddleResult {
@@ -125,6 +126,9 @@ public class MiddleResult {
 	public static final MiddleResult BAD_TEMPLATE_DAT_STREAM = new MiddleResult("middle.resultBadTemplateDatStream", null);
 	public static final MiddleResult DATABASE_ALREADY_OPENED = new MiddleResult("middle.resultDatabaseAlreadyOpened", null);
 	public static final MiddleResult FOUND_NO_HINT = new MiddleResult("middle.resultFoundNoHint", null);
+	public static final MiddleResult INVALID_SLOT_DATA = new MiddleResult("middle.resultInvalidSlotData", null);
+	public static final MiddleResult NULL_SLOT_ALIAS = new MiddleResult("middle.resultNullSlotAlias", null);
+	public static final MiddleResult NULL_SLOT_AREA = new MiddleResult("middle.resultNullSlotArea", null);;
 	
 	/**
 	 * Extensions.
@@ -155,6 +159,7 @@ public class MiddleResult {
 	}
 
 	/**
+	 * Get the message string.
 	 * @return the message
 	 */
 	public String getMessage() {
@@ -245,6 +250,16 @@ public class MiddleResult {
 		
 		return new MiddleResult(null, exception.getLocalizedMessage());
 	}
+	
+	/**
+	 * Converts exception to result.
+	 * @param exception
+	 * @return
+	 */
+	public static MiddleResult exceptionToResult(Throwable exception) {
+		
+		return new MiddleResult(null, exception.getLocalizedMessage());
+	}
 
 	/**
 	 * Show result.
@@ -313,5 +328,15 @@ public class MiddleResult {
 		
 		this.parameters = parameters;
 		return this;
+	}
+
+	/**
+	 * String representation of the result.
+	 */
+	@Override
+	public String toString() {
+		
+		String message = getMessage();
+		return message;
 	}
 }

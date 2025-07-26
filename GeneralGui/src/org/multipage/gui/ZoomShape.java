@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -10,8 +10,11 @@ package org.multipage.gui;
 import java.awt.*;
 import java.lang.Math;
 
+import org.multipage.util.Safe;
+
 /**
- * @author
+ * Class that displays zoom panel.
+ * @author vakol
  *
  */
 public class ZoomShape implements CursorArea {
@@ -86,18 +89,30 @@ public class ZoomShape implements CursorArea {
 	 */
 	public ZoomShape(double min, double max, int x, int y,
 			Cursor cursor, Component component) {
-		
-		minimal = min;
-		maximal = max;
-		this.x = x;
-		this.y = y;
-		cursorArea = new CursorAreaImpl(cursor, component,
-				new CursorAreaListener() {
-					@Override
-					public boolean visible() {
-						return isVisible();
-					}
-				});
+		try {
+			
+			minimal = min;
+			maximal = max;
+			this.x = x;
+			this.y = y;
+			cursorArea = new CursorAreaImpl(cursor, component,
+					new CursorAreaListener() {
+						@Override
+						public boolean visible() {
+							
+							try {
+								return isVisible();
+							}
+							catch (Throwable e) {
+								Safe.exception(e);
+							}
+							return false;
+						}
+					});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -125,104 +140,132 @@ public class ZoomShape implements CursorArea {
 	 * Draw zoom shape.
 	 */
 	public void draw(Graphics2D g2) {
-		
-		// If the shape is not visible, exit the method.
-		if (!isVisible()) {
-			return;
+		try {
+			
+			// If the shape is not visible, exit the method.
+			if (!isVisible()) {
+				return;
+			}
+			
+			int min = y + height - arc,
+			    max = y + arc,
+			    sliderHeight = arc * 2;
+			
+			// Set opacity.
+			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+			
+			Paint oldPaint = g2.getPaint();
+			g2.setPaint(new GradientPaint(new Point(x + overlap, y), Color.LIGHT_GRAY, new Point(x - overlap + width, y + height), Color.WHITE));
+			// Draw main part.
+			g2.fillRoundRect(x + overlap, y, width, height, arc, arc);
+			g2.setPaint(oldPaint);
+			g2.setColor(Color.DARK_GRAY);
+			g2.drawRoundRect(x + overlap, y, width, height, arc, arc);
+			
+			// Draw scale.
+			g2.setStroke(new BasicStroke(2));
+			g2.setColor(new Color(200, 200, 255));
+			g2.drawLine(x, min, x + width + 2 * overlap, min);
+			g2.drawLine(x, max, x + width + 2 * overlap, max);
+			g2.setStroke(new BasicStroke(1));
+			
+			int delta = (height - 2 * arc) / 10,
+			    index = 0;
+			for (int ypos = max + delta; index < 9; ypos += delta) {
+				g2.drawLine(x + overlap / 2, ypos, x + width + 2 * overlap - overlap / 2, ypos);
+				index++;
+			}
+			
+			double pos = (max - min) * Math.log(zoom / minimal) / Math.log(maximal / minimal) + min;
+			// Draw slider.
+			g2.fillRoundRect(x, (int)pos - sliderHeight / 2, width + 2 * overlap - 1, sliderHeight, arc, arc);
+			g2.setColor(Color.DARK_GRAY);
+			g2.drawRoundRect(x, (int)pos - sliderHeight / 2, width + 2 * overlap - 1, sliderHeight, arc, arc);
 		}
-		
-		int min = y + height - arc,
-		    max = y + arc,
-		    sliderHeight = arc * 2;
-		
-		// Set opacity.
-		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
-		
-		Paint oldPaint = g2.getPaint();
-		g2.setPaint(new GradientPaint(new Point(x + overlap, y), Color.LIGHT_GRAY, new Point(x - overlap + width, y + height), Color.WHITE));
-		// Draw main part.
-		g2.fillRoundRect(x + overlap, y, width, height, arc, arc);
-		g2.setPaint(oldPaint);
-		g2.setColor(Color.DARK_GRAY);
-		g2.drawRoundRect(x + overlap, y, width, height, arc, arc);
-		
-		// Draw scale.
-		g2.setStroke(new BasicStroke(2));
-		g2.setColor(new Color(200, 200, 255));
-		g2.drawLine(x, min, x + width + 2 * overlap, min);
-		g2.drawLine(x, max, x + width + 2 * overlap, max);
-		g2.setStroke(new BasicStroke(1));
-		
-		int delta = (height - 2 * arc) / 10,
-		    index = 0;
-		for (int ypos = max + delta; index < 9; ypos += delta) {
-			g2.drawLine(x + overlap / 2, ypos, x + width + 2 * overlap - overlap / 2, ypos);
-			index++;
-		}
-		
-		double pos = (max - min) * Math.log(zoom / minimal) / Math.log(maximal / minimal) + min;
-		// Draw slider.
-		g2.fillRoundRect(x, (int)pos - sliderHeight / 2, width + 2 * overlap - 1, sliderHeight, arc, arc);
-		g2.setColor(Color.DARK_GRAY);
-		g2.drawRoundRect(x, (int)pos - sliderHeight / 2, width + 2 * overlap - 1, sliderHeight, arc, arc);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * @return the width
 	 */
 	public static int getWidth() {
-		return width + 2 * overlap;
+		
+		try {
+			return width + 2 * overlap;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return 0;
 	}
 
 	/**
 	 * Set position.
 	 */
 	public void setPosition(int x, int y) {
-
-		this.x = x;
-		this.y = y;
-		
-		// Set cursor area shape.
-		getCursorArea().setShape(getRectangle());
+		try {
+			
+			this.x = x;
+			this.y = y;
+			
+			// Set cursor area shape.
+			getCursorArea().setShape(getRectangle());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On mouse pressed.
 	 */
 	public void onMousePressed(Point mouse) {
-		// If the mouse is on shape.
-		if (mouse.x >= x && mouse.x <= (x + getWidth()) && mouse.y >= y && mouse.y <= (y + height)) {
-			// Set dragged flag
-			dragged  = true;
-			// Do drag.
-			onMouseDragged(mouse);
+		try {
+			
+			// If the mouse is on shape.
+			if (mouse.x >= x && mouse.x <= (x + getWidth()) && mouse.y >= y && mouse.y <= (y + height)) {
+				// Set dragged flag
+				dragged  = true;
+				// Do drag.
+				onMouseDragged(mouse);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On mouse dragged.
 	 */
 	public void onMouseDragged(Point point) {
-		
-		double max = y + arc,
-		       min = y + height - arc;
-		
-		// Compute position.
-		double pos = point.y;
-		if (pos > min) {
-			pos = min;
+		try {
+			
+			double max = y + arc,
+			       min = y + height - arc;
+			
+			// Compute position.
+			double pos = point.y;
+			if (pos > min) {
+				pos = min;
+			}
+			if (pos < max) {
+				pos = max;
+			}
+			
+			// Compute zoom.
+			zoom = Math.pow(Math.E, (pos - max) / (min - max) * Math.log(minimal / maximal) + Math.log(maximal));
+			
+			// Invoke listener.
+			if (listener != null) {
+				listener.zoomChanged();
+			}
 		}
-		if (pos < max) {
-			pos = max;
-		}
-		
-		// Compute zoom.
-		zoom = Math.pow(Math.E, (pos - max) / (min - max) * Math.log(minimal / maximal) + Math.log(maximal));
-		
-		// Invoke listener.
-		if (listener != null) {
-			listener.zoomChanged();
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -245,20 +288,28 @@ public class ZoomShape implements CursorArea {
 	 * @param zoom the zoom to set
 	 */
 	public void setZoom(double zoom) {
-
-		if (zoom < minimal) {
-			zoom = minimal;
+		try {
+			
+			double theZoom = zoom;
+			if (theZoom < minimal) {
+				theZoom = minimal;
+			}
+			else if (theZoom > maximal) {
+				theZoom = maximal;
+			}
+			this.zoom = theZoom;
 		}
-		else if (zoom > maximal) {
-			zoom = maximal;
-		}
-		this.zoom = zoom;
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 	}
 
 	/**
 	 * @return the zoom
 	 */
 	public double getZoom() {
+		
 		return zoom;
 	}
 
@@ -266,6 +317,7 @@ public class ZoomShape implements CursorArea {
 	 * @param listener the listener to set
 	 */
 	public void setListener(ZoomListener listener) {
+		
 		this.listener = listener;
 	}
 
@@ -274,7 +326,13 @@ public class ZoomShape implements CursorArea {
 	 */
 	public Rectangle getRectangle() {
 
-		return new Rectangle(x, y, getWidth(), height);
+		try {
+			return new Rectangle(x, y, getWidth(), height);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return new Rectangle();
 	}
 
 	/**
@@ -283,14 +341,21 @@ public class ZoomShape implements CursorArea {
 	 * @return
 	 */
 	public boolean contains(Point point) {
-
-		return isVisible() && getRectangle().contains(point);
+		
+		try {
+			return isVisible() && getRectangle().contains(point);
+		}
+		catch (Exception e) {
+			Safe.exception(e);
+        }
+		return false;
 	}
 
 	/**
 	 * @param minimal the minimal to set
 	 */
 	public void setMinimal(double minimal) {
+		
 		this.minimal = minimal;
 	}
 
@@ -316,6 +381,7 @@ public class ZoomShape implements CursorArea {
 	 * @param maximal the maximal to set
 	 */
 	public void setMaximal(double maximal) {
+		
 		this.maximal = maximal;
 	}
 }

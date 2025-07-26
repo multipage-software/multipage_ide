@@ -1,25 +1,32 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.io.IOException;
+import java.util.Scanner;
 
-import java.awt.*;
-import java.io.*;
-import java.util.*;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SpringLayout;
+import javax.swing.SwingConstants;
+import javax.swing.border.LineBorder;
 
-import javax.swing.border.*;
-
-import org.multipage.util.*;
+import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays editor for CSS clip region.
+ * @author vakol
  *
  */
 public class CssClipPanel extends InsertPanel implements StringValueEditor {
@@ -98,13 +105,18 @@ public class CssClipPanel extends InsertPanel implements StringValueEditor {
 	 * @param parentWindow 
 	 */
 	public CssClipPanel(String initialString) {
-
-		initComponents();
 		
-		// $hide>>$
-		this.initialString = initialString;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			this.initialString = initialString;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -204,8 +216,13 @@ public class CssClipPanel extends InsertPanel implements StringValueEditor {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-
-		setFromInitialString();
+		try {
+			
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -220,23 +237,31 @@ public class CssClipPanel extends InsertPanel implements StringValueEditor {
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		localize();
-		
-		loadUnits();
-		
-		loadDialog();
+		try {
+			
+			localize();
+			loadUnits();
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load units.
 	 */
 	private void loadUnits() {
-		
-		Utility.loadCssUnits(comboBottomUnits);
-		Utility.loadCssUnits(comboLeftUnits);
-		Utility.loadCssUnits(comboTopUnits);
-		Utility.loadCssUnits(comboRightUnits);
+		try {
+			
+			Utility.loadCssUnits(comboBottomUnits);
+			Utility.loadCssUnits(comboLeftUnits);
+			Utility.loadCssUnits(comboTopUnits);
+			Utility.loadCssUnits(comboRightUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -246,7 +271,13 @@ public class CssClipPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getSpecification() {
 		
-		return "rect(" + getTop() + ", " + getRight() + ", " + getBottom() + ", " + getLeft() + ")";
+		try {
+			return "rect(" + getTop() + ", " + getRight() + ", " + getBottom() + ", " + getLeft() + ")";
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -255,7 +286,13 @@ public class CssClipPanel extends InsertPanel implements StringValueEditor {
 	 */
 	private String getTop() {
 		
-		return Utility.getCssValueAndUnits(textTop, comboTopUnits);
+		try {
+			return Utility.getCssValueAndUnits(textTop, comboTopUnits);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -264,7 +301,13 @@ public class CssClipPanel extends InsertPanel implements StringValueEditor {
 	 */
 	private String getRight() {
 		
-		return Utility.getCssValueAndUnits(textRight, comboRightUnits);
+		try {
+			return Utility.getCssValueAndUnits(textRight, comboRightUnits);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -273,7 +316,13 @@ public class CssClipPanel extends InsertPanel implements StringValueEditor {
 	 */
 	private String getBottom() {
 		
-		return Utility.getCssValueAndUnits(textBottom, comboBottomUnits);
+		try {
+			return Utility.getCssValueAndUnits(textBottom, comboBottomUnits);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -282,40 +331,51 @@ public class CssClipPanel extends InsertPanel implements StringValueEditor {
 	 */
 	private String getLeft() {
 		
-		return Utility.getCssValueAndUnits(textLeft, comboLeftUnits);
+		try {
+			return Utility.getCssValueAndUnits(textLeft, comboLeftUnits);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
 	 * Set from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		// Initialize controls.
-		setTop("0px");
-		setRight("0px");
-		setBottom("0px");
-		setLeft("0px");
-
-		if (initialString != null) {
-		
-			String trimmedString = initialString.replaceAll("rect\\s*\\(", "");
-			trimmedString = trimmedString.replaceAll(",", "");
-			trimmedString = trimmedString.replaceAll("\\)", "");
+		try {
 			
-			Scanner scanner = new Scanner(trimmedString.trim());
+			// Initialize controls.
+			setTop("0px");
+			setRight("0px");
+			setBottom("0px");
+			setLeft("0px");
+	
+			if (initialString != null) {
 			
-			try {
-				// Set values.
-				setTop(scanner.next().trim());
-				setRight(scanner.next().trim());
-				setBottom(scanner.next().trim());
-				setLeft(scanner.next().trim());
+				String trimmedString = initialString.replaceAll("rect\\s*\\(", "");
+				trimmedString = trimmedString.replaceAll(",", "");
+				trimmedString = trimmedString.replaceAll("\\)", "");
+				
+				Scanner scanner = new Scanner(trimmedString.trim());
+				
+				try {
+					// Set values.
+					setTop(scanner.next().trim());
+					setRight(scanner.next().trim());
+					setBottom(scanner.next().trim());
+					setLeft(scanner.next().trim());
+				}
+				catch (Exception e) {
+				}
+				
+			    scanner.close();
 			}
-			catch (Exception e) {
-			}
-			
-		    scanner.close();
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -323,8 +383,13 @@ public class CssClipPanel extends InsertPanel implements StringValueEditor {
 	 * @param string
 	 */
 	private void setTop(String string) {
-		
-		Utility.setCssValueAndUnits(string, textTop, comboTopUnits);
+		try {
+			
+			Utility.setCssValueAndUnits(string, textTop, comboTopUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -332,8 +397,13 @@ public class CssClipPanel extends InsertPanel implements StringValueEditor {
 	 * @param string
 	 */
 	private void setRight(String string) {
-		
-		Utility.setCssValueAndUnits(string, textRight, comboRightUnits);
+		try {
+			
+			Utility.setCssValueAndUnits(string, textRight, comboRightUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -341,8 +411,13 @@ public class CssClipPanel extends InsertPanel implements StringValueEditor {
 	 * @param string
 	 */
 	private void setBottom(String string) {
-		
-		Utility.setCssValueAndUnits(string, textBottom, comboBottomUnits);
+		try {
+			
+			Utility.setCssValueAndUnits(string, textBottom, comboBottomUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -350,19 +425,29 @@ public class CssClipPanel extends InsertPanel implements StringValueEditor {
 	 * @param string
 	 */
 	private void setLeft(String string) {
-		
-		Utility.setCssValueAndUnits(string, textLeft, comboLeftUnits);
+		try {
+			
+			Utility.setCssValueAndUnits(string, textLeft, comboLeftUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(labelBottom);
-		Utility.localize(labelLeft);
-		Utility.localize(labelTop);
-		Utility.localize(labelRight);
+		try {
+			
+			Utility.localize(labelBottom);
+			Utility.localize(labelLeft);
+			Utility.localize(labelTop);
+			Utility.localize(labelRight);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -371,7 +456,13 @@ public class CssClipPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.gui.textCssClipBuilder");
+		try {
+			return Resources.getString("org.multipage.gui.textCssClipBuilder");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -380,7 +471,13 @@ public class CssClipPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getResultText() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -436,7 +533,13 @@ public class CssClipPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getStringValue() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -445,9 +548,14 @@ public class CssClipPanel extends InsertPanel implements StringValueEditor {
 	 */
 	@Override
 	public void setStringValue(String string) {
-		
-		initialString = string;
-		setFromInitialString();
+		try {
+			
+			initialString = string;
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

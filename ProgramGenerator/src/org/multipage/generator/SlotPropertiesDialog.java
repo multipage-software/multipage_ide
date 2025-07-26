@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 10-02-2020
+ * Created on : 2020-02-10
  *
  */
 package org.multipage.generator;
@@ -29,10 +29,11 @@ import org.multipage.gui.Images;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author user
+ * Dialog for slot properties.
+ * @author vakol
  *
  */
 public class SlotPropertiesDialog extends JDialog {
@@ -82,19 +83,24 @@ public class SlotPropertiesDialog extends JDialog {
 	 * Launch the application.
 	 */
 	public static void showDialog(Component parent, Slot slot) {
-
-		SlotPropertiesDialog dialog = new SlotPropertiesDialog(Utility.findWindow(parent));
-		dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		dialog.loadDialog();
-		dialog.loadProperties(slot);
-		
-		dialog.setVisible(true);
-		
-		dialog.saveDialog();
-		if (dialog.confirm) {
-			dialog.saveProperties(slot);
+		try {
+			
+			SlotPropertiesDialog dialog = new SlotPropertiesDialog(Utility.findWindow(parent));
+			dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			dialog.loadDialog();
+			dialog.loadProperties(slot);
+			
+			dialog.setVisible(true);
+			
+			dialog.saveDialog();
+			if (dialog.confirm) {
+				dialog.saveProperties(slot);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -116,8 +122,13 @@ public class SlotPropertiesDialog extends JDialog {
 	public SlotPropertiesDialog(Window parent) {
 		super(parent, ModalityType.APPLICATION_MODAL);
 		
-		initComponents();
-		postCreate(); //$hide$
+		try {
+			initComponents();
+			postCreate(); //$hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -172,28 +183,43 @@ public class SlotPropertiesDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		localize();
-		setIcons();
+		try {
+			
+			localize();
+			setIcons();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonSave);
-		Utility.localize(buttonCancel);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonSave);
+			Utility.localize(buttonCancel);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonSave.setIcon(Images.getIcon("org/multipage/gui/images/save_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			buttonSave.setIcon(Images.getIcon("org/multipage/gui/images/save_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -201,28 +227,33 @@ public class SlotPropertiesDialog extends JDialog {
 	 * @param slot
 	 */
 	private void loadProperties(Slot slot) {
-		
-		// Load slot properties from database.
-		MiddleResult result = MiddleResult.OK;
 		try {
-			Middle middle = ProgramBasic.loginMiddle();
-			result = middle.loadSlotProperties(slot);
+			
+			// Load slot properties from database.
+			MiddleResult result = MiddleResult.OK;
+			try {
+				Middle middle = ProgramBasic.loginMiddle();
+				result = middle.loadSlotProperties(slot);
+			}
+			catch (Exception e) {
+				result = MiddleResult.exceptionToResult(e);
+			}
+			finally {
+				ProgramBasic.logoutMiddle();
+			}
+			
+			// On error do nothing.
+			if (result.isNotOK()) {
+				result.show(this);
+				return;
+			}
+			
+			// Load from slot.
+			externalProviderPanel.loadFromSlot(slot);
 		}
-		catch (Exception e) {
-			result = MiddleResult.exceptionToResult(e);
-		}
-		finally {
-			ProgramBasic.logoutMiddle();
-		}
-		
-		// On error do nothing.
-		if (result.isNotOK()) {
-			result.show(this);
-			return;
-		}
-		
-		// Load from slot.
-		externalProviderPanel.loadFromSlot(slot);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -230,37 +261,42 @@ public class SlotPropertiesDialog extends JDialog {
 	 * @param slot
 	 */
 	private void saveProperties(Slot slot) {
-		
-		// Get link.
-		String link = externalProviderPanel.getExternalProviderLink();
-		slot.setExternalProvider(link);
-		
-		// Get reads input flag.
-		boolean readsInput = externalProviderPanel.getReadsInput();
-		slot.setReadsInput(readsInput);
-		
-		// Get writes output flag.
-		boolean writesOutput = externalProviderPanel.getWritesOutput();
-		slot.setWritesOutput(writesOutput);
-		
-		// Save slot properties to database.
-		MiddleResult result = MiddleResult.OK;
 		try {
-			Middle middle = ProgramBasic.loginMiddle();
-			result = middle.updateSlotProperties(slot);
+			
+			// Get link.
+			String link = externalProviderPanel.getExternalProviderLink();
+			slot.setExternalProvider(link);
+			
+			// Get reads input flag.
+			boolean readsInput = externalProviderPanel.getReadsInput();
+			slot.setReadsInput(readsInput);
+			
+			// Get writes output flag.
+			boolean writesOutput = externalProviderPanel.getWritesOutput();
+			slot.setWritesOutput(writesOutput);
+			
+			// Save slot properties to database.
+			MiddleResult result = MiddleResult.OK;
+			try {
+				Middle middle = ProgramBasic.loginMiddle();
+				result = middle.updateSlotProperties(slot);
+			}
+			catch (Exception e) {
+				result = MiddleResult.exceptionToResult(e);
+			}
+			finally {
+				ProgramBasic.logoutMiddle();
+			}
+			
+			// On error do nothing.
+			if (result.isNotOK()) {
+				result.show(this);
+				return;
+			}
 		}
-		catch (Exception e) {
-			result = MiddleResult.exceptionToResult(e);
-		}
-		finally {
-			ProgramBasic.logoutMiddle();
-		}
-		
-		// On error do nothing.
-		if (result.isNotOK()) {
-			result.show(this);
-			return;
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -289,20 +325,30 @@ public class SlotPropertiesDialog extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (!bounds.isEmpty()) {
-			setBounds(bounds);
+		try {
+			
+			if (!bounds.isEmpty()) {
+				setBounds(bounds);
+			}
+			else {
+				Utility.centerOnScreen(this);
+			}
 		}
-		else {
-			Utility.centerOnScreen(this);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

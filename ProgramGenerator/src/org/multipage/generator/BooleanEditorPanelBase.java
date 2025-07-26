@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -17,9 +17,11 @@ import javax.swing.JRadioButton;
 
 import org.multipage.gui.StringValueEditor;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * @author
+ * Base class for editor for boolean value.
+ * @author vakol
  *
  */
 public class BooleanEditorPanelBase extends JPanel implements SlotValueEditorPanelInterface {
@@ -59,45 +61,61 @@ public class BooleanEditorPanelBase extends JPanel implements SlotValueEditorPan
 	 * Post creation.
 	 */
 	protected void postCreate() {
-		
-		localize();
+		try {
+			
+			localize();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(radioTrue);
-		Utility.localize(radioFalse);
-		
-		if (labelSelectValue != null) {
-			Utility.localize(labelSelectValue);
+		try {
+			
+			Utility.localize(radioTrue);
+			Utility.localize(radioFalse);
+			
+			if (labelSelectValue != null) {
+				Utility.localize(labelSelectValue);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
+	
 	/**
 	 * Set value.
 	 * @param booleanValue
 	 */
 	@Override
 	public void setValue(Object value) {
-		
-		if (!(value instanceof Boolean)) {
-			return;
+		try {
+			
+			if (!(value instanceof Boolean)) {
+				return;
+			}
+			
+			boolean booleanValue = (Boolean) value;
+			
+			ButtonModel buttonModel = null;
+			
+			if (booleanValue) {
+				buttonModel = radioTrue.getModel();
+			}
+			else {
+				buttonModel = radioFalse.getModel();
+			}
+			
+			buttonGroup.setSelected(buttonModel, true);
 		}
-		
-		boolean booleanValue = (Boolean) value;
-		
-		ButtonModel buttonModel = null;
-		
-		if (booleanValue) {
-			buttonModel = radioTrue.getModel();
-		}
-		else {
-			buttonModel = radioFalse.getModel();
-		}
-		
-		buttonGroup.setSelected(buttonModel, true);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -106,7 +124,13 @@ public class BooleanEditorPanelBase extends JPanel implements SlotValueEditorPan
 	@Override
 	public Object getValue() {
 		
-		return radioTrue.isSelected();
+		try {
+			return radioTrue.isSelected();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -114,14 +138,19 @@ public class BooleanEditorPanelBase extends JPanel implements SlotValueEditorPan
 	 */
 	@Override
 	public void setDefault(boolean isDefault) {
-		
-		// Enable / disable controls.
-		boolean enable = !isDefault;
-		
-		Color disabledColor = Color.GRAY;
-		
-		radioTrue.setForeground(enable ? new Color(0, 100, 0) : disabledColor);
-		radioFalse.setForeground(enable ? new Color(255, 0, 0) : disabledColor);
+		try {
+			
+			// Enable / disable controls.
+			boolean enable = !isDefault;
+			
+			Color disabledColor = Color.GRAY;
+			
+			radioTrue.setForeground(enable ? new Color(0, 100, 0) : disabledColor);
+			radioFalse.setForeground(enable ? new Color(255, 0, 0) : disabledColor);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -130,6 +159,12 @@ public class BooleanEditorPanelBase extends JPanel implements SlotValueEditorPan
 	@Override
 	public String getValueMeaning() {
 		
-		return StringValueEditor.meansBoolean;
+		try {
+			return StringValueEditor.meansBoolean;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 }

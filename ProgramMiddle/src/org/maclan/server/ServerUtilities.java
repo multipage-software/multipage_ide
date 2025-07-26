@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -20,7 +20,7 @@ import org.maclan.*;
 import org.multipage.util.*;
 
 /**
- * Miscellaneous Area Sever utilities.
+ * Miscellaneous Area Sever utility functions.
  * @author vakol
  */
 public class ServerUtilities {

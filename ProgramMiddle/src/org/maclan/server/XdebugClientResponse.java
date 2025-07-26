@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2024 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 09-05-2023
+ * Created on : 2023-05-09
  *
  */
 package org.maclan.server;
@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -27,6 +28,10 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.text.StringEscapeUtils;
+import org.maclan.Area;
+import org.maclan.Language;
+import org.maclan.StartResource;
+import org.maclan.VersionObj;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
 import org.w3c.dom.Document;
@@ -59,12 +64,6 @@ public class XdebugClientResponse {
      */
 	public static final byte [] NULL_SYMBOL = new byte [] { 0 };
 	public static final int NULL_SIZE = XdebugClientResponse.NULL_SYMBOL.length;
-	
-	/**
-	 * Xdebug type names.
-	 */
-	private static final String INTEGER_TYPE_NAME = "int";
-	private static final String STRING_TYPE_NAME = "string";
 	
 	/**
 	 * Compiled XPATH expresions
@@ -108,6 +107,13 @@ public class XdebugClientResponse {
 	private static XPathExpression xpathResponseNullContext = null;
 	private static XPathExpression xpathNotificationName = null;
 	private static XPathExpression xpathResponseSuccess = null;
+	private static XPathExpression xpathFinalSourceResponse = null;
+	private static XPathExpression xpathSourceInfoResourceId = null;
+	private static XPathExpression xpathSourceInfoResourceName = null;
+	private static XPathExpression xpathSourceInfoSlotId = null;
+	private static XPathExpression xpathSourceInfoSlotName = null;
+	private static XPathExpression xpathSourceInfoAreaId = null;
+	private static XPathExpression xpathSourceInfoAreaName = null;
 	
 	/**
 	 * Regular expression.
@@ -177,6 +183,13 @@ public class XdebugClientResponse {
 			xpathResponseNullContext = xpath.compile("/response/null_context");
 			xpathNotificationName = xpath.compile("/notify/@name");
 			xpathResponseSuccess = xpath.compile("/response/@success");
+			xpathFinalSourceResponse = xpath.compile("/notify/text()");
+			xpathSourceInfoResourceId = xpath.compile("/response/property/value/resource/@id");
+			xpathSourceInfoResourceName = xpath.compile("/response/property/value/resource/@name");
+			xpathSourceInfoSlotId = xpath.compile("/response/property/value/slot/@id");
+			xpathSourceInfoSlotName = xpath.compile("/response/property/value/slot/@name");
+			xpathSourceInfoAreaId = xpath.compile("/response/property/value/area/@id");
+			xpathSourceInfoAreaName = xpath.compile("/response/property/value/area/@name");
 			
 			// Create regex patterns.
 			regexUriParser = Pattern.compile("debug:\\/\\/(?<computer>[^\\/]*)\\/\\?pid=(?<pid>\\d*)&tid=(?<tid>\\d*)&aid=(?<aid>\\d*)&statehash=(?<statehash>\\d*)", Pattern.CASE_INSENSITIVE);
@@ -382,6 +395,29 @@ public class XdebugClientResponse {
         Element rootElement = xml.createElement("notify");
         rootElement.setAttribute("name", "breakpoint_resolved");
         xml.appendChild(rootElement);
+        
+        // Create and return  new packet.
+		XdebugClientResponse featurePacket = new XdebugClientResponse(xml);
+		return featurePacket;
+	}
+	
+	/**
+	 * Create final notification.
+	 * @param server 
+	 * @return
+	 * @throws Exception 
+	 */
+	public static XdebugClientResponse createFinalNotification(AreaServer server)
+			throws Exception {
+		
+		// Create new XML DOM document object.
+        Document xml = newXmlDocument();
+        Element rootElement = xml.createElement("notify");
+        rootElement.setAttribute("name", "final_debug_info");
+        xml.appendChild(rootElement);
+        
+        String resultSourceCode = server.state.text.toString();
+        rootElement.setTextContent(resultSourceCode);
         
         // Create and return  new packet.
 		XdebugClientResponse featurePacket = new XdebugClientResponse(xml);
@@ -688,13 +724,13 @@ public class XdebugClientResponse {
 			
 			Object variableValue = variable.value;
 			if (variableValue != null) {
+				
 				variableValueText = variableValue.toString();
+				variableType = variableValue.getClass();
 			}
 			else {
 				variableValueText = "null";
 			}
-			
-			variableType = variableValue.getClass();
 			
 			if (blockDescriptor.ref != null) {
 				blockName = blockDescriptor.ref.name;
@@ -733,7 +769,7 @@ public class XdebugClientResponse {
         nameElement.setTextContent(variableName);
         propertyElement.appendChild(nameElement);
         
-        // Create the name node.
+        // Create the full name node.
         Element fullNameElement = xml.createElement("fullname");
         fullNameElement.setAttribute("encoding", "none");
         fullNameElement.setTextContent(variableFullName);
@@ -748,6 +784,360 @@ public class XdebugClientResponse {
         // Create and return new packet.
 		XdebugClientResponse blockVariablePacket = new XdebugClientResponse(xml);
 		return blockVariablePacket;
+	}
+	
+	/**
+	 * Create tag property response.
+	 * @param command
+	 * @param state
+	 * @param propertyName
+	 * @return
+	 * @throws Exception 
+	 */
+	public static XdebugClientResponse createTagPropertyResponse(XdebugCommand command, AreaServerState state, String propertyName) 
+					throws Exception {
+
+		// Get transaction ID from the input command.
+		int transactionId = command.getTransactionId();
+        if (transactionId < 1) {
+        	onThrownException("org.maclan.server.messageXdebugBadTransactionId", transactionId);
+        }
+        
+        // Get command name.
+        String commandName = command.getName();
+
+        // Create new XML DOM document object.
+        Document xml = newXmlDocument();
+        Element rootElement = xml.createElement("response");
+        rootElement.setAttribute("command", commandName);
+        rootElement.setAttribute("transaction_id", String.valueOf(transactionId));
+        xml.appendChild(rootElement);
+        
+        // Try to get property full name and value.
+        String tagName = null;
+        Object value = null;
+        DebugInfo debugInfo = state.getDebugInfo();
+        if (debugInfo != null) {
+        	
+        	DebugTagInfo tagInfo = debugInfo.getTagInfo();
+        	if (tagInfo != null) {
+        		
+        		tagName = tagInfo.getTagName();
+        		if (tagName != null) {
+
+            		Properties tagProperties = tagInfo.getProperties();
+            		if (tagProperties != null) {
+            			
+            			boolean propertyExists = tagProperties.containsKey(propertyName);
+            			if (propertyExists) {
+            				
+            				value = tagProperties.get(propertyName);
+            			}
+            		}        			
+        		}
+        	}
+        }
+        
+        if (tagName == null) {
+        	tagName = "unknown";
+        }
+        
+        String propertyFullName = tagName + ':' + propertyName;
+        String propertyValueText = null;
+        String typeName = null;
+        
+        if (value != null) {
+        	propertyValueText = value.toString();
+        	typeName = value.getClass().getSimpleName();
+        }
+        else {
+        	propertyValueText = "null";
+        	typeName = "*unknown*";
+        }
+        
+        // Create the property node.
+        Element propertyElement = xml.createElement("property");
+        propertyElement.setAttribute("type", typeName);
+        propertyElement.setAttribute("children", "false");
+        rootElement.appendChild(propertyElement);
+        
+        // Create the name node.
+        Element nameElement = xml.createElement("name");
+        nameElement.setAttribute("encoding", "none");
+        nameElement.setTextContent(propertyName);
+        propertyElement.appendChild(nameElement);
+        
+        // Create the full name node.
+        Element fullNameElement = xml.createElement("fullname");
+        fullNameElement.setAttribute("encoding", "none");
+        fullNameElement.setTextContent(propertyFullName);
+        propertyElement.appendChild(fullNameElement);
+
+         // Create the value node.
+        Element valueElement = xml.createElement("value");
+        valueElement.setAttribute("encoding", "none");
+        valueElement.setTextContent(propertyValueText);
+        propertyElement.appendChild(valueElement);        
+        
+        // Create and return new packet.
+		XdebugClientResponse tagPacket = new XdebugClientResponse(xml);
+		return tagPacket;
+	}
+	
+	/**
+	 * Create area property response.
+	 * @param command
+	 * @param server
+	 * @param propertyName
+	 * @return
+	 * @throws Exception 
+	 */
+	public static XdebugClientResponse createAreaPropertyResponse(XdebugCommand command, AreaServer server, String propertyName)
+			throws Exception {
+		
+		// Get transaction ID from the input command.
+		int transactionId = command.getTransactionId();
+        if (transactionId < 1) {
+        	onThrownException("org.maclan.server.messageXdebugBadTransactionId", transactionId);
+        }
+        
+        // Get command name.
+        String commandName = command.getName();
+		
+        // Create new XML DOM document object.
+        Document xml = newXmlDocument();
+        Element rootElement = xml.createElement("response");
+        rootElement.setAttribute("command", commandName);
+        rootElement.setAttribute("transaction_id", String.valueOf(transactionId));
+        xml.appendChild(rootElement);
+        
+        // Get current Area Server state.
+        AreaServerState state = server.state;
+        
+        // Set properties.
+        Area area = null;
+        VersionObj version = null;
+        Language language = null;
+        StartResource startResource = null;
+        
+        DebugWatchItemType propertyType = DebugWatchItemType.UNKNOWN;
+        		
+        switch (propertyName) {
+        case "thisArea":
+        	area = state.area;
+        	propertyType = DebugWatchItemType.AREA;
+        	break;
+        case "requestedArea":
+        	area = state.requestedArea;
+        	propertyType = DebugWatchItemType.AREA;
+        	break;
+        case "startArea":
+        	area = state.startArea;
+        	propertyType = DebugWatchItemType.AREA;
+        	break;
+        case "homeArea":
+        	area = server.getHomeArea();
+        	propertyType = DebugWatchItemType.AREA;
+        	break;        	
+        case "currentVersion":
+        	version = server.geCurrentVersion();
+        	propertyType = DebugWatchItemType.VERSION;
+            break;
+        case "currentLanguage":
+        	language = server.getCurrentLanguage();
+        	propertyType = DebugWatchItemType.LANGUAGE;
+            break;
+        case "startResource":
+        	startResource = server.getCurrentStartResource();
+        	propertyType = DebugWatchItemType.START_RESOURCE;
+            break;             
+        }
+        
+        // Get property value and type name.
+        String propertyValue = null;
+        switch (propertyType) {
+        case AREA:
+        	propertyValue = (area != null ? area.getDescriptionForced(true) : "*unknown*");
+        	break;
+        case VERSION:
+        	propertyValue = (version != null ? version.getDescriptionWithId() : "*unknown*");
+        	break;
+        case LANGUAGE:
+        	propertyValue = (language != null ? language.toString() : "*unknown*");
+        	break;
+        case START_RESOURCE:
+        	propertyValue = (startResource != null ? startResource.toString() : "*unknown*");
+        	break;
+        default:
+        	propertyValue = "";
+        }
+        
+        String propertyTypeName = propertyType.getName();
+
+        // Create the property node.
+        Element propertyElement = xml.createElement("property");
+        propertyElement.setAttribute("type", propertyTypeName);
+        propertyElement.setAttribute("children", "false");
+        rootElement.appendChild(propertyElement);
+        
+        // Create the name node.
+        Element nameElement = xml.createElement("name");
+        nameElement.setAttribute("encoding", "none");
+        nameElement.setTextContent(propertyName);
+        propertyElement.appendChild(nameElement);
+        
+        // Create the full name node.
+        Element fullNameElement = xml.createElement("fullname");
+        fullNameElement.setAttribute("encoding", "none");
+        fullNameElement.setTextContent(propertyName);
+        propertyElement.appendChild(fullNameElement);
+
+         // Create the value node.
+        Element valueElement = xml.createElement("value");
+        valueElement.setAttribute("encoding", "none");
+        valueElement.setTextContent(propertyValue);
+        propertyElement.appendChild(valueElement);
+		
+		// Create and return new packet.
+		XdebugClientResponse areaPacket = new XdebugClientResponse(xml);
+		return areaPacket;
+	}
+	
+	/**
+	 * Create server property response.
+	 * @param command
+	 * @param server
+	 * @param propertyName
+	 * @return
+	 * @throws Exception 
+	 */
+	public static XdebugClientResponse createServerPropertyResponse(XdebugCommand command, AreaServer server, String propertyName)
+					throws Exception {
+		
+		// Get transaction ID from the input command.
+		int transactionId = command.getTransactionId();
+        if (transactionId < 1) {
+        	onThrownException("org.maclan.server.messageXdebugBadTransactionId", transactionId);
+        }
+        
+        // Get command name.
+        String commandName = command.getName();
+		
+        // Create new XML DOM document object.
+        Document xml = newXmlDocument();
+        Element rootElement = xml.createElement("response");
+        rootElement.setAttribute("command", commandName);
+        rootElement.setAttribute("transaction_id", String.valueOf(transactionId));
+        xml.appendChild(rootElement);
+        
+        // Set server properties.
+        String serverValue = null;
+        String serverType = "Unknown";
+        DebugSourceInfo sourceInfo = null;
+        
+        switch (propertyName) {
+        
+        case "serverUrl":
+        	serverValue = server.getServerUrl();
+        	serverType = "String";
+        	break;
+        	
+        case "serverLevel":
+        	long serverLevel = server.getServerLevel();
+        	serverValue = String.valueOf(serverLevel);
+        	serverType = "Long";
+        	break; 
+        	
+        case "sourceInfo":
+        	String stateHashCodeText = command.getArgument("-h");
+        	int stateHashCode = Integer.valueOf(stateHashCodeText);
+        	sourceInfo = server.getSourceInfo(stateHashCode);
+        	serverType = "XML";
+        	break;
+        }
+        
+        // Create the property node.
+        Element propertyElement = xml.createElement("property");
+        propertyElement.setAttribute("type", serverType);
+        propertyElement.setAttribute("children", "false");
+        rootElement.appendChild(propertyElement);
+        
+        // Create the name node.
+        Element nameElement = xml.createElement("name");
+        nameElement.setAttribute("encoding", "none");
+        nameElement.setTextContent(propertyName);
+        propertyElement.appendChild(nameElement);
+        
+        // Create the full name node.
+        Element fullNameElement = xml.createElement("fullname");
+        fullNameElement.setAttribute("encoding", "none");
+        fullNameElement.setTextContent(propertyName);
+        propertyElement.appendChild(fullNameElement);
+
+        // Create the value node.
+        if (serverValue == null || serverValue.isEmpty()) {
+        	serverValue = "*unknown*";
+        }
+        
+        Element valueElement = xml.createElement("value");
+        valueElement.setAttribute("encoding", "none");
+        
+        if (sourceInfo != null) {
+        	
+        	boolean hasSourceInfo = false;
+        	
+        	// Add resource information. 
+        	Long resourceId = sourceInfo.getResourceId();
+        	if (resourceId != null) {
+        		
+        		Element resourceElement = xml.createElement("resource");
+        		
+        		String resourceIdText = String.valueOf(resourceId);
+        		resourceElement.setAttribute("id", resourceIdText);
+        		String resourceName = sourceInfo.getResourceName();
+        		resourceElement.setAttribute("name", resourceName);
+        		
+        		valueElement.appendChild(resourceElement);
+        		hasSourceInfo = true;
+        	};
+        	
+        	// Add slot information.
+        	Long slotId = sourceInfo.getSlotId();
+        	if (slotId != null) {
+        		
+        		Element slotElement = xml.createElement("slot");
+        		
+        		String slotIdText = String.valueOf(slotId);
+        		slotElement.setAttribute("id", slotIdText);
+        		String slotName = sourceInfo.getSlotName();
+        		slotElement.setAttribute("name", slotName);
+        		
+        		valueElement.appendChild(slotElement);
+        		hasSourceInfo = true;
+        	};
+        	
+        	// Add area information.
+        	Long areaId = sourceInfo.getAreaId();
+        	if (hasSourceInfo && (areaId != null)) {
+                
+        		Element areaElement = xml.createElement("area");
+        		
+        		String areaIdText = String.valueOf(areaId);
+        		areaElement.setAttribute("id", areaIdText);
+        		String areaName = sourceInfo.getAreaName();
+        		areaElement.setAttribute("name", areaName);
+        		
+        		valueElement.appendChild(areaElement);
+            }
+        }
+        else {
+        	valueElement.setTextContent(serverValue);
+        }
+        propertyElement.appendChild(valueElement);
+        
+		// Create and return new packet.
+		XdebugClientResponse serverPacket = new XdebugClientResponse(xml);
+		return serverPacket;
 	}
 	
 	/**
@@ -784,7 +1174,7 @@ public class XdebugClientResponse {
         	propertyElement.setAttribute("name", propertyName);
         	String propertyFullName = watchItem.getFullName();
         	propertyElement.setAttribute("fullname", propertyFullName);
-        	String typeName = watchItem.getTypeName();
+        	String typeName = watchItem.getGroupName();
         	propertyElement.setAttribute("type", typeName);
         	rootElement.appendChild(propertyElement);
         }
@@ -955,8 +1345,11 @@ public class XdebugClientResponse {
 			return "";
 		}
 		
-        String text = lsSerializer.writeToString(xml);
-        return text;
+		synchronized (lsSerializer) {
+			
+			String text = lsSerializer.writeToString(xml);
+			return text;
+		}
 	}
 
 	/**
@@ -969,6 +1362,10 @@ public class XdebugClientResponse {
 		
         // Delegate the call to get string buffer with XML text representation.
 		String text = getText();
+		if (text == null) {
+			return null;
+		}
+		
 		byte [] bytes = text.getBytes("UTF-8");
 		return bytes;
 	}
@@ -1180,6 +1577,18 @@ public class XdebugClientResponse {
 	}
 	
 	/**
+	 * Check if it is a "final_debug_info" response.
+	 * @return
+	 */
+	public boolean isFinalDebugInfo()
+			throws Exception {
+		
+		String notificationName = (String) xpathNotificationName.evaluate(xml, XPathConstants.STRING);
+		boolean success = "final_debug_info".equals(notificationName);
+		return success;
+	}
+	
+	/**
 	 * Get source result.
 	 * @return
 	 * @throws Exception
@@ -1196,6 +1605,25 @@ public class XdebugClientResponse {
 		// Get source code.
 		String sourceCode = (String) xpathSourceResponse.evaluate(xml, XPathConstants.STRING);
 		return sourceCode;
+	}
+	
+	/**
+	 * Get final spource code.
+	 * @return
+	 * @throws Exception 
+	 */
+	public String getFinalSourceCode() throws Exception {
+		
+		// Check notification name.
+		String notificationName = (String) xpathNotificationName.evaluate(xml, XPathConstants.STRING);
+		boolean success = "final_debug_info".equals(notificationName);
+		if (!success) {
+			return "";
+		}
+		
+		// Get final source code.
+		String finalSourceCode = (String) xpathFinalSourceResponse.evaluate(xml, XPathConstants.STRING);
+        return finalSourceCode;
 	}
 
 	/**
@@ -1285,7 +1713,7 @@ public class XdebugClientResponse {
 	 * @return
 	 * @throws XPathExpressionException 
 	 */
-	public LinkedList<XdebugStackLevel> getXdebugAreaStack(Obj<Long> processId, Obj<String> processName,
+	public LinkedList<XdebugStackLevel> getXdebugAreaServerStack(Obj<Long> processId, Obj<String> processName,
 			Obj<Long> threadId, Obj<String> threadName)
 					throws Exception {
 		
@@ -1362,7 +1790,7 @@ public class XdebugClientResponse {
 	 * @return
 	 * @throws XPathExpressionException 
 	 */
-	public DebugWatchItem getXdebugWathItemResult(DebugWatchItemType watchedType)
+	public DebugWatchItem getXdebugWathItemResult(DebugWatchGroup watchedType)
 			throws Exception {
 		
 		String commandName = (String) xpathResponseCommandName.evaluate(xml, XPathConstants.STRING);
@@ -1422,7 +1850,7 @@ public class XdebugClientResponse {
 			String name = (String) xpathResponsePropertyName.evaluate(propertyNode, XPathConstants.STRING);
 			String fullName = (String) xpathResponsePropertyFullName.evaluate(propertyNode, XPathConstants.STRING);
 			String typeName = (String) xpathResponsePropertyTypeName.evaluate(propertyNode, XPathConstants.STRING);
-			DebugWatchItemType type = DebugWatchItemType.getByName(typeName);
+			DebugWatchGroup type = DebugWatchGroup.getByName(typeName);
 			
 			// Create debugger watched item and add it to the list.
 			DebugWatchItem watchedItem = new DebugWatchItem(type, name, fullName, null, null);
@@ -1430,6 +1858,102 @@ public class XdebugClientResponse {
 		}
 		
 		return watchList;
+	}
+	
+	/**
+	 * Get code source information.
+	 * @return
+	 */
+	public DebugSourceInfo getSourceInformation() {
+		
+		try {
+			String commandName = (String) xpathResponseCommandName.evaluate(xml, XPathConstants.STRING);
+			if (!"property_get".equals(commandName)) {
+				onThrownException("org.maclan.server.messageBadXdebugCommandName", "property_get", commandName);
+			}
+			
+			DebugSourceInfo sourceInfo = new DebugSourceInfo();
+			
+			// Resource ID.
+			String resourceIdText = (String) xpathSourceInfoResourceId.evaluate(xml, XPathConstants.STRING);
+			if (resourceIdText != null && !resourceIdText.isEmpty()) {
+				
+                Long resourceId = Long.parseLong(resourceIdText);
+                sourceInfo.setResourceId(resourceId);
+            }
+			
+			// Resource name.
+			String resourceName = (String) xpathSourceInfoResourceName.evaluate(xml, XPathConstants.STRING);
+			if (resourceName != null && !resourceName.isEmpty()) {
+                
+                sourceInfo.setResourceName(resourceName);
+            }
+			
+			// Slot ID.
+			String slotIdText = (String) xpathSourceInfoSlotId.evaluate(xml, XPathConstants.STRING);
+			if (slotIdText != null && !slotIdText.isEmpty()) {
+				
+                Long slotId = Long.parseLong(slotIdText);
+                sourceInfo.setSlotId(slotId);
+            }
+			
+			// Slot name.
+			String slotName = (String) xpathSourceInfoSlotName.evaluate(xml, XPathConstants.STRING);
+			if (slotName != null && !slotName.isEmpty()) {
+                
+                sourceInfo.setSlotName(slotName);
+            }
+			
+			// Area ID.
+			String areaIdText = (String) xpathSourceInfoAreaId.evaluate(xml, XPathConstants.STRING);
+			if (areaIdText != null && !areaIdText.isEmpty()) {
+				
+                Long areaId = Long.parseLong(areaIdText);
+                sourceInfo.setAreaId(areaId);
+            }
+			
+			// Area name.
+			String areaName = (String) xpathSourceInfoAreaName.evaluate(xml, XPathConstants.STRING);
+			if (areaName != null && !areaName.isEmpty()) {	
+				
+				sourceInfo.setAreaName(areaName);
+			}
+			
+			return sourceInfo;
+		}
+		catch (Exception e) {
+            onException(e);
+        }
+		
+		return null;
+	}
+	
+	/**
+	 * Get debug string.
+	 * @return
+	 */
+	public String getDebugString() {
+		
+		try {
+			String command = (String) xpathResponseCommandName.evaluate(xml, XPathConstants.STRING);
+			if (command != null && !command.isEmpty()) {
+				command = "command " + command;
+				return command;
+			}
+			
+		}
+		catch (Exception e) {
+		}
+		try {
+			String notification = (String) xpathNotificationName.evaluate(xml, XPathConstants.STRING);
+			if (notification != null && !notification.isEmpty()) {
+				notification = "notification " + notification;
+				return notification;
+			}
+		}
+		catch (Exception e) {
+		}	
+		return "unknown";
 	}
 
 	/**

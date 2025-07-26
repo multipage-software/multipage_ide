@@ -1,12 +1,13 @@
 /*
- * Copyright 2010-2022 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 25-10-2022
+ * Created on : 2022-10-25
  *
  */
 package org.multipage.generator;
 
 import org.multipage.gui.Message;
+import org.multipage.util.Safe;
 
 /**
  * GUI messages.
@@ -20,18 +21,24 @@ public class GuiMessage extends Message {
 	 * @param classObject
 	 * @return
 	 */
-	public boolean targetClass(Class<AreasDiagram> classObject) {
-
-		// Initialize output.
-		boolean matches = false;
+	public boolean targetClass(Class<AreaDiagramPanel> classObject) {
 		
-		// Check target class.
-		if (target instanceof Class<?>) {
+		try {
+			// Initialize output.
+			boolean matches = false;
 			
-			Class<?> targetClass = (Class<?>) target;
-			matches = targetClass.equals(classObject);
+			// Check target class.
+			if (target instanceof Class<?>) {
+				
+				Class<?> targetClass = (Class<?>) target;
+				matches = targetClass.equals(classObject);
+			}
+			
+			return matches;
 		}
-		
-		return matches;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 }

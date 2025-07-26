@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -11,6 +11,7 @@ import java.util.Enumeration;
 import java.util.LinkedList;
 
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
@@ -18,9 +19,11 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import org.maclan.Area;
+import org.multipage.util.Safe;
 
 /**
- * Class for tree state.
+ * State of tree that displays areas.
+ * @author vakol
  */
 public class AreaTreeState {
 
@@ -39,22 +42,32 @@ public class AreaTreeState {
 	 * @param idPath
 	 */
 	public void addSelectedAreaIdPath(Long [] idPath) {
-		
-		selectedAreasIdPaths.add(idPath);
+		try {
+			
+			selectedAreasIdPaths.add(idPath);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
-	 * Selected paths.
+	 * Add selected paths.
 	 * @param selectedPaths
 	 */
 	public void addSelectedPaths(TreePath[] selectedPaths) {
-		
-		// Add each path.
-		for (TreePath treePath : selectedPaths) {
+		try {
 			
-			Long [] idPath = getAreaIdPath(treePath);
-			addSelectedAreaIdPath(idPath);
+			// Add each path.
+			for (TreePath treePath : selectedPaths) {
+				
+				Long [] idPath = getAreaIdPath(treePath);
+				addSelectedAreaIdPath(idPath);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -62,8 +75,13 @@ public class AreaTreeState {
 	 * @param idPath
 	 */
 	public void addExpandedAreaIdPath(Long [] idPath) {
-		
-		expandedAreasIdPaths.add(idPath);
+		try {
+			
+			expandedAreasIdPaths.add(idPath);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -71,25 +89,43 @@ public class AreaTreeState {
 	 * @param expandedPaths
 	 */
 	public void addExpandedPaths(TreePath[] expandedPaths) {
-		
-		// Add each path.
-		for (TreePath treePath : expandedPaths) {
+		try {
 			
-			Long [] idPath = getAreaIdPath(treePath);
-			addExpandedAreaIdPath(idPath);
+			// Add each path.
+			for (TreePath treePath : expandedPaths) {
+				
+				Long [] idPath = getAreaIdPath(treePath);
+				addExpandedAreaIdPath(idPath);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
-	 * Selected and expanded paths.
+	 * Add selected and expanded paths.
 	 * @param tree
 	 * @param selectedPaths
 	 */
-	public static void addSelectedAndExpanded(JTree tree, TreePath[] selectedPaths) {
+	public static AreaTreeState addSelectionAndExpandIt(JTree tree, TreePath[] selectedPaths) {
 		
-		AreaTreeState treeState = getTreeState(tree);
-		treeState.addSelectedPaths(selectedPaths);
-		treeState.addExpandedPaths(selectedPaths);
+		try {
+			AreaTreeState treeState = getTreeState(tree);
+			
+			treeState.addSelectedPaths(selectedPaths);
+			treeState.addExpandedPaths(selectedPaths);
+			
+			Safe.invokeLater(() -> {
+				AreaTreeState.applyTreeState(treeState, tree);
+			});
+			
+			return treeState;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -102,49 +138,62 @@ public class AreaTreeState {
 	public static boolean getNodePath(DefaultMutableTreeNode node,
 			Long [] areaIdPath, int index, DefaultMutableTreeNode [] nodePath) {
 		
-		// Check input values.
-		if (node == null || areaIdPath == null || index < 0 || index >= areaIdPath.length || nodePath == null) {
-			return true;
-		}
-		
-		long areaId = areaIdPath[index];
-		
-		Area currentArea = null;
-		
-		Object userObject = node.getUserObject();
-		if (userObject instanceof Long) {
-			
-			long currentAreaId = (Long) userObject;
-			currentArea = ProgramGenerator.getArea(currentAreaId);
-		}
-		else if (userObject instanceof Area) {
-			currentArea = (Area) userObject;
-		}
-		else {
-			return false;
-		}
-		
-		// If current area ID doesn't match, exit with false.
-		if (currentArea.getId() != areaId) {
-			return false;
-		}
-		
-		// Set node path element.
-		nodePath[index] = node;
-		
-		// Call this method recursively for all sub nodes.
-		Enumeration nodeChildren = node.children();
-		while (nodeChildren.hasMoreElements()) {
-			
-			DefaultMutableTreeNode subNode = (DefaultMutableTreeNode) nodeChildren.nextElement();
-			
-			boolean isCorrect = getNodePath(subNode, areaIdPath, index + 1, nodePath);
-			if (isCorrect) {
+		try {
+			// Check input values.
+			if (node == null || areaIdPath == null || index < 0 || index >= areaIdPath.length || nodePath == null) {
 				return true;
 			}
+			
+			long areaId = areaIdPath[index];
+			
+			Area currentArea = null;
+			
+			Object userObject = node.getUserObject();
+			if (userObject instanceof Long) {
+				
+				long currentAreaId = (Long) userObject;
+				currentArea = ProgramGenerator.getArea(currentAreaId);
+			}
+			else if (userObject instanceof Area) {
+				currentArea = (Area) userObject;
+			}
+			else {
+				return false;
+			}
+			
+			// If current area ID doesn't match, exit with false.
+			if (currentArea.getId() != areaId) {
+				return false;
+			}
+			
+			// Set node path element.
+			nodePath[index] = node;
+			
+			// Call this method recursively for all sub nodes.
+			Enumeration<?> nodeChildren = node.children();
+			while (nodeChildren.hasMoreElements()) {
+				
+				// Check child object.
+				Object childObject = nodeChildren.nextElement();
+				if (!(childObject instanceof DefaultMutableTreeNode)) {
+					continue;
+				}
+				
+				// Get child node.
+				DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) childObject;
+				
+				boolean isCorrect = getNodePath(childNode, areaIdPath, index + 1, nodePath);
+				if (isCorrect) {
+					return true;
+				}
+			}
+			
+			return node.getChildCount() == 0;
 		}
-		
-		return node.getChildCount() == 0;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -153,66 +202,71 @@ public class AreaTreeState {
 	 * @param treeState
 	 */
 	public static void applyTreeState(AreaTreeState treeState, JTree tree) {
-		
-		// Get tree model.
-		TreeModel treeModelBase = tree.getModel();
-		if (!(treeModelBase instanceof DefaultTreeModel)) {
-			return;
-		}
-		
-		DefaultTreeModel treeModel = (DefaultTreeModel) treeModelBase;
-		
-		// Get root node.
-		DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) treeModel.getRoot();
-		if (rootNode == null) {
-			return;
-		}
-				
-		// Expand given areas.
-		for (Long [] areaIdPath : treeState.expandedAreasIdPaths) {
+		try {
 			
-			DefaultMutableTreeNode [] nodePath = new DefaultMutableTreeNode [areaIdPath.length];
-			if (AreaTreeState.getNodePath(rootNode, areaIdPath, 0, nodePath)) {
-				
-				if (nodePath.length <= 0) {
-					continue;
-				}
-				if (nodePath[nodePath.length - 1] == null) {
-					continue;
-				}
-				
-				// Create tree path.
-				TreePath treePath = new TreePath(nodePath);
-				
-				// Select given tree path.
-				tree.expandPath(treePath);
+			// Get tree model.
+			TreeModel treeModelBase = tree.getModel();
+			if (!(treeModelBase instanceof DefaultTreeModel)) {
+				return;
 			}
-		}
-		
-		LinkedList<TreePath> selectedPaths = new LinkedList<TreePath>();
-		
-		// Select given areas.
-		for (Long [] areaIdPath : treeState.selectedAreasIdPaths) {
 			
-			DefaultMutableTreeNode [] nodePath = new DefaultMutableTreeNode [areaIdPath.length];
-			if (AreaTreeState.getNodePath(rootNode, areaIdPath, 0, nodePath)) {
-				
-				if (nodePath.length <= 0) {
-					continue;
-				}
-				if (nodePath[nodePath.length - 1] == null) {
-					continue;
-				}
-				
-				// Create tree path.
-				TreePath treePath = new TreePath(nodePath);
-				
-				// Select given tree path.
-				selectedPaths.add(treePath);
+			DefaultTreeModel treeModel = (DefaultTreeModel) treeModelBase;
+			
+			// Get root node.
+			DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) treeModel.getRoot();
+			if (rootNode == null) {
+				return;
 			}
+					
+			// Expand given areas.
+			for (Long [] areaIdPath : treeState.expandedAreasIdPaths) {
+				
+				DefaultMutableTreeNode [] nodePath = new DefaultMutableTreeNode [areaIdPath.length];
+				if (AreaTreeState.getNodePath(rootNode, areaIdPath, 0, nodePath)) {
+					
+					if (nodePath.length <= 0) {
+						continue;
+					}
+					if (nodePath[nodePath.length - 1] == null) {
+						continue;
+					}
+					
+					// Create tree path.
+					TreePath treePath = new TreePath(nodePath);
+					
+					// Select given tree path.
+					tree.expandPath(treePath);
+				}
+			}
+			
+			LinkedList<TreePath> selectedPaths = new LinkedList<TreePath>();
+			
+			// Select given areas.
+			for (Long [] areaIdPath : treeState.selectedAreasIdPaths) {
+				
+				DefaultMutableTreeNode [] nodePath = new DefaultMutableTreeNode [areaIdPath.length];
+				if (AreaTreeState.getNodePath(rootNode, areaIdPath, 0, nodePath)) {
+					
+					if (nodePath.length <= 0) {
+						continue;
+					}
+					if (nodePath[nodePath.length - 1] == null) {
+						continue;
+					}
+					
+					// Create tree path.
+					TreePath treePath = new TreePath(nodePath);
+					
+					// Select given tree path.
+					selectedPaths.add(treePath);
+				}
+			}
+			
+			tree.setSelectionPaths(selectedPaths.toArray(new TreePath [0]));
 		}
-		
-		tree.setSelectionPaths(selectedPaths.toArray(new TreePath [0]));
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -222,46 +276,52 @@ public class AreaTreeState {
 	 */
 	public static AreaTreeState getTreeState(JTree tree) {
 		
-		AreaTreeState treeState = new AreaTreeState();
-	
-		// Get expanded areas' IDs.
-		DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) tree.getModel().getRoot();
-		if (rootNode != null) {
-			
-			// Get tree nodes.
-			Enumeration<? super DefaultMutableTreeNode> allNodes = rootNode.depthFirstEnumeration();
-			
-			while (allNodes.hasMoreElements()) {
+		try {
+			AreaTreeState treeState = new AreaTreeState();
+		
+			// Get expanded areas' IDs.
+			DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) tree.getModel().getRoot();
+			if (rootNode != null) {
 				
-				DefaultMutableTreeNode node = (DefaultMutableTreeNode) allNodes.nextElement();
+				// Get tree nodes.
+				Enumeration<? super DefaultMutableTreeNode> allNodes = rootNode.depthFirstEnumeration();
 				
-				TreeNode [] path = node.getPath();
-				TreePath treePath = new TreePath(path);
-				
-				// If the path is expanded, add the area ID to the list.
-				if (tree.isExpanded(treePath)) {
+				while (allNodes.hasMoreElements()) {
 					
-					Long [] idPath = getAreaIdPath(treePath);
+					DefaultMutableTreeNode node = (DefaultMutableTreeNode) allNodes.nextElement();
 					
-					treeState.addExpandedAreaIdPath(idPath);
+					TreeNode [] path = node.getPath();
+					TreePath treePath = new TreePath(path);
+					
+					// If the path is expanded, add the area ID to the list.
+					if (tree.isExpanded(treePath)) {
+						
+						Long [] idPath = getAreaIdPath(treePath);
+						
+						treeState.addExpandedAreaIdPath(idPath);
+					}
 				}
 			}
-		}
-		
-		// Get selected areas' IDs.
-		TreePath [] selectedTreePaths = tree.getSelectionPaths();
-		if (selectedTreePaths != null) {
 			
-			for (TreePath selectedTreePath : selectedTreePaths) {
+			// Get selected areas' IDs.
+			TreePath [] selectedTreePaths = tree.getSelectionPaths();
+			if (selectedTreePaths != null) {
 				
-				Long [] idPath = getAreaIdPath(selectedTreePath);
-						
-				// Add selected area ID to the tree state object.
-				treeState.addSelectedAreaIdPath(idPath);
+				for (TreePath selectedTreePath : selectedTreePaths) {
+					
+					Long [] idPath = getAreaIdPath(selectedTreePath);
+							
+					// Add selected area ID to the tree state object.
+					treeState.addSelectedAreaIdPath(idPath);
+				}
 			}
+			
+			return treeState;
 		}
-		
-		return treeState;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -271,37 +331,48 @@ public class AreaTreeState {
 	 */
 	private static Long[] getAreaIdPath(TreePath treePath) {
 		
-		int count = treePath.getPathCount();
-		
-		Long [] idPath = new Long [count];
-		
-		for (int index = 0; index < count; index++) {
+		try {
+			int count = treePath.getPathCount();
 			
-			DefaultMutableTreeNode node = (DefaultMutableTreeNode) treePath.getPathComponent(index);
-			Object userObject = node.getUserObject();
+			Long [] idPath = new Long [count];
 			
-			Long areaId = null;
-			if (userObject instanceof Long) {
-				areaId = (Long) userObject;
-			}
-			else if (userObject instanceof Area) {
-				Area area = (Area) userObject;
-				areaId = area.getId();
+			for (int index = 0; index < count; index++) {
+				
+				DefaultMutableTreeNode node = (DefaultMutableTreeNode) treePath.getPathComponent(index);
+				Object userObject = node.getUserObject();
+				
+				Long areaId = null;
+				if (userObject instanceof Long) {
+					areaId = (Long) userObject;
+				}
+				else if (userObject instanceof Area) {
+					Area area = (Area) userObject;
+					areaId = area.getId();
+				}
+				
+				if (areaId != null) {
+					idPath[index] = areaId;
+				}
 			}
 			
-			if (areaId != null) {
-				idPath[index] = areaId;
-			}
+			return idPath;
 		}
-		
-		return idPath;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
 	 * Clear selected list.
 	 */
 	public void clearSelected() {
-		
-		selectedAreasIdPaths.clear();
+		try {
+			
+			selectedAreasIdPaths.clear();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

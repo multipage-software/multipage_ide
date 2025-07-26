@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -26,9 +26,11 @@ import javax.swing.SpringLayout;
 import javax.swing.SwingUtilities;
 
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * @author user
+ * Panel that displays HTML anchor editor.
+ * @author vakol
  *
  */
 public class HtmlAnchorPanel extends InsertPanel implements StringValueEditor {
@@ -101,11 +103,16 @@ public class HtmlAnchorPanel extends InsertPanel implements StringValueEditor {
 		 * Constructor.
 		 */
 		public Attachment(JRadioButton radioButton, Runnable event, String getValueMethod, String setValueMethod) {
-			
-			this.radioButton = radioButton;
-			this.event = event;
-			this.getValueMethodAdapter = new ActionAdapter(editorReference, getValueMethod, null);
-			this.setValueMethod = setValueMethod;
+			try {
+				
+				this.radioButton = radioButton;
+				this.event = event;
+				this.getValueMethodAdapter = new ActionAdapter(editorReference, getValueMethod, null);
+				this.setValueMethod = setValueMethod;
+			}
+			catch(Throwable expt) {
+				Safe.exception(expt);
+			};
 		}
 	}
 	
@@ -118,10 +125,15 @@ public class HtmlAnchorPanel extends InsertPanel implements StringValueEditor {
 	 * Load map.
 	 */
 	private void loadMap() {
-		
-		mapMeanings.put(StringValueEditor.meansHtmlAnchorAreaAlias, new Attachment(radioAreaAlias, this::onAreaAlias, "getValueFromAreaAlias", "setAreaAlias"));
-		mapMeanings.put(StringValueEditor.meansHtmlAnchorUrl, new Attachment(radioUrl, this::onPageUrl, "getValueFromUrl", "setUrl"));
-		mapMeanings.put(StringValueEditor.meansHtmlAnchorAreaRes, new Attachment(radioAreaResource, this::onAreaResource, "getValueFromAreaResource", "setAreaResource"));
+		try {
+			
+			mapMeanings.put(StringValueEditor.meansHtmlAnchorAreaAlias, new Attachment(radioAreaAlias, this::onAreaAlias, "getValueFromAreaAlias", "setAreaAlias"));
+			mapMeanings.put(StringValueEditor.meansHtmlAnchorUrl, new Attachment(radioUrl, this::onPageUrl, "getValueFromUrl", "setUrl"));
+			mapMeanings.put(StringValueEditor.meansHtmlAnchorAreaRes, new Attachment(radioAreaResource, this::onAreaResource, "getValueFromAreaResource", "setAreaResource"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -168,13 +180,17 @@ public class HtmlAnchorPanel extends InsertPanel implements StringValueEditor {
 	 * @param parentWindow 
 	 */
 	public HtmlAnchorPanel(String initialString) {
-
-		initComponents();
 		
-		// $hide>>$
-		this.initialString = initialString;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			this.initialString = initialString;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -277,35 +293,49 @@ public class HtmlAnchorPanel extends InsertPanel implements StringValueEditor {
 	 * On radio button event.
 	 */
 	protected void onRadioButtonEvent() {
-		
-		// Call servicing method.
-		String meaning = buttonGroup.getSelection().getActionCommand();
-		
-		Attachment attachment = mapMeanings.get(meaning);
-		if (attachment != null) {
-			attachment.event.run();
+		try {
+			
+			// Call servicing method.
+			String meaning = buttonGroup.getSelection().getActionCommand();
+			
+			Attachment attachment = mapMeanings.get(meaning);
+			if (attachment != null) {
+				attachment.event.run();
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On area alias.
 	 */
 	private void onAreaAlias() {
-		
-		hideEditors();
-		
-		textAreaAlias.setVisible(true);
-		buttonFindAreaAlias.setVisible(true);
+		try {
+			
+			hideEditors();
+			
+			textAreaAlias.setVisible(true);
+			buttonFindAreaAlias.setVisible(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On page URL.
 	 */
 	private void onPageUrl() {
-		
-		hideEditors();
-		
-		textPageUrl.setVisible(true);
+		try {
+			
+			hideEditors();
+			textPageUrl.setVisible(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -313,10 +343,15 @@ public class HtmlAnchorPanel extends InsertPanel implements StringValueEditor {
 	 */
 	private void onAreaResource() {
 		
-		hideEditors();
-		
-		textAreaResource.setVisible(true);
-		buttonFindResource.setVisible(true);
+		try {
+			
+			hideEditors();
+			textAreaResource.setVisible(true);
+			buttonFindResource.setVisible(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -332,22 +367,32 @@ public class HtmlAnchorPanel extends InsertPanel implements StringValueEditor {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		loadMap();
-		localize();
-		setIcons();
-		setToolTips();
-		setButtonActions();
+		try {
+			
+			loadMap();
+			localize();
+			setIcons();
+			setToolTips();
+			setButtonActions();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set radio button's action commands
 	 */
 	private void setButtonActions() {
-		
-		radioAreaAlias.setActionCommand(StringValueEditor.meansHtmlAnchorAreaAlias);
-		radioUrl.setActionCommand(StringValueEditor.meansHtmlAnchorUrl);
-		radioAreaResource.setActionCommand(StringValueEditor.meansHtmlAnchorAreaRes);
+		try {
+			
+			radioAreaAlias.setActionCommand(StringValueEditor.meansHtmlAnchorAreaAlias);
+			radioUrl.setActionCommand(StringValueEditor.meansHtmlAnchorUrl);
+			radioAreaResource.setActionCommand(StringValueEditor.meansHtmlAnchorAreaRes);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -356,11 +401,17 @@ public class HtmlAnchorPanel extends InsertPanel implements StringValueEditor {
 	@SuppressWarnings("unused")
 	private String getValueFromAreaAlias() {
 		
-		String alias = textAreaAlias.getText();
-		if (alias.isEmpty()) {
-			return "";
+		try {
+			String alias = textAreaAlias.getText();
+			if (alias.isEmpty()) {
+				return "";
+			}
+			return String.format("[@URL areaAlias=\"#%s\"]", alias);
 		}
-		return String.format("[@URL areaAlias=\"#%s\"]", alias);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 	
 	/**
@@ -369,7 +420,13 @@ public class HtmlAnchorPanel extends InsertPanel implements StringValueEditor {
 	@SuppressWarnings("unused")
 	private String getValueFromUrl() {
 		
-		return textPageUrl.getText();
+		try {
+			return textPageUrl.getText();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 	
 	/**
@@ -378,11 +435,17 @@ public class HtmlAnchorPanel extends InsertPanel implements StringValueEditor {
 	@SuppressWarnings("unused")
 	private String getValueFromAreaResource() {
 		
-		String resource = textAreaResource.getText();
-		if (resource.isEmpty()) {
-			return "";
+		try {
+			String resource = textAreaResource.getText();
+			if (resource.isEmpty()) {
+				return "";
+			}
+			return String.format("[@URL res=\"#%s\"]", resource);
 		}
-		return String.format("[@URL res=\"#%s\"]", resource);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 	
 	/**
@@ -392,55 +455,76 @@ public class HtmlAnchorPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getSpecification() {
 		
-		String meaning = buttonGroup.getSelection().getActionCommand();
-		ActionAdapter methodAdapter = mapMeanings.get(meaning).getValueMethodAdapter;
-		String specification = (String) methodAdapter.run();
-		return specification;
+		try {
+			String meaning = buttonGroup.getSelection().getActionCommand();
+			ActionAdapter methodAdapter = mapMeanings.get(meaning).getValueMethodAdapter;
+			String specification = (String) methodAdapter.run();
+			return specification;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
 	 * Set from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		if (initialString != null) {
+		try {
 			
-			String meaning = buttonGroup.getSelection().getActionCommand();
-			String setValueMethod = mapMeanings.get(meaning).setValueMethod;
-			ActionAdapter adapter = new ActionAdapter(editorReference, setValueMethod, new Class [] { String.class });
-			adapter.run(initialString);
+			if (initialString != null) {
+				
+				String meaning = buttonGroup.getSelection().getActionCommand();
+				String setValueMethod = mapMeanings.get(meaning).setValueMethod;
+				ActionAdapter adapter = new ActionAdapter(editorReference, setValueMethod, new Class [] { String.class });
+				adapter.run(initialString);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
-	 * 
+	 * Sets area alias.
 	 * @param initialString
 	 */
 	@SuppressWarnings("unused")
 	private void setAreaAlias(String initialString) {
-		
-		// Retrieve area alias and set text field.
-		Pattern pattern = Pattern.compile("\\[\\@URL areaAlias\\=\\\"\\#(.+?)\\\"\\]");
-		Matcher matcher = pattern.matcher(initialString);
-		
-		if (matcher.matches() && matcher.groupCount() == 1) {
-			String areaAlias = matcher.group(1);
+		try {
 			
-			if (!areaAlias.isEmpty()) {
-				textAreaAlias.setText(areaAlias);
+			// Retrieve area alias and set text field.
+			Pattern pattern = Pattern.compile("\\[\\@URL areaAlias\\=\\\"\\#(.+?)\\\"\\]");
+			Matcher matcher = pattern.matcher(initialString);
+			
+			if (matcher.matches() && matcher.groupCount() == 1) {
+				String areaAlias = matcher.group(1);
+				
+				if (!areaAlias.isEmpty()) {
+					textAreaAlias.setText(areaAlias);
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
-	 * 
+	 * Sets URL.
 	 * @param initialString
 	 */
 	@SuppressWarnings("unused")
 	private void setUrl(String initialString) {
-		
-		// Set text field.
-		textPageUrl.setText(initialString);
+		try {
+			
+			// Set text field.
+			textPageUrl.setText(initialString);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -449,43 +533,63 @@ public class HtmlAnchorPanel extends InsertPanel implements StringValueEditor {
 	 */
 	@SuppressWarnings("unused")
 	private void setAreaResource(String initialString) {
-		
-		// Retrieve area resource and set text field.
-		Pattern pattern = Pattern.compile("\\[\\@URL res\\=\\\"\\#(.+?)\\\"\\]");
-		Matcher matcher = pattern.matcher(initialString);
-		
-		if (matcher.matches() && matcher.groupCount() == 1) {
-			String areaResource = matcher.group(1);
-			textAreaResource.setText(areaResource);
+		try {
+			
+			// Retrieve area resource and set text field.
+			Pattern pattern = Pattern.compile("\\[\\@URL res\\=\\\"\\#(.+?)\\\"\\]");
+			Matcher matcher = pattern.matcher(initialString);
+			
+			if (matcher.matches() && matcher.groupCount() == 1) {
+				String areaResource = matcher.group(1);
+				textAreaResource.setText(areaResource);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(labelAnchorSource);
-		Utility.localize(radioAreaAlias);
-		Utility.localize(radioUrl);
-		Utility.localize(radioAreaResource);
+		try {
+			
+			Utility.localize(labelAnchorSource);
+			Utility.localize(radioAreaAlias);
+			Utility.localize(radioUrl);
+			Utility.localize(radioAreaResource);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set panel component's icons.
 	 */
 	private void setIcons() {
-		
-		buttonFindResource.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
-		buttonFindAreaAlias.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
+		try {
+			
+			buttonFindResource.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
+			buttonFindAreaAlias.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Sets component's tool tips.
 	 */
 	private void setToolTips() {
-		
-		buttonFindResource.setToolTipText(Resources.getString("org.multipage.gui.tooltipFindResource"));
+		try {
+			
+			buttonFindResource.setToolTipText(Resources.getString("org.multipage.gui.tooltipFindResource"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -501,21 +605,26 @@ public class HtmlAnchorPanel extends InsertPanel implements StringValueEditor {
 	 * On find area alias.
 	 */
 	protected void onFindAreaAlias() {
-		
-		if (areaAliasHandler == null) {
+		try {
 			
-			Utility.show(this, "org.multipage.gui.messageAreasNotAvailable");
-			return;
+			if (areaAliasHandler == null) {
+				
+				Utility.show(this, "org.multipage.gui.messageAreasNotAvailable");
+				return;
+			}
+			
+			// Get handler.
+			areaAliasHandler.ask();
+			if (areaAliasHandler == null) {
+				return;
+			}
+			
+			// Set area resource.
+			textAreaAlias.setText(areaAliasHandler.getText());
 		}
-		
-		// Get handler.
-		areaAliasHandler.ask();
-		if (areaAliasHandler == null) {
-			return;
-		}
-		
-		// Set area resource.
-		textAreaAlias.setText(areaAliasHandler.getText());
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -531,35 +640,45 @@ public class HtmlAnchorPanel extends InsertPanel implements StringValueEditor {
 	 * On find image.
 	 */
 	protected void onFindResource() {
-		
-		if (areaResourceHandler == null) {
+		try {
 			
-			Utility.show(this, "org.multipage.gui.messageNoResourcesAssociated");
-			return;
+			if (areaResourceHandler == null) {
+				
+				Utility.show(this, "org.multipage.gui.messageNoResourcesAssociated");
+				return;
+			}
+			
+			// Ask user.
+			if (!areaResourceHandler.ask()) {
+				return;
+			}
+			
+			String areaResource = areaResourceHandler.getText();
+			
+			// Set area resource.
+			textAreaResource.setText(areaResource);
 		}
-		
-		// Ask user.
-		if (!areaResourceHandler.ask()) {
-			return;
-		}
-		
-		String areaResource = areaResourceHandler.getText();
-		
-		// Set area resource.
-		textAreaResource.setText(areaResource);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Hide value editors.
 	 */
 	public void hideEditors() {
-		
-		textAreaAlias.setVisible(false);
-		textPageUrl.setVisible(false);
-		textAreaResource.setVisible(false);
-		
-		buttonFindAreaAlias.setVisible(false);
-		buttonFindResource.setVisible(false);
+		try {
+			
+			textAreaAlias.setVisible(false);
+			textPageUrl.setVisible(false);
+			textAreaResource.setVisible(false);
+			
+			buttonFindAreaAlias.setVisible(false);
+			buttonFindResource.setVisible(false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/* (non-Javadoc)
@@ -568,7 +687,13 @@ public class HtmlAnchorPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.gui.textCssUrlBuilder");
+		try {
+			return Resources.getString("org.multipage.gui.textCssUrlBuilder");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -577,7 +702,13 @@ public class HtmlAnchorPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getResultText() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -631,7 +762,13 @@ public class HtmlAnchorPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getStringValue() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -639,22 +776,34 @@ public class HtmlAnchorPanel extends InsertPanel implements StringValueEditor {
 	 */
 	@Override
 	public void setStringValue(String string) {
-		
-		initialString = string;
-		setFromInitialString();
+		try {
+			
+			initialString = string;
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set value meaning.
 	 */
 	public void setValueMeaning(String valueMeaning) {
-		
-		Attachment attachment = mapMeanings.get(valueMeaning);
-		if (attachment != null) {
+		try {
 			
-			attachment.radioButton.setSelected(true);
-			SwingUtilities.invokeLater(() -> { attachment.event.run(); });
+			Attachment attachment = mapMeanings.get(valueMeaning);
+			if (attachment != null) {
+				
+				attachment.radioButton.setSelected(true);
+				Safe.invokeLater(() -> {
+					attachment.event.run();
+				});
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -663,8 +812,14 @@ public class HtmlAnchorPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getValueMeaning() {
 		
-		String meaning = buttonGroup.getSelection().getActionCommand();
-		return meaning;
+		try {
+			String meaning = buttonGroup.getSelection().getActionCommand();
+			return meaning;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 	
 	/**

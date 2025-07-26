@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -25,9 +25,11 @@ import javax.swing.border.LineBorder;
 import org.maclan.Area;
 import org.multipage.gui.ToolTipWindow;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * @author
+ * Window that displays constructors.
+ * @author vakol
  *
  */
 public class ConstructorsDisplayWindow extends JWindow {
@@ -52,20 +54,24 @@ public class ConstructorsDisplayWindow extends JWindow {
 	 * @param parent 
 	 */
 	public ConstructorsDisplayWindow(Component parent) {
-		
 		super(Utility.findWindow(parent));
 		
-		JPanel displayPanelWrapper = new JPanel();
-		displayPanelWrapper.setBorder(new LineBorder(Color.BLACK));
-		
-		setContentPane(displayPanelWrapper);
-		
-		displayPanel = new DisplayPanel();
-		displayPanel.setBackground(UIManager.getColor("Panel.background"));
-		displayPanel.setBorder(new EmptyBorder(1, 3, 1, 3));	// Label padding: top, left, bottom, right.
-		
-		displayPanelWrapper.setLayout(new BorderLayout());
-		displayPanelWrapper.add(displayPanel, BorderLayout.CENTER);
+		try {
+			JPanel displayPanelWrapper = new JPanel();
+			displayPanelWrapper.setBorder(new LineBorder(Color.BLACK));
+			
+			setContentPane(displayPanelWrapper);
+			
+			displayPanel = new DisplayPanel();
+			displayPanel.setBackground(UIManager.getColor("Panel.background"));
+			displayPanel.setBorder(new EmptyBorder(1, 3, 1, 3));	// Label padding: top, left, bottom, right.
+			
+			displayPanelWrapper.setLayout(new BorderLayout());
+			displayPanelWrapper.add(displayPanel, BorderLayout.CENTER);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -73,9 +79,14 @@ public class ConstructorsDisplayWindow extends JWindow {
 	 * @param area
 	 */
 	private void setArea(Area area) {
-		
-		this.area = area;
-		displayPanel.area = area;
+		try {
+			
+			this.area = area;
+			displayPanel.area = area;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -84,21 +95,26 @@ public class ConstructorsDisplayWindow extends JWindow {
 	 * @param topLeft
 	 */
 	public void showw(Area area, Point topLeft) {
-		
-		// Set window location and visibility.
-		setLocation(topLeft);
-		setVisible(true);
-
-		// If the area is not changed, exit the method.
-		if (area.equals(this.area)) {
-			return;
+		try {
+			
+			// Set window location and visibility.
+			setLocation(topLeft);
+			setVisible(true);
+	
+			// If the area is not changed, exit the method.
+			if (area.equals(this.area)) {
+				return;
+			}
+			
+			setArea(area);
+			
+			// Set window dimension.
+			Dimension size = displayPanel.computeSize();
+			setSize(size);	
 		}
-		
-		setArea(area);
-		
-		// Set window dimension.
-		Dimension size = displayPanel.computeSize();
-		setSize(size);	
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -136,9 +152,14 @@ class DisplayPanel extends JPanel {
 	 * Constructor.
 	 */
 	public DisplayPanel() {
-		
-		// Set background color.
-		setBackground(new Color(255, 255, 100));
+		try {
+			
+			// Set background color.
+			setBackground(new Color(255, 255, 100));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -147,35 +168,40 @@ class DisplayPanel extends JPanel {
 	@Override
 	public void paint(Graphics g) {
 		
-		super.paint(g);
-		
-		if (area != null) {
+		try {
+			super.paint(g);
 			
-			// Get line height of the caption.
-			FontMetrics metrics = g.getFontMetrics(ToolTipWindow.font);
-			int lineHeight = metrics.getHeight();
-			
-			// Paint area description and alias and constructor names.
-			int lineYPosition = lineHeight;
-			
-			// Draw area name.
-			g.setFont(ToolTipWindow.font);
-			g.drawString(area.getDescription(), 3, lineYPosition);
-			
-			// Get common line height of the item.
-			metrics = g.getFontMetrics(font);
-			lineHeight = metrics.getHeight();
-			
-			lineYPosition += lineHeight;
-			
-			for (String listItem : area.getConstructorNameList()) {
+			if (area != null) {
 				
-				// Draw name.
-				g.setFont(font);
-				g.drawString(listItem, 3, lineYPosition);
+				// Get line height of the caption.
+				FontMetrics metrics = g.getFontMetrics(ToolTipWindow.font);
+				int lineHeight = metrics.getHeight();
+				
+				// Paint area description and alias and constructor names.
+				int lineYPosition = lineHeight;
+				
+				// Draw area name.
+				g.setFont(ToolTipWindow.font);
+				g.drawString(area.getDescription(), 3, lineYPosition);
+				
+				// Get common line height of the item.
+				metrics = g.getFontMetrics(font);
+				lineHeight = metrics.getHeight();
 				
 				lineYPosition += lineHeight;
+				
+				for (String listItem : area.getConstructorNameList()) {
+					
+					// Draw name.
+					g.setFont(font);
+					g.drawString(listItem, 3, lineYPosition);
+					
+					lineYPosition += lineHeight;
+				}
 			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 	}
 
@@ -185,43 +211,49 @@ class DisplayPanel extends JPanel {
 	 */
 	public Dimension computeSize() {
 		
-		if (area == null) {
-			return new Dimension();
-		}
-		
-		int itemCount = area.getConstructorHoldersCount() + 1;
-		if (itemCount == 0) {
-			return new Dimension();
-		}
-		
-		Graphics g = getGraphics();
-
-		// Get line height of the caption.
-		FontMetrics metrics = g.getFontMetrics(ToolTipWindow.font);
-		
-		// Initialize maximum line width with caption width.
-		int maximumLineWidth = metrics.stringWidth(area.getDescription());
-		
-		// Get caption height.
-		int listHeight = metrics.getHeight();
-		
-		// Get line height of the texts.
-		metrics = g.getFontMetrics(font);
-		int itemHeight = metrics.getHeight();
-		
-		// Add text heights.
-		listHeight += itemHeight * itemCount;
-		
-		// Do loop for all names.
-		for (String listItem : area.getConstructorNameList()) {
-			
-			int width = metrics.stringWidth(listItem);
-			
-			if (width > maximumLineWidth) {
-				maximumLineWidth = width;
+		try {
+			if (area == null) {
+				return new Dimension();
 			}
+			
+			int itemCount = area.getConstructorHoldersCount() + 1;
+			if (itemCount == 0) {
+				return new Dimension();
+			}
+			
+			Graphics g = getGraphics();
+	
+			// Get line height of the caption.
+			FontMetrics metrics = g.getFontMetrics(ToolTipWindow.font);
+			
+			// Initialize maximum line width with caption width.
+			int maximumLineWidth = metrics.stringWidth(area.getDescription());
+			
+			// Get caption height.
+			int listHeight = metrics.getHeight();
+			
+			// Get line height of the texts.
+			metrics = g.getFontMetrics(font);
+			int itemHeight = metrics.getHeight();
+			
+			// Add text heights.
+			listHeight += itemHeight * itemCount;
+			
+			// Do loop for all names.
+			for (String listItem : area.getConstructorNameList()) {
+				
+				int width = metrics.stringWidth(listItem);
+				
+				if (width > maximumLineWidth) {
+					maximumLineWidth = width;
+				}
+			}
+			
+			return new Dimension(maximumLineWidth + 10, listHeight);
 		}
-		
-		return new Dimension(maximumLineWidth + 10, listHeight);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return new Dimension();
 	}
 }

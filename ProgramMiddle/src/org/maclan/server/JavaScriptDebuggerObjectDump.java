@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 14-04-2020
+ * Created on : 2020-04-14
  *
  */
 package org.maclan.server;
@@ -32,8 +32,8 @@ import org.multipage.gui.Images;
 import org.multipage.gui.Utility;
 
 /**
- * 
- * @author user
+ * JavaScript debugger object dump.
+ * @author vakol
  *
  */
 public class JavaScriptDebuggerObjectDump extends JDialog {

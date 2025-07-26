@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -9,10 +9,12 @@ package org.multipage.util;
 
 import java.util.*;
 
+import org.multipage.util.Safe;
+
 /**
- * @author
+ * Helper class for sorting.
+ * @author vakol
  *
- * Sorting helper class.
  */
 public class SortingHelper <T> {
 	
@@ -36,29 +38,34 @@ public class SortingHelper <T> {
 	 * @param object
 	 */
 	public void addObject(T newObject, SortingListener<T> listener) {
-
-		// If the object is null, set it and exit the method.
-		if (object == null) {
+		try {
 			
-			this.object = newObject;
-			return;
-		}
-		
-		// If the new object is less than current object, add it
-		// to the left else add it to the right.
-		if (listener.compare(newObject, object) <= 0) {
+			// If the object is null, set it and exit the method.
+			if (object == null) {
+				
+				this.object = newObject;
+				return;
+			}
 			
-			if (left == null) {
-				left = new SortingHelper<T>();
+			// If the new object is less than current object, add it
+			// to the left else add it to the right.
+			if (listener.compare(newObject, object) <= 0) {
+				
+				if (left == null) {
+					left = new SortingHelper<T>();
+				}
+				left.addObject(newObject, listener);
 			}
-			left.addObject(newObject, listener);
-		}
-		else {
-			if (right == null) {
-				right = new SortingHelper<T>();
+			else {
+				if (right == null) {
+					right = new SortingHelper<T>();
+				}
+				right.addObject(newObject, listener);
 			}
-			right.addObject(newObject, listener);
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -68,21 +75,26 @@ public class SortingHelper <T> {
 	 */
 	private void getSortedObjects(SortingHelper<T> sortingHelper,
 			ArrayList<T> sortedObjects) {
-
-		// Get left sorted objects.
-		if (left != null) {
-			left.getSortedObjects(sortingHelper.left, sortedObjects);
+		try {
+			
+			// Get left sorted objects.
+			if (left != null) {
+				left.getSortedObjects(sortingHelper.left, sortedObjects);
+			}
+			
+			// Check and save this object reference.
+			if (object != null) {
+				sortedObjects.add(object);
+			}
+			
+			// Get right sorted objects.
+			if (right != null) {
+				right.getSortedObjects(sortingHelper.right, sortedObjects);
+			}
 		}
-		
-		// Check and save this object reference.
-		if (object != null) {
-			sortedObjects.add(object);
-		}
-		
-		// Get right sorted objects.
-		if (right != null) {
-			right.getSortedObjects(sortingHelper.right, sortedObjects);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -90,12 +102,18 @@ public class SortingHelper <T> {
 	 * @return
 	 */
 	public ArrayList<T> getSortedObjects() {
-
-		ArrayList<T> sortedObjects = new ArrayList<T>();
 		
-		// Call recursive method.
-		getSortedObjects(this, sortedObjects);
-		
-		return sortedObjects;
+		try {
+			ArrayList<T> sortedObjects = new ArrayList<T>();
+			
+			// Call recursive method.
+			getSortedObjects(this, sortedObjects);
+			
+			return sortedObjects;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 }

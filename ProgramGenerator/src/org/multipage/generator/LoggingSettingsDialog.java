@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2021 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 24-03-2021
+ * Created on : 2021-03-24
  *
  */
 package org.multipage.generator;
@@ -35,9 +35,10 @@ import org.multipage.gui.Images;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * 
+ * Dialog that displays log settings.
  * @author vakol
  *
  */
@@ -115,23 +116,29 @@ public class LoggingSettingsDialog extends JDialog {
 			Function<Integer, Boolean> setEventLimitLambda,
 			Function<Integer, Boolean> setMessageLimitLambda) {
 		
-		Window parentWindow = Utility.findWindow(parent);
-		LoggingSettingsDialog dialog = new LoggingSettingsDialog(parentWindow);
-		
-		dialog.textQueuesUpdateInterval.setText(queuesUpdateIntervalMs.toString());
-		dialog.textEventsUpdateInterval.setText(eventsUpdateIntervalMs.toString());
-		dialog.textQueueLimit.setText(queueLimit.toString());
-		dialog.textMessageLimit.setText(messagelimit.toString());
-		dialog.textEventLimit.setText(eventlimit.toString());
-		
-		dialog.enableGuiLambda = enableGuiLambda;
-		dialog.setQueuesUpdateIntervalLambda = setQueuesUpdateIntervalLambda;
-		dialog.setEventsUpdateIntervalLambda = setEventsUpdateIntervalLambda;
-		dialog.setQueueLimitLambda = setQueueLimitLambda;
-		dialog.setMessageLimitLambda = setMessageLimitLambda;
-		dialog.setEventLimitLambda = setEventLimitLambda;
-		
-		dialog.setVisible(true);
+		try {
+			
+			Window parentWindow = Utility.findWindow(parent);
+			LoggingSettingsDialog dialog = new LoggingSettingsDialog(parentWindow);
+			
+			dialog.textQueuesUpdateInterval.setText(queuesUpdateIntervalMs.toString());
+			dialog.textEventsUpdateInterval.setText(eventsUpdateIntervalMs.toString());
+			dialog.textQueueLimit.setText(queueLimit.toString());
+			dialog.textMessageLimit.setText(messagelimit.toString());
+			dialog.textEventLimit.setText(eventlimit.toString());
+			
+			dialog.enableGuiLambda = enableGuiLambda;
+			dialog.setQueuesUpdateIntervalLambda = setQueuesUpdateIntervalLambda;
+			dialog.setEventsUpdateIntervalLambda = setEventsUpdateIntervalLambda;
+			dialog.setQueueLimitLambda = setQueueLimitLambda;
+			dialog.setMessageLimitLambda = setMessageLimitLambda;
+			dialog.setEventLimitLambda = setEventLimitLambda;
+			
+			dialog.setVisible(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};	
 	}
 	
 	/**
@@ -164,8 +171,13 @@ public class LoggingSettingsDialog extends JDialog {
 	public LoggingSettingsDialog(Window parentWindow) {
 		super(parentWindow, ModalityType.MODELESS);
 		
-		initComponents();
-		postCreate(); //$hide$
+		try {
+			initComponents();
+			postCreate(); //$hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -315,74 +327,103 @@ public class LoggingSettingsDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		localize();
-		setIcons();
-		loadDialog();
+		try {
+			
+			localize();
+			setIcons();
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(labelQueuesUpdateItnterval);
-		Utility.localize(labelEventsUpdateItnterval);
-		Utility.localize(labelQueueLimit);
-		Utility.localize(labelMessageLimit);
-		Utility.localize(labelEventLimit);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(labelQueuesUpdateItnterval);
+			Utility.localize(labelEventsUpdateItnterval);
+			Utility.localize(labelQueueLimit);
+			Utility.localize(labelMessageLimit);
+			Utility.localize(labelEventLimit);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
-			bounds = getBounds();
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+				bounds = getBounds();
+			}
+			else {
+				setBounds(bounds);
+			}
+			
+			textEventsUpdateInterval.setBorder(new LineBorder(Color.BLACK));
+			textMessageLimit.setBorder(new LineBorder(Color.BLACK));
+			textEventLimit.setBorder(new LineBorder(Color.BLACK));
 		}
-		else {
-			setBounds(bounds);
-		}
-		
-		textEventsUpdateInterval.setBorder(new LineBorder(Color.BLACK));
-		textMessageLimit.setBorder(new LineBorder(Color.BLACK));
-		textEventLimit.setBorder(new LineBorder(Color.BLACK));
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On close dialog.
 	 */
 	protected void onClose() {
-		
-		// Set flag.
-		cancelled = true;
-		
-		// Save dialog state.
-		saveDialog();
+		try {
+			
+			// Set flag.
+			cancelled = true;
+			// Save dialog state.
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
 		// Close dialog.
 		dispose();
@@ -392,15 +433,20 @@ public class LoggingSettingsDialog extends JDialog {
 	 * On OK button.
 	 */
 	protected void onOk() {
-		
-		// If there is an input error, do not exit the dialog.
-		if (isInputError()) {
-			Utility.show(this, "org.multipage.generator.messageLoggedEventsSettingsError");
-			return;
+		try {
+			
+			// If there is an input error, do not exit the dialog.
+			if (isInputError()) {
+				Utility.show(this, "org.multipage.generator.messageLoggedEventsSettingsError");
+				return;
+			}
+			
+			// Save dialog state.
+			saveDialog();
 		}
-		
-		// Save dialog state.
-		saveDialog();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
 		// Close dialog.
 		dispose();
@@ -411,30 +457,36 @@ public class LoggingSettingsDialog extends JDialog {
 	 */
 	protected boolean onQueuesUpdateIntervalChanged() {
 		
-		// Check cancel.
-		if (cancelled) {
-			return false;
-		}
-		
-		// Get update interval.
-		String limitText = textQueuesUpdateInterval.getText();
-		
-		// Set the interval.
-		Integer intervalMs = null;
 		try {
-			intervalMs = Integer.parseInt(limitText);
+			// Check cancel.
+			if (cancelled) {
+				return false;
+			}
+			
+			// Get update interval.
+			String limitText = textQueuesUpdateInterval.getText();
+			
+			// Set the interval.
+			Integer intervalMs = null;
+			try {
+				intervalMs = Integer.parseInt(limitText);
+			}
+			catch (Exception e) {
+			}
+			Boolean success = setQueuesUpdateIntervalLambda.apply(intervalMs);
+			if (success == null) {
+				success = false;
+			}
+			
+			// Set control border.
+			textQueuesUpdateInterval.setBorder(success ? correctBorder : errorBorder);
+			
+			return success;
 		}
-		catch (Exception e) {
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		Boolean success = setQueuesUpdateIntervalLambda.apply(intervalMs);
-		if (success == null) {
-			success = false;
-		}
-		
-		// Set control border.
-		textQueuesUpdateInterval.setBorder(success ? correctBorder : errorBorder);
-		
-		return success;
+		return false;
 	}
 	
 	/**
@@ -442,30 +494,36 @@ public class LoggingSettingsDialog extends JDialog {
 	 */
 	protected boolean onEventsUpdateIntervalChanged() {
 		
-		// Check cancel.
-		if (cancelled) {
-			return false;
-		}
-		
-		// Get update interval.
-		String limitText = textEventsUpdateInterval.getText();
-		
-		// Set the interval.
-		Integer intervalMs = null;
 		try {
-			intervalMs = Integer.parseInt(limitText);
+			// Check cancel.
+			if (cancelled) {
+				return false;
+			}
+			
+			// Get update interval.
+			String limitText = textEventsUpdateInterval.getText();
+			
+			// Set the interval.
+			Integer intervalMs = null;
+			try {
+				intervalMs = Integer.parseInt(limitText);
+			}
+			catch (Exception e) {
+			}
+			Boolean success = setEventsUpdateIntervalLambda.apply(intervalMs);
+			if (success == null) {
+				success = false;
+			}
+			
+			// Set control border.
+			textEventsUpdateInterval.setBorder(success ? correctBorder : errorBorder);
+			
+			return success;
 		}
-		catch (Exception e) {
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		Boolean success = setEventsUpdateIntervalLambda.apply(intervalMs);
-		if (success == null) {
-			success = false;
-		}
-		
-		// Set control border.
-		textEventsUpdateInterval.setBorder(success ? correctBorder : errorBorder);
-		
-		return success;
+		return false;
 	}
 	
 	/**
@@ -473,30 +531,36 @@ public class LoggingSettingsDialog extends JDialog {
 	 */
 	protected boolean onSetQueueLimit() {
 		
-		// Check cancel.
-		if (cancelled) {
-			return false;
-		}
-		
-		// Get limit.
-		String limitText = textQueueLimit.getText();
-		
-		// Set the limit.
-		Integer newLimit = null;
 		try {
-			newLimit = Integer.parseInt(limitText);
+			// Check cancel.
+			if (cancelled) {
+				return false;
+			}
+			
+			// Get limit.
+			String limitText = textQueueLimit.getText();
+			
+			// Set the limit.
+			Integer newLimit = null;
+			try {
+				newLimit = Integer.parseInt(limitText);
+			}
+			catch (Exception e) {
+			}
+			Boolean success = setQueueLimitLambda.apply(newLimit);
+			if (success == null) {
+				success = false;
+			}
+			
+			// Set control border.
+			textQueueLimit.setBorder(success ? correctBorder : errorBorder);
+			
+			return success;
 		}
-		catch (Exception e) {
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		Boolean success = setQueueLimitLambda.apply(newLimit);
-		if (success == null) {
-			success = false;
-		}
-		
-		// Set control border.
-		textQueueLimit.setBorder(success ? correctBorder : errorBorder);
-		
-		return success;
+		return false;
 	}
 	
 	/**
@@ -504,30 +568,36 @@ public class LoggingSettingsDialog extends JDialog {
 	 */
 	protected boolean onSetMessageLimit() {
 		
-		// Check cancel.
-		if (cancelled) {
-			return false;
-		}
-		
-		// Get limit.
-		String limitText = textMessageLimit.getText();
-		
-		// Set the limit.
-		Integer newLimit = null;
 		try {
-			newLimit = Integer.parseInt(limitText);
+			// Check cancel.
+			if (cancelled) {
+				return false;
+			}
+			
+			// Get limit.
+			String limitText = textMessageLimit.getText();
+			
+			// Set the limit.
+			Integer newLimit = null;
+			try {
+				newLimit = Integer.parseInt(limitText);
+			}
+			catch (Exception e) {
+			}
+			Boolean success = setMessageLimitLambda.apply(newLimit);
+			if (success == null) {
+				success = false;
+			}
+			
+			// Set control border.
+			textMessageLimit.setBorder(success ? correctBorder : errorBorder);
+			
+			return success;
 		}
-		catch (Exception e) {
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		Boolean success = setMessageLimitLambda.apply(newLimit);
-		if (success == null) {
-			success = false;
-		}
-		
-		// Set control border.
-		textMessageLimit.setBorder(success ? correctBorder : errorBorder);
-		
-		return success;
+		return false;
 	}
 	
 	/**
@@ -535,30 +605,36 @@ public class LoggingSettingsDialog extends JDialog {
 	 */
 	protected boolean onSetEventLimit() {
 		
-		// Check cancel.
-		if (cancelled) {
-			return false;
-		}
-		
-		// Get limit.
-		String limitText = textEventLimit.getText();
-		
-		// Set the limit.
-		Integer newLimit = null;
 		try {
-			newLimit = Integer.parseInt(limitText);
+			// Check cancel.
+			if (cancelled) {
+				return false;
+			}
+			
+			// Get limit.
+			String limitText = textEventLimit.getText();
+			
+			// Set the limit.
+			Integer newLimit = null;
+			try {
+				newLimit = Integer.parseInt(limitText);
+			}
+			catch (Exception e) {
+			}
+			Boolean success = setEventLimitLambda.apply(newLimit);
+			if (success == null) {
+				success = false;
+			}
+			
+			// Set control border.
+			textEventLimit.setBorder(success ? correctBorder : errorBorder);
+			
+			return success;
 		}
-		catch (Exception e) {
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		Boolean success = setEventLimitLambda.apply(newLimit);
-		if (success == null) {
-			success = false;
-		}
-		
-		// Set control border.
-		textEventLimit.setBorder(success ? correctBorder : errorBorder);
-		
-		return success;
+		return false;
 	}
 	
 	/**
@@ -567,31 +643,37 @@ public class LoggingSettingsDialog extends JDialog {
 	 */
 	private boolean isInputError() {
 		
-		// Disable GUI messages.
-		enableGuiLambda.accept(false);
-		
-		// Check inputs.
-		boolean success = onQueuesUpdateIntervalChanged();
-		if (success) {
+		try {
+			// Disable GUI messages.
+			enableGuiLambda.accept(false);
 			
-			success = onEventsUpdateIntervalChanged();
+			// Check inputs.
+			boolean success = onQueuesUpdateIntervalChanged();
 			if (success) {
 				
-				success = onSetQueueLimit();
+				success = onEventsUpdateIntervalChanged();
 				if (success) {
 					
-					success = onSetMessageLimit();
+					success = onSetQueueLimit();
 					if (success) {
 						
-						success = onSetEventLimit();
+						success = onSetMessageLimit();
+						if (success) {
+							
+							success = onSetEventLimit();
+						}
 					}
 				}
 			}
-		}
-	
-		// Enable GUI messages.
-		enableGuiLambda.accept(true);
 		
-		return !success;
+			// Enable GUI messages.
+			enableGuiLambda.accept(true);
+			
+			return !success;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 }		

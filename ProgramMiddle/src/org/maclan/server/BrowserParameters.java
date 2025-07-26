@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -13,7 +13,8 @@ import java.io.Serializable;
 import org.multipage.util.Resources;
 
 /**
- * @author
+ * Internet browser parameters.
+ * @author vakol
  *
  */
 public class BrowserParameters implements Serializable {

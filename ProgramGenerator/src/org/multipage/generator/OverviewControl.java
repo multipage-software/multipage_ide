@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -29,10 +29,12 @@ import org.multipage.gui.Images;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 
 /**
- * @author
+ * Overview window control component.
+ * @author vakol
  *
  */
 public class OverviewControl implements CursorArea {
@@ -181,32 +183,37 @@ public class OverviewControl implements CursorArea {
 	/**
 	 * Diagram.
 	 */
-	private GeneralDiagram diagram;
+	private GeneralDiagramPanel diagram;
 
 	/**
 	 * Constructor.
 	 * @param diagram
 	 */
-	public OverviewControl(GeneralDiagram diagram) {
-
-		this.diagram = diagram;
+	public OverviewControl(GeneralDiagramPanel diagram) {
 		
-		windowCursorArea = new CursorAreaImpl(
-				Images.loadCursor("org/multipage/generator/images/overview_cursor.png",
-						new Point(16, 16)), diagram,
-						new CursorAreaListener() {
-							@Override
-							public boolean visible() {
-								return flagVisible && winVisible;
-							}
-						});
-		buttonCursorArea = new CursorAreaImpl(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR), diagram,
-				new CursorAreaListener() {
-					@Override
-					public boolean visible() {
-						return flagVisible;
-					}
-				});
+		try {
+			this.diagram = diagram;
+			
+			windowCursorArea = new CursorAreaImpl(
+					Images.loadCursor("org/multipage/generator/images/overview_cursor.png",
+							new Point(16, 16)), diagram,
+							new CursorAreaListener() {
+								@Override
+								public boolean visible() {
+									return flagVisible && winVisible;
+								}
+							});
+			buttonCursorArea = new CursorAreaImpl(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR), diagram,
+					new CursorAreaListener() {
+						@Override
+						public boolean visible() {
+							return flagVisible;
+						}
+					});
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -215,9 +222,14 @@ public class OverviewControl implements CursorArea {
 	 * @param height
 	 */
 	public void setSize(int width, int height) {
-
-		size.setSize(width, height);
-		setCursorArea();
+		try {
+			
+			size.setSize(width, height);
+			setCursorArea();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -231,8 +243,14 @@ public class OverviewControl implements CursorArea {
 	 * @param size the size to set
 	 */
 	public void setSize(Dimension size) {
-		this.size = size;
-		setCursorArea();
+		try {
+			
+			this.size = size;
+			setCursorArea();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -249,11 +267,17 @@ public class OverviewControl implements CursorArea {
 	 * @return
 	 */
 	public boolean contains(Point point) {
-
-		Rectangle button = getButtonRectangle();
-		Rectangle window = getWindow();
 		
-		return isVisible() && (button.contains(point) || isOpened() && window.contains(point));
+		try {
+			Rectangle button = getButtonRectangle();
+			Rectangle window = getWindow();
+			
+			return isVisible() && (button.contains(point) || isOpened() && window.contains(point));
+		}
+		catch (Exception e) {
+            Safe.exception(e);
+        }
+		return false;
 	}
 
 	/**
@@ -261,110 +285,115 @@ public class OverviewControl implements CursorArea {
 	 */
 	public void draw(Graphics2D g2) {
 		
-		// If it is visible, draw it.
-		if (isVisible()) {
-			
-			g2.setColor(CustomizedColors.get(ColorId.SCROLLBARS));
-			
-			// Fill rectangle.
-			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.2f));
-			g2.fillRect(location.x,
-					    location.y,
-					    size.width,
-					    size.height);
-			
-			// Draw rectangle.
-			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
-			g2.drawRect(location.x,
-					    location.y,
-					    size.width,
-					    size.height);
-			
-			// Draw image.
-			BufferedImage image = Images.getImage("org/multipage/generator/images/overview.png");
-			if (image != null) {
-				g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
-				g2.drawImage(image,
-						     location.x,
-						     location.y,
-						     location.x + size.width,
-						     location.y + size.height,
-						     0, 0,
-						     image.getWidth(),
-						     image.getHeight(),
-						     null);
-			}
-			
-			// If window is visible, draw it.
-			if (winVisible) {
+		try {
+			// If it is visible, draw it.
+			if (isVisible()) {
 				
+				g2.setColor(CustomizedColors.get(ColorId.SCROLLBARS));
+				
+				// Fill rectangle.
+				g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.2f));
+				g2.fillRect(location.x,
+						    location.y,
+						    size.width,
+						    size.height);
+				
+				// Draw rectangle.
 				g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+				g2.drawRect(location.x,
+						    location.y,
+						    size.width,
+						    size.height);
 				
-				int x = location.x + (isRightSpace ? 0 : size.width) - windowSize;
-				int y = location.y + (isBottomSpace ? 0 : size.height) - windowSize;
-				int width = windowSize - (isRightSpace ? 0 : 1);
-				int height = windowSize - (isBottomSpace ? 0 : 1);
-				
-				// Fill area.
-				g2.setColor(CustomizedColors.get(ColorId.BACKGROUND));
-				g2.fillRect(x, y, width, height);
-				
-				// Draw content.
-				if (listener != null && scale != 0.0) {
-					
-					// Clip rectangle.
-					Shape oldClip = g2.getClip();
-					g2.clipRect(x, y, width, height);
-					
-					// Set translation and scale.
-					AffineTransform transform = new AffineTransform();
-					transform.translate(x - origin.getX() + 1, y - origin.getY() + 1);
-					transform.scale(scale, scale);
-					
-					transform.translate(translationX, translationY);
-					transform.scale(diagramScale, diagramScale);
-					
-					// Draw diagram content.
-					listener.onDrawContent(g2, transform);
-					
-					// Create auxiliary viewport.
-					double viewX = overviewViewport.getX();
-					double viewY = overviewViewport.getY();
-					double viewWidth = overviewViewport.getWidth();
-					double viewHeight = overviewViewport.getHeight();
-					
-					if (viewWidth < minimalViewSize) {
-						viewWidth = minimalViewSize;
-						viewX -= viewWidth / 2;
-					}
-					if (viewHeight < minimalViewSize) {
-						viewHeight = minimalViewSize;
-						viewY -= viewHeight / 2;
-					}
-					Rectangle2D overviewViewportAux = new Rectangle2D.Double(
-							viewX, viewY, viewWidth, viewHeight);
-					
-					// Fill viewport complement.
-					g2.setColor(CustomizedColors.get(ColorId.OVERVIEWBACKGROUND));
+				// Draw image.
+				BufferedImage image = Images.getImage("org/multipage/generator/images/overview.png");
+				if (image != null) {
 					g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
-					Area withoutViewport = new Area(new Rectangle(x, y, width, height));
-					withoutViewport.subtract(new Area(overviewViewportAux));
-					g2.fill(withoutViewport);
-
-					// Draw viewport.
-					g2.setColor(Color.BLACK);
-					g2.draw(new Rectangle2D.Double(overviewViewportAux.getX(), overviewViewportAux.getY(),
-							overviewViewportAux.getWidth(), overviewViewportAux.getHeight()));
-					g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
-					
-					// Set old clip.
-					g2.setClip(oldClip);
+					g2.drawImage(image,
+							     location.x,
+							     location.y,
+							     location.x + size.width,
+							     location.y + size.height,
+							     0, 0,
+							     image.getWidth(),
+							     image.getHeight(),
+							     null);
 				}
 				
-				// Draw area border.
-				g2.setColor(CustomizedColors.get(ColorId.OUTLINES_PROTECTED));
-				g2.drawRect(x, y, width, height);
+				// If window is visible, draw it.
+				if (winVisible) {
+					
+					g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+					
+					int x = location.x + (isRightSpace ? 0 : size.width) - windowSize;
+					int y = location.y + (isBottomSpace ? 0 : size.height) - windowSize;
+					int width = windowSize - (isRightSpace ? 0 : 1);
+					int height = windowSize - (isBottomSpace ? 0 : 1);
+					
+					// Fill area.
+					g2.setColor(CustomizedColors.get(ColorId.BACKGROUND));
+					g2.fillRect(x, y, width, height);
+					
+					// Draw content.
+					if (listener != null && scale != 0.0) {
+						
+						// Clip rectangle.
+						Shape oldClip = g2.getClip();
+						g2.clipRect(x, y, width, height);
+						
+						// Set translation and scale.
+						AffineTransform transform = new AffineTransform();
+						transform.translate(x - origin.getX() + 1, y - origin.getY() + 1);
+						transform.scale(scale, scale);
+						
+						transform.translate(translationX, translationY);
+						transform.scale(diagramScale, diagramScale);
+						
+						// Draw diagram content.
+						listener.onDrawContent(g2, transform);
+						
+						// Create auxiliary viewport.
+						double viewX = overviewViewport.getX();
+						double viewY = overviewViewport.getY();
+						double viewWidth = overviewViewport.getWidth();
+						double viewHeight = overviewViewport.getHeight();
+						
+						if (viewWidth < minimalViewSize) {
+							viewWidth = minimalViewSize;
+							viewX -= viewWidth / 2;
+						}
+						if (viewHeight < minimalViewSize) {
+							viewHeight = minimalViewSize;
+							viewY -= viewHeight / 2;
+						}
+						Rectangle2D overviewViewportAux = new Rectangle2D.Double(
+								viewX, viewY, viewWidth, viewHeight);
+						
+						// Fill viewport complement.
+						g2.setColor(CustomizedColors.get(ColorId.OVERVIEWBACKGROUND));
+						g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+						Area withoutViewport = new Area(new Rectangle(x, y, width, height));
+						withoutViewport.subtract(new Area(overviewViewportAux));
+						g2.fill(withoutViewport);
+	
+						// Draw viewport.
+						g2.setColor(Color.BLACK);
+						g2.draw(new Rectangle2D.Double(overviewViewportAux.getX(), overviewViewportAux.getY(),
+								overviewViewportAux.getWidth(), overviewViewportAux.getHeight()));
+						g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+						
+						// Set old clip.
+						g2.setClip(oldClip);
+					}
+					
+					// Draw area border.
+					g2.setColor(CustomizedColors.get(ColorId.OUTLINES_PROTECTED));
+					g2.drawRect(x, y, width, height);
+				}
 			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 	}
 
@@ -373,26 +402,32 @@ public class OverviewControl implements CursorArea {
 	 * @param mouse 
 	 */
 	public void onMouseAction(Point mouse) {
-		
-		// If the overview is not visible, exit the method.
-		if (!flagVisible) {
-			return;
-		}
+		try {
+			
+			// If the overview is not visible, exit the method.
+			if (!flagVisible) {
+				return;
+			}
+	
+			Rectangle button = new Rectangle();
+			button.setLocation(location);
+			button.setSize(size);
+			
+			Rectangle window = getWindow();
+			
+			if (button.contains(mouse)) {
+				// Toggle overview window visibility.
+				winVisible = !winVisible;
+			}
+			// If the window is visible and the mouse is inside the window...
+			else if (winVisible && window.contains(mouse)) {
+				setViewport(mouse.x, mouse.y);
+			}
 
-		Rectangle button = new Rectangle();
-		button.setLocation(location);
-		button.setSize(size);
-		
-		Rectangle window = getWindow();
-		
-		if (button.contains(mouse)) {
-			// Toggle overview window visibility.
-			winVisible = !winVisible;
 		}
-		// If the window is visible and the mouse is inside the window...
-		else if (winVisible && window.contains(mouse)) {
-			setViewport(mouse.x, mouse.y);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -401,25 +436,36 @@ public class OverviewControl implements CursorArea {
 	 */
 	private Rectangle getWindow() {
 		
-		return new Rectangle(
-			location.x + (isRightSpace ? 0 : size.width) - windowSize,
-			location.y + (isBottomSpace ? 0 : size.height) - windowSize,
-			windowSize - (isRightSpace ? 0 : 1),
-			windowSize - (isBottomSpace ? 0 : 1));
+		try {
+			return new Rectangle(
+				location.x + (isRightSpace ? 0 : size.width) - windowSize,
+				location.y + (isBottomSpace ? 0 : size.height) - windowSize,
+				windowSize - (isRightSpace ? 0 : 1),
+				windowSize - (isBottomSpace ? 0 : 1));
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return new Rectangle();
 	}
 
 	/**
 	 * Sets viewport.
 	 */
 	private void setViewport(double x, double y) {
-
-		double overviewCenterX = overviewViewport.getX() + overviewViewport.getWidth() / 2;
-		double overviewCenterY = overviewViewport.getY() + overviewViewport.getHeight() / 2;
-		double vectorX = (overviewCenterX - x) / scale;
-		double vectorY = (overviewCenterY - y) / scale;
-		
-		// Animate diagram translation.
-		diagram.animateTranslationAndScaleRelative(vectorX, vectorY, 1.0, true, false);
+		try {
+			
+			double overviewCenterX = overviewViewport.getX() + overviewViewport.getWidth() / 2;
+			double overviewCenterY = overviewViewport.getY() + overviewViewport.getHeight() / 2;
+			double vectorX = (overviewCenterX - x) / scale;
+			double vectorY = (overviewCenterY - y) / scale;
+			
+			// Animate diagram translation.
+			diagram.animateTranslationAndScaleRelative(vectorX, vectorY, 1.0, true, false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -435,21 +481,29 @@ public class OverviewControl implements CursorArea {
 	 * @param bottom
 	 */
 	public void setRightBottomLocation(int right, int bottom) {
-
-		location.x = right - (int) size.getWidth();
-		location.y = bottom - (int) size.getHeight();
-		setCursorArea();
+		try {
+			
+			location.x = right - (int) size.getWidth();
+			location.y = bottom - (int) size.getHeight();
+			setCursorArea();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Sets cursor area.
 	 */
 	private void setCursorArea() {
-
-		windowCursorArea.setShape(getWindow());
-		
-		buttonCursorArea.setShape(new Rectangle(
-				location, size));
+		try {
+			
+			windowCursorArea.setShape(getWindow());
+			buttonCursorArea.setShape(new Rectangle(location, size));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -457,10 +511,15 @@ public class OverviewControl implements CursorArea {
 	 * @param rectangle
 	 */
 	public void setViewportRectangle(Rectangle rectangle) {
-
-		// Set viewport and compute overview parameters.
-		viewport = rectangle;
-		computeOverviewParameters();
+		try {
+			
+			// Set viewport and compute overview parameters.
+			viewport = rectangle;
+			computeOverviewParameters();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -468,90 +527,114 @@ public class OverviewControl implements CursorArea {
 	 * @param rectangle
 	 */
 	public void setDiagramRectangle(Rectangle2D rectangle) {
-
-		// Set diagramNotMovedNotScaled and compute overview parameters.
-		diagramNotMovedNotScaled = rectangle;
-		computeOverviewParameters();
+		try {
+			
+			// Set diagramNotMovedNotScaled and compute overview parameters.
+			diagramNotMovedNotScaled = rectangle;
+			computeOverviewParameters();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set translation.
 	 */
 	public void setTranslation(double x, double y) {
-		
-		translationX = x;
-		translationY = y;
-		computeOverviewParameters();
+		try {
+			
+			translationX = x;
+			translationY = y;
+			computeOverviewParameters();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set scale.
 	 */
 	public void setScale(double diagramScale) {
-		
-		this.diagramScale = diagramScale;
-		computeOverviewParameters();
+		try {
+			
+			this.diagramScale = diagramScale;
+			computeOverviewParameters();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Compute overview parameters.
 	 */
 	private void computeOverviewParameters() {
-		
-		Rectangle2D.Double diagram = new Rectangle2D.Double(
-				diagramNotMovedNotScaled.getX(),
-				diagramNotMovedNotScaled.getY(),
-				diagramNotMovedNotScaled.getWidth(),
-				diagramNotMovedNotScaled.getHeight());
-		// Scale diagram.
-		diagram.x *= diagramScale;
-		diagram.y *= diagramScale;
-		diagram.width *= diagramScale;
-		diagram.height *= diagramScale;
-		// Move diagram.
-		diagram.x += translationX;
-		diagram.y += translationY;
-		Rectangle2D wholeRect = Utility.union(diagram, viewport);
-		
-		// If the width is longer than height.
-		if (wholeRect.getWidth() >= wholeRect.getHeight()) {
+		try {
 			
-			if (wholeRect.getWidth() != 0) {
-				scale = (double) (windowSize - 2) / wholeRect.getWidth();
-				origin = new Point2D.Double(wholeRect.getX() * scale,
-						wholeRect.getY() * scale - (windowSize - 2 - wholeRect.getHeight() * scale) / 2 );
-			}
-		}
-		else {
+			Rectangle2D.Double diagram = new Rectangle2D.Double(
+					diagramNotMovedNotScaled.getX(),
+					diagramNotMovedNotScaled.getY(),
+					diagramNotMovedNotScaled.getWidth(),
+					diagramNotMovedNotScaled.getHeight());
+			// Scale diagram.
+			diagram.x *= diagramScale;
+			diagram.y *= diagramScale;
+			diagram.width *= diagramScale;
+			diagram.height *= diagramScale;
+			// Move diagram.
+			diagram.x += translationX;
+			diagram.y += translationY;
+			Rectangle2D wholeRect = Utility.union(diagram, viewport);
 			
-			if (wholeRect.getHeight() != 0) {
-				scale = (double) (windowSize - 2) / wholeRect.getHeight();
+			// If the width is longer than height.
+			if (wholeRect.getWidth() >= wholeRect.getHeight()) {
 				
-				origin = new Point2D.Double(wholeRect.getX() * scale - (windowSize - 2 - wholeRect.getWidth() * scale) / 2,
-						wholeRect.getY() * scale);
+				if (wholeRect.getWidth() != 0) {
+					scale = (double) (windowSize - 2) / wholeRect.getWidth();
+					origin = new Point2D.Double(wholeRect.getX() * scale,
+							wholeRect.getY() * scale - (windowSize - 2 - wholeRect.getHeight() * scale) / 2 );
+				}
 			}
+			else {
+				
+				if (wholeRect.getHeight() != 0) {
+					scale = (double) (windowSize - 2) / wholeRect.getHeight();
+					
+					origin = new Point2D.Double(wholeRect.getX() * scale - (windowSize - 2 - wholeRect.getWidth() * scale) / 2,
+							wholeRect.getY() * scale);
+				}
+			}
+			
+			// Set viewport rectangle.
+			double x = location.x + (isRightSpace ? 0 : size.width) + 1 - windowSize;
+			double y = location.y + (isBottomSpace ? 0 : size.height) + 1 - windowSize;
+			overviewViewport = new Rectangle2D.Double(viewport.getX() * scale + x - origin.getX(),
+					viewport.getY() * scale + y - origin.getY(),
+					viewport.getWidth() * scale,
+					viewport.getHeight() * scale);
 		}
-		
-		// Set viewport rectangle.
-		double x = location.x + (isRightSpace ? 0 : size.width) + 1 - windowSize;
-		double y = location.y + (isBottomSpace ? 0 : size.height) + 1 - windowSize;
-		overviewViewport = new Rectangle2D.Double(viewport.getX() * scale + x - origin.getX(),
-				viewport.getY() * scale + y - origin.getY(),
-				viewport.getWidth() * scale,
-				viewport.getHeight() * scale);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Sets right and bottom spaces.
 	 */
 	public void setRightBottomSpace(boolean right, boolean bottom) {
-		
-		this.isRightSpace = right;
-		this.isBottomSpace = bottom;
-		
-		computeOverviewParameters();
-		
-		setCursorArea();
+		try {
+			
+			this.isRightSpace = right;
+			this.isBottomSpace = bottom;
+			
+			computeOverviewParameters();
+			setCursorArea();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -575,10 +658,16 @@ public class OverviewControl implements CursorArea {
 	 * @return
 	 */
 	public Rectangle getRectangle() {
-
-		return new Rectangle(location.x + (isRightSpace ? 0 : size.width) - windowSize,
-				location.y + (isBottomSpace ? 0 : size.height) - windowSize,
-				windowSize, windowSize);
+		
+		try {
+			return new Rectangle(location.x + (isRightSpace ? 0 : size.width) - windowSize,
+					location.y + (isBottomSpace ? 0 : size.height) - windowSize,
+					windowSize, windowSize);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -586,8 +675,14 @@ public class OverviewControl implements CursorArea {
 	 * @return
 	 */
 	public Rectangle getButtonRectangle() {
-
-		return new Rectangle(location.x, location.y, size.width, size.height);
+		
+		try {
+			return new Rectangle(location.x, location.y, size.width, size.height);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**

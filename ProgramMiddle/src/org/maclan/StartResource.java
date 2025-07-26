@@ -1,14 +1,15 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.maclan;
 
 /**
- * @author
+ * Class for starting resource.
+ * @author vakol
  *
  */
 public class StartResource {
@@ -54,5 +55,15 @@ public class StartResource {
 		this.mimeExtension = mimeExtension;
 		this.notLocalized = notLocalized;
 		this.foundArea = foundArea;
+	}
+
+	/**
+	 * Get string representation.
+	 */
+	@Override
+	public String toString() {
+		
+		String areaDescription = foundArea.getDescriptionForced(true); 
+		return String.format("Resource (%d), area: %s, mime: %s", resourceId, areaDescription, mimeType);
 	}
 }

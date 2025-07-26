@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2021 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 17-09-2021
+ * Created on : 2021-09-17
  *
  */
  
@@ -11,7 +11,10 @@ import java.awt.Graphics;
 
 import javax.swing.JTextPane;
 
+import org.multipage.util.Safe;
+
 /**
+ * Renderer that displays text panel.
  * @author vakol
  *
  */
@@ -36,19 +39,29 @@ public class RendererJTextPane extends JTextPane {
 	 * Constructor.
 	 */
 	public RendererJTextPane() {
-		
-		setOpaque(false);
+		try {
+			
+			setOpaque(false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set properties.
 	 */
 	public RendererJTextPane set(boolean isSelected, boolean hasFocus, int index) {
-		
-		this.isSelected = isSelected;
-		this.hasFocus = hasFocus;
-		
-		setBackground(Utility.itemColor(index));
+		try {
+			
+			this.isSelected = isSelected;
+			this.hasFocus = hasFocus;
+			
+			setBackground(Utility.itemColor(index));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
 		return this;
 	}
@@ -58,9 +71,13 @@ public class RendererJTextPane extends JTextPane {
 	 */
 	@Override
 	public void paint(Graphics g) {
-		
-		super.paint(g);
-		
-		GraphUtility.drawSelection(g, this, isSelected, hasFocus);
+		try {
+			
+			super.paint(g);
+			GraphUtility.drawSelection(g, this, isSelected, hasFocus);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

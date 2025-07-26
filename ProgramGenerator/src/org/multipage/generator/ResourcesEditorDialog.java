@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -22,6 +22,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 
 import javax.swing.JButton;
@@ -44,11 +45,13 @@ import org.multipage.basic.ProgramBasic;
 import org.multipage.gui.Images;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
+import org.multipage.gui.TopMostButton;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays editor of the resources.
+ * @author vakol
  *
  */
 public class ResourcesEditorDialog extends JDialog {
@@ -68,22 +71,32 @@ public class ResourcesEditorDialog extends JDialog {
 	 * Load dialog data.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			// Center dialog.
-			Utility.centerOnScreen(this);
+		try {
+			
+			if (bounds.isEmpty()) {
+				// Center dialog.
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setBounds(bounds);
+			}
 		}
-		else {
-			setBounds(bounds);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog data.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -146,10 +159,15 @@ public class ResourcesEditorDialog extends JDialog {
 	 * Launch the dialog.
 	 */
 	public static void showDialog(JFrame parentFrame) {
-
-		ResourcesEditorDialog dialog = new ResourcesEditorDialog(parentFrame,
-				null);
-		dialog.setVisible(true);		
+		try {
+			
+			ResourcesEditorDialog dialog = new ResourcesEditorDialog(parentFrame,
+					null);
+			dialog.setVisible(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -158,12 +176,18 @@ public class ResourcesEditorDialog extends JDialog {
 	 */
 	public static boolean showDialog(Component parentComponent,
 			java.util.List<Resource> resources) {
-
-		ResourcesEditorDialog dialog = new ResourcesEditorDialog(
-				Utility.findWindow(parentComponent), resources);
-		dialog.setVisible(true);
-
-		return dialog.confirm;
+		
+		try {
+			ResourcesEditorDialog dialog = new ResourcesEditorDialog(
+					Utility.findWindow(parentComponent), resources);
+			
+			dialog.setVisible(true);
+			return dialog.confirm;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -175,13 +199,18 @@ public class ResourcesEditorDialog extends JDialog {
 		super(resources == null ?  null : parentWindow,
 				resources == null ? ModalityType.MODELESS : ModalityType.APPLICATION_MODAL);
 		
-		this.resources = resources;
-		// Initialize components.
-		initComponents();
-		// Post creation.
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			this.resources = resources;
+			// Initialize components.
+			initComponents();
+			// Post creation.
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -228,7 +257,7 @@ public class ResourcesEditorDialog extends JDialog {
 		
 		splitPane = new JSplitPane();
 		splitPane.setOneTouchExpandable(true);
-		springLayout.putConstraint(SpringLayout.NORTH, splitPane, 0, SpringLayout.NORTH, getContentPane());
+		springLayout.putConstraint(SpringLayout.NORTH, splitPane, 26, SpringLayout.NORTH, getContentPane());
 		springLayout.putConstraint(SpringLayout.WEST, splitPane, 0, SpringLayout.WEST, getContentPane());
 		springLayout.putConstraint(SpringLayout.SOUTH, splitPane, -10, SpringLayout.NORTH, buttonOk);
 		springLayout.putConstraint(SpringLayout.EAST, splitPane, 0, SpringLayout.EAST, getContentPane());
@@ -279,59 +308,88 @@ public class ResourcesEditorDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		// Localize.
-		localize();
-		// Set icons.
-		setIcons();
-		// Set name space tree listener.
-		panelNamespaces.setTreeListener(new NamespaceTreeListener() {
-			// On name space selected.
-			@Override
-			public void onNamespaceSelectedEvent(Namespace namespace) {
-				onNamespaceSelected(namespace);
-			}
-		});
-		// Load name spaces tree.
-		panelNamespaces.updateInformation();
-		panelNamespaces.selectRoot();
-		// Set drag and drop.
-		setDragAndDrop();
-		// Load dialog.
-		loadDialog();
+		try {
+			
+			// Add top most window toggle button.
+			TopMostButton.add(this, getContentPane());
+			// Localize.
+			localize();
+			// Set icons.
+			setIcons();
+			// Set name space tree listener.
+			panelNamespaces.setTreeListener(new NamespaceTreeListener() {
+				// On name space selected.
+				@Override
+				public void onNamespaceSelectedEvent(Namespace namespace) {
+					try {
+						
+						onNamespaceSelected(namespace);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+			// Load name spaces tree.
+			panelNamespaces.updateInformation();
+			panelNamespaces.selectRoot();
+			// Set drag and drop.
+			setDragAndDrop();
+			// Load dialog.
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(labelNamespace);
-		Utility.localize(labelResources);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(labelNamespace);
+			Utility.localize(labelResources);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-
-		setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		try {
+			
+			setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
-
-		confirm = false;
-		panelResources.close();
-		saveDialog();
+		try {
+			
+			confirm = false;
+			panelResources.close();
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 	
@@ -339,32 +397,38 @@ public class ResourcesEditorDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-
-		if (resources == null) {
-			confirm = false;
-		}
-		else {
-			// Get first selected resource.
-			java.util.List<Resource> selectedResources = panelResources.getSelectedResources();
+		try {
 			
-			// If nothing selected, return false value.
-			if (selectedResources == null) {
+			if (resources == null) {
 				confirm = false;
 			}
 			else {
-				for (Resource selectedResource : selectedResources) {
-					
-					// Reset resource image data and add it to the list.
-					selectedResource.setImage(null);
-					resources.add(selectedResource);
-				}
+				// Get first selected resource.
+				java.util.List<Resource> selectedResources = panelResources.getSelectedResources();
 				
-				confirm = true;
+				// If nothing selected, return false value.
+				if (selectedResources == null) {
+					confirm = false;
+				}
+				else {
+					for (Resource selectedResource : selectedResources) {
+						
+						// Reset resource image data and add it to the list.
+						selectedResource.setImage(null);
+						resources.add(selectedResource);
+					}
+					
+					confirm = true;
+				}
 			}
+			
+			panelResources.close();
+			saveDialog();
 		}
-		
-		panelResources.close();
-		saveDialog();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -373,9 +437,14 @@ public class ResourcesEditorDialog extends JDialog {
 	 * @param namespace
 	 */
 	protected void onNamespaceSelected(Namespace namespace) {
-
-		// Load list.
-		panelResources.loadNamespaceContent(namespace.getId());
+		try {
+			
+			// Load list.
+			panelResources.loadNamespaceContent(namespace.getId());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -383,126 +452,149 @@ public class ResourcesEditorDialog extends JDialog {
 	 */
 	@SuppressWarnings("serial")
 	private void setDragAndDrop() {
-
-		// Set drag and drop source.
-		final JList list = panelResources.getList();
-		list.setDragEnabled(true);
-		list.setTransferHandler(new TransferHandler() {
-			// Source actions.
-			@Override
-			public int getSourceActions(JComponent c) {
-				// Move component.
-				return MOVE;
-			}
-			// Create transferable.
-			@Override
-			protected Transferable createTransferable(JComponent c) {
-				
-				Object [] values = list.getSelectedValues();
-				StringBuffer stringBuffer = new StringBuffer();
-				
-				// Do loop for all selected values.
-				for (Object value : values) {
-					if (value instanceof Resource) {
-						Resource resource = (Resource) value;
-						stringBuffer.append(String.valueOf(resource.getId()));
-						stringBuffer.append(';');
-					}
-				}
-				return new StringSelection(stringBuffer.toString());
-			}
-			// Can import.
-			@Override
-			public boolean canImport(TransferSupport support) {
-				return true;
-			}
-			// Import data.
-			@Override
-			public boolean importData(TransferSupport support) {
-				
-				// If it is not a drop operation, exit the method with
-				// false value.
-				if (!support.isDrop()) {
-					return false;
-				}
-				
-				// Get the string that is dropped.
-		        Transferable transferable = support.getTransferable();
-				java.util.List<File> fileList;
-		        try {
-		            fileList = (java.util.List<File>) transferable.getTransferData(DataFlavor.javaFileListFlavor);
-		        } 
-		        catch (Exception e) {
-		        	return false;
-		        }
-		        
-				// Do loop for all files.
-				for (File file : fileList) {
-					
-					if (!panelResources.loadFile(file)) {
-						break;
-					}
-				}
-
-		        return true;
-			}
-		});
-
-		// Set drag and drop target.
-		final NamespaceTreePanel namespacesPanel = panelNamespaces;
-		final JTree tree = panelNamespaces.getTree();
-		tree.setTransferHandler(new TransferHandler() {
-			// Can import.
-			@Override
-			public boolean canImport(TransferSupport support) {
-				return true;
-			}
-			// Import data.
-			@Override
-			public boolean importData(TransferSupport support) {
-				
-				// If it is not a drop operation, exit the method with
-				// false value.
-				if (!support.isDrop()) {
-					return false;
-				}
-				
-				// Get the string that is dropped.
-		        Transferable transferable = support.getTransferable();
-				String data;
-		        try {
-		            data = (String) transferable.getTransferData(DataFlavor.stringFlavor);
-		        } 
-		        catch (Exception e) { return false; }
-
-				// Get selected tree node.
-				Namespace namespace = namespacesPanel.getSelectedNamespace();
+		try {
 			
-				// Split resources IDs.
-				String [] resourceIds = data.split(";");
-				LinkedList<Long> resourcesIds = new LinkedList<Long>();
-				for (String idString : resourceIds) {
-					resourcesIds.add(Long.parseLong(idString));
+			// Set drag and drop source.
+			final JList list = panelResources.getList();
+			list.setDragEnabled(true);
+			list.setTransferHandler(new TransferHandler() {
+				// Source actions.
+				@Override
+				public int getSourceActions(JComponent c) {
+					// Move component.
+					return MOVE;
 				}
-								
-				// Change resources namespace.
-				Middle middle = ProgramBasic.getMiddle();
-				MiddleResult result;
-				Properties login = ProgramBasic.getLoginProperties();
-				
-				result = middle.changeResourcesNamespace(login, resourcesIds, namespace);
-				if (result.isNotOK()) {
-					result.show(null);
+				// Create transferable.
+				@Override
+				protected Transferable createTransferable(JComponent c) {
+					
+					try {
+						List values = list.getSelectedValuesList();
+						StringBuffer stringBuffer = new StringBuffer();
+						
+						// Do loop for all selected values.
+						for (Object value : values) {
+							if (value instanceof Resource) {
+								Resource resource = (Resource) value;
+								stringBuffer.append(String.valueOf(resource.getId()));
+								stringBuffer.append(';');
+							}
+						}
+						return new StringSelection(stringBuffer.toString());
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return null;
+				}
+				// Can import.
+				@Override
+				public boolean canImport(TransferSupport support) {
+					return true;
+				}
+				// Import data.
+				@Override
+				public boolean importData(TransferSupport support) {
+					
+					try {
+						// If it is not a drop operation, exit the method with
+						// false value.
+						if (!support.isDrop()) {
+							return false;
+						}
+						
+						// Get the string that is dropped.
+				        Transferable transferable = support.getTransferable();
+						java.util.List<File> fileList;
+				        try {
+				            fileList = (java.util.List<File>) transferable.getTransferData(DataFlavor.javaFileListFlavor);
+				        } 
+				        catch (Exception e) {
+				        	return false;
+				        }
+				        
+						// Do loop for all files.
+						for (File file : fileList) {
+							
+							if (!panelResources.loadFile(file)) {
+								break;
+							}
+						}
+		
+				        return true;
+				    }
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
 					return false;
 				}
-				
-				// Load list.
-				panelResources.loadNamespaceContent(namespace.getId());
-				// Select resources.
-				panelResources.selectResources(resourcesIds);
-				
-		        return true;
-			}
-		});
+			});
+	
+			// Set drag and drop target.
+			final NamespaceTreePanel namespacesPanel = panelNamespaces;
+			final JTree tree = panelNamespaces.getTree();
+			tree.setTransferHandler(new TransferHandler() {
+				// Can import.
+				@Override
+				public boolean canImport(TransferSupport support) {
+					return true;
+				}
+				// Import data.
+				@Override
+				public boolean importData(TransferSupport support) {
+					
+					try {
+						// If it is not a drop operation, exit the method with
+						// false value.
+						if (!support.isDrop()) {
+							return false;
+						}
+						
+						// Get the string that is dropped.
+				        Transferable transferable = support.getTransferable();
+						String data;
+				        try {
+				            data = (String) transferable.getTransferData(DataFlavor.stringFlavor);
+				        } 
+				        catch (Exception e) { return false; }
+		
+						// Get selected tree node.
+						Namespace namespace = namespacesPanel.getSelectedNamespace();
+					
+						// Split resources IDs.
+						String [] resourceIds = data.split(";");
+						LinkedList<Long> resourcesIds = new LinkedList<Long>();
+						for (String idString : resourceIds) {
+							resourcesIds.add(Long.parseLong(idString));
+						}
+										
+						// Change resources namespace.
+						Middle middle = ProgramBasic.getMiddle();
+						MiddleResult result;
+						Properties login = ProgramBasic.getLoginProperties();
+						
+						result = middle.changeResourcesNamespace(login, resourcesIds, namespace);
+						if (result.isNotOK()) {
+							result.show(null);
+							return false;
+						}
+						
+						// Load list.
+						panelResources.loadNamespaceContent(namespace.getId());
+						// Select resources.
+						panelResources.selectResources(resourcesIds);
+						
+				        return true;
+				    }
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return false;
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

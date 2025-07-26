@@ -1,23 +1,34 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
 
-import java.awt.*;
-import java.util.*;
-
-import javax.swing.*;
-import java.awt.event.ActionListener;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.LinkedList;
+
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.SpringLayout;
+
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays error messages.
+ * @author vakol
  *
  */
 public class ReportMessages extends JDialog {
@@ -43,11 +54,16 @@ public class ReportMessages extends JDialog {
 
 	public static void showDialog(Window parentWindow,
 			LinkedList<String> errorMessages) {
-
-		ReportMessages dialog = new ReportMessages(parentWindow);
-		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		dialog.postCreation(errorMessages);
-		dialog.setVisible(true);		
+		try {
+			
+			ReportMessages dialog = new ReportMessages(parentWindow);
+			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			dialog.postCreation(errorMessages);
+			dialog.setVisible(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -56,9 +72,14 @@ public class ReportMessages extends JDialog {
 	 */
 	public ReportMessages(Window parentWindow) {
 		super(parentWindow, ModalityType.APPLICATION_MODAL);
-
-		// Initialize components.
-		initComponents();
+		
+		try {
+			// Initialize components.
+			initComponents();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -104,33 +125,48 @@ public class ReportMessages extends JDialog {
 	 * @param errorMessages
 	 */
 	private void postCreation(LinkedList<String> errorMessages) {
-
-		// Localize components.
-		localize();
-		// Set icons.
-		setIcons();
-		// Center dialog.
-		Utility.centerOnScreen(this);
-		// Load list error messages.
-		loadList(errorMessages);
+		try {
+			
+			// Localize components.
+			localize();
+			// Set icons.
+			setIcons();
+			// Center dialog.
+			Utility.centerOnScreen(this);
+			// Load list error messages.
+			loadList(errorMessages);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(this);
-		Utility.localize(labelMessages);
-		Utility.localize(buttonClose);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(labelMessages);
+			Utility.localize(buttonClose);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-
-		buttonClose.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			buttonClose.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -138,11 +174,16 @@ public class ReportMessages extends JDialog {
 	 * @param errorMessages
 	 */
 	private void loadList(LinkedList<String> errorMessages) {
-		
-		DefaultListModel model = new DefaultListModel();
-		for (String message : errorMessages) {
-			model.addElement(message);
+		try {
+			
+			DefaultListModel model = new DefaultListModel();
+			for (String message : errorMessages) {
+				model.addElement(message);
+			}
+			list.setModel(model);
 		}
-		list.setModel(model);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

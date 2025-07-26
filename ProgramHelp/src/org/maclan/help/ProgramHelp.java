@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 13-05-2020
+ * Created on : 2017-04-26
  *
  */
 package org.maclan.help;
@@ -17,9 +17,11 @@ import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.StateSerializer;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * @author user
+ * Help package main class.
+ * @author vakol
  *
  */
 public class ProgramHelp {
@@ -157,10 +159,15 @@ public class ProgramHelp {
 	 */
 	public static boolean canLog() {
 		
-		if (logLambda != null && canLogLambda != null) {
-			
-			boolean canLog =  canLogLambda.get();
-			return canLog;
+		try {
+			if (logLambda != null && canLogLambda != null) {
+				
+				boolean canLog =  canLogLambda.get();
+				return canLog;
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return false;
 	}
@@ -169,10 +176,15 @@ public class ProgramHelp {
 	 * Log text.
 	 */
 	public static void log(String logText) {
-		
-		if (logLambda != null) {
-			logLambda.accept(logText);
+		try {
+			
+			if (logLambda != null) {
+				logLambda.accept(logText);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -180,13 +192,18 @@ public class ProgramHelp {
 	 */
 	public static void log(String logText, Object ... textParameters) {
 		
-		if (logLambda != null) {
-			
-			if (textParameters.length > 0) {
-				logText = String.format(logText, textParameters);
+		try {
+			if (logLambda != null) {
+				
+				if (textParameters.length > 0) {
+					logText = String.format(logText, textParameters);
+				}
+				
+				logLambda.accept(logText);
 			}
-			
-			logLambda.accept(logText);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 	}
 	
@@ -194,10 +211,15 @@ public class ProgramHelp {
 	 * Involve user action in the logging process.
 	 */
 	public static void logInvolveUser() {
-		
-		if (logInvolveUserLambda != null) {
-			logInvolveUserLambda.run();
+		try {
+			
+			if (logInvolveUserLambda != null) {
+				logInvolveUserLambda.run();
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -206,8 +228,14 @@ public class ProgramHelp {
 	 */
 	public static InputStream openMaclanReferenceXml() {
 		
-		InputStream inputStream = ProgramHelp.class.getResourceAsStream("/org/maclan/reference_template/maclan_reference.xml");
-		return new BufferedInputStream(inputStream);
+		try {
+			InputStream inputStream = ProgramHelp.class.getResourceAsStream("/org/maclan/reference_template/maclan_reference.xml");
+			return new BufferedInputStream(inputStream);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -216,7 +244,13 @@ public class ProgramHelp {
 	 */
 	public static InputStream openMaclanReferenceDat() {
 		
-		InputStream inputStream = ProgramHelp.class.getResourceAsStream("/org/maclan/reference_template/maclan_reference.dat");
-		return new BufferedInputStream(inputStream);
+		try {
+			InputStream inputStream = ProgramHelp.class.getResourceAsStream("/org/maclan/reference_template/maclan_reference.dat");
+			return new BufferedInputStream(inputStream);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 }

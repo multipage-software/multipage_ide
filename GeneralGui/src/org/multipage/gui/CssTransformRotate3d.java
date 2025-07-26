@@ -1,14 +1,17 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2025-04-26
  *
  */
 
 package org.multipage.gui;
 
+import org.multipage.util.Safe;
+
 /**
- * @author
+ * Class for 3D rotation object.
+ * @author vakol
  *
  */
 public class CssTransformRotate3d extends CssTransform {
@@ -36,14 +39,20 @@ public class CssTransformRotate3d extends CssTransform {
 	 */
 	@Override
 	public String toString() {
-				
-		return String.format("rotate3d(%s, %s, %s, %s%s)",
-				Utility.removeFloatNulls(String.valueOf(x)),
-				Utility.removeFloatNulls(String.valueOf(y)),
-				Utility.removeFloatNulls(String.valueOf(z)),
-				Utility.removeFloatNulls(String.valueOf(a)),
-				aUnits
-				);
+		
+		try {
+			return String.format("rotate3d(%s, %s, %s, %s%s)",
+					Utility.removeFloatNulls(String.valueOf(x)),
+					Utility.removeFloatNulls(String.valueOf(y)),
+					Utility.removeFloatNulls(String.valueOf(z)),
+					Utility.removeFloatNulls(String.valueOf(a)),
+					aUnits
+					);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -51,11 +60,17 @@ public class CssTransformRotate3d extends CssTransform {
 	 * @param rotate
 	 */
 	public void setFrom(CssTransformRotate3d rotate) {
-
-		this.x = rotate.x;
-		this.y = rotate.y;
-		this.z = rotate.z;
-		this.a = rotate.a;
-		this.aUnits = rotate.aUnits;
+		
+		try {
+			
+			this.x = rotate.x;
+			this.y = rotate.y;
+			this.z = rotate.z;
+			this.a = rotate.a;
+			this.aUnits = rotate.aUnits;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

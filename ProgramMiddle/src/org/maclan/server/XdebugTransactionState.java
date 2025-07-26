@@ -1,13 +1,13 @@
 /**
- * Copyright 2010-2024 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 18-04-2024
+ * Created on : 2024-04-18
  *
  */
 package org.maclan.server;
 
 /**
- * Xdeabug transaction states.
+ * Enumeration of Xdebug transaction states.
  * @author vakol
  */
 public enum XdebugTransactionState {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
  * Created on : 26-04-2017
  *
@@ -20,10 +20,9 @@ import org.multipage.util.Resources;
 import org.multipage.util.TextOutputCapturer;
 import org.openjdk.nashorn.internal.runtime.Undefined;
 
-
-
 /**
- * @author
+ * Class for Area Server objects.
+ * @author vakol
  *
  */
 public class AreaServer implements BoxedObject {
@@ -554,7 +553,7 @@ public class AreaServer implements BoxedObject {
 	/**
 	 * Get area resource.
 	 * @param name
-	 * @param area
+	 * @param areaProperty
 	 * @return
 	 * @throws Exception 
 	 */
@@ -572,7 +571,7 @@ public class AreaServer implements BoxedObject {
 	/**
 	 * Get resource URL.
 	 * @param resourceName
-	 * @param area
+	 * @param areaProperty
 	 * @return
 	 * @throws Exception
 	 */
@@ -688,7 +687,7 @@ public class AreaServer implements BoxedObject {
 	/**
 	 * Process text.
 	 * @param textToProcess
-	 * @param area
+	 * @param areaProperty
 	 * @return
 	 * @throws Exception
 	 */
@@ -715,7 +714,7 @@ public class AreaServer implements BoxedObject {
 	/**
 	 * Process text.
 	 * @param textToProcess
-	 * @param area
+	 * @param areaProperty
 	 * @return
 	 * @throws Exception
 	 */

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -27,9 +27,11 @@ import org.multipage.gui.Images;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * @author
+ * Base dialog class for resource properties.
+ * @author vakol
  *
  */
 public class ResourcePropertiesEditorBase extends JDialog {
@@ -185,45 +187,51 @@ public class ResourcePropertiesEditorBase extends JDialog {
 	public static boolean showDialog(Component parentComponent,
 			Obj<Resource> resource, Obj<File> file, Obj<Boolean> saveAsText,
 			Obj<String> encoding) {
-
-	    // If it is a new resource.
-		if (resource.ref == null) {
-			
-			if (file.ref == null) {
-				// Select file.
-			    file.ref = GeneratorUtility.chooseFileAndSaveMethod(parentComponent,
-			    		saveAsText, encoding);
-			    if (file.ref == null) {
-			    	return false;
-			    }
-			}
-			else {
-			    // Select saving method.
-			    if (!SelectResourceSavingMethod.showDialog(parentComponent,
-			    		file.ref, saveAsText, encoding)) {
-			    	return false;
-			    }
-			}
-		    // Create new resource.
-		    resource.ref = new Resource(file.ref.getName());
-		    resource.ref.setVisible(true);
-		}
 		
-		// Edit resource.
-	    ResourcePropertiesEditorBase dialog = ProgramGenerator.newResourcePropertiesEditor(parentComponent,
-	    		resource.ref);
-	    
-	    dialog.file = file;
-	    dialog.saveAsText = saveAsText;
-	    dialog.encoding = encoding;
-	    
-	    // Hide assign controls.
-	    dialog.hideAssignControls();
-	    
-	    // Show dialog.
-		dialog.setVisible(true);
-
-		return dialog.confirm;
+		try {
+		    // If it is a new resource.
+			if (resource.ref == null) {
+				
+				if (file.ref == null) {
+					// Select file.
+				    file.ref = GeneratorUtility.chooseFileAndSaveMethod(parentComponent,
+				    		saveAsText, encoding);
+				    if (file.ref == null) {
+				    	return false;
+				    }
+				}
+				else {
+				    // Select saving method.
+				    if (!SelectResourceSavingMethod.showDialog(parentComponent,
+				    		file.ref, saveAsText, encoding)) {
+				    	return false;
+				    }
+				}
+			    // Create new resource.
+			    resource.ref = new Resource(file.ref.getName());
+			    resource.ref.setVisible(true);
+			}
+			
+			// Edit resource.
+		    ResourcePropertiesEditorBase dialog = ProgramGenerator.newResourcePropertiesEditor(parentComponent,
+		    		resource.ref);
+		    
+		    dialog.file = file;
+		    dialog.saveAsText = saveAsText;
+		    dialog.encoding = encoding;
+		    
+		    // Hide assign controls.
+		    dialog.hideAssignControls();
+		    
+		    // Show dialog.
+			dialog.setVisible(true);
+	
+			return dialog.confirm;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -241,56 +249,62 @@ public class ResourcePropertiesEditorBase extends JDialog {
 			Obj<AreaResource> resource, Obj<File> file, Obj<Boolean> saveAsText,
 			Obj<String> encoding, Obj<Resource> resourceToAssign, String localDescription) {
 		
-	    // If it is a new resource.
-		if (resource.ref == null) {
-			
-			if (file.ref == null) {
-				// Select file.
-				file.ref = GeneratorUtility.chooseFileAndSaveMethod(parentComponent,
-				    	saveAsText, encoding);
+		try {
+		    // If it is a new resource.
+			if (resource.ref == null) {
+				
 				if (file.ref == null) {
-					return false;
+					// Select file.
+					file.ref = GeneratorUtility.chooseFileAndSaveMethod(parentComponent,
+					    	saveAsText, encoding);
+					if (file.ref == null) {
+						return false;
+					}
 				}
+				else {
+				    // Select saving method.
+				    if (!SelectResourceSavingMethod.showDialog(parentComponent,
+				    		file.ref, saveAsText, encoding)) {
+				    	return false;
+				    }
+				}
+	
+			    // Create new resource.
+			    resource.ref = new AreaResource(file.ref.getName());
 			}
-			else {
-			    // Select saving method.
-			    if (!SelectResourceSavingMethod.showDialog(parentComponent,
-			    		file.ref, saveAsText, encoding)) {
-			    	return false;
-			    }
-			}
-
-		    // Create new resource.
-		    resource.ref = new AreaResource(file.ref.getName());
+			
+			// Edit resource.
+		    ResourcePropertiesEditorBase dialog = ProgramGenerator.newResourcePropertiesEditor(parentComponent,
+		    		resource.ref);
+		    
+		    dialog.file = file;
+		    dialog.saveAsText = saveAsText;
+		    dialog.encoding = encoding;
+		    
+		    // Hide assign controls conditionally.
+		    if (resourceToAssign == null) {
+		    	dialog.hideAssignControls();
+		    }
+		    
+		    // Set possible local description.
+		    if (localDescription != null) {
+		    	dialog.textLocalDescription.setText(localDescription);
+		    }
+		    
+		    // Show dialog.
+			dialog.setVisible(true);
+			
+		    // Set possibly assigned resource.
+		    if (dialog.confirm && resourceToAssign != null) {
+		    	resourceToAssign.ref = dialog.resourceToAssign;
+		    }
+	
+			return dialog.confirm;
 		}
-		
-		// Edit resource.
-	    ResourcePropertiesEditorBase dialog = ProgramGenerator.newResourcePropertiesEditor(parentComponent,
-	    		resource.ref);
-	    
-	    dialog.file = file;
-	    dialog.saveAsText = saveAsText;
-	    dialog.encoding = encoding;
-	    
-	    // Hide assign controls conditionally.
-	    if (resourceToAssign == null) {
-	    	dialog.hideAssignControls();
-	    }
-	    
-	    // Set possible local description.
-	    if (localDescription != null) {
-	    	dialog.textLocalDescription.setText(localDescription);
-	    }
-	    
-	    // Show dialog.
-		dialog.setVisible(true);
-		
-	    // Set possibly assigned resource.
-	    if (dialog.confirm && resourceToAssign != null) {
-	    	resourceToAssign.ref = dialog.resourceToAssign;
-	    }
-
-		return dialog.confirm;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -303,31 +317,39 @@ public class ResourcePropertiesEditorBase extends JDialog {
 	public static boolean showDialogForNewResource(
 			Component parentComponent, Resource resource, Obj<MimeType> mimeType) {
 		
-		// Edit resource.
-	    ResourcePropertiesEditorBase dialog = ProgramGenerator.newResourcePropertiesEditor(
-	    		parentComponent,
-	    		resource);
-	    
-	    // Set MIME type.
-	    dialog.selectMimeType(mimeType.ref);
-	    
-	    // Hide assign controls.
-	    dialog.hideAssignControls();
-	    
-	    // Show dialog.
-		dialog.setVisible(true);
-
-		return dialog.confirm;
+		try {
+			// Edit resource.
+		    ResourcePropertiesEditorBase dialog = ProgramGenerator.newResourcePropertiesEditor(
+		    		parentComponent,
+		    		resource);
+		    
+		    // Set MIME type.
+		    dialog.selectMimeType(mimeType.ref);
+		    // Hide assign controls.
+		    dialog.hideAssignControls();
+		    // Show dialog.
+			dialog.setVisible(true);
+			return dialog.confirm;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
 	 * Hide assign control.
 	 */
 	private void hideAssignControls() {
-		
-		buttonAssign.setVisible(false);
-	   	labelAssigned.setVisible(false);
-	   	buttonClearAssignment.setVisible(false);
+		try {
+			
+			buttonAssign.setVisible(false);
+		   	labelAssigned.setVisible(false);
+		   	buttonClearAssignment.setVisible(false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -337,149 +359,169 @@ public class ResourcePropertiesEditorBase extends JDialog {
 	 * @param namespaceId 
 	 */
 	protected void postCreate(Resource resource) {
-
-		// Set resource.
-		this.resource = resource;
-		// Localize components.
-		localize();
-		// Set icons.
-		setIcons();
-		// Center dialog.
-		Utility.centerOnScreen(this);
-		
-		// Set resource name text.
-		textResourceName.setText(resource.getDescription());
-		textResourceName.selectAll();
-		
-		// Set possible local description.
-		if (resource instanceof AreaResource) {
-			AreaResource areaResource = (AreaResource) resource;
-			String localDescription = areaResource.getLocalDescription();
+		try {
 			
-			if (localDescription != null) {
-				textLocalDescription.setText(localDescription);
+			// Set resource.
+			this.resource = resource;
+			// Localize components.
+			localize();
+			// Set icons.
+			setIcons();
+			// Center dialog.
+			Utility.centerOnScreen(this);
+			
+			// Set resource name text.
+			textResourceName.setText(resource.getDescription());
+			textResourceName.selectAll();
+			
+			// Set possible local description.
+			if (resource instanceof AreaResource) {
+				AreaResource areaResource = (AreaResource) resource;
+				String localDescription = areaResource.getLocalDescription();
+				
+				if (localDescription != null) {
+					textLocalDescription.setText(localDescription);
+				}
+			}
+			
+			// Set identifier.
+			long resourceId = resource.getId();
+			textIdentifier.setText(resourceId != 0L ? String.valueOf(resourceId)
+					: Resources.getString("org.multipage.generator.textUnknown"));
+			
+		    // Disable clear buttons.
+		    buttonDefaultData.setEnabled(false);
+		    buttonClearAssignment.setEnabled(false);
+		    
+			// Set load button tool tip.
+			buttonLoadData.setToolTipText(
+					Resources.getString("org.multipage.generator.tooltipLoadResourceData"));
+			// Set tool tip.
+			buttonDefaultData.setToolTipText(
+					Resources.getString("org.multipage.generator.tooltipDefaultData"));
+			
+			labelAssigned.setForeground(Color.GRAY);
+			
+			// Initialize MIME types.
+			long mimeTypeId = resource.getMimeTypeId();
+			if (mimeTypeId == 0L) {
+				GeneratorUtility.loadMimeAndSelect(resource.getDescription(), comboBoxMime);
+			}
+			else {
+				GeneratorUtility.loadMimeAndSelect(mimeTypeId, comboBoxMime);
+			}
+			Object originalMimeTypeObject = comboBoxMime.getSelectedItem();
+			if (originalMimeTypeObject != null) {
+				originalMimeType = (MimeType) originalMimeTypeObject;
+			}
+			else {
+				originalMimeType = null;
+			}
+			
+			if (resource instanceof AreaResource) {
+				// Set resource visibility.
+				checkboxVisible.setSelected(resource.isVisible());
+				// Initialize namespace.
+				panelNamespace.setNameSpace(resource.getParentNamespaceId());
+				// Set local description.
+				textLocalDescription.setText(((AreaResource) resource).getLocalDescription());
+			}
+			else {
+				labelNamespace.setEnabled(false);
+				panelNamespace.setEnabledComponents(false);
+				checkboxVisible.setSelected(resource.isVisible());
+				checkboxVisible.setEnabled(true);
+				labelLocalDescription.setEnabled(false);
+				textLocalDescription.setEnabled(false);
+				panelNamespace.setNameSpace(resource.getParentNamespaceId());
 			}
 		}
-		
-		// Set identifier.
-		long resourceId = resource.getId();
-		textIdentifier.setText(resourceId != 0L ? String.valueOf(resourceId)
-				: Resources.getString("org.multipage.generator.textUnknown"));
-		
-	    // Disable clear buttons.
-	    buttonDefaultData.setEnabled(false);
-	    buttonClearAssignment.setEnabled(false);
-	    
-		// Set load button tool tip.
-		buttonLoadData.setToolTipText(
-				Resources.getString("org.multipage.generator.tooltipLoadResourceData"));
-		// Set tool tip.
-		buttonDefaultData.setToolTipText(
-				Resources.getString("org.multipage.generator.tooltipDefaultData"));
-		
-		labelAssigned.setForeground(Color.GRAY);
-		
-		// Initialize MIME types.
-		long mimeTypeId = resource.getMimeTypeId();
-		if (mimeTypeId == 0L) {
-			GeneratorUtility.loadMimeAndSelect(resource.getDescription(), comboBoxMime);
-		}
-		else {
-			GeneratorUtility.loadMimeAndSelect(mimeTypeId, comboBoxMime);
-		}
-		Object originalMimeTypeObject = comboBoxMime.getSelectedItem();
-		if (originalMimeTypeObject != null) {
-			originalMimeType = (MimeType) originalMimeTypeObject;
-		}
-		else {
-			originalMimeType = null;
-		}
-		
-		if (resource instanceof AreaResource) {
-			// Set resource visibility.
-			checkboxVisible.setSelected(resource.isVisible());
-			// Initialize namespace.
-			panelNamespace.setNameSpace(resource.getParentNamespaceId());
-			// Set local description.
-			textLocalDescription.setText(((AreaResource) resource).getLocalDescription());
-		}
-		else {
-			labelNamespace.setEnabled(false);
-			panelNamespace.setEnabledComponents(false);
-			checkboxVisible.setSelected(resource.isVisible());
-			checkboxVisible.setEnabled(true);
-			labelLocalDescription.setEnabled(false);
-			textLocalDescription.setEnabled(false);
-			panelNamespace.setNameSpace(resource.getParentNamespaceId());
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set file label.
 	 */
 	private void setFileLabel() {
-		
-		String text = Resources.getString("org.multipage.generator.textOriginalData");
-		
-		// Check reference.
-		boolean noFile = file == null;
-		buttonLoadData.setEnabled(!noFile);
-		labelFile.setEnabled(!noFile);
-		if (noFile) {
-			labelFile.setText(text);
-			return;
-		}
-
-		Color textColor;
-		
-		if (file.ref == null) {
+		try {
 			
-			saveAsText.ref = null;
-			encoding.ref = null;
-			textColor = Color.GRAY;
+			String text = Resources.getString("org.multipage.generator.textOriginalData");
+			
+			// Check reference.
+			boolean noFile = file == null;
+			buttonLoadData.setEnabled(!noFile);
+			labelFile.setEnabled(!noFile);
+			if (noFile) {
+				labelFile.setText(text);
+				return;
+			}
+	
+			Color textColor;
+			
+			if (file.ref == null) {
+				
+				saveAsText.ref = null;
+				encoding.ref = null;
+				textColor = Color.GRAY;
+			}
+			else {
+				text = String.format("\"%s\"", file.ref.getName());
+				textColor = Color.BLACK;
+			}
+			
+			// Set label.
+			labelFile.setText(text);
+			// Set label color.
+			labelFile.setForeground(textColor);
 		}
-		else {
-			text = String.format("\"%s\"", file.ref.getName());
-			textColor = Color.BLACK;
-		}
-		
-		// Set label.
-		labelFile.setText(text);
-		// Set label color.
-		labelFile.setForeground(textColor);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	protected void localize() {
-
-		Utility.localize(this);
-		Utility.localize(okButton);
-		Utility.localize(cancelButton);
-		Utility.localize(labelResourceName);
-		Utility.localize(labelResourceIdentifier);
-		Utility.localize(labelNamespace);
-		Utility.localize(checkboxVisible);
-		Utility.localize(labelMimeType);
-		Utility.localize(buttonLoadData);
-		Utility.localize(labelLocalDescription);
-		Utility.localize(buttonAssign);
-		Utility.localize(labelAssigned);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(okButton);
+			Utility.localize(cancelButton);
+			Utility.localize(labelResourceName);
+			Utility.localize(labelResourceIdentifier);
+			Utility.localize(labelNamespace);
+			Utility.localize(checkboxVisible);
+			Utility.localize(labelMimeType);
+			Utility.localize(buttonLoadData);
+			Utility.localize(labelLocalDescription);
+			Utility.localize(buttonAssign);
+			Utility.localize(labelAssigned);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set components icons.
 	 */
 	private void setIcons() {
-
-		okButton.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		cancelButton.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
-		buttonLoadData.setIcon(Images.getIcon("org/multipage/generator/images/open.png"));
-		buttonDefaultData.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
-		buttonAssign.setIcon(Images.getIcon("org/multipage/generator/images/load_icon.png"));
-		buttonClearAssignment.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
-		buttonFindMime.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
+		try {
+			
+			okButton.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			cancelButton.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+			buttonLoadData.setIcon(Images.getIcon("org/multipage/generator/images/open.png"));
+			buttonDefaultData.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+			buttonAssign.setIcon(Images.getIcon("org/multipage/generator/images/load_icon.png"));
+			buttonClearAssignment.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+			buttonFindMime.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -495,31 +537,37 @@ public class ResourcePropertiesEditorBase extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-
-		String resourceName = textResourceName.getText();
-		
-		// Check resource name.
-		if (resourceName.isEmpty()) {
-			Utility.show(this, "org.multipage.generator.textResourceNameCannotBeEmpty");
-			return;
+		try {
+			
+			String resourceName = textResourceName.getText();
+			
+			// Check resource name.
+			if (resourceName.isEmpty()) {
+				Utility.show(this, "org.multipage.generator.textResourceNameCannotBeEmpty");
+				return;
+			}
+			MimeType mimeType = (MimeType) comboBoxMime.getSelectedItem();
+			if (mimeType == null) {
+				Utility.show(this, "org.multipage.generator.messageSelectMimeType");
+				return;
+			}
+			
+			// Set resource.
+			resource.setDescription(resourceName);
+			resource.setParentNamespaceId(panelNamespace.getNamespaceId());
+			resource.setMimeTypeId(mimeType.id);
+			resource.setVisible(checkboxVisible.isSelected());
+			
+			if (resource instanceof AreaResource) {
+				((AreaResource) resource).setLocalDescription(textLocalDescription.getText());
+			}
+			
+			confirm = true;
 		}
-		MimeType mimeType = (MimeType) comboBoxMime.getSelectedItem();
-		if (mimeType == null) {
-			Utility.show(this, "org.multipage.generator.messageSelectMimeType");
-			return;
-		}
-		
-		// Set resource.
-		resource.setDescription(resourceName);
-		resource.setParentNamespaceId(panelNamespace.getNamespaceId());
-		resource.setMimeTypeId(mimeType.id);
-		resource.setVisible(checkboxVisible.isSelected());
-		
-		if (resource instanceof AreaResource) {
-			((AreaResource) resource).setLocalDescription(textLocalDescription.getText());
-		}
-		
-		confirm = true;
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -527,132 +575,162 @@ public class ResourcePropertiesEditorBase extends JDialog {
 	 * On load data.
 	 */
 	protected void onLoadData() {
-
-		// Choose file and save method.
-		file.ref = GeneratorUtility.chooseFileAndSaveMethod(parentWindow,
-				saveAsText, encoding);
-		
-		if (file.ref == null) {
-			return;
+		try {
+			
+			// Choose file and save method.
+			file.ref = GeneratorUtility.chooseFileAndSaveMethod(parentWindow,
+					saveAsText, encoding);
+			
+			if (file.ref == null) {
+				return;
+			}
+			
+			// Set MIME type.
+			GeneratorUtility.loadMimeAndSelect(file.ref.getName(), comboBoxMime);
+			// Set file.
+			setFileLabel();
+			// Enable clear button.
+			buttonDefaultData.setEnabled(true);
 		}
-		
-		// Set MIME type.
-		GeneratorUtility.loadMimeAndSelect(file.ref.getName(), comboBoxMime);
-		// Set file.
-		setFileLabel();
-		// Enable clear button.
-		buttonDefaultData.setEnabled(true);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On assign.
 	 */
 	protected void onAssign() {
-		
-		// Get selected editor.
-		int selectedEditor = SelectResourcesEditor.getSelectedEditor(this);
-		if (selectedEditor == SelectResourcesEditor.NONE) {
-			return;
-		}
-
-		LinkedList<Resource> selectedResources = new LinkedList<Resource>();
-
-		// On visible resources.
-		if (selectedEditor == SelectResourcesEditor.VISIBLE_RESOURCES) {
-		
-			// Get resource from the database.
-			if (!ResourcesEditorDialog.showDialog(this, selectedResources)) {
-				return;
-			}
-		}
-		else if (selectedEditor == SelectResourcesEditor.AREA_RESOURCES) {
+		try {
 			
-			// Get resource from area.
-			if (!AreaResourcesDialog.showDialog(this, selectedResources)) {
+			// Get selected editor.
+			int selectedEditor = SelectResourcesEditor.getSelectedEditor(this);
+			if (selectedEditor == SelectResourcesEditor.NONE) {
 				return;
 			}
+	
+			LinkedList<Resource> selectedResources = new LinkedList<Resource>();
+	
+			// On visible resources.
+			if (selectedEditor == SelectResourcesEditor.VISIBLE_RESOURCES) {
+			
+				// Get resource from the database.
+				if (!ResourcesEditorDialog.showDialog(this, selectedResources)) {
+					return;
+				}
+			}
+			else if (selectedEditor == SelectResourcesEditor.AREA_RESOURCES) {
+				
+				// Get resource from area.
+				if (!AreaResourcesDialog.showDialog(this, selectedResources)) {
+					return;
+				}
+			}
+			else {
+				return;
+			}
+			
+			// If not single resource selected, inform user and exit.
+			if (selectedResources.size() != 1) {
+				Utility.show(this, "org.multipage.generator.messageSelectSingleResourceToAssign");
+				return;
+			}
+			
+			Resource selectedResource = selectedResources.getFirst();
+			
+			// Enable assignment.
+			enableAssignment(true);
+			// Enable clear button.
+			buttonClearAssignment.setEnabled(true);
+			// Set label.
+			labelAssigned.setText(selectedResource.getDescription());
+			labelAssigned.setForeground(Color.BLACK);
+			
+			// Set assigned resource reference.
+			resourceToAssign = selectedResource;
 		}
-		else {
-			return;
-		}
-		
-		// If not single resource selected, inform user and exit.
-		if (selectedResources.size() != 1) {
-			Utility.show(this, "org.multipage.generator.messageSelectSingleResourceToAssign");
-			return;
-		}
-		
-		Resource selectedResource = selectedResources.getFirst();
-		
-		// Enable assignment.
-		enableAssignment(true);
-		// Enable clear button.
-		buttonClearAssignment.setEnabled(true);
-		// Set label.
-		labelAssigned.setText(selectedResource.getDescription());
-		labelAssigned.setForeground(Color.BLACK);
-		
-		// Set assigned resource reference.
-		resourceToAssign = selectedResource;
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On clear assignment.
 	 */
 	protected void onClearAssignment() {
-		
-		// Disable assignment.
-		enableAssignment(false);
-		
-		// Disable clear button.
-		buttonClearAssignment.setEnabled(false);
-		
-		// Reset label.
-		labelAssigned.setText(Resources.getString("org.multipage.generator.textNoResourceAssigned"));
-		labelAssigned.setForeground(Color.GRAY);
-		
-		// Reset assigned resource reference.
-		resourceToAssign = null;
+		try {
+			
+			// Disable assignment.
+			enableAssignment(false);
+			
+			// Disable clear button.
+			buttonClearAssignment.setEnabled(false);
+			
+			// Reset label.
+			labelAssigned.setText(Resources.getString("org.multipage.generator.textNoResourceAssigned"));
+			labelAssigned.setForeground(Color.GRAY);
+			
+			// Reset assigned resource reference.
+			resourceToAssign = null;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Enable resource assignment.
 	 */
 	protected void enableAssignment(boolean enable) {
-		
-		textResourceName.setEnabled(!enable);
-		comboBoxMime.setEnabled(!enable);
-		checkboxVisible.setEnabled(!enable);
-		panelNamespace.setEnabledComponents(!enable);
-		buttonLoadData.setEnabled(!enable);
-		
-		if (enable) {
-			buttonDefaultData.setEnabled(false);
+		try {
+			
+			textResourceName.setEnabled(!enable);
+			comboBoxMime.setEnabled(!enable);
+			checkboxVisible.setEnabled(!enable);
+			panelNamespace.setEnabledComponents(!enable);
+			buttonLoadData.setEnabled(!enable);
+			
+			if (enable) {
+				buttonDefaultData.setEnabled(false);
+			}
+			else {
+				buttonDefaultData.setEnabled(file != null && file.ref != null);
+			}
 		}
-		else {
-			buttonDefaultData.setEnabled(file != null && file.ref != null);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On default data.
 	 */
 	protected void onDefaultData() {
-
-		// Reset file.
-		file.ref = null;
-		setFileLabel();
-		// Disable clear button.
-		buttonDefaultData.setEnabled(false);
+		try {
+			
+			// Reset file.
+			file.ref = null;
+			setFileLabel();
+			// Disable clear button.
+			buttonDefaultData.setEnabled(false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On window opened.
 	 */
 	protected void onWindowOpened() {
-
-		// Set file.
-		setFileLabel();
+		try {
+			
+			// Set file.
+			setFileLabel();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -660,27 +738,36 @@ public class ResourcePropertiesEditorBase extends JDialog {
 	 * @param ref
 	 */
 	private void selectMimeType(MimeType mimeType) {
-
-		GeneratorUtility.selectMime(comboBoxMime, mimeType);
+		try {
+			
+			GeneratorUtility.selectMime(comboBoxMime, mimeType);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On find mime.
 	 */
 	protected void onFindMime() {
-		
-		MimeType mimeType = MimeTypesEditor.showDialog(this, comboBoxMime.getSelectedItem());
-		if (mimeType == null) {
+		try {
 			
-			if (originalMimeType != null) {
-				GeneratorUtility.loadMimeAndSelect(originalMimeType.getId(), comboBoxMime);
+			MimeType mimeType = MimeTypesEditor.showDialog(this, comboBoxMime.getSelectedItem());
+			if (mimeType == null) {
+				
+				if (originalMimeType != null) {
+					GeneratorUtility.loadMimeAndSelect(originalMimeType.getId(), comboBoxMime);
+				}
+				else {
+					GeneratorUtility.loadMimeAndSelect(resource.getDescription(), comboBoxMime);
+				}
+				return;
 			}
-			else {
-				GeneratorUtility.loadMimeAndSelect(resource.getDescription(), comboBoxMime);
-			}
-			return;
+			GeneratorUtility.loadMimeAndSelect(mimeType.getId(), comboBoxMime);
 		}
-		
-		GeneratorUtility.loadMimeAndSelect(mimeType.getId(), comboBoxMime);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

@@ -1,10 +1,17 @@
+/*
+ * Copyright 2010-2025 (C) vakol
+ * 
+ * Created on : 2022-10-25
+ *
+ */
 package org.multipage.gui;
 
 import java.awt.Color;
 import java.time.LocalTime;
 
 /**
- * Message record class.
+ * Log records.
+ * @author vakol
  */
 public final class LogMessageRecord {
 	

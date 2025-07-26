@@ -1,24 +1,46 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import java.io.*;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 
-import javax.swing.*;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
+import javax.swing.SpringLayout;
 
-import org.multipage.util.*;
-
-import java.awt.*;
-import java.awt.event.*;
+import org.multipage.util.Obj;
+import org.multipage.util.ProgressResult;
+import org.multipage.util.Resources;
+import org.multipage.util.Safe;
+import org.multipage.util.SwingWorkerHelper;
 
 /**
- * 
- * @author
+ * Dialog window for checking text files.
+ * @author vakol
  *
  */
 public class CheckTextFile extends JDialog {
@@ -88,13 +110,19 @@ public class CheckTextFile extends JDialog {
 	public static boolean showDialog(JFrame frame, File file,
 			Obj<Boolean> isText, Obj<String> encoding) {
 
-		CheckTextFile dialog = new CheckTextFile(frame, file, encoding.ref);
-		// Show modal dialog and get results.
-		dialog.setVisible(true);
-		isText.ref = dialog.textFile;
-		encoding.ref = dialog.fileEncoding;
-		
-		return dialog.confirmed;
+		try {
+			CheckTextFile dialog = new CheckTextFile(frame, file, encoding.ref);
+			// Show modal dialog and get results.
+			dialog.setVisible(true);
+			isText.ref = dialog.textFile;
+			encoding.ref = dialog.fileEncoding;
+			
+			return dialog.confirmed;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 
 	/**
@@ -105,13 +133,18 @@ public class CheckTextFile extends JDialog {
 	 */
 	public CheckTextFile(JFrame frame, File file, String encoding) {
 		super(frame, true);
-		this.frame = frame;
-		// Initialize components.
-		initComponents();
-		// Post creation.
-		// $hide>>$
-		postCreate(file, encoding);
-		// $hide<<$
+		try {
+			this.frame = frame;
+			// Initialize components.
+			initComponents();
+			// Post creation.
+			// $hide>>$
+			postCreate(file, encoding);
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -229,16 +262,26 @@ public class CheckTextFile extends JDialog {
 	 * On is binary file.
 	 */
 	protected void onIsBinaryFile() {
-
-		setEnableTextControls(false);
+		try {
+			
+			setEnableTextControls(false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On is text file.
 	 */
 	protected void onIsTextFile() {
-
-		setEnableTextControls(true);
+		try {
+			
+			setEnableTextControls(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -246,10 +289,15 @@ public class CheckTextFile extends JDialog {
 	 * @param enable
 	 */
 	private void setEnableTextControls(boolean enable) {
-
-		comboxEncoding.setEnabled(enable);
-		labelCharacterEncoding.setEnabled(enable);
-		textPane.setEnabled(enable);
+		try {
+			
+			comboxEncoding.setEnabled(enable);
+			labelCharacterEncoding.setEnabled(enable);
+			textPane.setEnabled(enable);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -258,52 +306,67 @@ public class CheckTextFile extends JDialog {
 	 * @param file2 
 	 */
 	private void postCreate(File file, String encoding) {
-		
-		this.file = file;
-		
-		// Center dialog.
-		Utility.centerOnScreen(this);
-		// Localize components.
-		localize();
-		// Set icons.
-		setIcons();
-		// Load encodings.
-		loadEncodings(encoding);
-		
-		initializedCombo = true;
-		
-		// Load file.
-		loadFile(true);
-
-		// Initialize selection.
-		radioTextFile.setSelected(true);
+		try {
+			
+			this.file = file;
+			
+			// Center dialog.
+			Utility.centerOnScreen(this);
+			// Localize components.
+			localize();
+			// Set icons.
+			setIcons();
+			// Load encodings.
+			loadEncodings(encoding);
+			
+			initializedCombo = true;
+			
+			// Load file.
+			loadFile(true);
+	
+			// Initialize selection.
+			radioTextFile.setSelected(true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(this);
-		Utility.localizeTooltip(textPane);
-		Utility.localize(buttonSelect);
-		Utility.localize(buttonCancel);
-		Utility.localize(radioTextFile);
-		Utility.localize(radioBinaryFile);
-		// Set label text.
-		labelCharacterEncoding.setText(
-				String.format(
-						Resources.getString(labelCharacterEncoding.getText()),
-						file.getName()));
+		try {
+			
+			Utility.localize(this);
+			Utility.localizeTooltip(textPane);
+			Utility.localize(buttonSelect);
+			Utility.localize(buttonCancel);
+			Utility.localize(radioTextFile);
+			Utility.localize(radioBinaryFile);
+			// Set label text.
+			labelCharacterEncoding.setText(
+					String.format(
+							Resources.getString(labelCharacterEncoding.getText()),
+							file.getName()));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-
-		buttonSelect.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			buttonSelect.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -311,9 +374,14 @@ public class CheckTextFile extends JDialog {
 	 * @param encoding 
 	 */
 	private void loadEncodings(String encoding) {
-
-		// Load combobox.
-		Utility.loadEncodings(comboxEncoding, encoding);
+		try {
+			
+			// Load combobox.
+			Utility.loadEncodings(comboxEncoding, encoding);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -321,118 +389,130 @@ public class CheckTextFile extends JDialog {
 	 * @param showTooLongMessage 
 	 */
 	private void loadFile(boolean showTooLongMessage) {
-
-		// If the dialog is not initializedCombo, exit the method.
-		if (!initializedCombo) {
-			return;
-		}
-		
-		// Get encoding.
-		final String encoding = (String) comboxEncoding.getSelectedItem();
-		
-		// Get file length.
-		long fileLength = file.length();
-		final long dataLength;
-		
-		// If the file is too long, inform user.
-		if (fileLength > maximumDataLength) {
+		try {
 			
-			// If to show message.
-			if (showTooLongMessage) {
-				Utility.show2(this, String.format(
-						Resources.getString("org.multipage.gui.messageFileIsTooLongReadingFirstPart"),
-						fileLength,
-						maximumDataLength));
+			// If the dialog is not initializedCombo, exit the method.
+			if (!initializedCombo) {
+				return;
 			}
-			dataLength = maximumDataLength;
-		}
-		else {
-			dataLength = fileLength;
-		}
-		
-		// Create progress dialog.
-		ProgressDialog<StringBuilder> dialog = new ProgressDialog<StringBuilder>(
-				frame,
-				Resources.getString("org.multipage.gui.textLoadingTextFile"),
-				String.format(Resources.getString("org.multipage.gui.textLoadingTextFileToCheck"),
-						file.getName()));
-		
-		// Run progress dialog.
-		ProgressResult progressResult = dialog.execute(new SwingWorkerHelper<StringBuilder>() {
-			// Thread.
-			@Override
-			protected StringBuilder doBackgroundProcess() throws Exception {
 			
-				// Create string builder.
-				StringBuilder stringBuilder = new StringBuilder();
-
-				long totalCharactersRead = 0;
-
-				// Create input stream.
-				InputStreamReader reader = new InputStreamReader(
-						new FileInputStream(file), encoding);
+			// Get encoding.
+			final String encoding = (String) comboxEncoding.getSelectedItem();
+			
+			// Get file length.
+			long fileLength = file.length();
+			final long dataLength;
+			
+			// If the file is too long, inform user.
+			if (fileLength > maximumDataLength) {
 				
-				char [] characterBuffer = new char [50];
-				int charactersRead;
-				
-				// Try to read the stream.
-				while ((charactersRead = reader.read(characterBuffer)) != -1) {
-
-					// On cancel exit the thread.
-					if (isScheduledCancel()) {
-						reader.close();
-						throw new Exception();
-					}
-					// Append data to the string.
-					stringBuilder.append(characterBuffer, 0, charactersRead);
-					
-					// Set counter.
-					totalCharactersRead += charactersRead;
-					if (totalCharactersRead > dataLength) {
-						break;
-					}
-					
-					long progressPercent = 100 * totalCharactersRead / dataLength;
-					
-					// Set progress.
-					setProgressBar((int) progressPercent);
+				// If to show message.
+				if (showTooLongMessage) {
+					Utility.show2(this, String.format(
+							Resources.getString("org.multipage.gui.messageFileIsTooLongReadingFirstPart"),
+							fileLength,
+							maximumDataLength));
 				}
-				
-				setProgressBar(100);
-
-				reader.close();
-				return stringBuilder;
+				dataLength = maximumDataLength;
 			}
-		});
+			else {
+				dataLength = fileLength;
+			}
+			
+			// Create progress dialog.
+			ProgressDialog<StringBuilder> dialog = new ProgressDialog<StringBuilder>(
+					frame,
+					Resources.getString("org.multipage.gui.textLoadingTextFile"),
+					String.format(Resources.getString("org.multipage.gui.textLoadingTextFileToCheck"),
+							file.getName()));
+			
+			// Run progress dialog.
+			ProgressResult progressResult = dialog.execute(new SwingWorkerHelper<StringBuilder>() {
+				// Thread.
+				@Override
+				protected StringBuilder doBackgroundProcess() throws Exception {
+					
+					try {
+						// Create string builder.
+						StringBuilder stringBuilder = new StringBuilder();
 		
-		// Check result.
-		if (progressResult == ProgressResult.OK) {
+						long totalCharactersRead = 0;
+		
+						// Create input stream.
+						InputStreamReader reader = new InputStreamReader(
+								new FileInputStream(file), encoding);
+						
+						char [] characterBuffer = new char [50];
+						int charactersRead;
+						
+						// Try to read the stream.
+						while ((charactersRead = reader.read(characterBuffer)) != -1) {
+		
+							// On cancel exit the thread.
+							if (isScheduledCancel()) {
+								reader.close();
+								throw new Exception();
+							}
+							// Append data to the string.
+							stringBuilder.append(characterBuffer, 0, charactersRead);
+							
+							// Set counter.
+							totalCharactersRead += charactersRead;
+							if (totalCharactersRead > dataLength) {
+								break;
+							}
+							
+							long progressPercent = 100 * totalCharactersRead / dataLength;
+							
+							// Set progress.
+							setProgressBar((int) progressPercent);
+						}
+						
+						setProgressBar(100);
+		
+						reader.close();
+						return stringBuilder;
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					throw new Exception();
+				}
+			});
 			
-			// Show wait cursor.
-			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			
-			// Get thread output.
-			StringBuilder stringBuilder = dialog.getOutput();
-			
-			// Get current view port position.
-			Point oldViewportPosition = Utility.getScrollPosition(scrollPane);
-			
-			// Begin wait.
-			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			
-			// Show the text.
-			textPane.setText(stringBuilder.toString());
-			
-			// Scroll to the old position.
-			Utility.scrollToPosition(scrollPane, oldViewportPosition);
-			
-			// Show default cursor.
-			setCursor(Cursor.getDefaultCursor());
+			// Check result.
+			if (progressResult == ProgressResult.OK) {
+				
+				// Show wait cursor.
+				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				
+				// Get thread output.
+				StringBuilder stringBuilder = dialog.getOutput();
+				
+				// Get current view port position.
+				Point oldViewportPosition = Utility.getScrollPosition(scrollPane);
+				
+				// Begin wait.
+				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				
+				// Show the text.
+				textPane.setText(stringBuilder.toString());
+				
+				// Scroll to the old position.
+				Utility.scrollToPosition(scrollPane, oldViewportPosition);
+				
+				// Show default cursor.
+				setCursor(Cursor.getDefaultCursor());
+			}
+			else if (progressResult == ProgressResult.EXECUTION_EXCEPTION) {
+				// Show exception.
+				Utility.show2(dialog.getException().getLocalizedMessage());
+			}
 		}
-		else if (progressResult == ProgressResult.EXECUTION_EXCEPTION) {
-			// Show exception.
-			Utility.show2(dialog.getException().getLocalizedMessage());
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 	}
 
 	/**
@@ -440,41 +520,51 @@ public class CheckTextFile extends JDialog {
 	 * @param e
 	 */
 	protected void onComboBoxAction(ActionEvent e) {
-
-		// Get source.
-		Object source = e.getSource();
-		// Check it.
-		if (!(source instanceof JComboBox)) {
-			return;
-		}
-		// Convert the reference type.
-		JComboBox comboBox = (JComboBox) source;
-		String newEncoding = (String) comboBox.getSelectedItem();
-		
-		// If the encoding changes, reload the file.
-		if (!newEncoding.equals(currentEncoding)) {
+		try {
 			
-			currentEncoding = newEncoding;
-			// Load file.
-			loadFile(false);
+			// Get source.
+			Object source = e.getSource();
+			// Check it.
+			if (!(source instanceof JComboBox)) {
+				return;
+			}
+			// Convert the reference type.
+			JComboBox comboBox = (JComboBox) source;
+			String newEncoding = (String) comboBox.getSelectedItem();
+			
+			// If the encoding changes, reload the file.
+			if (!newEncoding.equals(currentEncoding)) {
+				
+				currentEncoding = newEncoding;
+				// Load file.
+				loadFile(false);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On select.
 	 */
 	protected void onSelect() {
-		
-		// Set outputs.
-		textFile = radioTextFile.isSelected();
-		if (textFile) {
-			fileEncoding = (String) comboxEncoding.getSelectedItem();
+		try {
+			
+			// Set outputs.
+			textFile = radioTextFile.isSelected();
+			if (textFile) {
+				fileEncoding = (String) comboxEncoding.getSelectedItem();
+			}
+			else {
+				fileEncoding = "BINARY_FILE";
+			}
+			
+			confirmed = true;
 		}
-		else {
-			fileEncoding = "BINARY_FILE";
-		}
-		
-		confirmed = true;
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
 		// Close the dialog.
 		dispose();

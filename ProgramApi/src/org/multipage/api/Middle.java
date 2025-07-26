@@ -1,12 +1,13 @@
 /*
- * Copyright 2010-2022 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 20-06-2022
+ * Created on : 2022-06-20
  *
  */
 package org.multipage.api;
 
 /**
+ * TODO: <---MAKE Class for middle layer.
  * @author vakol
  *
  */

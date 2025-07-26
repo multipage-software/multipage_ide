@@ -1,14 +1,17 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
+import org.multipage.util.Safe;
+
 /**
- * @author
+ * Class for 3D translation object.
+ * @author vakol
  *
  */
 public class CssTransformTranslate3d extends CssTransform {
@@ -37,15 +40,21 @@ public class CssTransformTranslate3d extends CssTransform {
 	 */
 	@Override
 	public String toString() {
-				
-		return String.format("translate3d(%s%s, %s%s, %s%s)",
-				Utility.removeFloatNulls(String.valueOf(tx)),
-				txUnits,
-				Utility.removeFloatNulls(String.valueOf(ty)),
-				tyUnits,
-				Utility.removeFloatNulls(String.valueOf(tz)),
-				tzUnits
-				);
+		
+		try {
+			return String.format("translate3d(%s%s, %s%s, %s%s)",
+					Utility.removeFloatNulls(String.valueOf(tx)),
+					txUnits,
+					Utility.removeFloatNulls(String.valueOf(ty)),
+					tyUnits,
+					Utility.removeFloatNulls(String.valueOf(tz)),
+					tzUnits
+					);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -53,12 +62,17 @@ public class CssTransformTranslate3d extends CssTransform {
 	 * @param translate
 	 */
 	public void setFrom(CssTransformTranslate3d translate) {
-
-		this.tx = translate.tx;
-		this.ty = translate.ty;
-		this.tz = translate.tz;
-		this.txUnits = translate.txUnits;
-		this.tyUnits = translate.tyUnits;
-		this.tzUnits = translate.tzUnits;
+		try {
+			
+			this.tx = translate.tx;
+			this.ty = translate.ty;
+			this.tz = translate.tz;
+			this.txUnits = translate.txUnits;
+			this.tyUnits = translate.tyUnits;
+			this.tzUnits = translate.tzUnits;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

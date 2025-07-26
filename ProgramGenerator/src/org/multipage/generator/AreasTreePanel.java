@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -24,7 +24,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SpringLayout;
-import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -37,8 +36,6 @@ import javax.swing.tree.TreePath;
 
 import org.maclan.Area;
 import org.maclan.AreaRelation;
-import org.multipage.gui.ApplicationEvents;
-import org.multipage.gui.GuiSignal;
 import org.multipage.gui.IdentifierTreePath;
 import org.multipage.gui.Images;
 import org.multipage.gui.RendererJLabel;
@@ -46,10 +43,11 @@ import org.multipage.gui.ToolBarKit;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays areas in tree view.
+ * @author vakol
  *
  */
 public class AreasTreePanel extends JPanel {
@@ -104,12 +102,15 @@ public class AreasTreePanel extends JPanel {
 	 * Create the panel.
 	 */
 	public AreasTreePanel(int localMenuHint) {
-
-		initComponents();
 		
-		this.localMenuHint = localMenuHint;
-		
-		postCreate(); // $hide$
+		try {
+			initComponents();
+			this.localMenuHint = localMenuHint;
+			postCreate(); // $hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -126,10 +127,15 @@ public class AreasTreePanel extends JPanel {
 	 */
 	public AreasTreePanel(Area rootArea) {
 		
-		this.rootArea = rootArea;
-
-		initComponents();
-		postCreate(); // $hide$
+		try {
+			this.rootArea = rootArea;
+	
+			initComponents();
+			postCreate(); // $hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -139,11 +145,16 @@ public class AreasTreePanel extends JPanel {
 	 */
 	public AreasTreePanel(Area rootArea, int localMenuHint) {
 		
-		this.rootArea = rootArea;
-		this.localMenuHint = localMenuHint;
-
-		initComponents();
-		postCreate(); // $hide$
+		try {
+			this.rootArea = rootArea;
+			this.localMenuHint = localMenuHint;
+	
+			initComponents();
+			postCreate(); // $hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -198,8 +209,13 @@ public class AreasTreePanel extends JPanel {
 	 * On tree expanded or collapsed.
 	 */
 	protected void onTreeExpandedCollapsed() {
-		
-		expandedPaths = Utility.getExpandedPaths2(tree);
+		try {
+			
+			expandedPaths = Utility.getExpandedPaths2(tree);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -207,67 +223,80 @@ public class AreasTreePanel extends JPanel {
 	 * @param e 
 	 */
 	protected void onAreasSelected(TreeSelectionEvent e) {
-		
-		if (areasListener != null) {
-			LinkedList<Area> areas = getSelectedAreas();
+		try {
 			
-			if (areas != null) {
-				areasListener.accept(areas);
+			if (areasListener != null) {
+				LinkedList<Area> areas = getSelectedAreas();
+				
+				if (areas != null) {
+					areasListener.accept(areas);
+				}
 			}
-		}		
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		localize();
-		
-		createToolBar();
-		
-		addAreaPopupMenu();
-		
-		initializeTree();
-		loadAreasTree();
-		
-		// Expand tree items.
-		if (expandedPaths != null) {
-			Utility.setExpandedPaths(tree, expandedPaths);
+		try {
+			
+			localize();
+			
+			createToolBar();
+			
+			addAreaPopupMenu();
+			
+			initializeTree();
+			loadAreasTree();
+			
+			// Expand tree items.
+			if (expandedPaths != null) {
+				Utility.setExpandedPaths(tree, expandedPaths);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
-
 	/**
 	 * Select area with sub nodes.
 	 */
 	protected void selectNodeWithSubNodes() {
-		
-		// Get selected area.
-		TreePath [] selectedPaths = tree.getSelectionPaths();
-		if (selectedPaths.length != 1) {
-			Utility.show(this, "org.multipage.generator.messageSelectSingleArea");
-			return;
-		}
-		
-		TreePath treePath = selectedPaths[0];
-		LinkedList<TreePath> treePaths = new LinkedList<TreePath>();
-		
-		getSubPaths((DefaultMutableTreeNode) treePath.getLastPathComponent(), treePaths);
-		
-		// Select sub nodes.
-		tree.setSelectionPaths(treePaths.toArray(new TreePath [0]));
-		
-		// Invoke listener.
-		if (areaWithSubAreasListener != null) {
-			Area area = getSelectedArea();
+		try {
 			
-			if (area != null) {
-				areaWithSubAreasListener.accept(area);
+			// Get selected area.
+			TreePath [] selectedPaths = tree.getSelectionPaths();
+			if (selectedPaths.length != 1) {
+				Utility.show(this, "org.multipage.generator.messageSelectSingleArea");
+				return;
+			}
+			
+			TreePath treePath = selectedPaths[0];
+			LinkedList<TreePath> treePaths = new LinkedList<TreePath>();
+			
+			getSubPaths((DefaultMutableTreeNode) treePath.getLastPathComponent(), treePaths);
+			
+			// Select sub nodes.
+			tree.setSelectionPaths(treePaths.toArray(new TreePath [0]));
+			
+			// Invoke listener.
+			if (areaWithSubAreasListener != null) {
+				Area area = getSelectedArea();
+				
+				if (area != null) {
+					areaWithSubAreasListener.accept(area);
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
-	
 
 	/**
 	 * Get sun paths.
@@ -276,251 +305,317 @@ public class AreasTreePanel extends JPanel {
 	 */
 	private void getSubPaths(DefaultMutableTreeNode node,
 			LinkedList<TreePath> treePaths) {
-		
-		// Add this node path.
-		TreeNode [] nodePath = node.getPath();
-		TreePath treePath = new TreePath(nodePath);
-		treePaths.add(treePath);
-		
-		// Do loop for all sub nodes.		
-		Enumeration<? super TreeNode> childNodes = node.children();
-		while (childNodes.hasMoreElements()) {
+		try {
 			
-			DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) childNodes.nextElement();
+			// Add this node path.
+			TreeNode [] nodePath = node.getPath();
+			TreePath treePath = new TreePath(nodePath);
+			treePaths.add(treePath);
 			
-			// Call this method recursively.
-			getSubPaths(childNode, treePaths);
+			// Do loop for all sub nodes.		
+			Enumeration<? super TreeNode> childNodes = node.children();
+			while (childNodes.hasMoreElements()) {
+				
+				DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) childNodes.nextElement();
+				
+				// Call this method recursively.
+				getSubPaths(childNode, treePaths);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
-
 
 	/**
 	 * Add area popup trayMenu.
 	 */
 	private void addAreaPopupMenu() {
-		
-		final Component thisComponent = this;
-		
-		AreaLocalMenu localMenu = ProgramGenerator.newAreaLocalMenu(new AreaLocalMenuListener() {
-			@Override
-			protected Area getCurrentArea() {
-				
-				return getSelectedArea();
-			}
-
-			@Override
-			public Component getComponent() {
-				// Get this component.
-				return thisComponent;
-			}
-
-		});
-		
-		localMenu.setHint(localMenuHint);
-		
-		JMenuItem menuSelectSubNodes = new JMenuItem(
-				Resources.getString("org.multipage.generator.menuSelectSubNodes"));
-		menuSelectSubNodes.setIcon(Images.getIcon("org/multipage/generator/images/select_subnodes.png"));
-		menuSelectSubNodes.addActionListener(e -> {
+		try {
 			
-			selectNodeWithSubNodes();
-		});
-		
-		JMenuItem menuAddSubArea = new JMenuItem(
-				Resources.getString("org.multipage.generator.menuAddSubArea"));
-		menuAddSubArea.setIcon(Images.getIcon("org/multipage/generator/images/area_node.png"));
-		menuAddSubArea.addActionListener(e -> {
+			final Component thisComponent = this;
 			
-			onAddSubArea();
-		});
-		
-		JMenuItem menuRemoveArea = new JMenuItem(
-				Resources.getString("org.multipage.generator.menuRemoveArea"));
-		menuRemoveArea.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
-		menuRemoveArea.addActionListener(e -> {
+			AreaLocalMenu localMenu = ProgramGenerator.newAreaLocalMenu(new AreaLocalMenu.Callbacks() {
+				@Override
+				protected Area getCurrentArea() {
+					try {
+						return getSelectedArea();
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return null;
+				}
+	
+				@Override
+				public Component getComponent() {
+					// Get this component.
+					return thisComponent;
+				}
+	
+			});
 			
-			onRemoveArea();
-		});
-		
-		int index = 0;
-		popupMenu.insert(menuSelectSubNodes, index++);
-		popupMenu.insert(menuAddSubArea, index++);
-		popupMenu.insert(menuRemoveArea, index++);
-		popupMenu.addSeparator(); index++;
-		
-		localMenu.addTo(this, popupMenu);
+			localMenu.setHint(localMenuHint);
+			
+			JMenuItem menuSelectSubNodes = new JMenuItem(
+					Resources.getString("org.multipage.generator.menuSelectSubNodes"));
+			menuSelectSubNodes.setIcon(Images.getIcon("org/multipage/generator/images/select_subnodes.png"));
+			menuSelectSubNodes.addActionListener(e -> {
+				try {
+			
+					selectNodeWithSubNodes();
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+			
+			JMenuItem menuAddSubArea = new JMenuItem(
+					Resources.getString("org.multipage.generator.menuAddSubArea"));
+			menuAddSubArea.setIcon(Images.getIcon("org/multipage/generator/images/area_node.png"));
+			menuAddSubArea.addActionListener(e -> {
+				try {
+			
+					onAddSubArea();
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+			
+			JMenuItem menuRemoveArea = new JMenuItem(
+					Resources.getString("org.multipage.generator.menuRemoveArea"));
+			menuRemoveArea.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+			menuRemoveArea.addActionListener(e -> {
+				try {
+			
+					onRemoveArea();
+				}
+				catch(Throwable expt) {
+					Safe.exception(expt);
+				};
+			});
+			
+			int index = 0;
+			popupMenu.insert(menuSelectSubNodes, index++);
+			popupMenu.insert(menuAddSubArea, index++);
+			popupMenu.insert(menuRemoveArea, index++);
+			popupMenu.addSeparator(); index++;
+			
+			localMenu.addTo(this, popupMenu);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};		
 	}
 	
 	/**
 	 * On remove area.
 	 */
 	protected void onRemoveArea() {
-		
-		// Get selected area.
-		TreePath [] selectedPaths = tree.getSelectionPaths();
-		if (selectedPaths.length != 1) {
-			Utility.show(this, "org.multipage.generator.messageSelectSingleArea");
-			return;
-		}
-		
-		// Get parent area.
-		TreePath path = selectedPaths[0];
-		int elementsCount = path.getPathCount();
-		if (elementsCount < 2) {
-			Utility.show(this, "org.multipage.generator.messageCannotRemoveRootArea");
-			return;
-		}
-		
-		DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode) path.getPathComponent(elementsCount - 2);
-		Area parentArea = (Area) parentNode.getUserObject();
-		
-		// Get selected area.
-		DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
-		Area area = (Area) node.getUserObject();
-		
-		AreaShapes areaShapes = (AreaShapes) area.getUser();
-		HashSet<AreaShapes> shapesSet = new HashSet<AreaShapes>();
-		shapesSet.add(areaShapes);
-		
-		// Remove area.
-		GeneratorMainFrame.getVisibleAreasDiagram().removeDiagramArea(shapesSet, parentArea, this);
-		SwingUtilities.invokeLater(() -> {
+		try {
+			
+			// Get selected area.
+			TreePath [] selectedPaths = tree.getSelectionPaths();
+			if (selectedPaths.length != 1) {
+				Utility.show(this, "org.multipage.generator.messageSelectSingleArea");
+				return;
+			}
+			
+			// Get parent area.
+			TreePath path = selectedPaths[0];
+			int elementsCount = path.getPathCount();
+			if (elementsCount < 2) {
+				Utility.show(this, "org.multipage.generator.messageCannotRemoveRootArea");
+				return;
+			}
+			
+			DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode) path.getPathComponent(elementsCount - 2);
+			Area parentArea = (Area) parentNode.getUserObject();
+			
+			// Get selected area.
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+			Area area = (Area) node.getUserObject();
+			
+			AreaShapes areaShapes = (AreaShapes) area.getUser();
+			HashSet<AreaShapes> shapesSet = new HashSet<AreaShapes>();
+			shapesSet.add(areaShapes);
+			
+			// Remove area.
+			GeneratorMainFrame.getVisibleAreasDiagram().removeDiagramArea(shapesSet, parentArea, this);
+	
 			updateData();
-		});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On add sub area.
 	 */
 	public void onAddSubArea() {
-		
-		// Get selected area.
-		TreePath [] selectedPaths = tree.getSelectionPaths();
-		if (selectedPaths.length != 1) {
-			Utility.show(this, "org.multipage.generator.messageSelectSingleArea");
-			return;
-		}
-		
-		DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
-		Area parentArea = (Area) node.getUserObject();
-		
-		// Add new area.
-		Obj<Area> newArea = new Obj<Area>();
-		if (GeneratorMainFrame.getVisibleAreasDiagram().addNewArea(parentArea, this, newArea, false)) {
-		
-			// Select and expand area item.
-			if (newArea.ref != null) {
-				SwingUtilities.invokeLater(() -> {
+		try {
+			
+			// Get selected area.
+			TreePath [] selectedPaths = tree.getSelectionPaths();
+			if (selectedPaths.length != 1) {
+				Utility.show(this, "org.multipage.generator.messageSelectSingleArea");
+				return;
+			}
+			
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+			Area parentArea = (Area) node.getUserObject();
+			
+			// Add new area.
+			Obj<Area> newArea = new Obj<Area>();
+			if (GeneratorMainFrame.getVisibleAreasDiagram().addNewArea(parentArea, this, newArea, false)) {
+			
+				// Select and expand area item.
+				if (newArea.ref != null) {
 					
-					AreaTreeState.addSelectedAndExpanded(tree, selectedPaths);
 					updateData();
-				});
+					AreaTreeState.addSelectionAndExpandIt(tree, selectedPaths);
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize.
 	 */
 	private void localize() {
-		
-		Utility.localize(labelAreasTree);
+		try {
+			
+			Utility.localize(labelAreasTree);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Create tool bar.
 	 */
 	private void createToolBar() {
-		
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/expand_icon.png", this, "onExpandTree", "org.multipage.generator.tooltipExpandTree");
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/collapse_icon.png", this, "onCollapseTree", "org.multipage.generator.tooltipCollapseTree");
-		if (ProgramGenerator.isExtensionToBuilder()) {
-			ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/add_item_icon.png", this, "onAddSubArea", "org.multipage.generator.tooltipAddArea");
+		try {
+			
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/expand_icon.png", this, "onExpandTree", "org.multipage.generator.tooltipExpandTree");
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/collapse_icon.png", this, "onCollapseTree", "org.multipage.generator.tooltipCollapseTree");
+			if (ProgramGenerator.isExtensionToBuilder()) {
+				ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/add_item_icon.png", this, "onAddSubArea", "org.multipage.generator.tooltipAddArea");
+			}
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/edit.png", this, "onEdit", "org.multipage.generator.tooltipEditArea");
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/update_icon.png", this, "onUpdate", "org.multipage.generator.tooltipUpdateAreasTree");
 		}
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/edit.png", this, "onEdit", "org.multipage.generator.tooltipEditArea");
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/update_icon.png", this, "onUpdate", "org.multipage.generator.tooltipUpdateAreasTree");
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Initialize tree.
 	 */
 	private void initializeTree() {
-		
-		treeModel = new DefaultTreeModel(null);
-		tree.setModel(treeModel);
-		
-		tree.setExpandsSelectedPaths(true);
-		
-		// Set model.
-		treeModel = new DefaultTreeModel(null);
-		tree.setModel(treeModel);
-		
-		// Set renderer.
-		tree.setCellRenderer(new TreeCellRenderer() {
+		try {
 			
-			private long homeAreaId = 0L;
+			treeModel = new DefaultTreeModel(null);
+			tree.setModel(treeModel);
 			
-			@SuppressWarnings("serial")
-			RendererJLabel renderer = new RendererJLabel() {
-				{
-					homeAreaId = ProgramGenerator.getHomeArea().getId();
-				}
-			};
+			tree.setExpandsSelectedPaths(true);
 			
-			@Override
-			public Component getTreeCellRendererComponent(JTree tree, Object value,
-					boolean selected, boolean expanded, boolean leaf, int row,
-					boolean hasFocus) {
+			// Set model.
+			treeModel = new DefaultTreeModel(null);
+			tree.setModel(treeModel);
+			
+			// Set renderer.
+			tree.setCellRenderer(new TreeCellRenderer() {
 				
-				if (!(value instanceof DefaultMutableTreeNode)) {
-					renderer.setText("***error***");
-					renderer.set(selected, hasFocus, row);
+				private long homeAreaId = 0L;
+				
+				@SuppressWarnings("serial")
+				RendererJLabel renderer = new RendererJLabel() {
+					{
+						try {
+							homeAreaId = ProgramGenerator.getHomeArea().getId();
+						}
+						catch(Throwable expt) {
+							Safe.exception(expt);
+						};
+					}
+				};
+				
+				@Override
+				public Component getTreeCellRendererComponent(JTree tree, Object value,
+						boolean selected, boolean expanded, boolean leaf, int row,
+						boolean hasFocus) {
+					
+					try {
+						if (!(value instanceof DefaultMutableTreeNode)) {
+							renderer.setText("***error***");
+							renderer.set(selected, hasFocus, row);
+							return renderer;
+						}
+						
+						renderer.setIcon(Images.getIcon("org/multipage/generator/images/area_node.png"));
+						
+						Object object = ((DefaultMutableTreeNode) value).getUserObject();
+						if (object instanceof Area) {
+							 Area area = (Area) object;
+							 
+							 // Set home area icon.
+							 if (area.getId() == homeAreaId) {
+								 renderer.setIcon(Images.getIcon("org/multipage/generator/images/home_icon_small.png"));
+							 }
+						}
+		
+						renderer.setText(object instanceof Area ? ((Area) object).getDescriptionForDiagram() : object.toString());
+						renderer.set(selected, hasFocus, row);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
 					return renderer;
 				}
-				
-				renderer.setIcon(Images.getIcon("org/multipage/generator/images/area_node.png"));
-				
-				Object object = ((DefaultMutableTreeNode) value).getUserObject();
-				if (object instanceof Area) {
-					 Area area = (Area) object;
-					 
-					 // Set home area icon.
-					 if (area.getId() == homeAreaId) {
-						 renderer.setIcon(Images.getIcon("org/multipage/generator/images/home_icon_small.png"));
-					 }
-				}
-
-				renderer.setText(object instanceof Area ? ((Area) object).getDescriptionForDiagram() : object.toString());
-				renderer.set(selected, hasFocus, row);
-				return renderer;
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load areas tree.
 	 */
 	private void loadAreasTree() {
-		
-		// Get root area.
-		if (rootArea == null) {
-			rootArea = ProgramGenerator.getArea(0L);
+		try {
+			
+			// Get root area.
+			if (rootArea == null) {
+				rootArea = ProgramGenerator.getArea(0L);
+			}
+					
+			// Get area tree state.
+			AreaTreeState treeState = AreaTreeState.getTreeState(tree);
+			
+			// Create root node.
+			DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(rootArea);
+			
+			// Create nodes.
+			createNodes(rootNode);
+	
+			// Set root node.
+			treeModel.setRoot(rootNode);
+			
+			// Apply area tree state.
+			AreaTreeState.applyTreeState(treeState, tree);
 		}
-				
-		// Get area tree state.
-		AreaTreeState treeState = AreaTreeState.getTreeState(tree);
-		
-		// Create root node.
-		DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(rootArea);
-		
-		// Create nodes.
-		createNodes(rootNode);
-
-		// Set root node.
-		treeModel.setRoot(rootNode);
-		
-		// Apply area tree state.
-		AreaTreeState.applyTreeState(treeState, tree);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -529,38 +624,43 @@ public class AreasTreePanel extends JPanel {
 	 * @param inheritance 
 	 */
 	private void createNodes(DefaultMutableTreeNode parentNode) {
-		
-		Object userObject = parentNode.getUserObject();
-		if (!(userObject instanceof Area)) {
-			return;
-		}
-		
-		Area area = (Area) userObject;
-		
-		boolean isGenerator = !ProgramGenerator.isExtensionToBuilder();
-		
-		// Do loop for all sub areas.
-		for (Area areaItem : area.getSubareas()) {
+		try {
 			
-			// Create new node.
-			DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(areaItem);
-			// Add it to the parent node.
-			parentNode.add(childNode);
-			
-			// If it is Generator skip hidden sub areas.
-			if (isGenerator) {
-				AreaRelation relation = area.getSubRelation(areaItem.getId());
-				if (relation == null) {
-					continue;
-				}
-				if (relation.isHideSub()) {
-					continue;
-				}
+			Object userObject = parentNode.getUserObject();
+			if (!(userObject instanceof Area)) {
+				return;
 			}
 			
-			// Call this method recursively.
-			createNodes(childNode);
+			Area area = (Area) userObject;
+			
+			boolean isGenerator = !ProgramGenerator.isExtensionToBuilder();
+			
+			// Do loop for all sub areas.
+			for (Area areaItem : area.getSubareas()) {
+				
+				// Create new node.
+				DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(areaItem);
+				// Add it to the parent node.
+				parentNode.add(childNode);
+				
+				// If it is Generator skip hidden sub areas.
+				if (isGenerator) {
+					AreaRelation relation = area.getSubRelation(areaItem.getId());
+					if (relation == null) {
+						continue;
+					}
+					if (relation.isHideSub()) {
+						continue;
+					}
+				}
+				
+				// Call this method recursively.
+				createNodes(childNode);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -569,12 +669,18 @@ public class AreasTreePanel extends JPanel {
 	 */
 	public Area getSelectedArea() {
 		
-		LinkedList<Area> areas = getSelectedAreas();
-		if (areas.isEmpty()) {
-			return null;
+		try {
+			LinkedList<Area> areas = getSelectedAreas();
+			if (areas.isEmpty()) {
+				return null;
+			}
+			Area area = areas.getFirst();
+			return area;
 		}
-		Area area = areas.getFirst();
-		return area;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	/**
@@ -583,30 +689,36 @@ public class AreasTreePanel extends JPanel {
 	 */
 	public LinkedList<Area> getSelectedAreas() {
 		
-		// Get selected paths.
-		TreePath [] paths = tree.getSelectionPaths();
-		if (paths == null) {
-			return null;
-		}
-		
-		// Get areas.
-		LinkedList<Area> areas = new LinkedList<Area>();
-		for (TreePath path : paths) {
-			
-			// Get last path item.
-			Object component = path.getLastPathComponent();
-			if (!(component instanceof DefaultMutableTreeNode)) {
-				continue;
+		try {
+			// Get selected paths.
+			TreePath [] paths = tree.getSelectionPaths();
+			if (paths == null) {
+				return null;
 			}
 			
-			Object object = ((DefaultMutableTreeNode) component).getUserObject();
-			if (object instanceof Area) {
-				Area area = (Area) object;
-				areas.add(area);
+			// Get areas.
+			LinkedList<Area> areas = new LinkedList<Area>();
+			for (TreePath path : paths) {
+				
+				// Get last path item.
+				Object component = path.getLastPathComponent();
+				if (!(component instanceof DefaultMutableTreeNode)) {
+					continue;
+				}
+				
+				Object object = ((DefaultMutableTreeNode) component).getUserObject();
+				if (object instanceof Area) {
+					Area area = (Area) object;
+					areas.add(area);
+				}
 			}
-		}
 		
-		return areas;
+			return areas;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 	
 	
@@ -614,16 +726,26 @@ public class AreasTreePanel extends JPanel {
 	 * On expand all.
 	 */
 	public void onExpandTree() {
-		
-		Utility.expandSelected(tree, true);
+		try {
+			
+			Utility.expandSelected(tree, true);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On collapse all.
 	 */
 	public void onCollapseTree() {
-		
-		Utility.expandSelected(tree, false);
+		try {
+			
+			Utility.expandSelected(tree, false);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -631,99 +753,126 @@ public class AreasTreePanel extends JPanel {
 	 * @param area
 	 */
 	public void selectArea(Area area) {
-		
-		if (treeModel == null) {
-			return;
-		}
-		
-		// Get root node.
-		Object rootObject = treeModel.getRoot();
-		if (!(rootObject instanceof DefaultMutableTreeNode)) {
-			return;
-		}
-		
-		DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) rootObject;
-		
-		// Traverse tree breadth first.
-		Enumeration<? extends TreeNode> enumeration = rootNode.breadthFirstEnumeration();
-		while (enumeration.hasMoreElements()) {
+		try {
 			
-			DefaultMutableTreeNode node = (DefaultMutableTreeNode) enumeration.nextElement();
-			Object userObject = node.getUserObject();
+			if (treeModel == null) {
+				return;
+			}
 			
-			if (userObject instanceof Area) {
-				Area areaItem = (Area) userObject;
+			// Get root node.
+			Object rootObject = treeModel.getRoot();
+			if (!(rootObject instanceof DefaultMutableTreeNode)) {
+				return;
+			}
+			
+			DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) rootObject;
+			
+			// Traverse tree breadth first.
+			Enumeration<? extends TreeNode> enumeration = rootNode.breadthFirstEnumeration();
+			while (enumeration.hasMoreElements()) {
 				
-				if (areaItem.equals(area)) {
+				DefaultMutableTreeNode node = (DefaultMutableTreeNode) enumeration.nextElement();
+				Object userObject = node.getUserObject();
+				
+				if (userObject instanceof Area) {
+					Area areaItem = (Area) userObject;
 					
-					// Select tree node.
-					TreeNode [] nodePath = node.getPath();
-					TreePath selectionPath = new TreePath(nodePath);
-					tree.setSelectionPath(selectionPath);
-					
-					return;
+					if (areaItem.equals(area)) {
+						
+						// Select tree node.
+						TreeNode [] nodePath = node.getPath();
+						TreePath selectionPath = new TreePath(nodePath);
+						tree.setSelectionPath(selectionPath);
+						
+						return;
+					}
 				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Update data.
 	 */
 	private void updateData() {
-		
-		if (rootArea != null) {
-			rootArea = ProgramGenerator.getArea(rootArea.getId());
+		try {
+			
+			if (rootArea != null) {
+				rootArea = ProgramGenerator.getArea(rootArea.getId());
+			}
+			
+			Safe.invokeLater(() -> {
+				loadAreasTree();
+			});
 		}
-		
-		loadAreasTree();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On update.
 	 */
 	public void onUpdate() {
-		
-		updateData();
+		try {
+			
+			updateData();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On add area.
 	 */
 	public void onAddArea() {
-		
-		// Get selected area.
-		Area area = getSelectedArea();
-		if (area == null) {
+		try {
 			
-			Utility.show(this, "org.multipage.generator.messageSelectSingleArea");
-			return;
+			// Get selected area.
+			Area area = getSelectedArea();
+			if (area == null) {
+				
+				Utility.show(this, "org.multipage.generator.messageSelectSingleArea");
+				return;
+			}
+			
+			// Get areas diagram and add new area.
+			AreaDiagramPanel diagram = GeneratorMainFrame.getFrame().getVisibleAreasEditor().getDiagram();
+			
+			Area newArea = new Area();
+			diagram.addNewAreaConservatively(area, newArea, this);
+			
+			updateData();
 		}
-		
-		// Get areas diagram and add new area.
-		AreasDiagram diagram = GeneratorMainFrame.getFrame().getVisibleAreasEditor().getDiagram();
-		
-		Area newArea = new Area();
-		diagram.addNewAreaConservatively(area, newArea, this);
-		
-		updateData();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On edit area.
 	 */
 	public void onEdit() {
-		
-		// Get selected area.
-		Area area = getSelectedArea();
-		if (area == null) {
+		try {
 			
-			Utility.show(this, "org.multipage.generator.messageSelectSingleArea");
-			return;
+			// Get selected area.
+			Area area = getSelectedArea();
+			if (area == null) {
+				
+				Utility.show(this, "org.multipage.generator.messageSelectSingleArea");
+				return;
+			}
+			
+			// Execute area editor.
+			AreaEditorFrame.showDialog(null, area);
 		}
-		
-		// Execute area editor.
-		AreaEditorFrame.showDialog(null, area);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -732,8 +881,13 @@ public class AreasTreePanel extends JPanel {
 	 * @param popup 
 	 */
 	protected void showMenu(MouseEvent e, JPopupMenu popup) {
-		
-		popup.show(e.getComponent(), e.getX(), e.getY());
+		try {
+			
+			popup.show(e.getComponent(), e.getX(), e.getY());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -742,18 +896,36 @@ public class AreasTreePanel extends JPanel {
 	 * @param popup
 	 */
 	private void addPopup(Component component, final JPopupMenu popup) {
-		component.addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e, popup);
+		try {
+			
+			component.addMouseListener(new MouseAdapter() {
+				public void mousePressed(MouseEvent e) {
+					try {
+			
+						if (e.isPopupTrigger()) {
+							showMenu(e, popup);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-			public void mouseReleased(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e, popup);
+				public void mouseReleased(MouseEvent e) {
+					try {
+			
+						if (e.isPopupTrigger()) {
+							showMenu(e, popup);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-		});
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

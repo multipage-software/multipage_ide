@@ -1,14 +1,17 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
+import org.multipage.util.Safe;
+
 /**
- * @author
+ * Class for rotation object.
+ * @author vakol
  *
  */
 public class CssTransformRotate extends CssTransform {
@@ -33,11 +36,17 @@ public class CssTransformRotate extends CssTransform {
 	 */
 	@Override
 	public String toString() {
-				
-		return String.format("rotate(%s%s)",
-				Utility.removeFloatNulls(String.valueOf(a)),
-				units
-				);
+		
+		try {
+			return String.format("rotate(%s%s)",
+					Utility.removeFloatNulls(String.valueOf(a)),
+					units
+					);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -45,8 +54,13 @@ public class CssTransformRotate extends CssTransform {
 	 * @param rotate
 	 */
 	public void setFrom(CssTransformRotate rotate) {
-
-		this.a = rotate.a;
-		this.units = rotate.units;
+		try {
+			
+			this.a = rotate.a;
+			this.units = rotate.units;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

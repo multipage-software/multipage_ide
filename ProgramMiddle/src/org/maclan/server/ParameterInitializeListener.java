@@ -1,16 +1,17 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.maclan.server;
 
-import org.multipage.util.*;
+import org.multipage.util.Obj;
 
 /**
- * @author
+ * Class for listener used on parameter initialization.
+ * @author vakol
  *
  */
 public class ParameterInitializeListener {

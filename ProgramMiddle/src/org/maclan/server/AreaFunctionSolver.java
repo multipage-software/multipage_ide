@@ -1,18 +1,18 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.maclan.server;
 
-import org.maclan.expression.*;
+import org.maclan.expression.FunctionSolver;
 import org.multipage.util.Obj;
 
 /**
- * 
- * @author
+ * Class for area server function solver.
+ * @author vakol
  *
  */
 public class AreaFunctionSolver extends FunctionSolver {

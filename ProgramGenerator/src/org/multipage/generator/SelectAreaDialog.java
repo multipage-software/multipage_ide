@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -36,9 +36,11 @@ import org.maclan.Area;
 import org.maclan.AreasModel;
 import org.multipage.gui.Images;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * @author
+ * Dialog that displays list of area aliases that the user can select.
+ * @author vakol
  *
  */
 public class SelectAreaDialog extends JDialog {
@@ -94,14 +96,20 @@ public class SelectAreaDialog extends JDialog {
 	 */
 	public static String showDialog(Component parent, Area area) {
 		
-		SelectAreaDialog dialog = new SelectAreaDialog(parent, area);
-		dialog.setVisible(true);
-		
-		if (!dialog.confirm) {
-			return null;
+		try {
+			SelectAreaDialog dialog = new SelectAreaDialog(parent, area);
+			dialog.setVisible(true);
+			
+			if (!dialog.confirm) {
+				return null;
+			}
+			String alias = dialog.textAreaAlias.getText();
+			return alias;
 		}
-		String alias = dialog.textAreaAlias.getText();
-		return alias;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -112,13 +120,18 @@ public class SelectAreaDialog extends JDialog {
 	public SelectAreaDialog(Component parent, Area area) {
 		super(Utility.findWindow(parent), ModalityType.DOCUMENT_MODAL);
 		
-		// Initialize components.
-		initComponents();
-		// $hide>>$
-		this.area = area;
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		postCreate();
-		// $hide<<$
+		try {
+			// Initialize components.
+			initComponents();
+			// $hide>>$
+			this.area = area;
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -205,8 +218,13 @@ public class SelectAreaDialog extends JDialog {
 	 * On listAreas double click.
 	 */
 	protected void onListDoubleCLick() {
-
-		onOk();
+		try {
+			
+			onOk();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -222,137 +240,195 @@ public class SelectAreaDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		// Center dialog.
-		Utility.centerOnScreen(this);
-		// Localize components.
-		localize();
-		// Set icons.
-		setIcons();
-		// Create and update listAreas.
-		createList();
-		updateList();
-		// Set text listeners.
-		setTextListener();
-		// Set old text.
-		textAreaAlias.setText(oldText);
+		try {
+			
+			// Center dialog.
+			Utility.centerOnScreen(this);
+			// Localize components.
+			localize();
+			// Set icons.
+			setIcons();
+			// Create and update listAreas.
+			createList();
+			updateList();
+			// Set text listeners.
+			setTextListener();
+			// Set old text.
+			textAreaAlias.setText(oldText);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set text listener.
 	 */
 	private void setTextListener() {
-		
-		textAreaAlias.getDocument().addDocumentListener(new DocumentListener() {
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				onTextChanged();
-			}
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				onTextChanged();
-			}
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				onTextChanged();
-			}
-		});
+		try {
+			
+			textAreaAlias.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					try {
+						
+						onTextChanged();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					try {
+						
+						onTextChanged();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					try {
+						
+						onTextChanged();
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On text changed.
 	 */
 	protected void onTextChanged() {
-
-		if (!doNotUpdateList) {
-			oldText = textAreaAlias.getText();
+		try {
+			
+			if (!doNotUpdateList) {
+				oldText = textAreaAlias.getText();
+			}
+			updateList();
 		}
-		updateList();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On listAreas selection.
 	 */
 	protected void onListSelection() {
-		
-		doNotUpdateList = true;
-		textAreaAlias.setText((String) listAreas.getSelectedValue());
-		doNotUpdateList = false;
+		try {
+			
+			doNotUpdateList = true;
+			textAreaAlias.setText((String) listAreas.getSelectedValue());
+			doNotUpdateList = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(labelAreaAlias);
-		Utility.localize(labelFoundAreaAliases);
-		Utility.localize(buttonCancel);
-		Utility.localize(buttonOk);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(labelAreaAlias);
+			Utility.localize(labelFoundAreaAliases);
+			Utility.localize(buttonCancel);
+			Utility.localize(buttonOk);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		setIconImage(Images.getImage("org/multipage/basic/images/main_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
-		buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+		try {
+			
+			setIconImage(Images.getImage("org/multipage/basic/images/main_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+			buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Create listAreas.
 	 */
 	private void createList() {
-		
-		// Create and set model.
-		model = new DefaultListModel();
-		listAreas.setModel(model);
+		try {
+			
+			// Create and set model.
+			model = new DefaultListModel();
+			listAreas.setModel(model);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Update listAreas.
 	 */
 	private void updateList() {
-		
-		if (doNotUpdateList) {
-			return;
-		}
-		
-		// Reset model.
-		model.clear();
-		
-		// Get areas.
-		AreasModel areasModel = ProgramGenerator.getAreasModel();
-		if (area == null) {
-			area = areasModel.getHomeArea();
-		}
-		
-		LinkedList<Area> areas = areasModel.getProjectAreas(area);
-		
-		// Get inserted text.
-		String text = textAreaAlias.getText();
-		
-		// Load area aliases.
-		LinkedList<String> aliases = new LinkedList<String>();
-		for (Area area : areas) {
-			String alias = area.getAlias();
-			if (!alias.isEmpty()) {
-				
-				if (!text.isEmpty() && !alias.startsWith(text)) {
-					continue;
+		try {
+			
+			if (doNotUpdateList) {
+				return;
+			}
+			
+			// Reset model.
+			model.clear();
+			
+			// Get areas.
+			AreasModel areasModel = ProgramGenerator.getAreasModel();
+			if (area == null) {
+				area = areasModel.getHomeArea();
+			}
+			
+			LinkedList<Area> areas = areasModel.getProjectAreas(area);
+			
+			// Get inserted text.
+			String text = textAreaAlias.getText();
+			
+			// Load area aliases.
+			LinkedList<String> aliases = new LinkedList<String>();
+			for (Area area : areas) {
+				String alias = area.getAlias();
+				if (!alias.isEmpty()) {
+					
+					if (!text.isEmpty() && !alias.startsWith(text)) {
+						continue;
+					}
+					aliases.add(alias);
 				}
-				aliases.add(alias);
+			}
+			// Sort aliases.
+			Collections.sort(aliases);
+			
+			// Add to model.
+			for (String alias : aliases) {
+				model.addElement(alias);
 			}
 		}
-		// Sort aliases.
-		Collections.sort(aliases);
-		
-		// Add to model.
-		for (String alias : aliases) {
-			model.addElement(alias);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

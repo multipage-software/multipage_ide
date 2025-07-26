@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -18,10 +18,11 @@ import javax.swing.SpringLayout;
 
 import org.maclan.Language;
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays information about language.
+ * @author vakol
  *
  */
 public class LanguageListItem extends JPanel {
@@ -45,9 +46,14 @@ public class LanguageListItem extends JPanel {
 	 * @param startLanguageId 
 	 */
 	public LanguageListItem() {
-
-		initComponents();
-		postCreation(); // $hide$
+		
+		try {
+			initComponents();
+			postCreation(); // $hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -94,27 +100,32 @@ public class LanguageListItem extends JPanel {
 	 * @param cellHasFocus
 	 */
 	public void setProperties(Language language, int index) {
-
-		// Set background color.
-		setBackground(Utility.itemColor(index));
-		
-		// Set check box.
-		boolean check = false;
-		if (language.user instanceof Boolean) {
-			check = (Boolean) language.user;
+		try {
+			
+			// Set background color.
+			setBackground(Utility.itemColor(index));
+			
+			// Set check box.
+			boolean check = false;
+			if (language.user instanceof Boolean) {
+				check = (Boolean) language.user;
+			}
+			checkBox.setSelected(check);
+			
+			// Set language icon.
+			if (language.image != null) {
+				ImageIcon icon = new ImageIcon(language.image);
+				labelFlag.setIcon(icon);
+			}
+			else {
+				labelFlag.setIcon(null);
+			}
+			
+			// Set the rest of the panel components.
+			labelName.setText(language.description);
 		}
-		checkBox.setSelected(check);
-		
-		// Set language icon.
-		if (language.image != null) {
-			ImageIcon icon = new ImageIcon(language.image);
-			labelFlag.setIcon(icon);
-		}
-		else {
-			labelFlag.setIcon(null);
-		}
-		
-		// Set the rest of the panel components.
-		labelName.setText(language.description);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

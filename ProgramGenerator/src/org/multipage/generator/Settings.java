@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 package org.multipage.generator;
@@ -52,10 +52,11 @@ import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays application settings.
+ * @author vakol
  *
  */
 public class Settings extends JDialog {
@@ -109,8 +110,13 @@ public class Settings extends JDialog {
 	 * Static constructor.
 	 */
 	static {
-		
-		setDefaults();
+		try {
+			
+			setDefaults();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -118,22 +124,27 @@ public class Settings extends JDialog {
 	 * @param enable
 	 */
 	public static void setEnableDebugging(boolean enable) {
-		
-		enableDebugging = enable;
-		
-		// Switch on or off debugging of code
-		XdebugListener.setDebugPhpListener(new CallbackNoArg() {
-			@Override
-			public Object run() {
-				return enableDebugging;
-			}
-		});
-		
-		// Enable @META tags in the area server.
-		ProgramServlet.enableMetaTags(enable);
-		
-		// Set servlet listener that can check if debugging is enabled.
-		ProgramServlet.setDebuggingEnabledListener(() -> enableDebugging);
+		try {
+			
+			enableDebugging = enable;
+			
+			// Switch on or off debugging of code
+			XdebugListener.setDebugPhpListener(new CallbackNoArg() {
+				@Override
+				public Object run() {
+					return enableDebugging;
+				}
+			});
+			
+			// Enable @META tags in the area server.
+			ProgramServlet.enableMetaTags(enable);
+			
+			// Set servlet listener that can check if debugging is enabled.
+			ProgramServlet.setDebuggingEnabledListener(() -> enableDebugging);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -164,20 +175,25 @@ public class Settings extends JDialog {
 	 * On set defaults.
 	 */
 	protected void onDefaults() {
-
-		if (!Utility.ask(this, "org.multipage.generator.messageRestoreDeafultSettings")) {
-			return;
+		try {
+			
+			if (!Utility.ask(this, "org.multipage.generator.messageRestoreDeafultSettings")) {
+				return;
+			}
+			
+			// Set controls.
+			textResourcesRenderFolder.setText("");
+			textMaxTextResourceSize.setText("1048576");
+			textExtractCharacters.setText("100");
+			textPortNumber.setText("8080");
+			//MiddleUtility.webInterfaceDir = "";
+			//MiddleUtility.databaseAccess = "";
+			commonResourceFileNames = false;
+			sliderAnimationDuration.setValue((int) animationDuration);
 		}
-		
-		// Set controls.
-		textResourcesRenderFolder.setText("");
-		textMaxTextResourceSize.setText("1048576");
-		textExtractCharacters.setText("100");
-		textPortNumber.setText("8080");
-		//MiddleUtility.webInterfaceDir = "";
-		//MiddleUtility.databaseAccess = "";
-		commonResourceFileNames = false;
-		sliderAnimationDuration.setValue((int) animationDuration);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -270,182 +286,193 @@ public class Settings extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		textResourcesRenderFolder.setText(resourcesRenderFolder);
-		textMaxTextResourceSize.setText(String.valueOf(maximumTextResourceSize));
-		textExtractCharacters.setText(String.valueOf(extractedCharacters));
-		checkRemovePartiallyRenderedPages.setSelected(isRemovePartiallyRenderedPages);
-		textPortNumber.setText(String.valueOf(httpPortNumber));
-		textDatabaseAccess.setText(MiddleUtility.getDatabaseAccess());
-		textPhpEngineDirectory.setText(MiddleUtility.getPhpDirectory());
-		checkCommonResourceFileNames.setSelected(commonResourceFileNames);
-		sliderAnimationDuration.setValue((int) animationDuration);
-		
 		try {
-			textWebInterfaceDirectory.setText(MiddleUtility.getWebInterfaceDirectory());
+			
+			textResourcesRenderFolder.setText(resourcesRenderFolder);
+			textMaxTextResourceSize.setText(String.valueOf(maximumTextResourceSize));
+			textExtractCharacters.setText(String.valueOf(extractedCharacters));
+			checkRemovePartiallyRenderedPages.setSelected(isRemovePartiallyRenderedPages);
+			textPortNumber.setText(String.valueOf(httpPortNumber));
+			textDatabaseAccess.setText(MiddleUtility.getDatabaseAccess());
+			textPhpEngineDirectory.setText(MiddleUtility.getPhpDirectory());
+			checkCommonResourceFileNames.setSelected(commonResourceFileNames);
+			sliderAnimationDuration.setValue((int) animationDuration);
+			
+			try {
+				textWebInterfaceDirectory.setText(MiddleUtility.getWebInterfaceDirectory());
+			}
+			catch (Exception e) {
+			}
 		}
-		catch (Exception e) {
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Save dialog.
 	 */
 	private boolean saveDialog() {
-						
-		final long textResourceMaximum = 10 * 1048576;
 		
-		long number;
-		String text;
-		String canonicalPath;
-		
-		boolean restartRequired = false;
-		
-		// Save resources render folder.
-		resourcesRenderFolder = textResourcesRenderFolder.getText();
-		
-		// Check maximum text resource size.
-		text = textMaxTextResourceSize.getText();
-		
-		// Convert text to long value.
 		try {
-			number = Long.parseLong(text);
-			if (number < 1 || number > textResourceMaximum) {
-				Utility.show2(this, String.format(
-						Resources.getString("org.multipage.generator.messageMaximumTextResourceSizeOutOfLimits"),
-						1, textResourceMaximum));
+			final long textResourceMaximum = 10 * 1048576;
+			
+			long number;
+			String text;
+			String canonicalPath;
+			
+			boolean restartRequired = false;
+			
+			// Save resources render folder.
+			resourcesRenderFolder = textResourcesRenderFolder.getText();
+			
+			// Check maximum text resource size.
+			text = textMaxTextResourceSize.getText();
+			
+			// Convert text to long value.
+			try {
+				number = Long.parseLong(text);
+				if (number < 1 || number > textResourceMaximum) {
+					Utility.show2(this, String.format(
+							Resources.getString("org.multipage.generator.messageMaximumTextResourceSizeOutOfLimits"),
+							1, textResourceMaximum));
+					return false;
+				}
+			}
+			catch (NumberFormatException e) {
+				Utility.show(this, "org.multipage.generator.messageMaximumTextResourceFormatError");
 				return false;
 			}
-		}
-		catch (NumberFormatException e) {
-			Utility.show(this, "org.multipage.generator.messageMaximumTextResourceFormatError");
-			return false;
-		}
-				
-		// Set value.
-		setMaximumTextResSize(number);
-		
-		// Save number of extracted characters.
-		int intNumber;
-		text = textExtractCharacters.getText();
-		try {
-			intNumber = Integer.parseInt(text);
-		}
-		catch (NumberFormatException e) {
-			Utility.show(this, "org.multipage.generator.messageExtractedCharactersFormatError");
-			return false;
-		}
-
-		// Set value.
-		setExtractedCharacters(intNumber);
-		
-		isRemovePartiallyRenderedPages = checkRemovePartiallyRenderedPages.isSelected();
-		
-		// Save port.
-		int intPortNumber;
-		text = textPortNumber.getText();
-		try {
-			intPortNumber = Integer.parseInt(text);
-		}
-		catch (NumberFormatException e) {
-			Utility.show(this, "org.multipage.generator.messagePortNumberFormatError");
-			return false;
-		}
-		
-		if (!restartRequired) {
-			restartRequired = (intPortNumber != httpPortNumber);
-		}
-		
-		// Set value.
-		httpPortNumber = intPortNumber;
-		
-		// Save web directory.
-		boolean isOk = false;
-		text = textWebInterfaceDirectory.getText();
-		if (text.isEmpty()) {
-			text = MiddleUtility.getDefaultWebInterfaceDirectory();
-		}
-		try {
-			Path path = Paths.get(text);
-			if (Files.exists(path)) {
-				File dir = new File(path.toString());
-				canonicalPath = dir.getCanonicalPath();
-				if (!restartRequired) {
-					restartRequired = (!canonicalPath.contentEquals(MiddleUtility.getWebInterfaceDirectory()));
-				}
-				MiddleUtility.setWebInterfaceDirectory(canonicalPath);
-				isOk = true;
-			}
-		}
-		catch (Exception e) {
-		}
-		if (!isOk && Utility.showConfirm(this, "org.multipage.generator.messageWebInterfaceDirectoryNotFound")) {
-			MiddleUtility.setWebInterfaceDirectory(text);
-		}
-		
-		// Save database access string.
-		isOk = false;
-		text = textDatabaseAccess.getText();
-		if (text.isEmpty()) {
-			text = MiddleUtility.getUserDirectory();
-		}
-		try {
-			Path path = Paths.get(text);
-			if (Files.exists(path)) {
-				File dir = new File(path.toString());
-				canonicalPath = dir.getCanonicalPath();
-				boolean updateRequired = (!canonicalPath.contentEquals(MiddleUtility.getDatabaseAccess()));
-				
-				String newDirectory = dir.getCanonicalPath();
-				MiddleUtility.setDatabaseAccess(newDirectory);
 					
-				if (updateRequired) {
-					ProgramBasic.updateDatabaseAccess(newDirectory);
-					ApplicationEvents.transmit(this, Signal.switchDatabase, newDirectory);
-				}
-				
-				isOk = true;
+			// Set value.
+			setMaximumTextResSize(number);
+			
+			// Save number of extracted characters.
+			int intNumber;
+			text = textExtractCharacters.getText();
+			try {
+				intNumber = Integer.parseInt(text);
 			}
-		}
-		catch (Exception e) {
-		}
-		if (!isOk && Utility.showConfirm(this, "org.multipage.generator.messageDatabaseDirectoryNotFound")) {
-			MiddleUtility.setDatabaseAccess(text);
-		}
-		
-		// Save PHP directory string.
-		isOk = false;
-		text = textPhpEngineDirectory.getText();
-		try {
-			Path path = Paths.get(text);
-			if (Files.exists(path)) {
-				File dir = new File(path.toString());
-				canonicalPath = dir.getCanonicalPath();
-				if (!restartRequired) {
-					restartRequired = (!canonicalPath.contentEquals(MiddleUtility.getPhpDirectory()));
-				}
-				MiddleUtility.setPhpDirectory(dir.getCanonicalPath());
-				isOk = true;
+			catch (NumberFormatException e) {
+				Utility.show(this, "org.multipage.generator.messageExtractedCharactersFormatError");
+				return false;
 			}
+	
+			// Set value.
+			setExtractedCharacters(intNumber);
+			
+			isRemovePartiallyRenderedPages = checkRemovePartiallyRenderedPages.isSelected();
+			
+			// Save port.
+			int intPortNumber;
+			text = textPortNumber.getText();
+			try {
+				intPortNumber = Integer.parseInt(text);
+			}
+			catch (NumberFormatException e) {
+				Utility.show(this, "org.multipage.generator.messagePortNumberFormatError");
+				return false;
+			}
+			
+			if (!restartRequired) {
+				restartRequired = (intPortNumber != httpPortNumber);
+			}
+			
+			// Set value.
+			httpPortNumber = intPortNumber;
+			
+			// Save web directory.
+			boolean isOk = false;
+			text = textWebInterfaceDirectory.getText();
+			if (text.isEmpty()) {
+				text = MiddleUtility.getDefaultWebInterfaceDirectory();
+			}
+			try {
+				Path path = Paths.get(text);
+				if (Files.exists(path)) {
+					File dir = new File(path.toString());
+					canonicalPath = dir.getCanonicalPath();
+					if (!restartRequired) {
+						restartRequired = (!canonicalPath.contentEquals(MiddleUtility.getWebInterfaceDirectory()));
+					}
+					MiddleUtility.setWebInterfaceDirectory(canonicalPath);
+					isOk = true;
+				}
+			}
+			catch (Exception e) {
+			}
+			if (!isOk && Utility.showConfirm(this, "org.multipage.generator.messageWebInterfaceDirectoryNotFound")) {
+				MiddleUtility.setWebInterfaceDirectory(text);
+			}
+			
+			// Save database access string.
+			isOk = false;
+			text = textDatabaseAccess.getText();
+			if (text.isEmpty()) {
+				text = MiddleUtility.getUserDirectory();
+			}
+			try {
+				Path path = Paths.get(text);
+				if (Files.exists(path)) {
+					File dir = new File(path.toString());
+					canonicalPath = dir.getCanonicalPath();
+					boolean updateRequired = (!canonicalPath.contentEquals(MiddleUtility.getDatabaseAccess()));
+					
+					String newDirectory = dir.getCanonicalPath();
+					MiddleUtility.setDatabaseAccess(newDirectory);
+						
+					if (updateRequired) {
+						ProgramBasic.updateDatabaseAccess(newDirectory);
+						ApplicationEvents.transmit(this, Signal.switchDatabase, newDirectory);
+					}
+					
+					isOk = true;
+				}
+			}
+			catch (Exception e) {
+			}
+			if (!isOk && Utility.showConfirm(this, "org.multipage.generator.messageDatabaseDirectoryNotFound")) {
+				MiddleUtility.setDatabaseAccess(text);
+			}
+			
+			// Save PHP directory string.
+			isOk = false;
+			text = textPhpEngineDirectory.getText();
+			try {
+				Path path = Paths.get(text);
+				if (Files.exists(path)) {
+					File dir = new File(path.toString());
+					canonicalPath = dir.getCanonicalPath();
+					if (!restartRequired) {
+						restartRequired = (!canonicalPath.contentEquals(MiddleUtility.getPhpDirectory()));
+					}
+					MiddleUtility.setPhpDirectory(dir.getCanonicalPath());
+					isOk = true;
+				}
+			}
+			catch (Exception e) {
+			}
+			if (!isOk && Utility.showConfirm(this, "org.multipage.generator.messageDatabaseDirectoryNotFound")) {
+				MiddleUtility.setDatabaseAccess(text);
+			}
+			
+			commonResourceFileNames = checkCommonResourceFileNames.isSelected();
+			
+			// If application must restart, inform user.
+			if (restartRequired) {
+				MiddleUtility.saveServerProperties();
+				Utility.show(this, "org.multipage.generator.messageRestartApplication");
+			}
+			
+			// Get current value of animation duration.
+			animationDuration = (int) sliderAnimationDuration.getValue();
+			
+			return true;
 		}
-		catch (Exception e) {
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
-		if (!isOk && Utility.showConfirm(this, "org.multipage.generator.messageDatabaseDirectoryNotFound")) {
-			MiddleUtility.setDatabaseAccess(text);
-		}
-		
-		commonResourceFileNames = checkCommonResourceFileNames.isSelected();
-		
-		// If application must restart, inform user.
-		if (restartRequired) {
-			MiddleUtility.saveServerProperties();
-			Utility.show(this, "org.multipage.generator.messageRestartApplication");
-		}
-		
-		// Get current value of animation duration.
-		animationDuration = (int) sliderAnimationDuration.getValue();
-		
-		return true;
+		return false;
 	}
 
 	/**
@@ -453,8 +480,13 @@ public class Settings extends JDialog {
 	 * @param parent
 	 */
 	public static void showDialog(Component parent) {
-
-		showDialog(parent, Settings.NOT_SET);
+		try {
+			
+			showDialog(parent, Settings.NOT_SET);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -463,14 +495,19 @@ public class Settings extends JDialog {
 	 * @param selectTab
 	 */
 	public static void showDialog(Component parent, int selectTab) {
-		
-		// Show the dialog.
-		if (dialog == null) {
-			dialog = new Settings(parent);
+		try {
+			
+			// Show the dialog.
+			if (dialog == null) {
+				dialog = new Settings(parent);
+			}
+			
+			dialog.selectTab(selectTab);
+			dialog.setVisible(true);
 		}
-		
-		dialog.selectTab(selectTab);
-		dialog.setVisible(true);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -479,12 +516,18 @@ public class Settings extends JDialog {
 	 */
 	public Settings(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.MODELESS);
-		// Initialize components.
-		initComponents();
-		// Post creation.
-		// $hide>>$
-		postCreation();
-		// $hide<<$
+		
+		try {
+			// Initialize components.
+			initComponents();
+			// Post creation.
+			// $hide>>$
+			postCreation();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -747,7 +790,7 @@ public class Settings extends JDialog {
 		scrollPane.setBorder(null);
 		panelAddIn.add(scrollPane);
 		
-		JList listAddIns = new JList();
+		JList<Object> listAddIns = new JList<>();
 		listAddIns.setBorder(null);
 		scrollPane.setViewportView(listAddIns);
 		
@@ -798,66 +841,86 @@ public class Settings extends JDialog {
 	 * O change of the animation duration.
 	 */
 	protected void onAnimationDurationChange() {
-		
-		// Get current value of animation duration.
-		boolean isAdjusting = sliderAnimationDuration.getValueIsAdjusting();
-		if (isAdjusting) {
+		try {
 			
-			animationDuration = (int) sliderAnimationDuration.getValue();
+			// Get current value of animation duration.
+			boolean isAdjusting = sliderAnimationDuration.getValueIsAdjusting();
+			if (isAdjusting) {
+				
+				animationDuration = (int) sliderAnimationDuration.getValue();
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Post creation.
 	 */
 	private void postCreation() {
-
-		// Localize component.
-		localize();
-		// Set icons.
-		setIcons();
-		// Center dialog.
-		Utility.centerOnScreen(this);
-		// Load values.
-		loadDialog();
+		try {
+			
+			// Localize component.
+			localize();
+			// Set icons.
+			setIcons();
+			// Center dialog.
+			Utility.centerOnScreen(this);
+			// Load values.
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(this);
-		Utility.localize(tabbedPane);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(toolBar);
-		Utility.localize(labelMaxSizeOfTextResource);
-		Utility.localize(labelBytes);
-		Utility.localize(buttonDefaults);
-		Utility.localize(labelIndexExtractLength);
-		Utility.localize(labelCharacters);
-		Utility.localize(checkRemovePartiallyRenderedPages);
-		Utility.localize(labelHttpPortNumer);
-		Utility.localize(labelWebInterfaceDirectory);
-		Utility.localize(checkCommonResourceFileNames);
-		Utility.localize(labelResourcesRenderFolder);
-		Utility.localize(labelDatabaseAccess);
-		Utility.localize(labelPhpEngineDirectory);
-		Utility.localize(labelAnimationDuration);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(tabbedPane);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(toolBar);
+			Utility.localize(labelMaxSizeOfTextResource);
+			Utility.localize(labelBytes);
+			Utility.localize(buttonDefaults);
+			Utility.localize(labelIndexExtractLength);
+			Utility.localize(labelCharacters);
+			Utility.localize(checkRemovePartiallyRenderedPages);
+			Utility.localize(labelHttpPortNumer);
+			Utility.localize(labelWebInterfaceDirectory);
+			Utility.localize(checkCommonResourceFileNames);
+			Utility.localize(labelResourcesRenderFolder);
+			Utility.localize(labelDatabaseAccess);
+			Utility.localize(labelPhpEngineDirectory);
+			Utility.localize(labelAnimationDuration);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonWebInterface.setIcon(Images.getIcon("org/multipage/generator/images/folder.png"));
-		buttonDatabaseAccess.setIcon(Images.getIcon("org/multipage/generator/images/folder.png"));
-		buttonPhpEngine.setIcon(Images.getIcon("org/multipage/generator/images/folder.png"));
-		buttonResourcesFolder.setIcon(Images.getIcon("org/multipage/generator/images/folder.png"));
-		buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		try {
+			
+			buttonWebInterface.setIcon(Images.getIcon("org/multipage/generator/images/folder.png"));
+			buttonDatabaseAccess.setIcon(Images.getIcon("org/multipage/generator/images/folder.png"));
+			buttonPhpEngine.setIcon(Images.getIcon("org/multipage/generator/images/folder.png"));
+			buttonResourcesFolder.setIcon(Images.getIcon("org/multipage/generator/images/folder.png"));
+			buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -865,12 +928,17 @@ public class Settings extends JDialog {
 	 * @param selectTab
 	 */
 	private void selectTab(int selectTab) {
-		
-		int tabCount = tabbedPane.getTabCount();
-		
-		if (selectTab >= 0 && selectTab < tabCount) {
-			tabbedPane.setSelectedIndex(selectTab);
+		try {
+			
+			int tabCount = tabbedPane.getTabCount();
+			
+			if (selectTab >= 0 && selectTab < tabCount) {
+				tabbedPane.setSelectedIndex(selectTab);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -886,127 +954,164 @@ public class Settings extends JDialog {
 	 * On web interface localization button event.
 	 */
 	protected void onWebInterface() {
-		
-		String webInterfaceDirectory = Utility.chooseDirectory2(this, "org.multipage.generator.titleWebInterfaceDirectory");
-		if (webInterfaceDirectory == null) {
-			return;
+		try {
+			
+			// Get current path.
+			String currentPath = textWebInterfaceDirectory.getText();
+			
+			String webInterfaceDirectory = Utility.chooseDirectory2(this, "org.multipage.generator.titleWebInterfaceDirectory", currentPath);
+			if (webInterfaceDirectory == null) {
+				return;
+			}
+			
+			textWebInterfaceDirectory.setText(webInterfaceDirectory);
 		}
-		
-		textWebInterfaceDirectory.setText(webInterfaceDirectory);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On database access button event.
 	 */
 	protected void onDatabaseAccess() {
-		
-		// On Derby database.
-		if ("org.multipage.derby".equals(MiddleUtility.getPathToMiddle())) {
+		try {
 			
-			// Select directory.
-			String databaseDirectory = Utility.chooseDirectory2(this, "org.multipage.generator.titleDatabaseDirectory");
-			if (databaseDirectory == null) {
-				return;
+			// On Derby database.
+			if ("org.multipage.derby".equals(MiddleUtility.getPathToMiddle())) {
+				
+				// Get current path.
+				String currentPath = textDatabaseAccess.getText();
+				
+				// Select directory.
+				String databaseDirectory = Utility.chooseDirectory2(this, "org.multipage.generator.titleDatabaseDirectory", currentPath);
+				if (databaseDirectory == null) {
+					return;
+				}
+				
+				textDatabaseAccess.setText(databaseDirectory);
 			}
-			
-			textDatabaseAccess.setText(databaseDirectory);
+			// On PostgreSQL database.
+			else if ("org.maclan.postgresql".equals(MiddleUtility.getPathToMiddle())) {
+				
+			}
 		}
-		// On PostgreSQL database.
-		else if ("org.maclan.postgresql".equals(MiddleUtility.getPathToMiddle())) {
-			
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On PHP engine.
 	 */
 	protected void onPhpEngine() {
-		
-		String phpDirectory = Utility.chooseDirectory2(this, "org.multipage.generator.titlePhpDirectory");
-		if (phpDirectory == null) {
-			return;
+		try {
+			
+			// Get current path.
+			String currentPath = textPhpEngineDirectory.getText();
+			
+			String phpDirectory = Utility.chooseDirectory2(this, "org.multipage.generator.titlePhpDirectory", currentPath);
+			if (phpDirectory == null) {
+				return;
+			}
+			
+			textPhpEngineDirectory.setText(phpDirectory);
 		}
-		
-		textPhpEngineDirectory.setText(phpDirectory);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On resources folder.
 	 */
 	private void onResourcesFolder() {
-		
-		String resourcesFolder = Utility.chooseDirectory2(this, "org.multipage.generator.titleResourcesDirectory");
-		if (resourcesFolder == null) {
-			return;
+		try {
+			
+			// Get current path.
+			String currentPath = textResourcesRenderFolder.getText();
+			
+			String resourcesFolder = Utility.chooseDirectory2(this, "org.multipage.generator.titleResourcesDirectory", currentPath);
+			if (resourcesFolder == null) {
+				return;
+			}
+			
+			textResourcesRenderFolder.setText(resourcesFolder);
 		}
-		
-		textResourcesRenderFolder.setText(resourcesFolder);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On load add-in.
 	 */
 	protected void onLoadAddIn() {
-		
-		// Get file name.
-		String [][] filters = {{"org.multipage.generator.textAddInJarFilesFilter", "jar"}};
-		
-		File addInJarFile = Utility.chooseFileToOpen(this, filters);
-		if (addInJarFile == null) {
-			return;
-		}
-		
-		// Get loader package.
-		Class<?> loaderClass = AddInLoader.class;
-		String className = loaderClass.getSimpleName();
-		String jarFileName = className + ".jar";
-		Package thePackage = loaderClass.getPackage();
-		
 		try {
-			// Create unique temporary folder for saving temporary JAR file.
-			Path temporaryPath = Files.createTempDirectory("ProgramGenerator_");
 			
-			// Create temporary JAR file.
-			File temporaryJarFile = Paths.get(temporaryPath.toString(), jarFileName).toFile();
+			// Get file name.
+			String [][] filters = {{"org.multipage.generator.textAddInJarFilesFilter", "jar"}};
 			
-			// Find out if this application is zipped in JAR file.
-			boolean isApplicationZipped = Utility.isApplicationZipped();
-			
-			// Get path to ProgramAddins project.
-			String applicationPath = Utility.getApplicationPath(ProgramAddIns.class);
-			
-			String workingDirectory = "";
-			
-			// On JAR file.
-			if (isApplicationZipped) {
-				
-				// Import JAR package classes to output JAR file.
-				Utility.importJarPackageToJarFile(applicationPath, thePackage, temporaryJarFile, thePackage);
-				
-				workingDirectory = Paths.get(applicationPath).getParent().toString();
-			}
-			// On a directory with classes.
-			else {
-				
-				// Import directory classes to output JAR file.
-				Utility.importDirectoryClassesToJarFile(applicationPath, thePackage, temporaryJarFile);
+			File addInJarFile = Utility.chooseFileToOpen(this, filters);
+			if (addInJarFile == null) {
+				return;
 			}
 			
-			// Try to run the Add-In loader.
-			if (temporaryJarFile != null) {
+			// Get loader package.
+			Class<?> loaderClass = AddInLoader.class;
+			String className = loaderClass.getSimpleName();
+			String jarFileName = className + ".jar";
+			Package thePackage = loaderClass.getPackage();
+			
+			try {
+				// Create unique temporary folder for saving temporary JAR file.
+				Path temporaryPath = Files.createTempDirectory("ProgramGenerator_");
 				
-				Utility.runExecutableJar(temporaryPath.toString(), temporaryJarFile.toString(), new String [] {
-											"addInJarFile=" + addInJarFile.toString(),
-											"applicationFile=" +  applicationPath,
-											"applicationWorkingDirectory=" + workingDirectory});
+				// Create temporary JAR file.
+				File temporaryJarFile = Paths.get(temporaryPath.toString(), jarFileName).toFile();
 				
-				// Terminate the application.
-				ApplicationEvents.transmit(this, Signal.terminate);
+				// Find out if this application is zipped in JAR file.
+				boolean isApplicationZipped = Utility.isApplicationZipped();
+				
+				// Get path to ProgramAddins project.
+				String applicationPath = Utility.getApplicationPath(ProgramAddIns.class);
+				
+				String workingDirectory = "";
+				
+				// On JAR file.
+				if (isApplicationZipped) {
+					
+					// Import JAR package classes to output JAR file.
+					Utility.importJarPackageToJarFile(applicationPath, thePackage, temporaryJarFile, thePackage);
+					
+					workingDirectory = Paths.get(applicationPath).getParent().toString();
+				}
+				// On a directory with classes.
+				else {
+					
+					// Import directory classes to output JAR file.
+					Utility.importDirectoryClassesToJarFile(applicationPath, thePackage, temporaryJarFile);
+				}
+				
+				// Try to run the Add-In loader.
+				if (temporaryJarFile != null) {
+					
+					Utility.runExecutableJar(temporaryPath.toString(), temporaryJarFile.toString(), new String [] {
+												"addInJarFile=" + addInJarFile.toString(),
+												"applicationFile=" +  applicationPath,
+												"applicationWorkingDirectory=" + workingDirectory});
+					
+					// Terminate the application.
+					ApplicationEvents.transmit(this, Signal.terminate);
+				}
+			}
+			catch (Exception e) {
+				Safe.exception(e);
 			}
 		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -1021,24 +1126,39 @@ public class Settings extends JDialog {
 	 * On sign Add-in classes placed in Add-in JAR file.
 	 */
 	protected void onSignAddIn() {
-		
-		// Find add-in JAR file on disk.
-		File addInJarFile = Utility.chooseFileToOpen(this, new String [][] {{"org.multipage.generator.textAddInJarFilesFilter", "jar"}});
-		if (addInJarFile == null) {
-			return;
+		try {
+			
+			// Find add-in JAR file on disk.
+			File addInJarFile = Utility.chooseFileToOpen(this, new String [][] {{"org.multipage.generator.textAddInJarFilesFilter", "jar"}});
+			if (addInJarFile == null) {
+				return;
+			}
+			
+			SignAddInDialog.showDialog(this, addInJarFile.toString());
 		}
-		
-		SignAddInDialog.showDialog(this, addInJarFile.toString());
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On OK.
 	 */
 	protected void onOk() {
-
-		// Save settings.
-		if (saveDialog()) {
 		
+		boolean success = false;
+		try {
+			// Save settings.
+			success = saveDialog();
+			
+			// Update application components.
+			GeneratorMainFrame.updateAll();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		
+		if (success) {
 			dispose();
 		}
 	}
@@ -1055,6 +1175,7 @@ public class Settings extends JDialog {
 	 * @return
 	 */
 	public static String getResourcesRenderFolder() {
+		
 		return resourcesRenderFolder;
 	}
 	
@@ -1062,6 +1183,7 @@ public class Settings extends JDialog {
 	 * @return the extractedCharacters
 	 */
 	public static int getExtractedCharacters() {
+		
 		return extractedCharacters;
 	}
 
@@ -1069,6 +1191,7 @@ public class Settings extends JDialog {
 	 * @param extractedCharacters the extractedCharacters to set
 	 */
 	public static void setExtractedCharacters(int extractedCharacters) {
+		
 		Settings.extractedCharacters = extractedCharacters;
 	}
 

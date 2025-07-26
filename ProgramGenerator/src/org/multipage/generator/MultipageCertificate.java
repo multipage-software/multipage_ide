@@ -1,19 +1,19 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 30-07-2022
+ * Created on : 2022-07-30
  *
  */
 
 package org.multipage.generator;
 
-import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
 import org.multipage.gui.Utility;
+import org.multipage.util.Safe;
 
 /**
- * Multipage certificate objects.
+ * Multipage certificate object.
  * @author vakol
  *
  */
@@ -43,18 +43,23 @@ public class MultipageCertificate {
 	 * Constructor.
 	 */
 	public MultipageCertificate(String certificatePath, boolean isDefault) {
-		
-		this.path = certificatePath;
-		this.isDefault = isDefault;
-		
-		if (isDefault) {
-			this.content = Utility.getApplicationCertificate(certificatePath);
+		try {
+			
+			this.path = certificatePath;
+			this.isDefault = isDefault;
+			
+			if (isDefault) {
+				this.content = Utility.getApplicationCertificate(certificatePath);
+			}
+			else {
+				this.content = Utility.getFileCertificate(certificatePath);
+			}
+			
+			this.caption  = this.content.getSubjectX500Principal().getName();
 		}
-		else {
-			this.content = Utility.getFileCertificate(certificatePath);
-		}
-		
-		this.caption  = this.content.getSubjectX500Principal().getName();
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**

@@ -1,14 +1,17 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-06-26
  *
  */
 
 package org.multipage.gui;
 
+import org.multipage.util.Safe;
+
 /**
- * @author
+ * Class for CSS perspective object.
+ * @author vakol
  *
  */
 public class CssTransformPerspective extends CssTransform {
@@ -33,11 +36,17 @@ public class CssTransformPerspective extends CssTransform {
 	 */
 	@Override
 	public String toString() {
-				
-		return String.format("perspective(%s%s)",
-				Utility.removeFloatNulls(String.valueOf(l)),
-				units
-				);
+		
+		try {
+			return String.format("perspective(%s%s)",
+					Utility.removeFloatNulls(String.valueOf(l)),
+					units
+					);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -45,8 +54,13 @@ public class CssTransformPerspective extends CssTransform {
 	 * @param perspective
 	 */
 	public void setFrom(CssTransformPerspective perspective) {
-
-		this.l = perspective.l;
-		this.units = perspective.units;
+		try {
+			
+			this.l = perspective.l;
+			this.units = perspective.units;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};	
 	}
 }

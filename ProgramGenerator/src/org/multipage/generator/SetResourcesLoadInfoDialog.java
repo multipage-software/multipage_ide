@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -34,10 +34,11 @@ import org.multipage.gui.Images;
 import org.multipage.gui.ToolBarKit;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays loaded resources.
+ * @author vakol
  *
  */
 public class SetResourcesLoadInfoDialog extends JDialog {
@@ -81,12 +82,18 @@ public class SetResourcesLoadInfoDialog extends JDialog {
 	 */
 	public static WizardReturned showDialog(Component parent, LinkedList<ResourceConstructor> resources) {
 		
-		SetResourcesLoadInfoDialog dialog = new SetResourcesLoadInfoDialog(Utility.findWindow(parent));
-		
-		dialog.loadResources(resources);
-		dialog.setVisible(true);
-		
-		return dialog.returned;
+		try {
+			SetResourcesLoadInfoDialog dialog = new SetResourcesLoadInfoDialog(Utility.findWindow(parent));
+			
+			dialog.loadResources(resources);
+			dialog.setVisible(true);
+			
+			return dialog.returned;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return WizardReturned.UNKNOWN;
 	}
 
 	/**
@@ -95,12 +102,16 @@ public class SetResourcesLoadInfoDialog extends JDialog {
 	 */
 	public SetResourcesLoadInfoDialog(Window parentWindow) {
 		super(parentWindow, ModalityType.DOCUMENT_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -204,53 +215,72 @@ public class SetResourcesLoadInfoDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-		
-		Utility.centerOnScreen(this);
-		
-		createToolBar();
-		
-		localize();
-		setIcons();
-		
-		initializeList();
-		
-		// If there is no builder extension, hide skip button.
-		buttonSkip.setVisible(ProgramGenerator.isExtensionToBuilder());
+		try {
+			
+			setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+			Utility.centerOnScreen(this);
+			
+			createToolBar();
+			
+			localize();
+			setIcons();
+			
+			initializeList();
+			
+			// If there is no builder extension, hide skip button.
+			buttonSkip.setVisible(ProgramGenerator.isExtensionToBuilder());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Create tool bar.
 	 */
 	private void createToolBar() {
-		
-		ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/clear_all.png", this,
-				"onClear", "org.multipage.generator.tooltipClearResourceReferences");
+		try {
+			
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/clear_all.png", this,
+					"onClear", "org.multipage.generator.tooltipClearResourceReferences");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(buttonPrevious);
-		Utility.localize(buttonSkip);
-		Utility.localize(labelSetResourcesInput);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(buttonPrevious);
+			Utility.localize(buttonSkip);
+			Utility.localize(labelSetResourcesInput);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
-		buttonPrevious.setIcon(Images.getIcon("org/multipage/generator/images/previous_icon.png"));
-		buttonSkip.setIcon(Images.getIcon("org/multipage/generator/images/skip.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/generator/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+			buttonPrevious.setIcon(Images.getIcon("org/multipage/generator/images/previous_icon.png"));
+			buttonSkip.setIcon(Images.getIcon("org/multipage/generator/images/skip.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -301,66 +331,75 @@ public class SetResourcesLoadInfoDialog extends JDialog {
 	 * @param resources
 	 */
 	private void loadResources(LinkedList<ResourceConstructor> resources) {
-		
-		// Reset references.
-		listPanelsReferences.clear();
-		
-		// If any editable resource doesn't exist, show label.
-		if (!ResourceConstructor.existEditableResource(resources)) {
+		try {
 			
-			// Inform user.
-			listPanel.setLayout(new BorderLayout());
+			// Reset references.
+			listPanelsReferences.clear();
 			
-			JLabel labelMessage = new JLabel(
-					Resources.getString("org.multipage.generator.messageNoReources"));
-			
-			labelMessage.setFont(labelMessage.getFont().deriveFont(12.0f));
-			
-			labelMessage.setHorizontalAlignment(SwingConstants.CENTER);
-			listPanel.add(labelMessage, BorderLayout.CENTER);
-			return;
-		}
-		
-		// Set list panel layout.
-		listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
-		
-		// Add panels.
-		int index = 0;
-		for (ResourceConstructor resource : resources) {
-
-			// If the resource is not editable, continue the loop.
-			if (!resource.isEditable()) {
-				continue;
+			// If any editable resource doesn't exist, show label.
+			if (!ResourceConstructor.existEditableResource(resources)) {
+				
+				// Inform user.
+				listPanel.setLayout(new BorderLayout());
+				
+				JLabel labelMessage = new JLabel(
+						Resources.getString("org.multipage.generator.messageNoReources"));
+				
+				labelMessage.setFont(labelMessage.getFont().deriveFont(12.0f));
+				
+				labelMessage.setHorizontalAlignment(SwingConstants.CENTER);
+				listPanel.add(labelMessage, BorderLayout.CENTER);
+				return;
 			}
 			
-			// Add new panel.
-			ResourceLoadInfoPanel panel = new ResourceLoadInfoPanel(resource, Utility.itemColor(index++));
+			// Set list panel layout.
+			listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
 			
-			Dimension size = panel.getPreferredSize();
-			size.width = Integer.MAX_VALUE;
-			panel.setMaximumSize(size);
-			
-			listPanel.add(panel);
-			
-			// Add reference.
-			listPanelsReferences.add(panel);
+			// Add panels.
+			int index = 0;
+			for (ResourceConstructor resource : resources) {
+	
+				// If the resource is not editable, continue the loop.
+				if (!resource.isEditable()) {
+					continue;
+				}
+				
+				// Add new panel.
+				ResourceLoadInfoPanel panel = new ResourceLoadInfoPanel(resource, Utility.itemColor(index++));
+				
+				Dimension size = panel.getPreferredSize();
+				size.width = Integer.MAX_VALUE;
+				panel.setMaximumSize(size);
+				
+				listPanel.add(panel);
+				
+				// Add reference.
+				listPanelsReferences.add(panel);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On clear.
 	 */
 	public void onClear() {
-		
-		// Let user confirm.
-		if (!Utility.ask(this, "org.multipage.generator.messageClearResourcesInputs")) {
-			return;
-		}
-		
-		// Clear load infos.
-		for (ResourceLoadInfoPanel panel : listPanelsReferences) {
+		try {
 			
-			panel.clear();
+			// Let user confirm.
+			if (!Utility.ask(this, "org.multipage.generator.messageClearResourcesInputs")) {
+				return;
+			}
+			
+			// Clear load infos.
+			for (ResourceLoadInfoPanel panel : listPanelsReferences) {
+				panel.clear();
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

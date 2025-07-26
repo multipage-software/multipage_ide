@@ -1,14 +1,21 @@
+/*
+ * Copyright 2010-2025 (C) vakol
+ * 
+ * Created on : 2017-04-26
+ *
+ */
 package org.maclan.expression;
 
-import java.io.*;
-import java.util.*;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.LinkedList;
 
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
 
 /**
- * 
- * @author
+ * Class for expression solver.
+ * @author vakol
  *
  */
 public class ExpressionSolver extends ExpressionParser {

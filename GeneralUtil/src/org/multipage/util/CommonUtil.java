@@ -1,14 +1,15 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.util;
 
 /**
- * @author
+ * Utility functions.
+ * @author vakol
  *
  */
 public class CommonUtil {
@@ -22,20 +23,30 @@ public class CommonUtil {
 	 * Start measure the time.
 	 */
 	public static void startMeasureTime() {
-	
-		startTime = System.currentTimeMillis();
+		try {
+			
+			startTime = System.currentTimeMillis();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Stop measure the time.
 	 */
 	public static long stopMeasureTime() {
-	
-		long stopTime = System.currentTimeMillis();
-		long deltaT = stopTime - startTime;
 		
-		System.out.println("delta t = " + deltaT + " ms");
-		return deltaT;
+		try {
+			long stopTime = System.currentTimeMillis();
+			long deltaT = stopTime - startTime;
+			
+			System.out.println("delta t = " + deltaT + " ms");
+			return deltaT;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return 0;
 	}
-
 }

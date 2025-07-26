@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 15-04-2020
+ * Created on : 2020-04-15
  *
  */
 package org.maclan.server;
@@ -21,8 +21,8 @@ import org.maclan.MiddleUtility;
 import org.maclan.Slot;
 
 /**
- * 
- * @author user
+ * Watch dog for external providers.
+ * @author vakol
  *
  */
 public class ProviderWatchService {

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -33,20 +33,18 @@ import org.maclan.Area;
 import org.maclan.Middle;
 import org.maclan.MiddleResult;
 import org.multipage.basic.ProgramBasic;
-import org.multipage.gui.ApplicationEvents;
 import org.multipage.gui.GraphUtility;
-import org.multipage.gui.GuiSignal;
 import org.multipage.gui.Images;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays file names.
+ * @author vakol
  *
  */
 public class FileNamesEditor extends JDialog {
-
 	
 	// $hide>>$
 	/**
@@ -85,11 +83,17 @@ public class FileNamesEditor extends JDialog {
 	 * @return
 	 */
 	public static boolean showDialog(Component parentComponent, LinkedList<Area> areas) {
-
-		FileNamesEditor dialog = new FileNamesEditor(Utility.findWindow(parentComponent), areas);
-		dialog.setVisible(true);
-
-		return dialog.confirm;
+		
+		try {
+			FileNamesEditor dialog = new FileNamesEditor(Utility.findWindow(parentComponent), areas);
+			dialog.setVisible(true);
+	
+			return dialog.confirm;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
@@ -99,9 +103,14 @@ public class FileNamesEditor extends JDialog {
 	 */
 	public FileNamesEditor(Window parentWindow, LinkedList<Area> areas) {
 		super(parentWindow, ModalityType.DOCUMENT_MODAL);
-		initComponents();
 		
-		postCreate(areas); // $hide$
+		try {
+			initComponents();
+			postCreate(areas); // $hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -153,13 +162,18 @@ public class FileNamesEditor extends JDialog {
 	 * @param areas 
 	 */
 	private void postCreate(LinkedList<Area> areas) {
-		
-		setAreas(areas);
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		Utility.centerOnScreen(this);
-		localize();
-		setIcons();
-		createTable();
+		try {
+			
+			setAreas(areas);
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			Utility.centerOnScreen(this);
+			localize();
+			setIcons();
+			createTable();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -167,45 +181,65 @@ public class FileNamesEditor extends JDialog {
 	 * @param areas
 	 */
 	private void setAreas(LinkedList<Area> areas) {
-		
-		this.areas = new LinkedList<Area>();
-		
-		for (Area area : areas) {
-			if (area.isVisible() && !area.isConstructorArea()) {
-				
-				this.areas.add(area);
+		try {
+			
+			this.areas = new LinkedList<Area>();
+			
+			for (Area area : areas) {
+				if (area.isVisible() && !area.isConstructorArea()) {
+					
+					this.areas.add(area);
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonClose);
-		Utility.localize(labelAreaFileNamesList);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonClose);
+			Utility.localize(labelAreaFileNamesList);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
-		buttonClose.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		try {
+			
+			setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
+			buttonClose.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On close.
 	 */
 	protected void onClose() {
-		
-		if (table.isEditing()) {
-			return;
+		try {
+			
+			if (table.isEditing()) {
+				return;
+			}
 		}
-		
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -214,118 +248,164 @@ public class FileNamesEditor extends JDialog {
 	 */
 	@SuppressWarnings("serial")
 	private void createTable() {
-		
-		final Component thisComponent = this;
-
-		model = new DefaultTableModel() {
-			@Override
-			public int getColumnCount() {
-				return 2;
-			}
-			@Override
-			public String getColumnName(int column) {
-				switch (column) {
-				case 0:
-					return Resources.getString("org.multipage.generator.textAreaNameColumn");
-				case 1:
-					return Resources.getString("org.multipage.generator.textAreaFileNameColumn");
+		try {
+			
+			final Component thisComponent = this;
+	
+			model = new DefaultTableModel() {
+				@Override
+				public int getColumnCount() {
+					return 2;
 				}
-				return "Error";
-			}
-			@Override
-			public boolean isCellEditable(int row, int column) {
-				return column == 1;
-			}
-			@Override
-			public int getRowCount() {
-				return areas.size();
-			}
-			@Override
-			public Object getValueAt(int row, int column) {
-				Area area = areas.get(row);
-				switch (column) {
-				case 0:
-					return area.getDescriptionForced();
-				case 1:
-					return area.getFileName();
-				}
-				return "Error";
-			}
-			@Override
-			public void setValueAt(Object aValue, int row, int column) {
-				
-				Area area = areas.get(row);
-				
-				if (area instanceof Area && column == 1 && aValue instanceof String) {
-					
-					String fileName = (String) aValue;
-					fileName = fileName.trim();
-					
-					MiddleResult result;
-					Middle middle = ProgramBasic.getMiddle();
-					Properties login = ProgramBasic.getLoginProperties();
-					
-					// Update file name.
-					result = middle.updateAreaFileName(login, area.getId(), fileName);
-					if (result.isNotOK()) {
-						result.show(thisComponent);
-						return;
+				@Override
+				public String getColumnName(int column) {
+					try {
+						switch (column) {
+						case 0:
+							return Resources.getString("org.multipage.generator.textAreaNameColumn");
+						case 1:
+							return Resources.getString("org.multipage.generator.textAreaFileNameColumn");
+						}
 					}
-					
-					area.setFileName(fileName);
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return "Error";
+				}
+				@Override
+				public boolean isCellEditable(int row, int column) {
+					return column == 1;
+				}
+				@Override
+				public int getRowCount() {
+					try {
+						return areas.size();
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return 0;
+				}
+				@Override
+				public Object getValueAt(int row, int column) {
+					try {
+						Area area = areas.get(row);
+						switch (column) {
+						case 0:
+							return area.getDescriptionForced();
+						case 1:
+							return area.getFileName();
+						}
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return "Error";
+				}
+				@Override
+				public void setValueAt(Object aValue, int row, int column) {
+					try {
+						
+						Area area = areas.get(row);
+						
+						if (area instanceof Area && column == 1 && aValue instanceof String) {
+							
+							String fileName = (String) aValue;
+							fileName = fileName.trim();
+							
+							MiddleResult result;
+							Middle middle = ProgramBasic.getMiddle();
+							Properties login = ProgramBasic.getLoginProperties();
+							
+							// Update file name.
+							result = middle.updateAreaFileName(login, area.getId(), fileName);
+							if (result.isNotOK()) {
+								result.show(thisComponent);
+								return;
+							}
+							
+							area.setFileName(fileName);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			};
+			
+			// Create renderer.
+			class JRenderer extends JLabel {
+				
+				boolean isSelected;
+				boolean hasFocus;
+				
+				JRenderer() {
+					try {
+						
+						setFont(new Font("Arial", Font.PLAIN, 12));
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+	
+				public void setLabel(String description, boolean isSelected,
+						boolean hasFocus, boolean isIcon) {
+					try {
+						
+						setText(description);
+						setIcon(isIcon ? Images.getIcon("org/multipage/generator/images/area_node.png") : null);
+						this.isSelected = isSelected;
+						this.hasFocus = hasFocus;
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+	
+				@Override
+				public void paint(Graphics g) {
+					try {
+						super.paint(g);
+						GraphUtility.drawSelection(g, this, isSelected, hasFocus);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
 				}
 			}
-		};
-		
-		// Create renderer.
-		class JRenderer extends JLabel {
 			
-			boolean isSelected;
-			boolean hasFocus;
-			
-			JRenderer() {
-				setFont(new Font("Arial", Font.PLAIN, 12));
-			}
-
-			public void setLabel(String description, boolean isSelected,
-					boolean hasFocus, boolean isIcon) {
-				
-				setText(description);
-				setIcon(isIcon ? Images.getIcon("org/multipage/generator/images/area_node.png") : null);
-				this.isSelected = isSelected;
-				this.hasFocus = hasFocus;
-			}
-
-			@Override
-			public void paint(Graphics g) {
-				super.paint(g);
-				GraphUtility.drawSelection(g, this, isSelected, hasFocus);
-			}
-		}
-		
-		final JRenderer label = new JRenderer();
-				
-		// Set area name cell renderer.
-		DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
-			@Override
-			public Component getTableCellRendererComponent(JTable table,
-					Object value, boolean isSelected, boolean hasFocus,
-					int row, int column) {
-				
-				if (value == null) {
-					label.setLabel("", isSelected, hasFocus, column == 0);
+			final JRenderer label = new JRenderer();
+					
+			// Set area name cell renderer.
+			DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+				@Override
+				public Component getTableCellRendererComponent(JTable table,
+						Object value, boolean isSelected, boolean hasFocus,
+						int row, int column) {
+					
+					try {
+						if (value == null) {
+							label.setLabel("", isSelected, hasFocus, column == 0);
+							return label;
+						}
+						
+						String areaDescription = value.toString();
+						label.setLabel(areaDescription, isSelected, hasFocus, column == 0);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
 					return label;
 				}
-				
-				String areaDescription = value.toString();
-				label.setLabel(areaDescription, isSelected, hasFocus, column == 0);
-
-				return label;
-			}
+			};
+			
+			table.setModel(model);
+			table.setDefaultRenderer(Object.class, renderer);
+			table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
 		};
-		
-		table.setModel(model);
-		table.setDefaultRenderer(Object.class, renderer);
-		table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
 	}
 }

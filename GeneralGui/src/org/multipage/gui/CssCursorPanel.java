@@ -1,24 +1,34 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import javax.swing.*;
-
-import org.multipage.util.*;
-
-import java.awt.*;
-import java.io.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.regex.Matcher;
-import java.awt.event.*;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.SpringLayout;
+
+import org.multipage.util.Obj;
+import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Panel that displays editor for CSS cursor.
+ * @author vakol
  *
  */
 public class CssCursorPanel extends InsertPanel implements StringValueEditor {
@@ -94,19 +104,24 @@ public class CssCursorPanel extends InsertPanel implements StringValueEditor {
 	 * Static constructor.
 	 */
 	static {
-		
-		// Compile cursor names regex.
-		boolean isFirst = true;
-		for (String cursorName : cursorNames) {
+		try {
 			
-			if (!isFirst) {
-				cursorNamesRegex += '|';
+			// Compile cursor names regex.
+			boolean isFirst = true;
+			for (String cursorName : cursorNames) {
+				
+				if (!isFirst) {
+					cursorNamesRegex += '|';
+				}
+				
+				cursorNamesRegex += cursorName;
+				
+				isFirst = false;
 			}
-			
-			cursorNamesRegex += cursorName;
-			
-			isFirst = false;
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
@@ -168,13 +183,18 @@ public class CssCursorPanel extends InsertPanel implements StringValueEditor {
 	 * @param parentWindow 
 	 */
 	public CssCursorPanel(String initialString) {
-
-		initComponents();
 		
-		// $hide>>$
-		this.initialString = initialString;
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			this.initialString = initialString;
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -232,39 +252,54 @@ public class CssCursorPanel extends InsertPanel implements StringValueEditor {
 	 * On clear resource.
 	 */
 	protected void onClearResource() {
-		
-		textCursor.setText("");
+		try {
+			
+			textCursor.setText("");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On find resource.
 	 */
 	protected void onFindResource() {
-		
-		if (getResourceName == null) {
+		try {
 			
-			Utility.show(this, "org.multipage.gui.messageNoResourcesAssociated");
-			return;
+			if (getResourceName == null) {
+				
+				Utility.show(this, "org.multipage.gui.messageNoResourcesAssociated");
+				return;
+			}
+			
+			// Use callback to obtain resource name.
+			Object outputValue = getResourceName.run(null);
+			if (!(outputValue instanceof String)) {
+				return;
+			}
+			
+			String imageName = (String) outputValue;
+			
+			// Set resource name text control.
+			textCursor.setText(imageName);
 		}
-		
-		// Use callback to obtain resource name.
-		Object outputValue = getResourceName.run(null);
-		if (!(outputValue instanceof String)) {
-			return;
-		}
-		
-		String imageName = (String) outputValue;
-		
-		// Set resource name text control.
-		textCursor.setText(imageName);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-
-		setFromInitialString();
+		try {
+			
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -279,31 +314,46 @@ public class CssCursorPanel extends InsertPanel implements StringValueEditor {
 	 * Post creation.
 	 */
 	private void postCreate() {
-
-		localize();
-		setIcons();
-		
-		loadComboBoxes();
-		
-		loadDialog();
+		try {
+			
+			localize();
+			setIcons();
+			
+			loadComboBoxes();
+			
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonFindCursor.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
-		buttonClearCursor.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			buttonFindCursor.setIcon(Images.getIcon("org/multipage/gui/images/find_icon.png"));
+			buttonClearCursor.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load combo boxes.
 	 */
 	private void loadComboBoxes() {
-		
-		Utility.loadItems(comboCursor, cursorNames);
-		comboCursor.setSelectedItem("auto");
+		try {
+			
+			Utility.loadItems(comboCursor, cursorNames);
+			comboCursor.setSelectedItem("auto");
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -313,65 +363,82 @@ public class CssCursorPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getSpecification() {
 		
-		String resourceName = textCursor.getText();
-		String cursorName = (String) comboCursor.getSelectedItem();
-		
-		if (resourceName.isEmpty()) {
-			return cursorName;
+		try {
+			String resourceName = textCursor.getText();
+			String cursorName = (String) comboCursor.getSelectedItem();
+			
+			if (resourceName.isEmpty()) {
+				return cursorName;
+			}
+			
+			return String.format("url(\"[@URL thisArea, res=\"#%s\"]\"), %s", resourceName, cursorName);
 		}
-		
-		return String.format("url(\"[@URL thisArea, res=\"#%s\"]\"), %s", resourceName, cursorName);
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
 	 * Set from initial string.
 	 */
 	private void setFromInitialString() {
-		
-		// Initialize controls.
-		comboCursor.setSelectedItem("auto");
-
-		if (initialString != null) {
+		try {
 			
-			Obj<Integer> position = new Obj<Integer>(0);
-			
-			try {
+			// Initialize controls.
+			comboCursor.setSelectedItem("auto");
+	
+			if (initialString != null) {
 				
-				// Get url.
-				int positionAux = position.ref;
-				Obj<Matcher> matcher = new Obj<Matcher>();
+				Obj<Integer> position = new Obj<Integer>(0);
 				
-				String text = Utility.getNextMatch(initialString, position, "\\G\\s*url\\(\"\\[@URL thisArea, res=\"#(.+)\"\\]\"\\)\\s*\\,", matcher);
-				if (text != null && matcher.ref.groupCount() == 1) {
+				try {
 					
-					String resourceName = matcher.ref.group(1);
-					textCursor.setText(resourceName.trim());
-				}
-				else {
-					position.ref = positionAux;
-				}
-				
-				// Get cursor name.
-				String regex = String.format("\\G\\s*(%s)", cursorNamesRegex);
-				text = Utility.getNextMatch(initialString, position, regex, matcher);
-				
-				if (text != null && matcher.ref.groupCount() == 1) {
+					// Get url.
+					int positionAux = position.ref;
+					Obj<Matcher> matcher = new Obj<Matcher>();
 					
-					String cursorName = matcher.ref.group(1);
-					comboCursor.setSelectedItem(cursorName);
+					String text = Utility.getNextMatch(initialString, position, "\\G\\s*url\\(\"\\[@URL thisArea, res=\"#(.+)\"\\]\"\\)\\s*\\,", matcher);
+					if (text != null && matcher.ref.groupCount() == 1) {
+						
+						String resourceName = matcher.ref.group(1);
+						textCursor.setText(resourceName.trim());
+					}
+					else {
+						position.ref = positionAux;
+					}
+					
+					// Get cursor name.
+					String regex = String.format("\\G\\s*(%s)", cursorNamesRegex);
+					text = Utility.getNextMatch(initialString, position, regex, matcher);
+					
+					if (text != null && matcher.ref.groupCount() == 1) {
+						
+						String cursorName = matcher.ref.group(1);
+						comboCursor.setSelectedItem(cursorName);
+					}
 				}
-			}
-			catch (Exception e) {
+				catch (Exception e) {
+					Safe.exception(e);
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(labelCursor);
+		try {
+			
+			Utility.localize(labelCursor);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/* (non-Javadoc)
@@ -380,7 +447,13 @@ public class CssCursorPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getWindowTitle() {
 		
-		return Resources.getString("org.multipage.gui.textCssCursorBuilder");
+		try {
+			return Resources.getString("org.multipage.gui.textCssCursorBuilder");
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -389,7 +462,13 @@ public class CssCursorPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getResultText() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/* (non-Javadoc)
@@ -445,7 +524,13 @@ public class CssCursorPanel extends InsertPanel implements StringValueEditor {
 	@Override
 	public String getStringValue() {
 		
-		return getSpecification();
+		try {
+			return getSpecification();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -454,9 +539,14 @@ public class CssCursorPanel extends InsertPanel implements StringValueEditor {
 	 */
 	@Override
 	public void setStringValue(String string) {
-		
-		initialString = string;
-		setFromInitialString();
+		try {
+			
+			initialString = string;
+			setFromInitialString();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**

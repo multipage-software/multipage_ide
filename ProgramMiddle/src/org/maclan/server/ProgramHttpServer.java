@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -12,15 +12,16 @@ import java.util.Properties;
 import org.maclan.MiddleResult;
 
 /**
- * @author
+ * HTTP server.
+ * @author vakol
  *
  */
 public abstract class ProgramHttpServer {
 	
 	/**
-	 * Debugger client
+	 * Debugger listener.
 	 */
-	protected XdebugListener debugger;
+	protected XdebugListener debuggerListener = null;
 	
 	/**
 	 * Set login properties.
@@ -42,13 +43,13 @@ public abstract class ProgramHttpServer {
 	public abstract void stop();
 	
 	/**
-	 * Start debug client
+	 * Start debug listener.
 	 */
-	public MiddleResult startDebugClient() {
+	public MiddleResult startDebuggerListener() {
 		
 		try {
-			debugger = XdebugListener.getInstance();
-			debugger.activate();
+			debuggerListener = XdebugListener.getInstance();
+			debuggerListener.openListenerPort(XdebugListener.DEFAULT_XDEBUG_PORT);
 			return MiddleResult.OK;
 		}
 		catch (Exception e) {
@@ -58,16 +59,16 @@ public abstract class ProgramHttpServer {
 	}
 	
 	/**
-	 * Stop debugger
+	 * Stop debugger listener.
 	 */
-	public MiddleResult stopDebugger() {
+	public MiddleResult stopDebuggerListener() {
 		
-		if (debugger == null) {
+		if (debuggerListener == null) {
 			return MiddleResult.OK;
 		}
 		
 		try {
-			debugger.onClose();
+			debuggerListener.onCloseDebugger();
 			return MiddleResult.OK;
 		}
 		catch (Exception e) {
@@ -77,11 +78,11 @@ public abstract class ProgramHttpServer {
 	}
 
 	/**
-	 * Returns reference to debug client
+	 * Returns reference to debug listener.
 	 * @return
 	 */
-	public XdebugListener getDebugger() {
+	public XdebugListener getDebuggerListener() {
 		
-		return debugger;
+		return debuggerListener;
 	}
 }

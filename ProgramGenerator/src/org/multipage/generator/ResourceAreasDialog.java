@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -46,10 +46,11 @@ import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays resource areas.
+ * @author vakol
  *
  */
 public class ResourceAreasDialog extends JDialog {
@@ -131,17 +132,21 @@ public class ResourceAreasDialog extends JDialog {
 	 * @param resource
 	 */
 	public static void showDialog(Component parent, Resource resource, Obj<Boolean> closeResources) {
-		
-		ResourceAreasDialog dialog = new ResourceAreasDialog(Utility.findWindow(parent),
-				closeResources == null);
-		
-		dialog.loadResourceAreas(resource);
-		
-		dialog.setVisible(true);
-		
-		if (closeResources != null) {
-			closeResources.ref = dialog.closeResources;
+		try {
+			
+			ResourceAreasDialog dialog = new ResourceAreasDialog(Utility.findWindow(parent),
+					closeResources == null);
+			
+			dialog.loadResourceAreas(resource);
+			dialog.setVisible(true);
+			
+			if (closeResources != null) {
+				closeResources.ref = dialog.closeResources;
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -151,13 +156,17 @@ public class ResourceAreasDialog extends JDialog {
 	 */
 	public ResourceAreasDialog(Window parentWindow, boolean hideCloseResources) {
 		super(parentWindow, ModalityType.DOCUMENT_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		buttonCloseResources.setVisible(!hideCloseResources);
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			// $hide>>$
+			buttonCloseResources.setVisible(!hideCloseResources);
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -234,29 +243,59 @@ public class ResourceAreasDialog extends JDialog {
 	 * @param popup
 	 */
 	private static void addPopup(Component component, final JPopupMenu popup) {
-		component.addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e);
+		try {
+			
+			component.addMouseListener(new MouseAdapter() {
+				public void mousePressed(MouseEvent e) {
+					try {
+						
+						if (e.isPopupTrigger()) {
+							showMenu(e);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-			public void mouseReleased(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e);
+				public void mouseReleased(MouseEvent e) {
+					try {
+						
+						if (e.isPopupTrigger()) {
+							showMenu(e);
+						}
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
 				}
-			}
-			private void showMenu(MouseEvent e) {
-				popup.show(e.getComponent(), e.getX(), e.getY());
-			}
-		});
+				private void showMenu(MouseEvent e) {
+					try {
+						
+						popup.show(e.getComponent(), e.getX(), e.getY());
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * On close.
 	 */
 	protected void onClose() {
+		try {
+			
+			saveDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 		
-		saveDialog();
 		dispose();
 	}
 
@@ -264,107 +303,157 @@ public class ResourceAreasDialog extends JDialog {
 	 * Close resources.
 	 */
 	protected void onCloseResources() {
-		
-		closeResources = true;
-		
-		onClose();
+		try {
+			
+			closeResources = true;
+			onClose();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		loadDialog();
-
-		localize();
-		setIcons();
-		
-		initTable();
-		initPopupMenu();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			loadDialog();
+	
+			localize();
+			setIcons();
+			
+			initTable();
+			initPopupMenu();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
-			bounds = getBounds();
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+				bounds = getBounds();
+			}
+			else {
+				setBounds(bounds);
+			}
 		}
-		else {
-			setBounds(bounds);
-		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(this);
-		Utility.localize(buttonClose);
-		Utility.localize(buttonCloseResources);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonClose);
+			Utility.localize(buttonCloseResources);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonClose.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
-		buttonCloseResources.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		try {
+			
+			buttonClose.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+			buttonCloseResources.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Initialize list.
 	 */
+	@SuppressWarnings("unchecked")
 	private void initTable() {
-		
-		// Create table model.
-		listModel = new DefaultListModel<Area>();
-		list.setModel(listModel);
-		
-		// Set cell renderer.
-		list.setCellRenderer(new ListCellRenderer<Area>() {
-			// Renderer.
-			@SuppressWarnings("serial")
-			RendererJLabel renderer = new RendererJLabel() {
-				{
-					setIcon(Images.getIcon("org/multipage/generator/images/area_node.png"));
+		try {
+			
+			// Create table model.
+			listModel = new DefaultListModel<Area>();
+			list.setModel(listModel);
+			
+			// Set cell renderer.
+			list.setCellRenderer(new ListCellRenderer<Area>() {
+				// Renderer.
+				@SuppressWarnings("serial")
+				RendererJLabel renderer = new RendererJLabel() {
+					{
+						try {
+							setIcon(Images.getIcon("org/multipage/generator/images/area_node.png"));
+						}
+						catch(Throwable expt) {
+							Safe.exception(expt);
+						};
+					}
+				};
+				// Overridden method.
+				@Override
+				public Component getListCellRendererComponent(
+						JList<? extends Area> list, Area area, int index,
+						boolean isSelected, boolean cellHasFocus) {
+					
+					try {
+						renderer.setText(area.getDescriptionForDiagram());
+						renderer.set(isSelected, cellHasFocus, index);
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return renderer;
 				}
-			};
-			// Overridden method.
-			@Override
-			public Component getListCellRendererComponent(
-					JList<? extends Area> list, Area area, int index,
-					boolean isSelected, boolean cellHasFocus) {
-				
-				renderer.setText(area.getDescriptionForDiagram());
-				renderer.set(isSelected, cellHasFocus, index);
-				
-				return renderer;
-			}
-		});
-		
-		// On double click.
-		list.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				onDblClick(e);
-			}
-		});
+			});
+			
+			// On double click.
+			list.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					try {
+						
+						onDblClick(e);
+					}
+					catch(Throwable expt) {
+						Safe.exception(expt);
+					};
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -372,63 +461,86 @@ public class ResourceAreasDialog extends JDialog {
 	 * @param resource
 	 */
 	private void loadResourceAreas(Resource resource) {
-		
-		// Set label text.
-		String labelText = String.format(
-				Resources.getString("org.multipage.generator.textResourceAreasLabel"), resource.getDescription());
-		labelResource.setText(labelText);
-		
-		// Load resource areas' IDs.
-		LinkedList<Long> areasIds = new LinkedList<>();
-		
-		MiddleResult result = ProgramBasic.getMiddle().loadResourceAreasIds(
-				ProgramBasic.getLoginProperties(), resource.getId(), areasIds);
-		
-		if (result.isNotOK()) {
-			result.show(this);
-			return;
-		}
-		
-		// Get areas list.
-		LinkedList<Area> areas = ProgramGenerator.getAreasModel().getAreas(areasIds);
-		Collections.sort(areas, new Comparator<Area>() {
-			@Override
-			public int compare(Area area1, Area area2) {
-				// Compare area descriptions.
-				return area1.getDescription().compareTo(area2.getDescription());
+		try {
+			
+			// Set label text.
+			String labelText = String.format(
+					Resources.getString("org.multipage.generator.textResourceAreasLabel"), resource.getDescription());
+			labelResource.setText(labelText);
+			
+			// Load resource areas' IDs.
+			LinkedList<Long> areasIds = new LinkedList<>();
+			
+			MiddleResult result = ProgramBasic.getMiddle().loadResourceAreasIds(
+					ProgramBasic.getLoginProperties(), resource.getId(), areasIds);
+			
+			if (result.isNotOK()) {
+				result.show(this);
+				return;
 			}
-		});
-		
-		// Load areas.
-		listModel.clear();
-		
-		for (Area area : areas) {
-			listModel.addElement(area);
+			
+			// Get areas list.
+			LinkedList<Area> areas = ProgramGenerator.getAreasModel().getAreas(areasIds);
+			Collections.sort(areas, new Comparator<Area>() {
+				@Override
+				public int compare(Area area1, Area area2) {
+					try {
+						// Compare area descriptions.
+						return area1.getDescription().compareTo(area2.getDescription());
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return 0;
+				}
+			});
+			
+			// Load areas.
+			listModel.clear();
+			
+			for (Area area : areas) {
+				listModel.addElement(area);
+			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Initialize popup trayMenu.
 	 */
 	private void initPopupMenu() {
-		
-		final Component thisComponent = this;
-		
-		AreaLocalMenu areaMenu = ProgramGenerator.newAreaLocalMenu(new AreaLocalMenuListener() {
-			@Override
-			protected Area getCurrentArea() {
-				// Get selected area.
-				return getSelectedArea();
-			}
-
-			@Override
-			public Component getComponent() {
-				// Get this component.
-				return thisComponent;
-			}
-		});
-		
-		areaMenu.addTo(this, popupMenu);
+		try {
+			
+			final Component thisComponent = this;
+			
+			AreaLocalMenu areaMenu = ProgramGenerator.newAreaLocalMenu(new AreaLocalMenu.Callbacks() {
+				
+				@Override
+				protected Area getCurrentArea() {
+					try {
+						// Get selected area.
+						return getSelectedArea();
+					}
+					catch (Throwable e) {
+						Safe.exception(e);
+					}
+					return null;
+				}
+	
+				@Override
+				public Component getComponent() {
+					// Get this component.
+					return thisComponent;
+				}
+			});
+			
+			areaMenu.addTo(this, popupMenu);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -437,12 +549,16 @@ public class ResourceAreasDialog extends JDialog {
 	 */
 	protected Area getSelectedArea() {
 		
-		// Get selected list item.
-		Object item = list.getSelectedValue();
-		if (item instanceof Area) {
-			return (Area) item;
+		try {
+			// Get selected list item.
+			Object item = list.getSelectedValue();
+			if (item instanceof Area) {
+				return (Area) item;
+			}
 		}
-		
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 		return null;
 	}
 	
@@ -451,16 +567,20 @@ public class ResourceAreasDialog extends JDialog {
 	 * @param e
 	 */
 	protected void onDblClick(MouseEvent e) {
-		
-		if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
+		try {
 			
-			// Focus selected area.
-			Area area = getSelectedArea();
-			if (area != null) {
+			if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
 				
-				GeneratorMainFrame.getFrame().getVisibleAreasEditor().focusArea(area.getId());
+				// Focus selected area.
+				Area area = getSelectedArea();
+				if (area != null) {
+					
+					GeneratorMainFrame.getFrame().getVisibleAreasEditor().focusArea(area.getId());
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
-
 }

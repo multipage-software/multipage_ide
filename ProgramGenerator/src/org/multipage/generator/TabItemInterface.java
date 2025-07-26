@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -12,7 +12,8 @@ import java.util.HashSet;
 import javax.swing.event.ChangeEvent;
 
 /**
- * @author
+ * Interface for the tab panel.
+ * @author vakol
  *
  */
 public interface TabItemInterface {
@@ -61,7 +62,7 @@ public interface TabItemInterface {
 	/**
 	 * Get selected areas.
 	 */
-	HashSet<Long> getSelectedAreaIds();
+	HashSet<Long> getSelectedTabAreaIds();
 	
 	/**
 	 * Called when tab panel needs to recreate contents.

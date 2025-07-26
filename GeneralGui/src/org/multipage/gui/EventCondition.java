@@ -1,12 +1,13 @@
 /*
- * Copyright 2010-2020 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 21-01-2021
+ * Created on : 2021-01-21
  *
  */
 package org.multipage.gui;
 
 /**
+ * Interface for application event condition.
  * @author vakol
  *
  */

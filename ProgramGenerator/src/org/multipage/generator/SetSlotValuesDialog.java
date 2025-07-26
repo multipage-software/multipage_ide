@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -22,10 +22,11 @@ import javax.swing.SpringLayout;
 import org.multipage.gui.Images;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays selection for slot values.
+ * @author vakol
  *
  */
 public class SetSlotValuesDialog extends JDialog {
@@ -55,9 +56,14 @@ public class SetSlotValuesDialog extends JDialog {
 	 */
 	public SetSlotValuesDialog(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
-
-		initComponents();
-		postCreate(); // $hide$
+		
+		try {
+			initComponents();
+			postCreate(); // $hide$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -132,65 +138,91 @@ public class SetSlotValuesDialog extends JDialog {
 	public static boolean showDialog(Component parent,
 			Obj<Boolean> isDefault) {
 		
-		SetSlotValuesDialog dialog = new SetSlotValuesDialog(parent);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
-			isDefault.ref = dialog.checkIsDefault.isSelected();
+		try {
+			SetSlotValuesDialog dialog = new SetSlotValuesDialog(parent);
+			dialog.setVisible(true);
+			
+			if (dialog.confirm) {
+				isDefault.ref = dialog.checkIsDefault.isSelected();
+			}
+			
+			return dialog.confirm;
 		}
-		
-		return dialog.confirm;
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return false;
 	}
 	
 	/**
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		Utility.centerOnScreen(this);
-		
-		localize();
-		setIconsAndCursors();
-		
-		onChangeIsDefaultValue();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			Utility.centerOnScreen(this);
+			
+			localize();
+			setIconsAndCursors();
+			
+			onChangeIsDefaultValue();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIconsAndCursors() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
-		
-		checkIsDefault.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+			
+			checkIsDefault.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-
-		Utility.localize(this);
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
+		try {
+			
+			Utility.localize(this);
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On change "is default value" flag.
 	 */
 	protected void onChangeIsDefaultValue() {
-		
-		if (checkIsDefault.isSelected()) {
-			checkIsDefault.setText("org.multipage.generator.textSlotDefaultValues");
-			checkIsDefault.setIcon(Images.getIcon("org/multipage/generator/images/default_value.png"));
+		try {
+			
+			if (checkIsDefault.isSelected()) {
+				checkIsDefault.setText("org.multipage.generator.textSlotDefaultValues");
+				checkIsDefault.setIcon(Images.getIcon("org/multipage/generator/images/default_value.png"));
+			}
+			else {
+				checkIsDefault.setText("org.multipage.generator.textSlotNormalValues");
+				checkIsDefault.setIcon(Images.getIcon("org/multipage/generator/images/normal_value.png"));
+			}
+			
+			Utility.localize(checkIsDefault);
 		}
-		else {
-			checkIsDefault.setText("org.multipage.generator.textSlotNormalValues");
-			checkIsDefault.setIcon(Images.getIcon("org/multipage/generator/images/normal_value.png"));
-		}
-		
-		Utility.localize(checkIsDefault);
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

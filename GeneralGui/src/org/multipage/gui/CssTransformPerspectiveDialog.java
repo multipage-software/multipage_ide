@@ -1,20 +1,33 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
 package org.multipage.gui;
 
-import java.awt.*;
-import javax.swing.*;
-import java.awt.event.*;
-import java.io.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.SpringLayout;
+
+import org.multipage.util.Safe;
 
 /**
- * 
- * @author
+ * Dialog that displays CSS perspective editor.
+ * @author vakol
  *
  */
 public class CssTransformPerspectiveDialog extends JDialog {
@@ -84,12 +97,17 @@ public class CssTransformPerspectiveDialog extends JDialog {
 	 */
 	public static CssTransformPerspective showDialog(Component parent) {
 		
-		CssTransformPerspectiveDialog dialog = new CssTransformPerspectiveDialog(parent);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			CssTransformPerspectiveDialog dialog = new CssTransformPerspectiveDialog(parent);
+			dialog.setVisible(true);
 			
-			return dialog.getPerspective();
+			if (dialog.confirm) {
+				
+				return dialog.getPerspective();
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return null;
 	}
@@ -103,13 +121,18 @@ public class CssTransformPerspectiveDialog extends JDialog {
 	public static boolean editDialog(Component parent,
 			CssTransformPerspective perspective) {
 		
-		CssTransformPerspectiveDialog dialog = new CssTransformPerspectiveDialog(parent);
-		dialog.setPerspective(perspective);
-		dialog.setVisible(true);
-		
-		if (dialog.confirm) {
+		try {
+			CssTransformPerspectiveDialog dialog = new CssTransformPerspectiveDialog(parent);
+			dialog.setPerspective(perspective);
+			dialog.setVisible(true);
 			
-			perspective.setFrom(dialog.getPerspective());
+			if (dialog.confirm) {
+				
+				perspective.setFrom(dialog.getPerspective());
+			}
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
 		}
 		return false;
 	}
@@ -119,9 +142,14 @@ public class CssTransformPerspectiveDialog extends JDialog {
 	 * @param perspective
 	 */
 	private void setPerspective(CssTransformPerspective perspective) {
-		
-		textL.setText(String.valueOf(perspective.l));
-		comboUnits.setSelectedItem(perspective.units);
+		try {
+			
+			textL.setText(String.valueOf(perspective.l));
+			comboUnits.setSelectedItem(perspective.units);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -130,12 +158,18 @@ public class CssTransformPerspectiveDialog extends JDialog {
 	 */
 	private CssTransformPerspective getPerspective() {
 		
-		CssTransformPerspective perspective = new CssTransformPerspective();
-		
-		perspective.l = Utility.getFloat(textL, 0.0f);
-		perspective.units = (String) comboUnits.getSelectedItem();
-		
-		return perspective;
+		try {
+			CssTransformPerspective perspective = new CssTransformPerspective();
+			
+			perspective.l = Utility.getFloat(textL, 0.0f);
+			perspective.units = (String) comboUnits.getSelectedItem();
+			
+			return perspective;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
 	}
 
 	/**
@@ -144,12 +178,17 @@ public class CssTransformPerspectiveDialog extends JDialog {
 	 */
 	public CssTransformPerspectiveDialog(Component parent) {
 		super(Utility.findWindow(parent), ModalityType.APPLICATION_MODAL);
-
-		initComponents();
 		
-		// $hide>>$
-		postCreate();
-		// $hide<<$
+		try {
+			initComponents();
+			
+			// $hide>>$
+			postCreate();
+			// $hide<<$
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -213,52 +252,76 @@ public class CssTransformPerspectiveDialog extends JDialog {
 	 * Post creation.
 	 */
 	private void postCreate() {
-		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		
-		localize();
-		setIcons();
-		
-		loadUnits();
-		
-		loadDialog();
+		try {
+			
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+			
+			localize();
+			setIcons();
+			
+			loadUnits();
+			loadDialog();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Load units.
 	 */
 	private void loadUnits() {
-		
-		Utility.loadCssUnits(comboUnits);
+		try {
+			
+			Utility.loadCssUnits(comboUnits);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Set icons.
 	 */
 	private void setIcons() {
-		
-		buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
-		buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		try {
+			
+			buttonOk.setIcon(Images.getIcon("org/multipage/gui/images/ok_icon.png"));
+			buttonCancel.setIcon(Images.getIcon("org/multipage/gui/images/cancel_icon.png"));
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
 	 * Localize components.
 	 */
 	private void localize() {
-		
-		Utility.localize(buttonOk);
-		Utility.localize(buttonCancel);
-		Utility.localize(this);
+		try {
+			
+			Utility.localize(buttonOk);
+			Utility.localize(buttonCancel);
+			Utility.localize(this);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * On cancel.
 	 */
 	protected void onCancel() {
-		
-		saveDialog();
-		
-		confirm = false;
+		try {
+			
+			saveDialog();
+			confirm = false;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -266,10 +329,15 @@ public class CssTransformPerspectiveDialog extends JDialog {
 	 * On OK.
 	 */
 	protected void onOk() {
-		
-		saveDialog();
-		
-		confirm = true;
+		try {
+			
+			saveDialog();
+			confirm = true;
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+			
 		dispose();
 	}
 
@@ -277,22 +345,32 @@ public class CssTransformPerspectiveDialog extends JDialog {
 	 * Load dialog.
 	 */
 	private void loadDialog() {
-		
-		if (bounds.isEmpty()) {
-			Utility.centerOnScreen(this);
+		try {
+			
+			if (bounds.isEmpty()) {
+				Utility.centerOnScreen(this);
+			}
+			else {
+				setBounds(bounds);
+			}
+	
+			textL.setText("0.0");
 		}
-		else {
-			setBounds(bounds);
-		}
-
-		textL.setText("0.0");
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
-		
-		bounds = getBounds();
+		try {
+			
+			bounds = getBounds();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

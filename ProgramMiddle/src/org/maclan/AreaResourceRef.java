@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -11,7 +11,7 @@ import java.util.Objects;
 
 /**
  * Area resource reference.
- * @author
+ * @author vakol
  *
  */
 public class AreaResourceRef {

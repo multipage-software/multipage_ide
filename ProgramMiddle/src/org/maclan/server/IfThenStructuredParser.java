@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -14,7 +14,8 @@ import org.maclan.MiddleResult;
 import org.multipage.util.Obj;
 
 /**
- * @author
+ * Pareser for if-then-else tags.
+ * @author vakol
  *
  */
 public class IfThenStructuredParser extends ParserBase {
@@ -138,9 +139,6 @@ public class IfThenStructuredParser extends ParserBase {
 	
 	/**
 	 * Parse IF command texts.
-	 * @param server
-	 * @param text
-	 * @param position
 	 * @param resolvedText
 	 * @return
 	 */
@@ -151,7 +149,6 @@ public class IfThenStructuredParser extends ParserBase {
 		final int EXIT = -1;
 		
 		boolean isOutputSet = false;
-
 		int state = IF;
 		
 		// Do loop until exit.
@@ -168,18 +165,25 @@ public class IfThenStructuredParser extends ParserBase {
 					AreaServer.throwError("server.messageExpectingIfTag");
 				}
 				if (state == ELSEIF && token.type != ELSEIF) {
-					AreaServer.throwError("server.messageExpectingElsefTag");
+					AreaServer.throwError("server.messageExpectingElseIfTag");
 				}
 				
 				// Get condition value.
 				boolean condition = false;
 				if (resolvedText != null) {
 					condition = getConditionValue(token.properties, token.end);
+					
+					// Debugger point.
+					if (!isOutputSet) {
+						DebugInfo.setDebugInfo(server, "IF", token.properties, token.start, token.end, resolvedText.toString());
+						DebugInfo.debugPoint(server);
+					}
 				}
 				
 				int resultTextBegin = token.end;
 				consume(token);
 				token = next();
+				
 				// If next token is IF.
 				if (token.type == IF) {
 					// Parse sequence.
@@ -194,6 +198,13 @@ public class IfThenStructuredParser extends ParserBase {
 						setTextSubstring(resolvedText, resultTextBegin, resultTextEnd);
 						isOutputSet = true;
 					}
+					
+					// Debugger point.
+					if (condition) {
+						DebugInfo.setDebugInfo(server, "IF", token.properties, resultTextBegin, resultTextEnd, resolvedText.toString());
+						DebugInfo.debugPoint(server);
+					}
+					
 					state = token.type;
 					break;
 				}
@@ -209,6 +220,7 @@ public class IfThenStructuredParser extends ParserBase {
 				int resolvedTextBegin = token.end;
 				consume(token);
 				token = next();
+				
 				// If next is IF.
 				if (token.type == IF) {
 					// Parse sequence.
@@ -221,7 +233,12 @@ public class IfThenStructuredParser extends ParserBase {
 					if (resolvedText != null && !isOutputSet) {
 						setTextSubstring(resolvedText, resolvedTextBegin, resolvedTextEnd);
 						isOutputSet = true;
+						
+						// Debugger point.
+						DebugInfo.setDebugInfo(server, "IF", token.properties, resolvedTextBegin, resolvedTextEnd, resolvedText.toString());
+						DebugInfo.debugPoint(server);
 					}
+					
 					state = token.type;
 					break;
 				}

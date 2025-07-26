@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -9,8 +9,11 @@ package org.multipage.gui;
 
 import java.awt.*;
 
+import org.multipage.util.Safe;
+
 /**
- * @author
+ * Class that implements cursor area.
+ * @author vakol
  *
  */
 public class CursorAreaImpl {
@@ -62,19 +65,24 @@ public class CursorAreaImpl {
 	 * @param mouse
 	 */
 	public void onCursor(Point mouse) {
-		
-		// If the shape doesn't exist or is not visible, exit the method.
-		if (shape == null || !visible()) {
-			return;
-		}
-
-		// If the area contains the point...
-		if (shape.contains(mouse)) {
-			// Set cursor if not already set.
-			if (component.getCursor() != cursor) {
-				useCursor();
+		try {
+			
+			// If the shape doesn't exist or is not visible, exit the method.
+			if (shape == null || !visible()) {
+				return;
+			}
+	
+			// If the area contains the point...
+			if (shape.contains(mouse)) {
+				// Set cursor if not already set.
+				if (component.getCursor() != cursor) {
+					useCursor();
+				}
 			}
 		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 	
 	/**

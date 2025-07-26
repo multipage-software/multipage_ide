@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2017 (C) vakol
+ * Copyright 2010-2025 (C) vakol
  * 
- * Created on : 26-04-2017
+ * Created on : 2017-04-26
  *
  */
 
@@ -10,9 +10,11 @@ package org.multipage.generator;
 import java.lang.reflect.Field;
 
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 		
 /**
- * @author 
+ * Enumeration of colors that are used when drawing GUI components.
+ * @author vakol
  *
  */
 public enum ColorId {
@@ -39,7 +41,11 @@ public enum ColorId {
 	INACTIVE_OUTLINES("INACTIVE_OUTLINES", "org.multipage.generator.textInactiveOutlines"),
 	INACTIVE_BODIES("INACTIVE_BODIES", "org.multipage.generator.textInactiveBodies"),
 	SELECTED_TEXT("SELECTED_TEXTS", "org.multipage.generator.textSelectedTexts"),
-	SCRIPT_COMMAND_HIGHLIGHT("SCRIPT_COMMAND_HIGHLIGHT", "org.multipage.generator.textScriptCommandHighlightColor");
+	SCRIPT_COMMAND_HIGHLIGHT("SCRIPT_COMMAND_HIGHLIGHT", "org.multipage.generator.textScriptCommandHighlightColor"),
+	AREA_PROPERTIES_FRAME("AREA_PROPERTIES_FRAME", "org.multipage.generator.textAreaPropertiesFrameBackground"),
+	SEARCH_DIALOG("SEARCH_DIALOG", "org.multipage.generator.textSearchDialogBackground"),
+	DIALOG_NAVIGATOR("DIALOG_NAVIGATOR", "org.multipage.generator.textDialogNavigatorBackground"),
+	AREA_TREE_FRAME("AREA_TREE_FRAME", "org.multipage.generator.textAreaTreeFrameBackground");
 	
 	/**
 	 * Identifier.
@@ -73,8 +79,14 @@ public enum ColorId {
 	 * Get color text.
 	 */
 	public String getColorText() {
-
-		return Resources.getString(nameString);
+		
+		try {
+			return Resources.getString(nameString);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
 	}
 
 	/**
@@ -106,9 +118,10 @@ public enum ColorId {
 				}
 			}
 			
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 
-			e.printStackTrace();
+			Safe.exception(e);
 		}
 		return null;
 	}

@@ -958,7 +958,7 @@ public abstract class NamespaceResourcesEditor extends JPanel implements Searcha
 			}
 			
 			// Edit the resource.
-			TextResourceEditor.showDialog(GeneratorMainFrame.getFrame(),
+			TextResourceEditorFrame.showDialog(GeneratorMainFrame.getFrame(),
 					selectedResource.getId(), selectedResource.isSavedAsText(), true);
 		}
 		catch(Throwable expt) {
@@ -1109,7 +1109,7 @@ public abstract class NamespaceResourcesEditor extends JPanel implements Searcha
 			}
 			else {
 				// Edit the resource.
-				TextResourceEditor.showDialog(GeneratorMainFrame.getFrame(),
+				TextResourceEditorFrame.showDialog(GeneratorMainFrame.getFrame(),
 						resource.getId(), true, true);
 			}
 		}

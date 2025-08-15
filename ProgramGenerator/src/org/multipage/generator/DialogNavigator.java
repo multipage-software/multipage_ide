@@ -568,7 +568,7 @@ public class DialogNavigator extends JWindow implements UpdatableComponent, Clos
 	 * @param versionId
 	 * @param editor
 	 */
-	public static void addStartResourceEditor(long versionId, TextResourceEditor editor)
+	public static void addStartResourceEditor(long versionId, TextResourceEditorFrame editor)
 			throws Exception {
 		
 		try {
@@ -590,14 +590,14 @@ public class DialogNavigator extends JWindow implements UpdatableComponent, Clos
 	 * @param versionId
 	 * @return
 	 */
-	public static TextResourceEditor getStartResourceEditor(long resourceId, long versionId) {
+	public static TextResourceEditorFrame getStartResourceEditor(long resourceId, long versionId) {
 
 		try {
 			if (navigatorWindow == null) {
 				return null;
 			}
 			// Delegate this call.
-			TextResourceEditor editor = navigatorWindow.navigatorButtonsPanel.getStartResourceEditor(resourceId, versionId);
+			TextResourceEditorFrame editor = navigatorWindow.navigatorButtonsPanel.getStartResourceEditor(resourceId, versionId);
 			return editor;
 		}
 		catch (Throwable e) {
@@ -629,7 +629,7 @@ public class DialogNavigator extends JWindow implements UpdatableComponent, Clos
 	 * Add resource editor frame.
 	 * @param editor
 	 */
-	public static void addResourceEditor(TextResourceEditor editor)
+	public static void addResourceEditor(TextResourceEditorFrame editor)
 			throws Exception {
 		
 		try {
@@ -650,14 +650,14 @@ public class DialogNavigator extends JWindow implements UpdatableComponent, Clos
 	 * @param resourceId
 	 * @return
 	 */
-	public static TextResourceEditor getResourceEditor(long resourceId) {
+	public static TextResourceEditorFrame getResourceEditor(long resourceId) {
 		
 		try {
 			if (navigatorWindow == null) {
 				return null;
 			}
 			// Delegate this call.
-			TextResourceEditor editor = navigatorWindow.navigatorButtonsPanel.getResourceEditor(resourceId);
+			TextResourceEditorFrame editor = navigatorWindow.navigatorButtonsPanel.getResourceEditor(resourceId);
 			return editor;
 		}
 		catch (Throwable e) {

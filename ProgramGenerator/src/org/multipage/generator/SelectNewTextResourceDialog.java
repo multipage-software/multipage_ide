@@ -131,8 +131,7 @@ public class SelectNewTextResourceDialog extends JDialog {
 	 * Set default data.
 	 */
 	public static void setDefaultData() {
-
-        bounds = new Rectangle(100, 100, 400, 300);
+		
 	}
 
 	/**
@@ -168,7 +167,7 @@ public class SelectNewTextResourceDialog extends JDialog {
 	private void loadDialog() {
 		try {
 			
-			if (!bounds.isEmpty()) {
+			if (bounds != null && !bounds.isEmpty()) {
 				setBounds(bounds);
 			}
 			else {
@@ -269,7 +268,7 @@ public class SelectNewTextResourceDialog extends JDialog {
 		});
 		setTitle("org.multipage.generator.textSelectNewResourceContent");
 		
-		setBounds(100, 100, 450, 334);
+		setBounds(100, 100, 450, 321);
 		
 		panel = new JPanel();
 		panel.setPreferredSize(new Dimension(10, 50));

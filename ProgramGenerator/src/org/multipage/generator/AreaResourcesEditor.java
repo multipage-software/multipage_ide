@@ -1011,7 +1011,7 @@ public class AreaResourcesEditor extends JPanel implements SearchableResourcesLi
 			}
 			
 			// Edit the resource.
-			TextResourceEditor.showDialog(GeneratorMainFrame.getFrame(),
+			TextResourceEditorFrame.showDialog(GeneratorMainFrame.getFrame(),
 					resource.getId(), resource.isSavedAsText(), true);
 		}
 		catch(Throwable expt) {
@@ -1289,7 +1289,7 @@ public class AreaResourcesEditor extends JPanel implements SearchableResourcesLi
 			}
 			else {
 				// Edit the resource.
-				TextResourceEditor.showDialog(GeneratorMainFrame.getFrame(),
+				TextResourceEditorFrame.showDialog(GeneratorMainFrame.getFrame(),
 						resource.getId(), true, true);
 			}
 		}

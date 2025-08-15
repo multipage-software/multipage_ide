@@ -44,33 +44,40 @@ import org.maclan.MimeType;
 import org.maclan.Resource;
 import org.maclan.VersionObj;
 import org.multipage.basic.ProgramBasic;
+import org.multipage.generator.AreaEditorFrameBase;
 import org.multipage.generator.AreaResourceRendererBase;
 import org.multipage.generator.AreaResourcesEditor;
 import org.multipage.generator.EditorTabActions;
+import org.multipage.generator.GeneratorMainFrame;
 import org.multipage.generator.ProgramGenerator;
-import org.multipage.generator.TextResourceEditor;
+import org.multipage.generator.TextResourceEditorFrame;
 import org.multipage.generator.VersionRenderer;
 import org.multipage.gui.Images;
 import org.multipage.gui.RendererJLabel;
 import org.multipage.gui.ToolBarKit;
+import org.multipage.gui.UpdatableComponent;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
 import org.multipage.util.Safe;
-import org.multipage.util.j;
 
 /**
  * Editor panel that displays information about area sources.
  * @author vakol
  *
  */
-public class AreaStartPanel extends JPanel implements EditorTabActions {
+public class AreaStartPanel extends JPanel implements EditorTabActions, UpdatableComponent {
 
 	// $hide>>$
 	/**
 	 * Version.
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	/**
+	 * Reference to parent frame.
+	 */
+	private AreaEditorFrameBase parentFrameBase = null;
 
 	/**
 	 * Resource container.
@@ -85,17 +92,12 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 	/**
 	 * Resources model.
 	 */
-	private ResourcesModel resourcesModel;
-
-	/**
-	 * Do not save flag.
-	 */
-	private boolean loadingInformation = false;
+	private ResourcesModel resourcesModel;	
 	
 	/**
 	 * Area sources table model.
 	 */
-	private DefaultTableModel tableModelAreaSources;
+	private DefaultTableModel tableModelStartResources;
 	
 	// $hide<<$
 	/**
@@ -118,9 +120,11 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 
 	/**
 	 * Create the panel.
+	 * @param parentFrameBase - Refer
 	 */
-	public AreaStartPanel() {
-		
+	public AreaStartPanel(AreaEditorFrameBase parentFrameBase) {
+
+		this.parentFrameBase = parentFrameBase;
 		try {
 			// Initialize components
 			initComponents();
@@ -295,7 +299,7 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 			final Component thisComponent = this;
 				
 			// Create table model.
-			tableModelAreaSources = new DefaultTableModel(new String [] {
+			tableModelStartResources = new DefaultTableModel(new String [] {
 					Resources.getString("builder.textResourceColumn"),
 					Resources.getString("builder.textVersionColumn"),
 					Resources.getString("builder.textNotLocalizedColumn")
@@ -362,7 +366,7 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 				}
 			};
 			
-			tableAreaSources.setModel(tableModelAreaSources);
+			tableAreaSources.setModel(tableModelStartResources);
 			
 			// Set row height.
 			tableAreaSources.setRowHeight(28);
@@ -469,13 +473,27 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 	}
 
 	/**
-	 * Load area sources table.
+	 * Reload start resources table.
 	 */
-	private void loadAreaSourcesTable() {
+	private void reloadStartResourcesTable() {
 		try {
 			
 			// Clear table.
-			tableModelAreaSources.getDataVector().removeAllElements();
+			tableModelStartResources.getDataVector().removeAllElements();
+			
+			// Reload area object.
+			area = ProgramGenerator.getArea(area.getId());
+			
+			// If the above area doesn't exist, close the frame.
+			if (area == null) {
+				Safe.invokeLater(() -> {
+					// Close the frame.
+					if (parentFrameBase != null) {
+						parentFrameBase.close();
+					}
+				});
+				return;
+			}			
 			
 			// Load area sources from the database.
 			LinkedList<AreaSourceData> areaSourcesData = new LinkedList<AreaSourceData>();
@@ -536,9 +554,9 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 	}
 
 	/**
-	 * On new area source.
+	 * On new area start resource.
 	 */
-	private void onAddAreaSource() {
+	private void onAddStartResource() {
 		try {
 			
 			// Get selected items.
@@ -552,6 +570,9 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 			
 			// Add new item.
 			addAreaSource(areaResource.ref, version.ref, notLocalized.ref);
+			
+			// Update all components.
+			GeneratorMainFrame.updateAll();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -561,7 +582,7 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 	/**
 	 * On edit area source.
 	 */
-	private void onEditAreaSource() {
+	private void onEditStartResource() {
 		try {
 			
 			// Output objects.
@@ -580,6 +601,9 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 			
 			// Edit selected item.
 			editSelectedAreaSource(areaResource.ref, version.ref, notLocalized.ref);
+			
+			// Update all components.
+			GeneratorMainFrame.updateAll();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -589,10 +613,13 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 	/**
 	 * On update area sources.
 	 */
-	protected void onUpdateAreaSources() {
+	protected void onUpdateStartResources() {
 		try {
 			
-			loadAreaSourcesTable();
+			reloadStartResourcesTable();
+			
+			// Update all components.
+			GeneratorMainFrame.updateAll();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -607,7 +634,7 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 		try {
 			
 			if (event.getButton() == MouseEvent.BUTTON1 && event.getClickCount() == 2) {
-				onEditAreaSource();
+				onEditStartResource();
 			}
 		}
 		catch(Throwable expt) {
@@ -633,9 +660,9 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 				return false;
 			}
 			
-			areaResource.ref = (AreaResource) tableModelAreaSources.getValueAt(selectedRow, 0);
-			version.ref = (VersionObj) tableModelAreaSources.getValueAt(selectedRow, 1);
-			notLocalized.ref = (Boolean) tableModelAreaSources.getValueAt(selectedRow, 2);
+			areaResource.ref = (AreaResource) tableModelStartResources.getValueAt(selectedRow, 0);
+			version.ref = (VersionObj) tableModelStartResources.getValueAt(selectedRow, 1);
+			notLocalized.ref = (Boolean) tableModelStartResources.getValueAt(selectedRow, 2);
 			
 			return true;
 		}
@@ -669,7 +696,7 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 			}
 			
 			// Add new table row.
-			tableModelAreaSources.addRow(new Object [] { areaResource, version, notLocalized});
+			tableModelStartResources.addRow(new Object [] { areaResource, version, notLocalized});
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -719,7 +746,7 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 			if (result.isOK()) {
 				
 				// Add new table row.
-				tableModelAreaSources.addRow(new Object [] { areaResource, version, notLocalized});
+				tableModelStartResources.addRow(new Object [] { areaResource, version, notLocalized});
 			}
 			else if (result == MiddleResult.ELEMENT_ALREADY_EXISTS) {
 				Utility.show(this, "builder.messageAreaSourceAlreadyExists");
@@ -758,8 +785,8 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 			long areaId = area.getId();
 			
 			// Get old values.
-			AreaResource oldAreaResource = (AreaResource) tableModelAreaSources.getValueAt(selectedRow, 0);
-			VersionObj oldVersion = (VersionObj) tableModelAreaSources.getValueAt(selectedRow, 1);
+			AreaResource oldAreaResource = (AreaResource) tableModelStartResources.getValueAt(selectedRow, 0);
+			VersionObj oldVersion = (VersionObj) tableModelStartResources.getValueAt(selectedRow, 1);
 			
 			MiddleResult result = middle.login(login);
 			if (result.isOK()) {
@@ -782,9 +809,9 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 			// Update table item.
 			if (result.isOK()) {
 				
-				tableModelAreaSources.setValueAt(areaResource, selectedRow, 0);
-				tableModelAreaSources.setValueAt(version, selectedRow, 1);
-				tableModelAreaSources.setValueAt(notLocalized, selectedRow, 2);
+				tableModelStartResources.setValueAt(areaResource, selectedRow, 0);
+				tableModelStartResources.setValueAt(version, selectedRow, 1);
+				tableModelStartResources.setValueAt(notLocalized, selectedRow, 2);
 			}
 			else {
 				result.show(this);
@@ -798,7 +825,7 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 	/**
 	 * On remove area source.
 	 */
-	private void onRemoveAreaSource() {
+	private void onRemoveStartResource() {
 		try {
 			
 			// Get selected table item.
@@ -818,12 +845,12 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 			AreaResource areaResource = null;
 			VersionObj version = null;
 			
-			Object columnObject = tableModelAreaSources.getValueAt(selectedRow, 0);
+			Object columnObject = tableModelStartResources.getValueAt(selectedRow, 0);
 			if (columnObject instanceof AreaResource) {
 				areaResource = (AreaResource) columnObject;
 			}
 			
-			columnObject = tableModelAreaSources.getValueAt(selectedRow, 1);
+			columnObject = tableModelStartResources.getValueAt(selectedRow, 1);
 			if (columnObject instanceof VersionObj) {
 				version = (VersionObj) columnObject;
 			}
@@ -845,7 +872,10 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 			}
 			
 			// Remove table row.
-			tableModelAreaSources.removeRow(selectedRow);
+			tableModelStartResources.removeRow(selectedRow);
+			
+			// Update all components.
+			GeneratorMainFrame.updateAll();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -866,20 +896,23 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 				return;
 			}
 			
-			if (selectedRow >= tableModelAreaSources.getRowCount()) {
+			if (selectedRow >= tableModelStartResources.getRowCount()) {
 				return;
 			}
 			
 			// Get area resource object.
-			Object columnObject = tableModelAreaSources.getValueAt(selectedRow, 0);
+			Object columnObject = tableModelStartResources.getValueAt(selectedRow, 0);
 			if (!(columnObject instanceof AreaResource)) {
 				Utility.show(this, "builder.messageUnknownTableValueFound");
 				return;
 			}
 			AreaResource areaResource = (AreaResource) columnObject;
 			
-			TextResourceEditor.showDialog(this,
+			TextResourceEditorFrame.showDialog(this,
 					areaResource.getId(), areaResource.isSavedAsText(), true);
+			
+			// Update all components.
+			GeneratorMainFrame.updateAll();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -892,11 +925,11 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 	private void initializeToolBar() {
 		try {
 			
-			ToolBarKit.addToolBarButton(toolBarTable, "org/multipage/generator/images/add_item_icon.png", "builder.tooltipAddAreaSource", () -> onAddAreaSource());
-			ToolBarKit.addToolBarButton(toolBarTable, "org/multipage/generator/images/edit.png", "builder.tooltipEditAreaSource", () -> onEditAreaSource());
+			ToolBarKit.addToolBarButton(toolBarTable, "org/multipage/generator/images/add_item_icon.png", "builder.tooltipAddAreaSource", () -> onAddStartResource());
+			ToolBarKit.addToolBarButton(toolBarTable, "org/multipage/generator/images/edit.png", "builder.tooltipEditAreaSource", () -> onEditStartResource());
 			ToolBarKit.addToolBarButton(toolBarTable, "org/multipage/generator/images/edit_resource.png", "builder.tooltipEditResourceText", () -> onEditResourceText());
-			ToolBarKit.addToolBarButton(toolBarTable, "org/multipage/generator/images/remove_icon.png", "builder.tooltipRemoveAreaSource", () -> onRemoveAreaSource());
-			ToolBarKit.addToolBarButton(toolBarTable, "org/multipage/generator/images/update_icon.png", "builder.tooltipUpdateAreaSources", () -> onUpdateAreaSources());
+			ToolBarKit.addToolBarButton(toolBarTable, "org/multipage/generator/images/remove_icon.png", "builder.tooltipRemoveAreaSource", () -> onRemoveStartResource());
+			ToolBarKit.addToolBarButton(toolBarTable, "org/multipage/generator/images/update_icon.png", "builder.tooltipUpdateAreaSources", () -> onUpdateStartResources());
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -1036,11 +1069,12 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 	}
 
 	/**
-	 * Load start resource.
+	 * Reload old start resource.
 	 */
-	private void loadPanelInformation() {
+	private void reloadOldStartResource() {
 		try {
 			
+			// Check area.
 			if (area == null) {
 				return;
 			}
@@ -1048,8 +1082,18 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 			// Reload area object.
 			area = ProgramGenerator.getArea(area.getId());
 			
-			// Do not safe while loading.
-			loadingInformation = true;
+			// If the above area doesn't exist, close the frame.
+			if (area == null) {
+				Safe.invokeLater(() -> {
+					if (area == null) {
+						// Close the frame.
+						if (parentFrameBase != null) {
+							parentFrameBase.close();
+						}
+					}
+				});
+				return;
+			}
 			
 			// Update model.
 			if (resourcesModel != null) {
@@ -1072,9 +1116,6 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 			result = middle.loadContainerStartResource(login, area, resourceId, versionId, startResourceNotLocalized);
 			if (result.isNotOK()) {
 				result.show(this);
-				
-				// Enable saving.
-				loadingInformation = false;
 				return;
 			}
 			
@@ -1108,11 +1149,8 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 				}
 			}
 			
-			// Load area sources table.
-			loadAreaSourcesTable();
-			
-			// Enable saving.
-			loadingInformation = false;
+			// Update all components.
+			GeneratorMainFrame.updateAll();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -1181,13 +1219,8 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 				return;
 			}
 			
-			// If the dialog is loading information, do not execute this action.
-			if (loadingInformation) {
-				return;
-			}
-	
 			// Save information.
-			savePanelInformation();
+			saveStartResources();
 	
 			// Enable versions.
 			enableVersions(true);
@@ -1206,14 +1239,10 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 	}
 	
 	/**
-	 * Save information.
+	 * Save start resources.
 	 */
-	private void savePanelInformation() {
+	private void saveStartResources() {
 		try {
-			
-			if (loadingInformation) {
-				return;
-			}
 			
 			// Get selected resource.
 			Resource resource = (Resource) comboBoxResources.getSelectedItem();
@@ -1238,8 +1267,8 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 				return;
 			}
 			
-			// Update diagram.
-			updateInformation();
+			// Update all components.
+			GeneratorMainFrame.updateAll();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -1251,14 +1280,8 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 	 */
 	protected void onNotLocalizedAction() {
 		try {
-			
-			// If the dialog is loading information, do not execute this action.
-			if (loadingInformation) {
-				return;
-			}
-			
 			// Save information.
-			savePanelInformation();
+			saveStartResources();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -1280,8 +1303,11 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 			
 			Resource resource = (Resource) selected;
 			
-			TextResourceEditor.showDialog(this,
+			TextResourceEditorFrame.showDialog(this,
 					resource.getId(), resource.isSavedAsText(), true);
+			
+			// Update all components.
+			GeneratorMainFrame.updateAll();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -1310,19 +1336,14 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 			// Disable "start resource not localized" check box.
 			disableNotLocalized();
 			
-			// Update diagram.
-			updateInformation();
+			// Update all components.
+			GeneratorMainFrame.updateAll();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
 		};
 	}
-
-	private void updateInformation() {
-		// TODO Auto-generated method stub
-		
-	}
-
+	
 	/**
 	 * On versions editor.
 	 */
@@ -1379,7 +1400,7 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 		try {
 			
 			// Update information.
-			loadPanelInformation();
+			reloadOldStartResource();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -1393,7 +1414,7 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 		try {
 			
 			// Save start resource.
-			savePanelInformation();
+			saveStartResources();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -1414,8 +1435,8 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 	public void updateComponents() {
 		try {
 			
-			// TODO: <---MAKE Update components.
-			//j.log("UPDATE COMPONENTS");
+			reloadStartResourcesTable();
+			reloadOldStartResource(); // Old style start resources.
 		}
 		catch (Throwable e) {
 			Safe.exception(e);
@@ -1424,8 +1445,8 @@ public class AreaStartPanel extends JPanel implements EditorTabActions {
 }
 
 /**
- * 
- * @author
+ * Model for resources.
+ * @author vakol
  *
  */
 class ResourcesModel extends DefaultComboBoxModel {

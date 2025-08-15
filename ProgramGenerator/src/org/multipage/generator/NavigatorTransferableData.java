@@ -153,7 +153,7 @@ public class NavigatorTransferableData {
 	 * @param editor
 	 * @param buttonsPanel 
 	 */
-	public NavigatorTransferableData(String resourceVersionId, TextResourceEditor editor, NavigatorButtonsPanel buttonsPanel) {
+	public NavigatorTransferableData(String resourceVersionId, TextResourceEditorFrame editor, NavigatorButtonsPanel buttonsPanel) {
 		try {
 			
 			type = START_RESOURCE_EDITOR;
@@ -196,13 +196,13 @@ public class NavigatorTransferableData {
 	 * @return
 	 * @throws Exception
 	 */
-	public TextResourceEditor getStartResourceEditor()
+	public TextResourceEditorFrame getStartResourceEditor()
 			throws Exception {
 
-		if (type != START_RESOURCE_EDITOR || !(editor instanceof TextResourceEditor)) {
+		if (type != START_RESOURCE_EDITOR || !(editor instanceof TextResourceEditorFrame)) {
 			Utility.throwException("org.multipage.generator.messageBadNavigatorTransferableType");
 		}
-		return (TextResourceEditor) editor;
+		return (TextResourceEditorFrame) editor;
 	}
 	
 	/**
@@ -211,7 +211,7 @@ public class NavigatorTransferableData {
 	 * @param editor
 	 * @param buttonsPanel 
 	 */
-	public NavigatorTransferableData(long resourceId, TextResourceEditor editor, NavigatorButtonsPanel buttonsPanel) {
+	public NavigatorTransferableData(long resourceId, TextResourceEditorFrame editor, NavigatorButtonsPanel buttonsPanel) {
 		try {
 			
 			type = TEXT_RESOURCE_EDITOR;
@@ -275,13 +275,13 @@ public class NavigatorTransferableData {
 	 * @return
 	 * @throws Exception
 	 */
-	public TextResourceEditor getResourceEditor()
+	public TextResourceEditorFrame getResourceEditor()
 			throws Exception {
 
-		if (type != TEXT_RESOURCE_EDITOR || !(editor instanceof TextResourceEditor)) {
+		if (type != TEXT_RESOURCE_EDITOR || !(editor instanceof TextResourceEditorFrame)) {
 			Utility.throwException("org.multipage.generator.messageBadNavigatorTransferableType");
 		}
-		return (TextResourceEditor) editor;
+		return (TextResourceEditorFrame) editor;
 	}
 	
 	/**

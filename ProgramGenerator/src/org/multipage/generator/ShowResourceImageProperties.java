@@ -382,7 +382,7 @@ public class ShowResourceImageProperties extends JDialog {
 			}
 			else {
 				// Edit the resource.
-				TextResourceEditor.showDialog(this,
+				TextResourceEditorFrame.showDialog(this,
 						resource.getId(), resource.isSavedAsText(), true);
 			}
 		}

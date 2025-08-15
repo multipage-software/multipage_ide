@@ -54,7 +54,7 @@ import org.maclan.MimeType;
 import org.maclan.Resource;
 import org.multipage.basic.ProgramBasic;
 import org.multipage.generator.GeneratorMainFrame;
-import org.multipage.generator.TextResourceEditor;
+import org.multipage.generator.TextResourceEditorFrame;
 import org.multipage.gui.FoundAttr;
 import org.multipage.gui.Images;
 import org.multipage.gui.StateInputStream;
@@ -698,7 +698,7 @@ public class SearchTextResources extends JDialog {
 			FoundAttr foundAttributes = new FoundAttr(searchText, isCaseSensitive, isWholeWords);
 			
 			// Open editor.
-			TextResourceEditor.showDialog(this, resourceId, areaDescription, true,
+			TextResourceEditorFrame.showDialog(this, resourceId, areaDescription, true,
 					foundAttributes, false, 0L, false);	
 		}
 		catch(Throwable expt) {

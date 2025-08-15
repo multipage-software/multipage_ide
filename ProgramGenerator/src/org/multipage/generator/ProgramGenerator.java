@@ -165,7 +165,7 @@ public class ProgramGenerator {
 			CustomizedColors.setDefaultData();
 			OverviewControl.setDefaultData();
 			SlotEditorBasePanel.setDefaultData();
-			TextResourceEditor.setDefaultData();
+			TextResourceEditorFrame.setDefaultData();
 			AreaEditorFrameBase.setDefaultData();
 			ResourcesEditorDialog.setDefaultData();
 			AreaPropertiesPanel.setDefaultData();
@@ -229,7 +229,7 @@ public class ProgramGenerator {
 		CustomizedColors.seriliazeData(inputStream);
 		OverviewControl.seriliazeData(inputStream);
 		SlotEditorBasePanel.seriliazeData(inputStream);
-		TextResourceEditor.seriliazeData(inputStream);
+		TextResourceEditorFrame.seriliazeData(inputStream);
 		AreaEditorFrameBase.seriliazeData(inputStream);
 		ResourcesEditorDialog.seriliazeData(inputStream);
 		AreaPropertiesPanel.seriliazeData(inputStream);
@@ -294,7 +294,7 @@ public class ProgramGenerator {
 		CustomizedColors.serializeData(outputStream);
 		OverviewControl.serializeData(outputStream);
 		SlotEditorBasePanel.serializeData(outputStream);
-		TextResourceEditor.seriliazeData(outputStream);
+		TextResourceEditorFrame.seriliazeData(outputStream);
 		AreaEditorFrameBase.seriliazeData(outputStream);
 		ResourcesEditorDialog.seriliazeData(outputStream);
 		AreaPropertiesPanel.seriliazeData(outputStream);

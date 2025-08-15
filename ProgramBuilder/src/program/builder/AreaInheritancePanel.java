@@ -19,10 +19,13 @@ import org.maclan.Area;
 import org.maclan.Middle;
 import org.maclan.MiddleResult;
 import org.multipage.basic.ProgramBasic;
+import org.multipage.generator.AreaEditorFrameBase;
 import org.multipage.generator.EditorTabActions;
+import org.multipage.generator.GeneratorMainFrame;
 import org.multipage.generator.ProgramGenerator;
 import org.multipage.gui.CheckBoxList;
 import org.multipage.gui.CheckBoxListManager;
+import org.multipage.gui.UpdatableComponent;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Safe;
@@ -32,13 +35,18 @@ import org.multipage.util.Safe;
  * @author vakol
  *
  */
-public class AreaInheritancePanel extends JPanel implements EditorTabActions {
+public class AreaInheritancePanel extends JPanel implements EditorTabActions, UpdatableComponent {
 	
 	// $hide>>$
 	/**
 	 * Version.
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	/**
+	 * Reference to parent frame.
+	 */
+	private AreaEditorFrameBase parentFrameBase = null;
 	
 	/**
 	 * Edited area reference.
@@ -51,12 +59,14 @@ public class AreaInheritancePanel extends JPanel implements EditorTabActions {
 	 */
 	private JLabel labelSuperAreas;
 	private JScrollPane scrollPane;
-
+	
 	/**
 	 * Create the panel.
+	 * @param areaEditorFrameBase 
 	 */
-	public AreaInheritancePanel() {
-
+	public AreaInheritancePanel(AreaEditorFrameBase areaEditorFrameBase) {
+		
+		this.parentFrameBase = areaEditorFrameBase;
 		try {
 			initComponents();
 			postCreate(); // $hide$
@@ -122,13 +132,29 @@ public class AreaInheritancePanel extends JPanel implements EditorTabActions {
 	}
 
 	/**
-	 * Load inheritance.
+	 * Reload inheritance.
 	 */
-	private void loadInheritance() {
+	private void reloadInheritance() {
 		try {
+			
+			// Check area.
+			if (area == null) {
+				return;
+			}
 			
 			// Reload area object.
 			area = ProgramGenerator.getArea(area.getId());
+			
+			// If the above area doesn't exist, close the frame.
+			if (area == null) {
+				Safe.invokeLater(() -> {
+					// Close the frame.
+					if (parentFrameBase != null) {
+						parentFrameBase.close();
+					}
+				});
+				return;
+			}
 	
 			// Connect inheritance list.
 			CheckBoxList<Area> listInheritance = new CheckBoxList<Area>();
@@ -142,6 +168,12 @@ public class AreaInheritancePanel extends JPanel implements EditorTabActions {
 						Obj<String> text, Obj<Boolean> selected) {
 					
 					try {
+						// Check area.
+						if (area == null) {
+							return false;
+						}
+						
+						// Load superareas.
 						LinkedList<Area> superAreas = area.getSuperareas();
 						
 						// If the index is out of bounds, return false value.
@@ -206,8 +238,8 @@ public class AreaInheritancePanel extends JPanel implements EditorTabActions {
 			// Set inheritance.
 			area.setInheritanceLight(superArea.getId(), inherits);
 			
-			// Update information.
-			updateInformation();
+			// Update all components.
+			GeneratorMainFrame.updateAll();
 			
 			return true;
 		}
@@ -217,11 +249,6 @@ public class AreaInheritancePanel extends JPanel implements EditorTabActions {
 		return false;
 	}
 	
-	private void updateInformation() {
-		// TODO Auto-generated method stub
-		
-	}
-
 	/**
 	 * On load panel information.
 	 */
@@ -229,7 +256,7 @@ public class AreaInheritancePanel extends JPanel implements EditorTabActions {
 		try {
 			
 			// Load inheritance.
-			loadInheritance();
+			reloadInheritance();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -257,7 +284,11 @@ public class AreaInheritancePanel extends JPanel implements EditorTabActions {
 	public void updateComponents() {
 		try {
 			
+			// Reload inheritance checkox list.
+			reloadInheritance();
+			
 			// TODO: <---MAKE Update components.
+			
 		}
 		catch (Throwable e) {
 			Safe.exception(e);

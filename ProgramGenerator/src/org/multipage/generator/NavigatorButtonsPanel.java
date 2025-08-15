@@ -114,12 +114,12 @@ public class NavigatorButtonsPanel extends JPanel {
 	/**
 	 * Start resource frames map (resourceId_versionId->frame).
 	 */
-	private LinkedHashMap<String, TextResourceEditor> startResources = new LinkedHashMap<>();
+	private LinkedHashMap<String, TextResourceEditorFrame> startResources = new LinkedHashMap<>();
 	
 	/**
 	 * Resource frames map (resourceId->frame).
 	 */
-	private LinkedHashMap<Long, TextResourceEditor> resources = new LinkedHashMap<>();
+	private LinkedHashMap<Long, TextResourceEditorFrame> resources = new LinkedHashMap<>();
 	
 	/**
 	 * Area tree editor list.
@@ -562,7 +562,7 @@ public class NavigatorButtonsPanel extends JPanel {
 	 * @param editor
 	 * @param checkExists
 	 */
-	private void addStartResourceEditor(String resourceVersionId, TextResourceEditor editor, boolean checkExists)
+	private void addStartResourceEditor(String resourceVersionId, TextResourceEditorFrame editor, boolean checkExists)
 			throws Exception {
 		
 		try {
@@ -593,7 +593,7 @@ public class NavigatorButtonsPanel extends JPanel {
 	 * @param editor
 	 * @param checkExists
 	 */
-	public void addStartResourceEditor(long versionId, TextResourceEditor editor, boolean checkExists)
+	public void addStartResourceEditor(long versionId, TextResourceEditorFrame editor, boolean checkExists)
 			throws Exception {
 		
 		try {
@@ -615,11 +615,11 @@ public class NavigatorButtonsPanel extends JPanel {
 	 * @param versionId
 	 * @return
 	 */
-	public TextResourceEditor getStartResourceEditor(long resourceId, long versionId) {
+	public TextResourceEditorFrame getStartResourceEditor(long resourceId, long versionId) {
 
 		try {
 			String resourceVersionId = String.format(RESOURCE_VERSION_ID_TEMPLATE, resourceId, versionId);
-			TextResourceEditor editor = startResources.get(resourceVersionId);
+			TextResourceEditorFrame editor = startResources.get(resourceVersionId);
 			return editor;
 		}
 		catch (Throwable e) {
@@ -708,7 +708,7 @@ public class NavigatorButtonsPanel extends JPanel {
 	 * @param editor
 	 * @param checkExists
 	 */
-	public void addResourceEditor(TextResourceEditor editor, boolean checkExists)
+	public void addResourceEditor(TextResourceEditorFrame editor, boolean checkExists)
 			throws Exception {
 		
 		try {
@@ -738,10 +738,10 @@ public class NavigatorButtonsPanel extends JPanel {
 	 * @param resourceId
 	 * @return
 	 */
-	public TextResourceEditor getResourceEditor(long resourceId) {
+	public TextResourceEditorFrame getResourceEditor(long resourceId) {
 		
 		try {
-			TextResourceEditor editor = resources.get(resourceId);
+			TextResourceEditorFrame editor = resources.get(resourceId);
 			return editor;
 		}
 		catch (Throwable e) {
@@ -1395,7 +1395,7 @@ public class NavigatorButtonsPanel extends JPanel {
 
 		try {
 			// Get editor object.
-			TextResourceEditor editor = startResources.get(resourceVersionId);
+			TextResourceEditorFrame editor = startResources.get(resourceVersionId);
 			if (editor == null) {
 				return null;
 			}
@@ -1435,7 +1435,7 @@ public class NavigatorButtonsPanel extends JPanel {
 		
 		try {
 			// Get editor object.
-			TextResourceEditor editor = resources.get(resourceId);
+			TextResourceEditorFrame editor = resources.get(resourceId);
 			if (editor == null) {
 				return null;
 			}
@@ -1909,7 +1909,7 @@ public class NavigatorButtonsPanel extends JPanel {
 			boolean move = (dropAction & DnDConstants.ACTION_MOVE) != 0 &&
 						   (dropAction & DnDConstants.ACTION_COPY) == 0;
 			
-			TextResourceEditor resourceEditor;
+			TextResourceEditorFrame resourceEditor;
 			switch (type) {
 			
 			case NavigatorTransferableData.AREA_EDITOR:
@@ -1938,7 +1938,7 @@ public class NavigatorButtonsPanel extends JPanel {
 				
 			case NavigatorTransferableData.START_RESOURCE_EDITOR:
 				long versionId = data.getVersionId();
-				TextResourceEditor startResourceEditor = data.getStartResourceEditor();
+				TextResourceEditorFrame startResourceEditor = data.getStartResourceEditor();
 				targetButtonPanel.addStartResourceEditor(versionId, startResourceEditor, false);
 				if (move) {
 					sourceButtonPanel.startResources.remove(key);
@@ -2036,7 +2036,7 @@ public class NavigatorButtonsPanel extends JPanel {
 		try {
 			
 			// Toggle editor visibility.
-			TextResourceEditor editor = startResources.get(resourceVersionId);
+			TextResourceEditorFrame editor = startResources.get(resourceVersionId);
 			if (editor == null) {
 				
 				// If the editor was not found remove related button.
@@ -2060,7 +2060,7 @@ public class NavigatorButtonsPanel extends JPanel {
 		try {
 			
 			// Toggle editor visibility.
-			TextResourceEditor editor = resources.get(resourceId);
+			TextResourceEditorFrame editor = resources.get(resourceId);
 			if (editor == null) {
 				
 				// If the editor was not found remove related button.

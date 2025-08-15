@@ -37,7 +37,7 @@ import org.multipage.generator.SlotEditorBasePanel;
 import org.multipage.generator.SlotEditorBasePanel.Callbacks;
 import org.multipage.generator.SlotEditorFrame;
 import org.multipage.generator.SlotListPanel;
-import org.multipage.generator.TextResourceEditor;
+import org.multipage.generator.TextResourceEditorFrame;
 import org.multipage.gui.FoundAttr;
 import org.multipage.gui.SerializeStateAdapter;
 import org.multipage.gui.StateInputStream;
@@ -385,7 +385,7 @@ public class ProgramBuilder extends ProgramGenerator {
 			Resource resource = SelectAreaTextResources.showDialog(GeneratorMainFrame.getFrame(), area);
 			// Edit text resource.
 			if (resource != null) {
-				TextResourceEditor.showDialog(parentComponent, resource.getId(), inherits, area,
+				TextResourceEditorFrame.showDialog(parentComponent, resource.getId(), inherits, area,
 						false, versionId, false);
 			}
 		}

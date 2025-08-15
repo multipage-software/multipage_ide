@@ -3100,7 +3100,7 @@ public class GeneratorMainFrame extends JFrame implements UpdatableComponent, Pr
 			}
 			
 			// Edit text resource.
-			TextResourceEditor.showDialog(parentComponent, resourceId.ref,
+			TextResourceEditorFrame.showDialog(parentComponent, resourceId.ref,
 					savedAsText.ref, theArea, true, versionId.ref, false);
 		}
 		catch(Throwable expt) {
@@ -3118,7 +3118,7 @@ public class GeneratorMainFrame extends JFrame implements UpdatableComponent, Pr
 			Component parentComponent = GeneratorMainFrame.getFrame();
 	
 			// Edit text resource.
-			TextResourceEditor.showDialog(parentComponent, resourceId, true, false);
+			TextResourceEditorFrame.showDialog(parentComponent, resourceId, true, false);
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);

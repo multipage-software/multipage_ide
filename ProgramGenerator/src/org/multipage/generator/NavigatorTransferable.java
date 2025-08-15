@@ -102,7 +102,7 @@ public class NavigatorTransferable implements Transferable {
 	 * @param editor
 	 * @param buttonsPanel
 	 */
-	public NavigatorTransferable(String resourceVersionId, TextResourceEditor editor, NavigatorButtonsPanel buttonsPanel) {
+	public NavigatorTransferable(String resourceVersionId, TextResourceEditorFrame editor, NavigatorButtonsPanel buttonsPanel) {
 		try {
 			
 			// Delegate call.
@@ -119,7 +119,7 @@ public class NavigatorTransferable implements Transferable {
 	 * @param editor
 	 * @param buttonsPanel
 	 */
-	public NavigatorTransferable(Long resourceId, TextResourceEditor editor, NavigatorButtonsPanel buttonsPanel) {
+	public NavigatorTransferable(Long resourceId, TextResourceEditorFrame editor, NavigatorButtonsPanel buttonsPanel) {
 		try {
 			
 			// Delegate call.

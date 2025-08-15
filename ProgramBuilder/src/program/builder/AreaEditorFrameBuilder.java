@@ -479,7 +479,7 @@ public class AreaEditorFrameBuilder extends AreaEditorFrameBase {
 		try {
 			
 			// Area inheritance editor.
-			panelInheritance = new AreaInheritancePanel();
+			panelInheritance = new AreaInheritancePanel(this);
 			panelInheritance.setArea(area);
 			insertTabContent(panelInheritanceAux, panelInheritance);
 			
@@ -489,7 +489,7 @@ public class AreaEditorFrameBuilder extends AreaEditorFrameBase {
 			insertTabContent(panelResourcesAux, panelResources);
 			
 			// Area start resource panel.
-			panelAreaStart = new AreaStartPanel();
+			panelAreaStart = new AreaStartPanel(this);
 			panelAreaStart.setReferences(area, panelResources);
 			insertTabContent(panelStartAux, panelAreaStart);
 			

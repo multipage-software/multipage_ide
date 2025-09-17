@@ -51,7 +51,7 @@ import org.multipage.util.Safe;
  * @author vakol
  *
  */
-public class TextResourceEditorPanel extends JFrame {
+public class TextResourceEditorPanel extends JPanel {
 
 	// $hide>>$
 	/**
@@ -193,17 +193,9 @@ public class TextResourceEditorPanel extends JFrame {
 	 */
 	private void initComponents() {
 		
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				onClose();
-			}
-		});
-		setTitle("org.multipage.generator.textEditor");
-		setBounds(100, 100, 800, 600);
+		
 		SpringLayout springLayout = new SpringLayout();
-		getContentPane().setLayout(springLayout);
+		setLayout(springLayout);
 		
 		buttonClose = new JButton("textClose");
 		buttonClose.addActionListener(new ActionListener() {
@@ -215,9 +207,9 @@ public class TextResourceEditorPanel extends JFrame {
 		buttonClose.setMaximumSize(new Dimension(80, 25));
 		buttonClose.setMinimumSize(new Dimension(80, 25));
 		buttonClose.setPreferredSize(new Dimension(80, 25));
-		springLayout.putConstraint(SpringLayout.SOUTH, buttonClose, -10, SpringLayout.SOUTH, getContentPane());
-		springLayout.putConstraint(SpringLayout.EAST, buttonClose, -10, SpringLayout.EAST, getContentPane());
-		getContentPane().add(buttonClose);
+		springLayout.putConstraint(SpringLayout.SOUTH, buttonClose, -10, SpringLayout.SOUTH, this);
+		springLayout.putConstraint(SpringLayout.EAST, buttonClose, -10, SpringLayout.EAST, this);
+		add(buttonClose);
 		
 		buttonSave = new JButton("textSave");
 		springLayout.putConstraint(SpringLayout.NORTH, buttonSave, 0, SpringLayout.NORTH, buttonClose);
@@ -230,14 +222,14 @@ public class TextResourceEditorPanel extends JFrame {
 		buttonSave.setMargin(new Insets(0, 0, 0, 0));
 		buttonSave.setMaximumSize(new Dimension(80, 25));
 		buttonSave.setMinimumSize(new Dimension(80, 25));
-		getContentPane().add(buttonSave);
+		add(buttonSave);
 		
 		editorPanel = new JPanel();
-		springLayout.putConstraint(SpringLayout.NORTH, editorPanel, 26, SpringLayout.NORTH, getContentPane());
-		springLayout.putConstraint(SpringLayout.WEST, editorPanel, 0, SpringLayout.WEST, getContentPane());
+		springLayout.putConstraint(SpringLayout.NORTH, editorPanel, 26, SpringLayout.NORTH, this);
+		springLayout.putConstraint(SpringLayout.WEST, editorPanel, 0, SpringLayout.WEST, this);
 		springLayout.putConstraint(SpringLayout.SOUTH, editorPanel, -6, SpringLayout.NORTH, buttonClose);
-		springLayout.putConstraint(SpringLayout.EAST, editorPanel, 0, SpringLayout.EAST, getContentPane());
-		getContentPane().add(editorPanel);
+		springLayout.putConstraint(SpringLayout.EAST, editorPanel, 0, SpringLayout.EAST, this);
+		add(editorPanel);
 		editorPanel.setLayout(new BorderLayout(0, 0));
 		
 		buttonSaveAndClose = new JButton("org.multipage.generator.textSaveAndClose");
@@ -251,7 +243,7 @@ public class TextResourceEditorPanel extends JFrame {
 		buttonSaveAndClose.setPreferredSize(new Dimension(120, 25));
 		springLayout.putConstraint(SpringLayout.NORTH, buttonSaveAndClose, 0, SpringLayout.NORTH, buttonClose);
 		springLayout.putConstraint(SpringLayout.EAST, buttonSaveAndClose, -6, SpringLayout.WEST, buttonClose);
-		getContentPane().add(buttonSaveAndClose);
+		add(buttonSaveAndClose);
 	}
 	
 	/**
@@ -289,8 +281,8 @@ public class TextResourceEditorPanel extends JFrame {
 	 */
 	protected void onClose() {
 		try {
-			
-			close();
+			// TODO: <---REFACTOR On close.
+			//close();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -318,14 +310,12 @@ public class TextResourceEditorPanel extends JFrame {
 			// Create editor.
 			createEditor();
 			// Add top most window toggle button.
-			TopMostButton.add(this, getContentPane());
+			// TODO: <---REFACTOR Add to top conatiner, not this panel.
+			TopMostButton.add(this, this);
 			// Localize.
 			localize();
 			// Set icons.
 			setIcons();
-			// Set title.
-			String title = createTitle();
-			setTitle(title);
 			// Initialize intellisens.
 			intellisense();
 			// Load resource data.
@@ -396,7 +386,9 @@ public class TextResourceEditorPanel extends JFrame {
 	private void createEditor() {
 		try {
 			
-			editor = new TextEditorPane(this, false);
+			Window thisWindow = Utility.findWindow(this);
+			
+			editor = new TextEditorPane(thisWindow, false);
 			editor.setExtractBody(false);
 			editorPanel.add(editor);
 		}
@@ -427,7 +419,6 @@ public class TextResourceEditorPanel extends JFrame {
 	private void setIcons() {
 		try {
 			
-			setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
 			buttonClose.setIcon(Images.getIcon("org/multipage/generator/images/cancel_icon.png"));
 			buttonSave.setIcon(Images.getIcon("org/multipage/generator/images/save_icon.png"));
 			buttonSaveAndClose.setIcon(Images.getIcon("org/multipage/generator/images/save_icon.png"));
@@ -490,7 +481,8 @@ public class TextResourceEditorPanel extends JFrame {
 		try {
 			
 			save();
-			close();
+			// TODO: <---REFACTOR On close.
+			//close();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);

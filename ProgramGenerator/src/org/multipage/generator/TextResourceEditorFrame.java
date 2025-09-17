@@ -12,13 +12,16 @@ import java.awt.Rectangle;
 import java.awt.Window;
 import java.io.IOException;
 
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 
 import org.maclan.Area;
 import org.multipage.gui.FoundAttr;
+import org.multipage.gui.Images;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
+import org.multipage.util.Closable;
 import org.multipage.util.Safe;
 
 /**
@@ -26,7 +29,7 @@ import org.multipage.util.Safe;
  * @author vakol
  * 
  */
-public class TextResourceEditorFrame  extends JFrame {
+public class TextResourceEditorFrame  extends JFrame implements Closable {
 	
 	/**
 	 * Version.
@@ -178,20 +181,53 @@ public class TextResourceEditorFrame  extends JFrame {
 	 */
 	public TextResourceEditorFrame() {
 		try {
-			
-			loadDialog();
+			initComponents();
+			postCreate(); //$hide$
 		}
 		catch (Throwable e) {
 			Safe.exception(e);
 		}
 	}
 	
+	
+
+	/**
+	 * Initialize components.
+	 */
+	private void initComponents() {
+		
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		setTitle("org.multipage.generator.textEditor");
+		setBounds(100, 100, 800, 600);
+	}
+	
+	/**
+	 * Post create.
+	 */
+	private void postCreate() {
+		
+		// Set title.
+		String title = editorPanel.createTitle();
+		setTitle(title);
+		setIcons();
+		
+		loadDialog();
+	}
+
+	/**
+	 * Set icons.
+	 */
+	private void setIcons() {
+		
+		setIconImage(Images.getImage("org/multipage/generator/images/main_icon.png"));
+	}
+
 	/**
 	 * Close dialog.
 	 */
 	// TODO: <---REFACTOR Move the close frame event to the frame object. 
 	public void close() {
-		try {
+		/*try {
 			// Remove editor from the navigator window.
 			if (isStartResource) {
 				DialogNavigator.removeStartResourceEditor(resourceId, versionId);
@@ -206,7 +242,7 @@ public class TextResourceEditorFrame  extends JFrame {
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
-		};
+		};*/
 			
 		// Dispose window.
 		dispose();

@@ -261,6 +261,8 @@ public class AreaLocalMenuBuilder extends AreaLocalMenu {
 			});
 			menuEditArea.add(menuEditHelp);
 			
+			menuEditArea.addSeparator();
+			
 			JMenuItem menuSetFlags = new JMenuItem(Resources.getString("builder.menuAreaSetFlags"));
 			menuSetFlags.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {

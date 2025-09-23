@@ -12,7 +12,6 @@ import java.awt.Rectangle;
 import java.awt.Window;
 import java.io.IOException;
 
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 
 import org.maclan.Area;
@@ -20,9 +19,12 @@ import org.multipage.gui.FoundAttr;
 import org.multipage.gui.Images;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
+import org.multipage.gui.TopMostButton;
 import org.multipage.gui.Utility;
 import org.multipage.util.Closable;
 import org.multipage.util.Safe;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 /**
  * Text resource editor frame.
@@ -137,15 +139,15 @@ public class TextResourceEditorFrame  extends JFrame implements Closable {
 		try {
 			
 			// Get already opened editor.
-			TextResourceEditorFrame dialog = null;
+			TextResourceEditorFrame frame = null;
 			if (isStartResource) {
-				dialog = DialogNavigator.getStartResourceEditor(resourceId, versionId);
+				frame = DialogNavigator.getStartResourceEditor(resourceId, versionId);
 			}
 			else {
-				dialog = DialogNavigator.getResourceEditor(resourceId);
+				frame = DialogNavigator.getResourceEditor(resourceId);
 			}
 			
-			if (dialog == null) {
+			if (frame == null) {
 				Window parentWindow = Utility.findWindow(component);
 		
 				// If the resource is not set as text, inform user and exit
@@ -157,19 +159,27 @@ public class TextResourceEditorFrame  extends JFrame implements Closable {
 				
 				// Create new dialog poanel.
 				editorPanel = new TextResourceEditorPanel(null, resourceId, isStartResource, versionId,
-																				  areaDescription, modal);
+														  areaDescription, modal);
 				editorPanel.setFoundAttributes(foundAttributes);
-				dialog = new TextResourceEditorFrame();
-				dialog.setContentPane(editorPanel);
+				// Create new frame.
+				frame = new TextResourceEditorFrame();
+				frame.setContentPane(editorPanel);
 				if (isStartResource) {
-					DialogNavigator.addStartResourceEditor(versionId, dialog);
+					DialogNavigator.addStartResourceEditor(versionId, frame);
 				}
 				else {
-					DialogNavigator.addResourceEditor(dialog);
+					DialogNavigator.addResourceEditor(frame);
 				}
 			}
 			
-			dialog.setVisible(true);
+			// Set close lambda.
+			final TextResourceEditorFrame thisFrame = frame;
+			editorPanel.setCloseLambda(() -> {
+				thisFrame.close();
+			});
+			
+			// Set frame visible.
+			frame.setVisible(true);
 		}
 		catch (Throwable e) {
 			Safe.exception(e);
@@ -195,10 +205,15 @@ public class TextResourceEditorFrame  extends JFrame implements Closable {
 	 * Initialize components.
 	 */
 	private void initComponents() {
-		
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setTitle("org.multipage.generator.textEditor");
 		setBounds(100, 100, 800, 600);
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				close();
+			}
+		});
 	}
 	
 	/**
@@ -210,6 +225,10 @@ public class TextResourceEditorFrame  extends JFrame implements Closable {
 		String title = editorPanel.createTitle();
 		setTitle(title);
 		setIcons();
+		
+		// Add top most window toggle button.
+		Window thisWindow = Utility.findWindow(this);
+		TopMostButton.add(thisWindow, editorPanel);
 		
 		loadDialog();
 	}
@@ -225,24 +244,27 @@ public class TextResourceEditorFrame  extends JFrame implements Closable {
 	/**
 	 * Close dialog.
 	 */
-	// TODO: <---REFACTOR Move the close frame event to the frame object. 
 	public void close() {
-		/*try {
+		try {
+			
+			// Process possible new content.
+			editorPanel.processNewContent();
+			// Save dialog data.
+			saveDialog();
+			
 			// Remove editor from the navigator window.
-			if (isStartResource) {
+			long resourceId = editorPanel.getResourceId();
+			long versionId = editorPanel.getVersionId();
+			if (editorPanel.isStartResource) {
 				DialogNavigator.removeStartResourceEditor(resourceId, versionId);
 			}
 			else {
 				DialogNavigator.removeResourceEditor(resourceId);
 			}
-			// Process possible new content.
-			processNewContent();
-			// Save dialog data.
-			saveDialog();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
-		};*/
+		};
 			
 		// Dispose window.
 		dispose();
@@ -287,7 +309,7 @@ public class TextResourceEditorFrame  extends JFrame implements Closable {
 	public long getResourceId() {
 		try {
 			
-			editorPanel.getResourceId();
+			return editorPanel.getResourceId();
 		}
 		catch (Throwable e) {
 			Safe.exception(e);

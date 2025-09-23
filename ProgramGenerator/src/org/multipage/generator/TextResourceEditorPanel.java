@@ -17,14 +17,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.Properties;
 
 import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SpringLayout;
@@ -40,7 +36,6 @@ import org.multipage.gui.Images;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.TextEditorPane;
-import org.multipage.gui.TopMostButton;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
@@ -152,6 +147,11 @@ public class TextResourceEditorPanel extends JPanel {
 	 * Menu add in.
 	 */
 	private GeneratorTextPopupMenuAddIn popupMenuAddIn;
+	
+	/**
+	 * Close lambda.
+	 */
+	private Runnable closeLambda = null;
 
 	// $hide<<$
 	/**
@@ -174,7 +174,6 @@ public class TextResourceEditorPanel extends JPanel {
 	public TextResourceEditorPanel(Window parentWindow, long resourceId, boolean isStartResource,
 			long versionId, String areaDescription, boolean modal) {
 		
-		// TODO: <---MAKE Set dialog modality.
 		try {
 			// Initialize components.
 			initComponents();
@@ -281,15 +280,16 @@ public class TextResourceEditorPanel extends JPanel {
 	 */
 	protected void onClose() {
 		try {
-			// TODO: <---REFACTOR On close.
-			//close();
+			saveDialog();
+			// Call close lambda function.
+			if (closeLambda != null) {
+				closeLambda.run();
+			}
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
 		};
 	}
-	
-
 
 	/**
 	 * Post creation.
@@ -309,9 +309,6 @@ public class TextResourceEditorPanel extends JPanel {
 			
 			// Create editor.
 			createEditor();
-			// Add top most window toggle button.
-			// TODO: <---REFACTOR Add to top conatiner, not this panel.
-			TopMostButton.add(this, this);
 			// Localize.
 			localize();
 			// Set icons.
@@ -481,8 +478,7 @@ public class TextResourceEditorPanel extends JPanel {
 		try {
 			
 			save();
-			// TODO: <---REFACTOR On close.
-			//close();
+			onClose();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -576,7 +572,7 @@ public class TextResourceEditorPanel extends JPanel {
 	/**
 	 * Process possible new content. 
 	 */
-	private void processNewContent() {
+	public void processNewContent() {
 		try {
 			
 			if (safeText == null) {
@@ -647,5 +643,14 @@ public class TextResourceEditorPanel extends JPanel {
 		catch(Throwable expt) {
 			Safe.exception(expt);
 		};
+	}
+	
+	/**
+	 * Set close lambda.
+	 * @param closeLambda
+	 */
+	public void setCloseLambda(Runnable closeLambda) {
+		
+		this.closeLambda  = closeLambda;
 	}
 }

@@ -1,5 +1,5 @@
 # Multipage IDE with Maclan macrolanguage
-Multipage IDE with Maclan macrolanguage for development of software elements.
+Multipage IDE with Maclan macrolanguage intended for development of software elements.
 <br>
 <br>
 [📚 GUI Reference (CZ)](https://multipage-software.github.io/multipage_books/)

@@ -7,5 +7,4 @@ Multipage IDE with Maclan macrolanguage is designed for development of software 
 <br>
 <img src="./assets/multipage_ide_intro.gif" alt="Multipage IDE Introduction"/>
 <br>
-<br>
 <h3><a href="https://youtu.be/fw5BaMaMYhI/"> ► Go to Full Multipage IDE Introduction Video ◄ </a></h3>

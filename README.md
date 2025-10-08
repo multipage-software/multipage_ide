@@ -5,7 +5,7 @@ Multipage IDE with Maclan macrolanguage intended for development of software ele
 - **Maclan** macrolanguage can manipulate with these software elements.
 <br>
 <br>
-![Multipage IDE Introduction](assets/multipage_ide_intro.gif)
+<img src="./assets/multipage_ide_intro.gif" alt="Multipage IDE Introduction"/>
 <br>
 <br>
->## [ ► Go to Full Multipage IDE Introduction Video ◄ ](https://youtu.be/fw5BaMaMYhI/)
+<h3><a href="https://youtu.be/fw5BaMaMYhI/"> ► Go to Full Multipage IDE Introduction Video ◄ </a></h3>

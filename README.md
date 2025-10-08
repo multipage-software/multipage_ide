@@ -1,5 +1,5 @@
 # Multipage IDE with Maclan macrolanguage
-Multipage IDE with Maclan macrolanguage intended for development of software elements.
+Multipage IDE with Maclan macrolanguage is designed for development of software elements.
 - **Multipage** can cooperate with other IDEs.
 - You can create reusable software elements.
 - **Maclan** macrolanguage can manipulate with these software elements.

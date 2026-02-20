@@ -44,13 +44,14 @@ import org.multipage.gui.TopMostButton;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
 import org.multipage.util.Safe;
+import org.multipage.util.Saveable;
 
 /**
  * Frame that displays editor of area properties.
  * @author vakol
  *
  */
-public class AreaEditorFrameBuilder extends AreaEditorFrameBase {
+public class AreaEditorFrameBuilder extends AreaEditorFrameBase implements Saveable {
 
 	// $hide>>$
 
@@ -857,6 +858,22 @@ public class AreaEditorFrameBuilder extends AreaEditorFrameBase {
 	}
 	
 	/**
+	 * Save changes.
+	 */
+	@Override
+	public boolean save() {
+		try {
+			super.save();
+			panelConstructors.save();
+			return true;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+			return false;
+		}
+	}
+	
+	/**
 	 * Update dialog components. 
 	 */
 	@Override
@@ -868,7 +885,7 @@ public class AreaEditorFrameBuilder extends AreaEditorFrameBase {
 			// Update this object components.
 			panelInheritance.updateComponents();
 			panelAreaStart.updateComponents();
-			//panelConstructors.updateComponents();
+			panelConstructors.updateComponents();
 			//panelAreaHelpEditor.updateComponents();
 		}
 		catch (Throwable e) {

@@ -40,6 +40,7 @@ import org.multipage.gui.IdentifierTreePath;
 import org.multipage.gui.Images;
 import org.multipage.gui.RendererJLabel;
 import org.multipage.gui.ToolBarKit;
+import org.multipage.gui.UpdatableComponent;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
@@ -50,7 +51,7 @@ import org.multipage.util.Safe;
  * @author vakol
  *
  */
-public class AreasTreePanel extends JPanel {
+public class AreasTreePanel extends JPanel implements UpdatableComponent {
 	
 	// $hide>>$
 	/**
@@ -444,7 +445,7 @@ public class AreasTreePanel extends JPanel {
 			// Remove area.
 			GeneratorMainFrame.getVisibleAreasDiagram().removeDiagramArea(shapesSet, parentArea, this);
 	
-			updateData();
+			updateComponents();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -474,7 +475,7 @@ public class AreasTreePanel extends JPanel {
 				// Select and expand area item.
 				if (newArea.ref != null) {
 					
-					updateData();
+					updateComponents();
 					AreaTreeState.addSelectionAndExpandIt(tree, selectedPaths);
 				}
 			}
@@ -503,13 +504,13 @@ public class AreasTreePanel extends JPanel {
 	private void createToolBar() {
 		try {
 			
-			ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/expand_icon.png", this, "onExpandTree", "org.multipage.generator.tooltipExpandTree");
-			ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/collapse_icon.png", this, "onCollapseTree", "org.multipage.generator.tooltipCollapseTree");
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/expand_icon.png", "org.multipage.generator.tooltipExpandTree", () -> onExpandTree());
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/collapse_icon.png", "org.multipage.generator.tooltipCollapseTree", () -> onCollapseTree());
 			if (ProgramGenerator.isExtensionToBuilder()) {
-				ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/add_item_icon.png", this, "onAddSubArea", "org.multipage.generator.tooltipAddArea");
+				ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/add_item_icon.png", "org.multipage.generator.tooltipAddArea", () -> onAddSubArea());
 			}
-			ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/edit.png", this, "onEdit", "org.multipage.generator.tooltipEditArea");
-			ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/update_icon.png", this, "onUpdate", "org.multipage.generator.tooltipUpdateAreasTree");
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/edit.png", "org.multipage.generator.tooltipEditArea", () -> onEdit());
+			ToolBarKit.addToolBarButton(toolBar, "org/multipage/generator/images/update_icon.png", "org.multipage.generator.tooltipUpdateAreasTree", () -> onUpdate());
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -572,7 +573,7 @@ public class AreasTreePanel extends JPanel {
 							 }
 						}
 		
-						renderer.setText(object instanceof Area ? ((Area) object).getDescriptionForDiagram() : object.toString());
+						renderer.setText(object instanceof Area ? ((Area) object).getDescriptionForGui() : object.toString());
 						renderer.set(selected, hasFocus, row);
 					}
 					catch (Throwable e) {
@@ -795,38 +796,6 @@ public class AreasTreePanel extends JPanel {
 	}
 
 	/**
-	 * Update data.
-	 */
-	private void updateData() {
-		try {
-			
-			if (rootArea != null) {
-				rootArea = ProgramGenerator.getArea(rootArea.getId());
-			}
-			
-			Safe.invokeLater(() -> {
-				loadAreasTree();
-			});
-		}
-		catch(Throwable expt) {
-			Safe.exception(expt);
-		};
-	}
-
-	/**
-	 * On update.
-	 */
-	public void onUpdate() {
-		try {
-			
-			updateData();
-		}
-		catch(Throwable expt) {
-			Safe.exception(expt);
-		};
-	}
-	
-	/**
 	 * On add area.
 	 */
 	public void onAddArea() {
@@ -846,7 +815,7 @@ public class AreasTreePanel extends JPanel {
 			Area newArea = new Area();
 			diagram.addNewAreaConservatively(area, newArea, this);
 			
-			updateData();
+			updateComponents();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -869,6 +838,20 @@ public class AreasTreePanel extends JPanel {
 			
 			// Execute area editor.
 			AreaEditorFrame.showDialog(null, area);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+	}
+	
+	/**
+	 * On update.
+	 */
+	private void onUpdate() {
+		try {
+			
+			// Delegate the call.
+			updateComponents();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -942,5 +925,25 @@ public class AreasTreePanel extends JPanel {
 	public void setSelectionWithSubListener(Consumer<Area> areaListener) {
 		
 		this.areaWithSubAreasListener = areaListener;
+	}
+	
+	/**
+	 * Update components.
+	 */
+	@Override
+	public void updateComponents() {
+		try {
+			
+			if (rootArea != null) {
+				rootArea = ProgramGenerator.getArea(rootArea.getId());
+			}
+			
+			Safe.invokeLater(() -> {
+				loadAreasTree();
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 }

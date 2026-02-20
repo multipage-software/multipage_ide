@@ -10,6 +10,8 @@ package org.multipage.generator;
 import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.Window;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 
 import javax.swing.JFrame;
@@ -23,8 +25,6 @@ import org.multipage.gui.TopMostButton;
 import org.multipage.gui.Utility;
 import org.multipage.util.Closable;
 import org.multipage.util.Safe;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
 /**
  * Text resource editor frame.
@@ -261,6 +261,9 @@ public class TextResourceEditorFrame  extends JFrame implements Closable {
 			else {
 				DialogNavigator.removeResourceEditor(resourceId);
 			}
+			
+			// Close editor panel.
+			editorPanel.close();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);

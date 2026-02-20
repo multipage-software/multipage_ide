@@ -589,7 +589,7 @@ public class AreaDependenciesPanelBuilder extends AreaDependenciesPanelBase {
 					try {
 						
 						if (value instanceof Area) {
-							super.setValue(((Area) value).getDescriptionForDiagram());
+							super.setValue(((Area) value).getDescriptionForGui());
 							return;
 						}
 						super.setValue(value);

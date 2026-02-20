@@ -41,7 +41,7 @@ public class TextFieldEx extends JTextField {
 			Safe.exception(expt);
 		};
 	}
-	
+		
 	/**
 	 * Get popup menu.
 	 * @return

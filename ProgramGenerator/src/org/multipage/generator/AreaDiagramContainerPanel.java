@@ -419,7 +419,7 @@ public class AreaDiagramContainerPanel extends JPanel implements TabItemInterfac
 	protected void onSelectFavorite() {
 		try {
 			
-			Safe.tryUpdate(this, () -> {
+			Safe.tryToUpdate(this, () -> {
 				listAreas.clearSelection();
 			});
 			
@@ -480,7 +480,7 @@ public class AreaDiagramContainerPanel extends JPanel implements TabItemInterfac
 		try {
 			
 			// Clear selection in favorites.
-			Safe.tryUpdate(AreaDiagramContainerPanel.this, () -> {
+			Safe.tryToUpdate(AreaDiagramContainerPanel.this, () -> {
 				listFavorites.clearSelection();
 			});
 			
@@ -542,7 +542,7 @@ public class AreaDiagramContainerPanel extends JPanel implements TabItemInterfac
 	protected void onEscapeKey() {
 		try {
 			
-			Safe.tryUpdate(AreaDiagramContainerPanel.this, () -> {
+			Safe.tryToUpdate(AreaDiagramContainerPanel.this, () -> {
 				listAreas.clearSelection();
 				listFavorites.clearSelection();
 			});
@@ -1604,7 +1604,7 @@ public class AreaDiagramContainerPanel extends JPanel implements TabItemInterfac
 	 * Load siblings.
 	 */
 	private void loadAreaSiblings() {
-		Safe.tryUpdate(this, () -> {
+		Safe.tryToUpdate(this, () -> {
 			
 			// Remember current selection.
 			int [] selectedIndices = listAreas.getSelectedIndices();
@@ -1671,7 +1671,7 @@ public class AreaDiagramContainerPanel extends JPanel implements TabItemInterfac
 			labelAreaListDescription.setText(Resources.getString("org.multipage.generator.textAreaSiblings"));
 			
 			// Restore selection.
-			Safe.tryUpdate(AreaDiagramContainerPanel.this, () -> {
+			Safe.tryToUpdate(AreaDiagramContainerPanel.this, () -> {
 				listAreas.setSelectedIndices(selectedIndices);
 			});
 		});
@@ -1681,7 +1681,7 @@ public class AreaDiagramContainerPanel extends JPanel implements TabItemInterfac
 	 * Load sub areas.
 	 */
 	private void loadAreaSubAreas() {
-		Safe.tryUpdate(this, () -> {
+		Safe.tryToUpdate(this, () -> {
 			
 			buttonSubAreas.setSelected(true);
 			buttonHoldListType.setEnabled(true);
@@ -1709,7 +1709,7 @@ public class AreaDiagramContainerPanel extends JPanel implements TabItemInterfac
 	 * Load super areas.
 	 */
 	private void loadAreaSuperAreas() {
-		Safe.tryUpdate(this, () -> {
+		Safe.tryToUpdate(this, () -> {
 			
 			buttonSuperAreas.setSelected(true);
 			buttonHoldListType.setEnabled(true);
@@ -1818,7 +1818,7 @@ public class AreaDiagramContainerPanel extends JPanel implements TabItemInterfac
 			
 					this.isSelected = isSelected;
 					this.hasFocus = hasFocus;
-					setText(area.getDescriptionForDiagram());
+					setText(area.getDescriptionForGui());
 					setForeground(area.equals(areaSelection) ? Color.red : Color.black);
 				}
 				catch(Throwable expt) {

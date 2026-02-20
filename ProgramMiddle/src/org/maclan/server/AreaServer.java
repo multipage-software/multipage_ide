@@ -77,6 +77,30 @@ public class AreaServer {
 	/**
 	 * Constants.
 	 */
+	public static final String START_TAG_TEMPLATE = "[@%s]";
+	public static final String STOP_TAG_TEMPLATE = "[/@%s]";
+	public static final String VERSION_LIST_DEFINITION = "DEF_VERSION_LIST";
+	public static final String VERSION_DEFINITION = "DEF_VERSION";
+	public static final String ALIAS_DEFINITION = "DEF_ALIAS";
+	public static final String DESCRIPTION_DEFINITION = "DEF_DESCRIPTION";
+	public static final String AREA_LIST_DEFINITION = "DEF_AREA_LIST";
+	public static final String AREA_DEFINITION = "DEF_AREA";
+	public static final String ID_DEFINITION = "DEF_ID";
+	public static final String GUID_DEFINITION = "DEF_GUID";
+	public static final String VISIBLE_DEFINITION = "DEF_VISIBLE";
+	public static final String READONLY_DEFINITION = "DEF_READONLY";
+	public static final String LOCALIZED_DEFINITION = "DEF_LOCALIZED";
+	public static final String CANIMPORT_DEFINITION = "DEF_CANIMPORT";
+	public static final String PROJECTROOT_DEFINITION = "DEF_PROJECTROOT";
+	public static final String ENABLED_DEFINITION = "DEF_ENABLED";
+	public static final String FILENAME_DEFINITION = "DEF_FILENAME";
+	public static final String FILEEXTENSION_DEFINITION = "DEF_FILEEXTENSION";
+	public static final String FOLDER_DEFINITION = "DEF_FOLDER";
+	public static final String VERSIONID_DEFINITION = "DEF_VERSIONID";
+	public static final String HELP_DEFINITION = "DEF_HELP";
+	public static final String RELATEDID_DEFINITION = "DEF_RELATEDID";
+	public static final String RELALIAS_DEFINITION = "DEF_RELALIAS";
+	public static final String RELDESCRIPTION_DEFINITION = "DEF_RELDESCRIPTION";
 	
 	/**
 	 * Default evaluation of property value.
@@ -1063,7 +1087,8 @@ public class AreaServer {
 	 * Area properties array.
 	 */
 	private static final String [] areaPropertiesArray = {
-		"areaId", "areaAlias", "projectAlias", "area", "startArea", "homeArea", "requestedArea", "thisArea", "versionId", "versionId"};
+		"areaId", "areaAlias", "projectAlias", "area", "startArea", "homeArea", "requestedArea", "thisArea", "versionId", "versionAlias"};
+	
 	
 	/**
 	 * Get area from properties.
@@ -1204,11 +1229,8 @@ public class AreaServer {
 		Area slotArea = getAreaFromProperties(server, properties, existsAreaSpecification);
 
 		// Get slot expression.
-		String slotExpression = properties.getProperty("use");
-		if (slotExpression == null) {
-			slotExpression = properties.getProperty("slot");
-		}
-
+		String slotExpression = properties.getProperty("slot");
+		// If not specified, get the first property name.
 		if (slotExpression == null && !existsAreaSpecification.ref) {
 			try {
 				// Get first property name.
@@ -1312,6 +1334,15 @@ public class AreaServer {
 					boolean parent = server.evaluateProperty(properties, "parent", Boolean.class, false, FLAG);
 					// Get "enableSpecialValue" modifier.
 					boolean enableSpecialValue = server.evaluateProperty(properties, "enableSpecialValue", Boolean.class, false, FLAG);
+					// If "super" modifier.
+					boolean superInheritance = server.evaluateProperty(properties, "super", Boolean.class, true, FLAG);
+					// Get "sub" modifier.
+					boolean subInheritance = server.evaluateProperty(properties, "sub", Boolean.class, false, FLAG);
+					// Get "optional" modifier.
+					boolean optional = server.evaluateProperty(properties, "optional", Boolean.class, false, FLAG);
+					
+					// Make hint.
+					int hint = LoadSlotHint.getHint(!parent, superInheritance, subInheritance);
 					
 					// Set "this" area.
 					if (slotArea == null) {
@@ -1322,13 +1353,19 @@ public class AreaServer {
 					Obj<Slot> slot = new Obj<Slot>();
 					
 					MiddleResult result = server.state.middle.loadSlot(slotArea, slotAlias,
-							true, parent, skipDefault, slot, true);
+							hint, parent, skipDefault, slot, true);
 					if (result.isNotOK()) {
 						throwError("server.messageDatabaseError", result.getMessage());
 					}
 
-					// If slot is not found, throw exception.
+					// If slot is not found...
+					// TODO: <---REFACTOR Enable empty output when the area permits it.
 					if (slot.ref == null) {
+						// If optional flag is set, return empty text.
+						if (optional) {
+							return "";
+						}
+						// Throw exception.
 						throwError("server.messageSlotNotFoundOrNotInheritable", slotAlias);
 					}
 					
@@ -4377,6 +4414,12 @@ public class AreaServer {
 			}
 			// If a value of property is not present in the source code, the property is interpreted as a flag.
 			if (!valueExists) {
+				// If property doesn't exist and the default value is not null, return it.
+				if (!propertyExists && defaultValue != null) {
+					return defaultValue;
+					
+				}
+				// Return true value if the property exists otherwise return false.
 				return (T)(Boolean) propertyExists;
 			}
 		}
@@ -7406,7 +7449,7 @@ public class AreaServer {
 		}
 		
 		// Call this method recursively for inherited super areas.
-		for (Area inheritedSuperArea : area.getInheritsFrom()) {
+		for (Area inheritedSuperArea : area.getInheritsFromSuper()) {
 			
 			if (inherits(inheritedSuperArea, inheritedArea,
 					level != null ? level - 1 : null)) {

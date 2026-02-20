@@ -82,8 +82,8 @@ public class SearchDialog extends JDialog {
 	/**
 	 * Columns' widths.
 	 */
-	private static int [] columnsWidthsForAreas;
-	private static int[] columnsWidthsForSlots;
+	private static Integer [] columnsWidthsForAreas;
+	private static Integer  [] columnsWidthsForSlots;
 	
 	/**
 	 * Flag that enables to open slots or areas editor.
@@ -105,8 +105,8 @@ public class SearchDialog extends JDialog {
 		
 		searchType = AREAS;
 		
-		columnsWidthsForAreas = new int [] {250, 100, 30, 30, 250};
-		columnsWidthsForSlots = new int [] {250, 100, 30, 30};
+		columnsWidthsForAreas = new Integer [] {250, 100, 30, 30, 250};
+		columnsWidthsForSlots = new Integer [] {250, 100, 30, 30};
 		
 		openEditorFlag = false;
 	}

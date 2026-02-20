@@ -640,23 +640,23 @@ public class DebugViewer extends JFrame {
 		buttonRun.setPreferredSize(new Dimension(20, 20));
 		toolBarMenu.add(buttonRun);
 		
-		buttonStepOver = new JButton("org.multipage.generator.textDebuggerStepOver");
-		buttonStepOver.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				onStepOver();
-			}
-		});
-		
 		buttonStepInto = new JButton("org.multipage.generator.textDebuggerStepInto");
 		buttonStepInto.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				onStepInto();
 			}
 		});
-		buttonStepInto.setPreferredSize(new Dimension(20, 20));
-		toolBarMenu.add(buttonStepInto);
+		
+		buttonStepOver = new JButton("org.multipage.generator.textDebuggerStepOver");
+		buttonStepOver.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				onStepOver();
+			}
+		});
 		buttonStepOver.setPreferredSize(new Dimension(20, 20));
 		toolBarMenu.add(buttonStepOver);
+		buttonStepInto.setPreferredSize(new Dimension(20, 20));
+		toolBarMenu.add(buttonStepInto);
 		
 		buttonStepOut = new JButton("org.multipage.generator.textDebuggerStepOut");
 		buttonStepOut.addActionListener(new ActionListener() {
@@ -2695,7 +2695,7 @@ public class DebugViewer extends JFrame {
 		
 		try {
 			// Full text filter.
-			Utility.onChangeText(textFilter, filterString -> {
+			Utility.setTextChangeListener(textFilter, filterString -> {
 				try {
 					updateLog();
 				}

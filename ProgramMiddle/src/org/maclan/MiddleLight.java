@@ -377,6 +377,20 @@ public interface MiddleLight {
 	 * Load area slot.
 	 * @param area
 	 * @param alias
+	 * @param hint
+	 * @param parent
+	 * @param skipDefault 
+	 * @param slot 
+	 * @param loadValue 
+	 * @return
+	 */
+	public MiddleResult loadSlot(Area area, String alias,
+			int hint, boolean parent, boolean skipDefault, Obj<Slot> slot, boolean loadValue);
+	
+	/**
+	 * Load area slot.
+	 * @param area
+	 * @param alias
 	 * @param inherit
 	 * @param parent
 	 * @param skipDefault 
@@ -395,6 +409,24 @@ public interface MiddleLight {
 	 * @return
 	 */
 	public MiddleResult loadSlot(long slotId, Slot slot, Obj<Boolean> found);
+	
+	/**
+	 * Load area slot.
+	 * @param area
+	 * @param alias
+	 * @param inherit
+	 * @param parent
+	 * @param skipDefault
+	 * @param slot 
+	 * @param loadValue
+	 * @param hint
+	 * @param inheritanceLevel
+	 * @return
+	 */
+	public MiddleResult loadSlot(Area area, String alias,
+			boolean inherit, boolean parent, boolean skipDefault,
+			Obj<Slot> slot, boolean loadValue,
+			int hint, Long inheritanceLevel);
 	
 	/**
 	 * Check if the input slot changes.

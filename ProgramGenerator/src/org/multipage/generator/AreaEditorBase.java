@@ -41,6 +41,7 @@ import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
 import org.multipage.util.Safe;
+import org.multipage.util.Saveable;
 import org.multipage.util.j;
 
 /**
@@ -48,7 +49,7 @@ import org.multipage.util.j;
  * @author vakol
  *
  */
-public abstract class AreaEditorBase {
+public abstract class AreaEditorBase implements Saveable {
 	
 	/**
 	 * Bounds.
@@ -244,7 +245,7 @@ public abstract class AreaEditorBase {
 			area = newAreaObject;
 			
 			// Set description, alias, folder, file name.
-			Safe.tryUpdate(AreaEditorBase.this, () -> {
+			Safe.tryToUpdate(AreaEditorBase.this, () -> {
 				getTextDescription().setText(area.getDescription());
 				getTextAlias().setText(area.getAlias());
 				getTextFolder().setText(area.getFolder());
@@ -442,7 +443,7 @@ public abstract class AreaEditorBase {
 	/**
 	 * Save form data.
 	 */
-	protected void saveData() {
+	public boolean save() {
 		try {
 			
 			// Save description.
@@ -455,10 +456,12 @@ public abstract class AreaEditorBase {
 			saveFileName();
 			// Save file extension.
 			saveFileExtension();
+			return true;
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
-		};
+			return false;
+		}
 	}
 	
 	/**
@@ -487,7 +490,7 @@ public abstract class AreaEditorBase {
 		try {
 			
 			// Save current panel input.
-			saveData();
+			save();
 			// Update application components.
 			GeneratorMainFrame.updateAll();
 		}
@@ -505,7 +508,7 @@ public abstract class AreaEditorBase {
 			// Remove editor from navigator window.
 			DialogNavigator.removeAreaEditor(area);
 			// Save current panel input.
-			saveData();
+			save();
 			// Update application components.
 			GeneratorMainFrame.updateAll();
 			// Save dialog.
@@ -555,7 +558,7 @@ public abstract class AreaEditorBase {
 			// Set callback functions
 			setCallbacks();
 			
-			Safe.tryUpdate(AreaEditorBase.this, () -> {
+			Safe.tryToUpdate(AreaEditorBase.this, () -> {
 				// Load area description.
 				getTextDescription().setText(area.getDescription());
 				// Set area alias.
@@ -629,7 +632,7 @@ public abstract class AreaEditorBase {
 	 * Set file name components.
 	 */
 	public void setFileNameComponents() {
-		Safe.tryUpdate(AreaEditorBase.this, () -> {
+		Safe.tryToUpdate(AreaEditorBase.this, () -> {
 			
 			boolean enabled;
 			
@@ -805,7 +808,7 @@ public abstract class AreaEditorBase {
 				
 				result.show(getWindowLambda.get());
 				
-				Safe.tryUpdate(AreaEditorBase.this, () -> {
+				Safe.tryToUpdate(AreaEditorBase.this, () -> {
 					getTextDescription().setText("");
 				});
 				return;
@@ -859,7 +862,7 @@ public abstract class AreaEditorBase {
 			if (result.isNotOK()) {
 				
 				result.show(getWindowLambda.get());
-				Safe.tryUpdate(AreaEditorBase.this, () -> {
+				Safe.tryToUpdate(AreaEditorBase.this, () -> {
 					getTextAlias().setText("");
 				});
 				return;
@@ -903,7 +906,7 @@ public abstract class AreaEditorBase {
 			MiddleResult result = middle.updateAreaFolderName(login, areaId, folder);
 			if (result.isNotOK()) {
 				
-				Safe.tryUpdate(AreaEditorBase.this, () -> {
+				Safe.tryToUpdate(AreaEditorBase.this, () -> {
 					getTextFolder().setText("");
 				});
 				result.show(getWindowLambda.get());
@@ -1011,7 +1014,7 @@ public abstract class AreaEditorBase {
 			
 			if (result.isNotOK()) {
 				
-				Safe.tryUpdate(AreaEditorBase.this, () -> {
+				Safe.tryToUpdate(AreaEditorBase.this, () -> {
 					getTextFileExtension().setText("");
 				});
 				result.show(getWindowLambda.get());
@@ -1219,7 +1222,7 @@ public abstract class AreaEditorBase {
 			// If the global area is a home area, inform user and exit.
 			if (area.getId() == 0L && !isHomeArea) {
 				
-				Safe.tryUpdate(AreaEditorBase.this, () -> {
+				Safe.tryToUpdate(AreaEditorBase.this, () -> {
 					getCheckBoxHomeArea().setSelected(true);
 				});
 				Utility.show(parent, "org.multipage.generator.messageCannotResetGlobalAreaStartFlag");
@@ -1227,7 +1230,7 @@ public abstract class AreaEditorBase {
 			}
 			
 			long areaId = isHomeArea ? area.getId() : 0L;
-			Safe.tryUpdate(AreaEditorBase.this, () -> {
+			Safe.tryToUpdate(AreaEditorBase.this, () -> {
 				getCheckBoxHomeArea().setSelected(!isHomeArea);
 			});
 			
@@ -1253,7 +1256,7 @@ public abstract class AreaEditorBase {
 				return;
 			}
 			
-			Safe.tryUpdate(AreaEditorBase.this, () -> {
+			Safe.tryToUpdate(AreaEditorBase.this, () -> {
 				getCheckBoxHomeArea().setSelected(isHomeArea);
 			});
 	
@@ -1308,7 +1311,7 @@ public abstract class AreaEditorBase {
 			GeneratorMainFrame.updateAll();
 			
 			// Set the check box.
-			Safe.tryUpdate(AreaEditorBase.this, () -> {
+			Safe.tryToUpdate(AreaEditorBase.this, () -> {
 				getCheckBoxHomeArea().setSelected(area.getId() == startAreaId.ref);
 			});
 		}

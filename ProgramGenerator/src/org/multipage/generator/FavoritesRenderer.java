@@ -108,7 +108,7 @@ class FavoritesRenderer implements ListCellRenderer<Long> {
 					resetProperties();
 					return;
 				}
-				setText(area.getDescriptionForDiagram());
+				setText(area.getDescriptionForGui());
 				
 				// Area selection.
 				Color color = Color.BLACK;

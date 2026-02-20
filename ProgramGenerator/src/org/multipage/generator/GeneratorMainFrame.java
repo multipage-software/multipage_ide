@@ -9,6 +9,7 @@ package org.multipage.generator;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
@@ -905,7 +906,7 @@ public class GeneratorMainFrame extends JFrame implements UpdatableComponent, Pr
 			
 			// Receive the "dialog navigator closed" signal.
 			ApplicationEvents.receiver(this, GuiSignal.dialogNavigatorClosed, message -> {
-				Safe.tryUpdate(toggleDialogNavigator, () -> {
+				Safe.tryToUpdate(toggleDialogNavigator, () -> {
 					
 					toggleDialogNavigator.setSelected(false);
 				});
@@ -1419,6 +1420,10 @@ public class GeneratorMainFrame extends JFrame implements UpdatableComponent, Pr
 				exportArea.setAccelerator(KeyStroke.getKeyStroke("control E"));
 				exportArea.setIcon(Images.getIcon("org/multipage/generator/images/export2_icon.png"));
 				
+			JMenuItem exportLegibly = new JMenuItem(Resources.getString("org.multipage.generator.menuExportLegibly"));
+				exportLegibly.setAccelerator(KeyStroke.getKeyStroke("control alt L"));
+				exportLegibly.setIcon(Images.getIcon("org/multipage/generator/images/export_language_icon.png"));
+				
 			JMenuItem importArea = new JMenuItem(Resources.getString("org.multipage.generator.menuFileImport"));
 				importArea.setAccelerator(KeyStroke.getKeyStroke("control I"));
 				importArea.setIcon(Images.getIcon("org/multipage/generator/images/import2_icon.png"));
@@ -1453,6 +1458,7 @@ public class GeneratorMainFrame extends JFrame implements UpdatableComponent, Pr
 	
 			file.add(importArea);
 			file.add(exportArea);
+			file.add(exportLegibly);
 			file.add(render);
 			file.add(updateData);
 			file.add(fileMenuExit);
@@ -1520,11 +1526,14 @@ public class GeneratorMainFrame extends JFrame implements UpdatableComponent, Pr
 			render.addActionListener(e -> {
 				onRender(thisComponent);
 			});
+			importArea.addActionListener(e -> {
+				onImport();
+			});
 			exportArea.addActionListener(e -> {
 				onExport();
 			});
-			importArea.addActionListener(e -> {
-				onImport();
+			exportLegibly.addActionListener(e -> {
+				onExportLegibly();
 			});
 			editFileNames.addActionListener(e -> {
 				onEditFileNames();
@@ -2333,7 +2342,7 @@ public class GeneratorMainFrame extends JFrame implements UpdatableComponent, Pr
 			
 			// Select the new tab.
 			int count = tabPanel.getTabCount();
-			Safe.tryUpdate(tabPanel, () -> tabPanel.setSelectedIndex(count - 1));	
+			Safe.tryToUpdate(tabPanel, () -> tabPanel.setSelectedIndex(count - 1));	
 			
 			// Update window selection trayMenu.
 			updateWindowSelectionMenu();
@@ -2367,7 +2376,7 @@ public class GeneratorMainFrame extends JFrame implements UpdatableComponent, Pr
 			
 			// Select the new tab.
 			int count = tabPanel.getTabCount();
-			Safe.tryUpdate(tabPanel, () -> {
+			Safe.tryToUpdate(tabPanel, () -> {
 				tabPanel.setSelectedIndex(count - 1);
 			});
 			
@@ -3643,9 +3652,47 @@ public class GeneratorMainFrame extends JFrame implements UpdatableComponent, Pr
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
-		};
+		}
 	}
 	
+	/**
+	 * On export legibly.
+	 */
+	private void onExportLegibly() {
+		try {
+			
+			// Get selected areas.
+			LinkedList<Area> areas = getSelectedAreas();
+			if (areas.size() != 1) {
+				Utility.show(this, "org.multipage.generator.messageSelectSingleArea");
+				return;
+			}
+			
+			// Export area to readable text.
+			Area area = areas.getFirst();
+			exportLegibly(area, getFrame());
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		}
+	}
+	
+	/**
+	 * Export legibly.
+	 * @param area
+	 */
+	private void exportLegibly(Area area, Component parent) {
+		try {
+			
+			// Open export dialog.
+			long areaId = area.getId();
+			ExportLegiblyDialog.showDialog(parent, areaId);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+	}
+
 	/**
 	 * Export area.
 	 * @param area
@@ -3957,7 +4004,7 @@ public class GeneratorMainFrame extends JFrame implements UpdatableComponent, Pr
 				public void actionPerformed(ActionEvent e) {
 					
 					// Select tab item.
-					Safe.tryUpdate(tabPanel, () -> {
+					Safe.tryToUpdate(tabPanel, () -> {
 						Safe.invokeLater(() -> {
 							tabPanel.setSelectedIndex(index);
 						});
@@ -4271,7 +4318,7 @@ public class GeneratorMainFrame extends JFrame implements UpdatableComponent, Pr
 	}
 
 	/**
-	 * Paste area trees.
+	 * Copy area trees.
 	 * @param area
 	 */
 	public boolean copyAreaTrees(Area area) {

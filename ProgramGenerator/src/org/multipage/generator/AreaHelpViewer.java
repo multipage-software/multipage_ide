@@ -315,7 +315,7 @@ public class AreaHelpViewer extends JFrame {
 					
 					try {
 						if (value instanceof Area) {
-							value = ((Area) value).getDescriptionForDiagram();
+							value = ((Area) value).getDescriptionForGui();
 						}
 					}
 					catch (Throwable e) {

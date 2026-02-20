@@ -10,6 +10,8 @@ package program.builder;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Properties;
 
 import javax.swing.DefaultListModel;
@@ -29,18 +31,22 @@ import org.maclan.MiddleResult;
 import org.multipage.basic.ProgramBasic;
 import org.multipage.generator.ProgramGenerator;
 import org.multipage.generator.SelectSubAreaDialog;
+import org.multipage.gui.ApplicationEvents;
+import org.multipage.gui.GuiSignal;
 import org.multipage.gui.Images;
 import org.multipage.gui.TextFieldEx;
+import org.multipage.gui.UpdatableComponent;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
 import org.multipage.util.Safe;
+import org.multipage.util.j;
 
 /**
  * Panel that displays constructor groups.
  * @author vakol
  *
  */
-public class ConstructorGroupPanel extends JPanel {
+public class ConstructorGroupPanel extends JPanel implements UpdatableComponent, Closeable {
 
 	// $hide>>$
 	/**
@@ -168,6 +174,7 @@ public class ConstructorGroupPanel extends JPanel {
 			setIcons();
 			setToolTips();
 			initializeTable();
+			setListeners();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -226,8 +233,8 @@ public class ConstructorGroupPanel extends JPanel {
 			
 			this.constructorGroup = constructorGroup;
 			
-			loadList();
-			loadExtensionArea();
+			updateConstructors();
+			updateExtensionArea();
 			
 			textGroupAlias.setText(constructorGroup.getAlias());
 		}
@@ -249,30 +256,59 @@ public class ConstructorGroupPanel extends JPanel {
 			Safe.exception(expt);
 		};
 	}
-
+	
 	/**
-	 * Load list.
+	 * 	Set listeners.
 	 */
-	private void loadList() {
+	private void setListeners() {
 		try {
 			
-			model.clear(); 
-			
-			for (ConstructorHolder constructorHolder : constructorGroup.getConstructorHolders()) {
-				
-				if (constructorHolder.isInvisible()) {
-					continue;
+			ApplicationEvents.receiver(this, GuiSignal.showOrHideIds, message -> {
+				try {
+					// Update linked area.
+					updateExtensionArea();
 				}
+				catch (Throwable e) {
+					Safe.exception(e);
+				}
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+	}
+	
+	/**
+	 * Update constructor list.
+	 */
+	private void updateConstructors() {
+		try {
+			// Clear model.
+			model.clear(); 
+			// Check constructor group.
+			if (constructorGroup != null) {
 				
-				ConstructorHolder linkedConstructorHolder = constructorHolder.getLinkedConstructorHolder();
-				
-				model.addElement(linkedConstructorHolder != null ? 
-						linkedConstructorHolder : constructorHolder);
+				// Load all constructors in group.
+				for (ConstructorHolder constructorHolder : constructorGroup.getConstructorHolders()) {
+					
+					// Skip invisible area holding the constructor.
+					if (constructorHolder.isInvisible()) {
+						continue;
+					}
+					
+					// Get linked constructor area if any.
+					ConstructorHolder linkedConstructorHolder = constructorHolder.getLinkedConstructorHolder();
+					// Add direct or linked area (holdrer) to model.
+					model.addElement(linkedConstructorHolder != null ? 
+							linkedConstructorHolder : constructorHolder);
+				}
 			}
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
 		};
+		// Update list UI.
+		list.updateUI();
 	}
 	
 	/**
@@ -282,46 +318,36 @@ public class ConstructorGroupPanel extends JPanel {
 		
 		// TODO: Set area reference.
 	}
-
+	
 	/**
-	 * Load extension area.
+	 * Update extension area.
 	 */
-	private void loadExtensionArea() {
+	private void updateExtensionArea() {
 		try {
 			
-			// Reset text field.
-			textExtensionArea.setText("");
-			
-			if (constructorGroup == null) {
-				return;
-			}
-			
-			Long extensionAreaId = constructorGroup.getExtensionAreaId();
-			if (extensionAreaId != null) {
-				
-				Area extensionArea = ProgramGenerator.getArea(extensionAreaId);
-				if (extensionArea != null) {
-					
-					// Set text field.
-					textExtensionArea.setText(extensionArea.getDescriptionForDiagram());
-				}
+			Area extensionArea = getExtensionArea();
+			if (extensionArea != null) {
+				String areaName = extensionArea.getDescriptionForGui();
+				textExtensionArea.setText(areaName);
+				// TODO: debug
+				j.log("Extension area: " + areaName);
 			}
 		}
-		catch(Throwable expt) {
-			Safe.exception(expt);
-		};
+		catch(Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
-	 * Select extension area.
+	 * Get extension area.
 	 */
-	protected void onSelectExtensionArea() {
+	private Area getExtensionArea() {
 		try {
 			
-			// Get root area.
+			// Get root area as default value.
 			Area rootArea = ProgramGenerator.getArea(0L);
 			
-			// Get extension area.
+			// Update current extension area.
 			Area extensionArea = rootArea;
 			Long extensionAreaId = constructorGroup.getExtensionAreaId();
 			if (extensionAreaId != null) {
@@ -331,17 +357,56 @@ public class ConstructorGroupPanel extends JPanel {
 					extensionArea = foundExtensionArea;
 				}
 			}
+			return extensionArea;
+		}
+		catch(Throwable e) {
+			Safe.exception(e);
+			return null;
+		}
+	}
+	
+	/**
+	 * Update group alias.
+	 */
+	private void updateGroupAlias() {
+		try {
+			
+			// Check constructor group.
+			if (constructorGroup != null) {
+				// Update group alias text box.
+				String groupAlias = constructorGroup.getAliasNull();
+				if (groupAlias == null) {
+					groupAlias = "";
+				}
+				textGroupAlias.setText(groupAlias);
+			}
+		}
+		catch(Throwable e) {
+			Safe.exception(e);
+		}
+	}
+	
+	/**
+	 * Select extension area.
+	 */
+	protected void onSelectExtensionArea() {
+		try {
+			
+			// Update extension area.
+			Area extensionArea = getExtensionArea();
 			
 			// Select constructor area.
+			Area rootArea = ProgramGenerator.getArea(0L);
 			Area selectedArea = SelectSubAreaDialog.showDialog(this, rootArea, extensionArea);
 			if (selectedArea == null) {
 				return;
 			}
 			
 			// Set constructor group extension area ID and save it.
-			constructorGroup.setExtensionAreaId(selectedArea.getId());
+			long areaId = selectedArea.getId();
+			constructorGroup.setExtensionAreaId(areaId);
 			save();
-			loadExtensionArea();
+			updateExtensionArea();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -357,7 +422,7 @@ public class ConstructorGroupPanel extends JPanel {
 			// Reset constructor group extension area ID and save it.
 			constructorGroup.setExtensionAreaId(null);
 			save();
-			loadExtensionArea();
+			updateExtensionArea();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -370,11 +435,12 @@ public class ConstructorGroupPanel extends JPanel {
 	private void save() {
 		try {
 			
+			// Check constructor group object
 			if (constructorGroup == null) {
 				return;
 			}
 			
-			// Get constructor group extension area ID and alias and save it.
+			// Get constructor group area ID and alias and save it.
 			Long extensionAreaId = constructorGroup.getExtensionAreaId();
 			
 			String alias = textGroupAlias.getText();
@@ -413,6 +479,14 @@ public class ConstructorGroupPanel extends JPanel {
 			Safe.exception(expt);
 		};
 	}
+	
+	/**
+	 * Stop editing construvtor group.
+	 */
+	public void stopEditing() {
+		// TODO Auto-generated method stub
+		
+	}
 
 	/**
 	 * Save constructor group.
@@ -425,5 +499,38 @@ public class ConstructorGroupPanel extends JPanel {
 		catch(Throwable expt) {
 			Safe.exception(expt);
 		};
+	}
+	
+	/**
+	 * Update dialog components.
+	 */
+	@Override
+	public void updateComponents() {
+		try {
+			
+			// Update linked area.
+			updateExtensionArea();
+			// Update group alias.
+			updateGroupAlias();
+			// Update constructor list.
+			updateConstructors();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+	}
+	
+	/**
+	 * Close resources.
+	 */
+	@Override
+	public void close() throws IOException {
+		try {
+			
+			ApplicationEvents.removeReceivers(this);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 }

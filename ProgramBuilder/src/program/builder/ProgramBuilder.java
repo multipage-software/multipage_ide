@@ -132,15 +132,10 @@ public class ProgramBuilder extends ProgramGenerator {
 	 */
 	protected static void setDefaultData() {
 
-		// Default main frame data.
 		BuilderMainFrame.setDefaultData();
-		// Default slot editor data.
 		SlotEditorFrame.setDefaultData();
-		// Default enumerations editor dialog state.
 		EnumerationsEditorDialog.setDefaultData();
-		// Default enumeration selector dialog state.
 		EnumerationValueSelectionDialog.setDefaultData();
-		
 		SelectVersionDialog.setDefaultData();
 		ConstructorsPanel.setDefaultData();
 		SlotListPanel.setDefaultData();
@@ -159,15 +154,10 @@ public class ProgramBuilder extends ProgramGenerator {
 	public static void seriliazeData(StateInputStream inputStream)
 		throws IOException, ClassNotFoundException {
 
-		// Load main frame data.
 		BuilderMainFrame.serializeData(inputStream);
-		// Load slot editor data.
 		SlotEditorFrame.seriliazeData(inputStream);
-		// Load enumerations editor dialog state.
 		EnumerationsEditorDialog.serializeData(inputStream);
-		// Load enumeration selector dialog state.
 		EnumerationValueSelectionDialog.serializeData(inputStream);
-		
 		SelectVersionDialog.serializeData(inputStream);
 		ConstructorsPanel.serializeData(inputStream);
 		SlotListPanel.serializeData(inputStream);
@@ -185,15 +175,10 @@ public class ProgramBuilder extends ProgramGenerator {
 	public static void serializeData(StateOutputStream outputStream)
 		throws IOException {
 
-		// Save main frame data.
 		BuilderMainFrame.serializeData(outputStream);
-		// Save slot editor data.
 		SlotEditorFrame.seriliazeData(outputStream);
-		// Save enumerations editor dialog state.
 		EnumerationsEditorDialog.serializeData(outputStream);
-		// Save enumeration selector dialog state.
 		EnumerationValueSelectionDialog.serializeData(outputStream);
-		
 		SelectVersionDialog.serializeData(outputStream);
 		ConstructorsPanel.serializeData(outputStream);
 		SlotListPanel.serializeData(outputStream);

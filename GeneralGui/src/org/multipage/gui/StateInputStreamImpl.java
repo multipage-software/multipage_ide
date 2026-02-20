@@ -18,6 +18,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.input.BOMInputStream;
+import org.multipage.util.Safe;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
@@ -187,19 +188,36 @@ public class StateInputStreamImpl implements StateInputStream {
 	}
 	
 	/**
-	 * Delegate overridden interface method call to the XStream call.+
+	 * Delegate the method call to object output stream.
+	 * @return
 	 */
-	public boolean readBoolean() throws IOException {
-		
-		return this.objectInputStream.readBoolean();
+	@SuppressWarnings("unchecked")
+	private <T> T readHelper() throws IOException  {
+		try {
+			//StateStreamRecordInfo
+			Object recordObj = this.objectInputStream.readObject();
+			return (T) recordObj;
+		}
+		catch (Exception e) {
+			Safe.exception(e);
+			throw new IOException(e);
+		}
 	}
 	
 	/**
 	 * Delegate overridden interface method call to the XStream call.+
 	 */
+	public boolean readBoolean() throws IOException {
+		
+		return readHelper();
+	}
+
+	/**
+	 * Delegate overridden interface method call to the XStream call.+
+	 */
 	public byte readByte() throws IOException {
 
-		return this.objectInputStream.readByte();
+		return readHelper();
 	}
 	
 	/**
@@ -207,7 +225,7 @@ public class StateInputStreamImpl implements StateInputStream {
 	 */
 	public int readUnsignedByte() throws IOException {
 
-		return this.objectInputStream.readUnsignedByte();
+		return readHelper();
 	}
 
 	/**
@@ -215,7 +233,7 @@ public class StateInputStreamImpl implements StateInputStream {
 	 */
 	public char readChar() throws IOException {
 
-		return this.objectInputStream.readChar();
+		return readHelper();
 	}
 
 	/**
@@ -223,7 +241,7 @@ public class StateInputStreamImpl implements StateInputStream {
 	 */
 	public short readShort() throws IOException {
 
-		return this.objectInputStream.readShort();
+		return readHelper();
 	}
 
 	/**
@@ -231,7 +249,7 @@ public class StateInputStreamImpl implements StateInputStream {
 	 */
 	public int readUnsignedShort() throws IOException {
 
-		return this.objectInputStream.readUnsignedShort();
+		return readHelper();
 	}
 
 	/**
@@ -239,7 +257,7 @@ public class StateInputStreamImpl implements StateInputStream {
 	 */
 	public int readInt() throws IOException {
 
-		return this.objectInputStream.readInt();
+		return readHelper();
 	}
 
 	/**
@@ -247,7 +265,7 @@ public class StateInputStreamImpl implements StateInputStream {
 	 */
 	public long readLong() throws IOException {
 
-		return this.objectInputStream.readLong();
+		return readHelper();
 	}
 
 	/**
@@ -255,7 +273,7 @@ public class StateInputStreamImpl implements StateInputStream {
 	 */
 	public float readFloat() throws IOException {
 
-		return this.objectInputStream.readFloat();
+		return readHelper();
 	}
 
 	/**
@@ -263,7 +281,7 @@ public class StateInputStreamImpl implements StateInputStream {
 	 */
 	public double readDouble() throws IOException {
 
-		return this.objectInputStream.readDouble();
+		return readHelper();
 	}
 
 	/**
@@ -295,17 +313,17 @@ public class StateInputStreamImpl implements StateInputStream {
 	 * Delegate overridden interface method call to the XStream call.+
 	 */
 	public String readUTF() throws IOException {
-
-		return this.objectInputStream.readUTF();
+		
+		return readHelper();
 	}
-
+	
 	/**
 	 * Delegate overridden interface method call to the XStream call.+
 	 * @throws ClassNotFoundException 
 	 */
 	public Object readObject() throws IOException, ClassNotFoundException {
 		
-		return this.objectInputStream.readObject();
+		return readHelper();
 	}
 
 	/**

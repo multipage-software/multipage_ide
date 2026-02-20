@@ -3383,4 +3383,12 @@ public interface Middle extends MiddleLight {
      * @param slotAlias
      */
 	public MiddleResult updateSlotAlias(String oldAlias, long areaId, String newAlias);
+
+	/**
+	 * Select area data in legible format.
+	 * @param rootAreaId
+	 * @param exportText
+	 * @return
+	 */
+	public MiddleResult selectLegibly(long rootAreaId, long languageId, StringBuilder exportText);
 }

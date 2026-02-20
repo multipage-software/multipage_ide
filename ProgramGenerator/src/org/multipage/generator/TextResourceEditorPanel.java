@@ -36,7 +36,9 @@ import org.multipage.gui.Images;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.TextEditorPane;
+import org.multipage.gui.UpdatableComponent;
 import org.multipage.gui.Utility;
+import org.multipage.util.Closable;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
 import org.multipage.util.Safe;
@@ -46,7 +48,7 @@ import org.multipage.util.Safe;
  * @author vakol
  *
  */
-public class TextResourceEditorPanel extends JPanel {
+public class TextResourceEditorPanel extends JPanel implements Closable, UpdatableComponent {
 
 	// $hide>>$
 	/**
@@ -90,7 +92,7 @@ public class TextResourceEditorPanel extends JPanel {
 	 */
 	public static void setDefaultData() {
 		
-		fontState = new Font("DialogInput", Font.PLAIN, 12);
+		fontState = new Font("Consolas", Font.PLAIN, 13);
 	}
 
 	/**
@@ -232,7 +234,7 @@ public class TextResourceEditorPanel extends JPanel {
 		editorPanel.setLayout(new BorderLayout(0, 0));
 		
 		buttonSaveAndClose = new JButton("org.multipage.generator.textSaveAndClose");
-		springLayout.putConstraint(SpringLayout.EAST, buttonSave, -135, SpringLayout.WEST, buttonSaveAndClose);
+		springLayout.putConstraint(SpringLayout.EAST, buttonSave, -6, SpringLayout.WEST, buttonSaveAndClose);
 		buttonSaveAndClose.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				onSaveAndClose();
@@ -285,6 +287,9 @@ public class TextResourceEditorPanel extends JPanel {
 			if (closeLambda != null) {
 				closeLambda.run();
 			}
+			else {
+				close();
+			}
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -324,6 +329,8 @@ public class TextResourceEditorPanel extends JPanel {
 			// Add builder popup trayMenu add-in.
 			popupMenuAddIn = new GeneratorTextPopupMenuAddIn();
 			editor.addPopupMenusPlain(popupMenuAddIn);
+			// Register for update.
+			GeneratorMainFrame.registerForUpdate(this);
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -652,5 +659,34 @@ public class TextResourceEditorPanel extends JPanel {
 	public void setCloseLambda(Runnable closeLambda) {
 		
 		this.closeLambda  = closeLambda;
+	}
+	
+	/**
+	 * Update editor components.
+	 * @return
+	 */
+	@Override
+	public void updateComponents() {
+		try {
+			
+			// TODO: Update components if needed.
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+	}
+	
+	/**
+	 * Close editor.
+	 */
+	public void close() {
+		try {
+			
+			// Remove from update.
+			GeneratorMainFrame.unregisterFromUpdate(this);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 }

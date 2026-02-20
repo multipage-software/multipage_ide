@@ -384,7 +384,7 @@ public class AreaShapes {
 				
 				// Compute parameters.
 				boolean inherits = coord.getInherits();
-				String description = area.getDescriptionForDiagram();
+				String description = area.getDescriptionForGui();
 				double height = coord.getHeight();
 				double labelEndSpace = coord.getWidth() * 0.01;
 				double houseSize = 0;

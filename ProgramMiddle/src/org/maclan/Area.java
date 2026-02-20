@@ -1086,15 +1086,33 @@ public class Area extends SlotHolder implements FlagElement, Element, ResContain
 	}
 
 	/**
+	 * Get super areas from which this area inherits.
 	 * @return the inheritsFrom
 	 */
-	public LinkedList<Area> getInheritsFrom() {
+	public LinkedList<Area> getInheritsFromSuper() {
 		
 		LinkedList<Area> areas = new LinkedList<Area>();
 		
 		for (DependentArea dependentSuperArea : superareas) {
 			if (dependentSuperArea.isInheritance()) {
 				areas.add(dependentSuperArea.getArea());
+			}
+		}
+		
+		return areas;
+	}
+	
+	/**
+	 * Get sub areas from which this area inherits.
+	 * @return the inheritsFrom
+	 */
+	public LinkedList<Area> getInheritsFromSub() {
+		
+		LinkedList<Area> areas = new LinkedList<Area>();
+		
+		for (DependentArea dependentSubArea : subareas) {
+			if (dependentSubArea.isInheritance()) {
+				areas.add(dependentSubArea.getArea());
 			}
 		}
 		
@@ -1381,10 +1399,10 @@ public class Area extends SlotHolder implements FlagElement, Element, ResContain
 	}
 	
 	/**
-	 * Get description for diagram.
+	 * Get description for GUI.
 	 * @return
 	 */
-	public String getDescriptionForDiagram() {
+	public String getDescriptionForGui() {
 
 		String text = description.isEmpty() ? alias : description;
 		

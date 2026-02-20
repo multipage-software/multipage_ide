@@ -274,7 +274,7 @@ public class AreaInheritedFoldersDialog extends JDialog {
 		try {
 			
 			// Set text field.
-			textAreaDescription.setText(area.getDescriptionForDiagram());
+			textAreaDescription.setText(area.getDescriptionForGui());
 			
 			// Load table.
 			AreasModel areasModel = ProgramGenerator.getAreasModel();

@@ -79,6 +79,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -201,6 +202,7 @@ public class Utility {
 	/**
 	 * Current path name.
 	 */
+	@ProgramState(1)
 	public static String currentPathName = "";
 	
 	/**
@@ -3438,7 +3440,7 @@ public class Utility {
 			Safe.exception(expt);
 		};
 	}
-
+	
 	/**
 	 * Set text change listener.
 	 * @param textField
@@ -3455,7 +3457,7 @@ public class Utility {
 						
 						// On remove text.
 						if (onTextChange != null) {
-							onTextChange.run();
+							Safe.tryOnChange(textField, onTextChange);
 						}
 					}
 					catch(Throwable expt) {
@@ -3468,7 +3470,7 @@ public class Utility {
 						
 						// On insert text.
 						if (onTextChange != null) {
-							onTextChange.run();
+							Safe.tryOnChange(textField, onTextChange);
 						}
 					}
 					catch(Throwable expt) {
@@ -3482,7 +3484,7 @@ public class Utility {
 						
 						// On change text.
 						if (onTextChange != null) {
-							onTextChange.run();
+							Safe.tryOnChange(textField, onTextChange);
 						}
 					}
 					catch(Throwable expt) {
@@ -3498,6 +3500,54 @@ public class Utility {
 			Safe.exception(e);
 		}
 		return null;
+	}
+	
+	/**
+	 * When content of text field is changed, the method calls input lambda function.
+	 * @param textField
+	 * @param callbackLambda
+	 */
+	public static void setTextChangeListener(JTextField textField, Consumer<String> callbackLambda) {
+		try {
+			
+			final String alreadySet = "set";
+			
+			// If the component is already set, exit the method.
+			String componentFlag = textField.getName();
+			if (alreadySet.equals(componentFlag)) {
+				return;
+			}
+			
+			// Get text field document and create new document listener.
+			Document document = textField.getDocument();
+			DocumentListener listener = new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					Safe.tryOnChange(textField, () -> {
+						callbackLambda.accept(textField.getText());
+					});
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					Safe.tryOnChange(textField, () -> {
+						callbackLambda.accept(textField.getText());
+					});
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					Safe.tryOnChange(textField, () -> {
+						callbackLambda.accept(textField.getText());
+					});
+				}
+			};
+			
+			// Add listener and set component flag.
+			document.addDocumentListener(listener);
+			textField.setName(alreadySet);
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
 	}
 
 	/**
@@ -3586,6 +3636,38 @@ public class Utility {
 			Safe.exception(expt);
 		};
 	}
+	
+	/**
+	 * Convert list to array recursively.
+	 * @param collection
+	 * @return
+	 */
+	private static Object[] toArrayRecursively(Collection<?> collection) {
+		try {
+			if (collection == null) {
+				return null;
+			}
+			
+			Object[] array = new Object[collection.size()];
+			int index = 0;
+			
+			for (Object item : collection) {
+				if (item instanceof LinkedList) {
+					array[index] = toArrayRecursively((LinkedList<?>) item);
+				}
+				else {
+					array[index] = item;
+				}
+				index++;
+			}
+			
+			return array;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return null;
+	}
 
 	/**
 	 * Input stream object.
@@ -3604,8 +3686,35 @@ public class Utility {
 		if (object == null) {
 			return null;
 		}
-		
-		if (!object.getClass().equals(type)) {
+		else if (type.isArray() && (object instanceof LinkedList)) {
+			
+			Object [] items = toArrayRecursively((Collection<?>) object);
+			Class<?> itemType = type.getComponentType();
+			
+			// If item type is not object, try to convert items to item type.
+			if (!Object.class.equals(itemType)) {
+				T typedArray = (T) java.lang.reflect.Array.newInstance(itemType, items.length);
+				for (int index = 0; index < items.length; index++) {
+					Object item = items[index];
+					if (itemType.isInstance(item)) {
+						java.lang.reflect.Array.set(typedArray, index, item);
+					}
+					else {
+						throw new ClassNotFoundException();
+					}
+				}
+				return typedArray;
+			}
+			else {
+				return (T) items;
+			}
+		}
+		else if (HashSet.class.equals(type) && (object instanceof LinkedList)) {
+			
+			HashSet<?> set = new HashSet<>((LinkedList<?>) object);
+			return (T) set;
+		}
+		else if (!object.getClass().equals(type)) {
 			
 			// Try to use type conversion.
 			try {
@@ -7420,49 +7529,7 @@ public class Utility {
 			Safe.exception(e);
 		}
 		return null;
-	}
-	
-	/**
-	 *  When content of text field is changed, the method calls input lambda function.
-	 * @param textField
-	 * @param callbackLambda
-	 */
-	public static void onChangeText(JTextField textField, Consumer<String> callbackLambda) {
-		try {
-			
-			final String alreadySet = "set";
-			
-			// If the component is already set, exit the method.
-			String componentFlag = textField.getName();
-			if (alreadySet.equals(componentFlag)) {
-				return;
-			}
-			
-			// Get text field document and create new document listener.
-			Document document = textField.getDocument();
-			DocumentListener listener = new DocumentListener() {
-				@Override
-				public void removeUpdate(DocumentEvent e) {
-					callbackLambda.accept(textField.getText());
-				}
-				@Override
-				public void insertUpdate(DocumentEvent e) {
-					callbackLambda.accept(textField.getText());
-				}
-				@Override
-				public void changedUpdate(DocumentEvent e) {
-					callbackLambda.accept(textField.getText());
-				}
-			};
-			
-			// Add listener and set component flag.
-			document.addDocumentListener(listener);
-			textField.setName(alreadySet);
-		}
-		catch(Throwable expt) {
-			Safe.exception(expt);
-		};
-	}
+	}	
 	
 	/**
 	 * Set table cell editor font. 
@@ -7894,4 +7961,98 @@ public class Utility {
 			Safe.exception(expt);
 		};
 	}
+	
+	/**
+	 * Get HTML link to file.
+	 * @param temporaryPhpFile
+	 * @return
+	 */
+	public static String getHtmlLink(File file) {
+		try {
+			
+			if (file == null) {
+				return null;
+			}
+			URI fileUri = file.toURI();
+			String uriText = fileUri.toURL().toString();
+			String link = String.format("<a href=\"%s\">%s</a>", uriText, file.getName());
+			return link;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+		return "";
+	}
+	
+	/**
+	 * Get instance of the class. For primitive types it returns default wrapper class objects.
+	 * @param valueClass
+	 * @return
+	 */
+	public static Object getClassInstance(Class<?> valueClass) {
+		try {
+		
+			Class<?> instClass = valueClass;
+			if (instClass.isPrimitive()) {
+				instClass = primitiveToWrapper(instClass);
+			}
+	
+			// For common immutable/simple types create sensible defaults instead of calling no-arg constructor
+			Object valueObject = null;
+			if (instClass.equals(Boolean.class)) {
+	            valueObject = Boolean.FALSE;
+	        }
+	        else if (instClass.equals(Byte.class)) {
+	            valueObject = Byte.valueOf((byte) 0);
+	        }
+	        else if (instClass.equals(Short.class)) {
+	            valueObject = Short.valueOf((short) 0);
+	        }
+	        else if (instClass.equals(Integer.class)) {
+	            valueObject = Integer.valueOf(0);
+	        }
+	        else if (instClass.equals(Long.class)) {
+	            valueObject = Long.valueOf(0L);
+	        }
+	        else if (instClass.equals(Float.class)) {
+	            valueObject = Float.valueOf(0f);
+	        }
+	        else if (instClass.equals(Double.class)) {
+	            valueObject = Double.valueOf(0d);
+	        }
+	        else if (instClass.equals(Character.class)) {
+	            valueObject = Character.valueOf('\0');
+	        }
+	        else if (instClass.equals(String.class)) {
+	            valueObject = "";
+	        }
+	        else {
+	            // Fallback to default constructor for other classes
+	            valueObject = instClass.getDeclaredConstructor().newInstance();
+	        }
+			return valueObject;
+		}
+		catch (Exception e) {
+			Safe.exception(e);
+			return null;
+		}
+	}
+	
+	/**
+	 * Helper to map primitive types to their wrapper classes
+	 * @param cls
+	 * @return
+	 */
+    public static Class<?> primitiveToWrapper(Class<?> cls) {
+    	
+        if (cls == boolean.class) return Boolean.class;
+        if (cls == byte.class) return Byte.class;
+        if (cls == short.class) return Short.class;
+        if (cls == int.class) return Integer.class;
+        if (cls == long.class) return Long.class;
+        if (cls == float.class) return Float.class;
+        if (cls == double.class) return Double.class;
+        if (cls == char.class) return Character.class;
+        return cls;
+    }
 }

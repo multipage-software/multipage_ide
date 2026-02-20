@@ -768,7 +768,7 @@ public class AreasModel {
 		}
 		
 		// Call this method recursively for sub areas.
-		for (Area subArea : inheritance ? area.getInheritsFrom() : area.getSuperareas()) {
+		for (Area subArea : inheritance ? area.getInheritsFromSuper() : area.getSuperareas()) {
 			getAreaAndSuperAreas(subArea.getId(), areasFound, inheritance,
 					currentLevel + 1, levels);
 		}
@@ -786,7 +786,7 @@ public class AreasModel {
 		}
 		
 		// Find in super areas.
-		for (Area inheritedArea : area.getInheritsFrom()) {
+		for (Area inheritedArea : area.getInheritsFromSuper()) {
 			
 			// Call the method recursively.
 			Area startArea = getStartArea(inheritedArea, versionId);

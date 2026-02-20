@@ -108,6 +108,7 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	/**
 	 * Word wrap state.
 	 */
+    @ProgramState(1)
 	public static boolean wordWrapState;
 	
 	/**
@@ -171,7 +172,7 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 
 	public static void serializeData(StateOutputStream outputStream)
 		throws IOException {
-
+		
 		outputStream.writeBoolean(wordWrapState);
 	}
 
@@ -417,6 +418,10 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 		tabbedPane.addTab("org.multipage.gui.messageHtmlText", null, plainScrollPane, null);
 		
 		plainTextPane = new JTextPane();
+		plainTextPane.setFont(new Font("Consolas", Font.PLAIN, 13));
+		plainTextPane.setForeground(Color.WHITE);
+		plainTextPane.setBackground(Color.BLACK);
+		plainTextPane.setCaretColor(Color.WHITE); // Set caret color to white
 		plainTextPane.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyReleased(KeyEvent e) {
@@ -442,6 +447,7 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 		springLayout.putConstraint(SpringLayout.EAST, htmlScrollPane, 223, SpringLayout.WEST, this);
 		
 		htmlTextPane = new JTextPane();
+		htmlTextPane.setCaretColor(Color.WHITE); // Set caret color to white
 		htmlTextPane.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyReleased(KeyEvent e) {
@@ -1247,7 +1253,11 @@ public class TextEditorPane extends JPanel implements StringValueEditor {
 	 */
 	public void setTextFont(Font font) {
 		try {
-			
+			// Check font.
+			if (font == null) {
+				return;
+			}
+			// Set font.
 			this.textFont = font;
 			plainTextPane.setFont(font);
 		}

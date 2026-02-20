@@ -304,7 +304,8 @@ public class GeneralGui {
 		Integer [] splitterPositions = LogConsoles.getSplitterPositions();
 		
 		outputStream.writeObject(bounds);
-		outputStream.writeObject(splitterPositions);
+		//outputStream.writeObject(splitterPositions);
+		outputStream.writeObject(new Integer [] {7, 5, 3});
 	}
 
 	/**

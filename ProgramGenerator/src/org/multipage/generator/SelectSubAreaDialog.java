@@ -17,6 +17,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.Closeable;
 import java.io.IOException;
 
 import javax.swing.JButton;
@@ -25,9 +26,12 @@ import javax.swing.JPanel;
 import javax.swing.SpringLayout;
 
 import org.maclan.Area;
+import org.multipage.gui.ApplicationEvents;
+import org.multipage.gui.GuiSignal;
 import org.multipage.gui.Images;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
+import org.multipage.gui.UpdatableComponent;
 import org.multipage.gui.Utility;
 import org.multipage.util.Safe;
 
@@ -36,7 +40,7 @@ import org.multipage.util.Safe;
  * @author vakol
  *
  */
-public class SelectSubAreaDialog extends JDialog {
+public class SelectSubAreaDialog extends JDialog implements Closeable, UpdatableComponent {
 
 	// $hide>>$
 	/**
@@ -214,6 +218,7 @@ public class SelectSubAreaDialog extends JDialog {
 			
 			localize();
 			setIcons();
+			setListeners();
 			
 			loadDialog();
 		}
@@ -284,6 +289,23 @@ public class SelectSubAreaDialog extends JDialog {
 	}
 	
 	/**
+	 * Set listeners.
+	 */
+	private void setListeners() {
+		try {
+			
+			// Receive show IDs event.
+			ApplicationEvents.receiver(this, GuiSignal.showOrHideIds, message -> {
+				// Update components.
+				updateComponents();
+			});
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+	}
+	
+	/**
 	 * Save dialog.
 	 */
 	private void saveDialog() {
@@ -301,15 +323,18 @@ public class SelectSubAreaDialog extends JDialog {
 	 */
 	protected void onCancel() {
 		try {
-			
 			confirm = false;
 			saveDialog();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
 		};
-			
-		dispose();
+		try {
+			close();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -317,15 +342,18 @@ public class SelectSubAreaDialog extends JDialog {
 	 */
 	protected void onOK() {
 		try {
-			
 			confirm = true;
 			saveDialog();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
 		};
-			
-		dispose();
+		try {
+			close();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -355,5 +383,37 @@ public class SelectSubAreaDialog extends JDialog {
 		catch(Throwable expt) {
 			Safe.exception(expt);
 		};
+	}
+	
+	/**
+	 * Update components.
+	 */
+	@Override
+	public void updateComponents() {
+		try {
+			
+			// Update tree panel.
+			treePanel.updateComponents();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		};
+	}
+
+	/**
+	 * Close.
+	 */
+	@Override
+	public void close() throws IOException {
+		try {
+			
+			// Remove receivers.
+			ApplicationEvents.removeReceivers(this);
+			// Dispose dialog.
+			dispose();
+		}
+		catch(Throwable expt) {
+			Safe.exception(expt);
+		}
 	}
 }

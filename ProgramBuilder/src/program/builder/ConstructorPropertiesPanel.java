@@ -14,6 +14,8 @@ import java.awt.FlowLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Properties;
 
@@ -24,7 +26,6 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
-import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 
 import org.maclan.Area;
@@ -38,18 +39,21 @@ import org.multipage.generator.AreaResourcesEditor;
 import org.multipage.generator.ProgramGenerator;
 import org.multipage.generator.RelatedAreaPanel;
 import org.multipage.generator.SelectSubAreaDialog;
+import org.multipage.gui.ApplicationEvents;
 import org.multipage.gui.Images;
 import org.multipage.gui.TextFieldEx;
+import org.multipage.gui.UpdatableComponent;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
 import org.multipage.util.Safe;
+import org.multipage.util.Saveable;
 
 /**
  * Panel that displays constructor properties.
  * @author vakol
  *
  */
-public class ConstructorPropertiesPanel extends JPanel {
+public class ConstructorPropertiesPanel extends JPanel implements Saveable, Closeable, UpdatableComponent {
 
 	// $hide>>$
 	/**
@@ -76,11 +80,6 @@ public class ConstructorPropertiesPanel extends JPanel {
 	 * Constructor holder link if it exists.
 	 */
 	private ConstructorHolder constructorHolderLink;
-
-	/**
-	 * Disable changes flag.
-	 */
-	private boolean disableChanges = false;
 	
 	/**
 	 * Slot list panel.
@@ -425,8 +424,8 @@ public class ConstructorPropertiesPanel extends JPanel {
 				protected void onChange() {
 					try {
 						
-						// On change update information.
-						updatePanelInformation();
+						// On change, update information.
+						updateComponents();
 					}
 					catch(Throwable expt) {
 						Safe.exception(expt);
@@ -445,11 +444,6 @@ public class ConstructorPropertiesPanel extends JPanel {
 		catch(Throwable expt) {
 			Safe.exception(expt);
 		};
-	}
-
-	protected void updatePanelInformation() {
-		// TODO Auto-generated method stub
-		
 	}
 
 	/**
@@ -497,11 +491,7 @@ public class ConstructorPropertiesPanel extends JPanel {
 			// Set name listener.
 			Utility.setTextChangeListener(textConstructorHolderName, () -> {
 				try {
-					
-					if (disableChanges) {
-						return;
-					}
-					
+
 					// Set constructor holder name and fire change listener.
 					if (constructorHolder != null) {
 						constructorHolder.setName(textConstructorHolderName.getText());
@@ -517,10 +507,6 @@ public class ConstructorPropertiesPanel extends JPanel {
 			// Set alias listener.
 			Utility.setTextChangeListener(textAlias, () -> {
 				try {
-					
-					if (disableChanges) {
-						return;
-					}
 					
 					// Set constructor holder name and fire change listener.
 					if (constructorHolder != null) {
@@ -540,10 +526,6 @@ public class ConstructorPropertiesPanel extends JPanel {
 				public void actionPerformed(ActionEvent arg0) {
 					try {
 						
-						if (disableChanges) {
-							return;
-						}
-						
 						if (constructorHolder != null) {
 							constructorHolder.setInheritance(checkInheritance.isSelected());
 						}
@@ -558,9 +540,6 @@ public class ConstructorPropertiesPanel extends JPanel {
 			Utility.setTextChangeListener(textSubRelationName, () -> {
 				try {
 					
-					if (disableChanges) {
-						return;
-					}
 					if (constructorHolder != null) {
 						if (isLink()) {
 							constructorHolderLink.setSubRelationName(textSubRelationName.getText());
@@ -579,9 +558,6 @@ public class ConstructorPropertiesPanel extends JPanel {
 			Utility.setTextChangeListener(textSuperRelationName, () -> {
 				try {
 					
-					if (disableChanges) {
-						return;
-					}
 					if (constructorHolder != null) {
 						if (isLink()) {
 							constructorHolderLink.setSuperRelationName(textSuperRelationName.getText());
@@ -602,10 +578,6 @@ public class ConstructorPropertiesPanel extends JPanel {
 				public void actionPerformed(ActionEvent arg0) {
 					try {
 						
-						if (disableChanges) {
-							return;
-						}
-						
 						if (constructorHolder != null) {
 							constructorHolder.setAskForRelatedArea(checkAskForRelatedArea.isSelected());
 						}
@@ -620,10 +592,6 @@ public class ConstructorPropertiesPanel extends JPanel {
 			Utility.setTextChangeListener(textSubgroupAlias, () -> {
 				try {
 					
-					if (disableChanges) {
-						return;
-					}
-					
 					if (constructorHolder != null) {
 						constructorHolder.setSubGroupAliases(textSubgroupAlias.getText());
 					}
@@ -637,14 +605,12 @@ public class ConstructorPropertiesPanel extends JPanel {
 			checkInvisible.addActionListener((ActionEvent e) -> {
 				try {
 					
-					if (disableChanges) {
-						return;
-					}
-					
 					if (constructorHolder != null) {
 						constructorHolder.setInvisible(checkInvisible.isSelected());
 						
-						fireNameChangeListener();
+						Safe.tryOnChange(checkInvisible, () -> {
+							fireNameChangeListener();
+						});
 					}
 				}
 				catch(Throwable expt) {
@@ -656,14 +622,12 @@ public class ConstructorPropertiesPanel extends JPanel {
 			checkSetHome.addActionListener((ActionEvent e) -> {
 				try {
 					
-					if (disableChanges) {
-						return;
-					}
-					
 					if (constructorHolder != null) {
 						constructorHolder.setHome(checkSetHome.isSelected());
 						
-						fireNameChangeListener();
+						Safe.tryOnChange(checkSetHome, () -> {
+							fireNameChangeListener();
+						});
 					}
 				}
 				catch(Throwable expt) {
@@ -688,7 +652,7 @@ public class ConstructorPropertiesPanel extends JPanel {
 	 * Use possible link to a constructor.
 	 * @return
 	 */
-	private ConstructorHolder usePossibleLink() {
+	private ConstructorHolder getPossibleLink() {
 		
 		try {
 			return isLink() ? constructorHolderLink : constructorHolder;
@@ -718,32 +682,156 @@ public class ConstructorPropertiesPanel extends JPanel {
 				this.constructorHolderLink = constructorHolder;
 			}
 			
-			disableChanges = true;
+			// Update editor components.
+			updateConstructorName();
+			updateConstructorAlias();
+			updateConstructorProperties();
+			updateConstructorAreaLink();
+
+			// Update constructor area editors.
+			updateConstructorDependencies();
+			slotListPanel.updateComponents();
+			areaResourcesEditor.updateComponents();
+			updateRelatedArea();
 			
-			// Set editor components.
-			textConstructorHolderName.setText(this.constructorHolder.getName());
-			textAlias.setText(this.constructorHolder.getAlias());
-			checkInheritance.setSelected(this.constructorHolder.isInheritance());
-			textSubRelationName.setText(usePossibleLink().getSubRelationName());
-			textSuperRelationName.setText(usePossibleLink().getSuperRelationName());
-			textSubgroupAlias.setText(this.constructorHolder.getSubGroupAliases());
-			checkAskForRelatedArea.setSelected(this.constructorHolder.isAskForRelatedArea());
-			checkInvisible.setSelected(this.constructorHolder.isInvisible());
-			checkSetHome.setSelected(this.constructorHolder.isSetHome());
-			
-			Safe.invokeLater(() -> {
-				disableChanges = false;
-			});
-			
-			// Set constructor area.
-			setConstructorArea(this.constructorHolder.getAreaId());
-			
+			// Highlight alias editor.
 			textAlias.setForeground(Color.BLACK);
 			textAlias.setBorder(new LineBorder(new Color(171, 173, 179)));
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
 		};
+	}
+	
+	/**
+	 * Update constructor name.
+	 */
+	private void updateConstructorName() {
+		try {
+			
+			if (constructorHolder == null) {
+				return;
+			}
+			
+			Safe.tryToUpdate(textConstructorHolderName, () -> {
+				String name = constructorHolder.getName();
+				textConstructorHolderName.setText(name);
+			});
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+	}
+	
+	/**
+	 * Update constructor alias.
+	 */
+	private void updateConstructorAlias() {
+		try {
+			
+			if (constructorHolder == null) {
+				return;
+			}
+			
+			Safe.tryToUpdate(textAlias, () -> {
+				String alias = constructorHolder.getAlias();
+				textAlias.setText(alias);
+			});
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+	}
+	
+	/**
+	 * Update constructor properties.
+	 */
+	private void updateConstructorProperties() {
+		try {
+			
+			if (constructorHolder == null) {
+				return;
+			}
+			
+			Safe.tryToUpdate(checkInvisible, () -> {
+				boolean invisible = constructorHolder.isInvisible();
+				checkInvisible.setSelected(invisible);
+			});
+			
+			Safe.tryToUpdate(checkSetHome, () -> {
+				boolean isSetHome = constructorHolder.isSetHome();
+				checkSetHome.setSelected(isSetHome);
+			});
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+	}
+	
+	/**
+	 * Update constructor area link.
+	 */
+	private void updateConstructorAreaLink() {
+		try {
+			
+			if (constructorHolder == null) {
+				return;
+			}
+			setConstructorArea(constructorHolder.getAreaId());
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+	}
+	
+	/**
+	 * Update constructor dependencies.
+	 */
+	private void updateConstructorDependencies() {
+		try {
+			
+			ConstructorHolder possibleLink = getPossibleLink();
+			if (constructorHolder == null || possibleLink == null) {
+				return;
+			}
+			
+			Safe.tryToUpdate(checkInheritance, () -> {
+				boolean inheritance = constructorHolder.isInheritance();
+				checkInheritance.setSelected(inheritance);
+			});
+			Safe.tryToUpdate(textSubRelationName, () -> {
+				String subRelationName = possibleLink.getSubRelationName();
+				textSubRelationName.setText(subRelationName);
+			});
+			Safe.tryToUpdate(textSuperRelationName, () -> {
+				String superRelationName = possibleLink.getSuperRelationName();
+				textSuperRelationName.setText(superRelationName);
+			});
+			Safe.tryToUpdate(textSubgroupAlias, () -> {
+				String subGroupAliases = constructorHolder.getSubGroupAliases();
+				textSubgroupAlias.setText(subGroupAliases);
+			});
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+	}
+	
+	/**
+	 * Update related area.
+	 */
+	private void updateRelatedArea() {
+		try {
+			
+			if (constructorHolder == null) {
+				return;
+			}
+			panelRelatedArea.updateComponents();
+			checkAskForRelatedArea.setSelected(constructorHolder.isAskForRelatedArea());
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 
 	/**
@@ -807,7 +895,8 @@ public class ConstructorPropertiesPanel extends JPanel {
 			constructorArea = selectedArea;
 			
 			// Set constructor holder area ID.
-			constructorHolder.setAreaId(constructorArea.getId());
+			long constructorAreaId = constructorArea.getId();
+			constructorHolder.setAreaId(constructorAreaId);
 			
 			updateAreaDisplay();
 		}
@@ -843,9 +932,8 @@ public class ConstructorPropertiesPanel extends JPanel {
 			
 			if (constructorArea != null) {
 				
-				areaText = constructorArea.getDescriptionForDiagram();
+				areaText = constructorArea.getDescriptionForGui();
 				areas.add(constructorArea);
-	
 			}
 			else {
 				areaText = "";
@@ -948,13 +1036,62 @@ public class ConstructorPropertiesPanel extends JPanel {
 			Safe.exception(expt);
 		};
 	}
-
+	
 	/**
-	 * On close window.
+	 * Save object.
 	 */
-	public void onClose() {
+	@Override
+	public boolean save() {
 		try {
 			
+			saveConstructorHolder();
+			return true;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+			return false;
+		}
+	}
+	
+	/**
+	 * Update components.
+	 */
+	@Override
+	public void updateComponents() {
+		try {
+			// Update constructor name.
+			updateConstructorName();
+			// Update constructor alias.
+			updateConstructorAlias();
+			// Update constructor properties.
+			updateConstructorProperties();
+			// Update constructor area link.
+			updateConstructorAreaLink();
+			// Update constructor dependencies.
+			updateConstructorDependencies();
+			// Update slot list.
+			slotListPanel.updateComponents();
+			// Update area resources editor.
+			areaResourcesEditor.updateComponents();
+			// Update related area.
+			updateRelatedArea();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+	}
+
+	/**
+	 * Close panel.
+	 */
+	@Override
+	public void close() throws IOException {
+		try {
+			
+			// Remove application event receivers from this panel.
+			ApplicationEvents.removeReceivers(this);
+			
+			// Close slot list panel.
 			slotListPanel.onClose();
 		}
 		catch(Throwable expt) {

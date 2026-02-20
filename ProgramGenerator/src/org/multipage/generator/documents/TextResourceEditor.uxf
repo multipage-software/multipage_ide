@@ -29,13 +29,13 @@
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>385</x>
+      <x>322</x>
       <y>203</y>
-      <w>21</w>
+      <w>84</w>
       <h>84</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;100.0</additional_attributes>
+    <additional_attributes>10.0;10.0;100.0;100.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
@@ -125,12 +125,35 @@
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>357</x>
+      <x>294</x>
       <y>189</y>
       <w>70</w>
       <h>21</h>
     </coordinates>
     <panel_attributes>JPanel</panel_attributes>
     <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>399</x>
+      <y>189</y>
+      <w>126</w>
+      <h>21</h>
+    </coordinates>
+    <panel_attributes>/UpdatableComponent/
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>399</x>
+      <y>203</y>
+      <w>77</w>
+      <h>84</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>90.0;10.0;10.0;100.0</additional_attributes>
   </element>
 </diagram>

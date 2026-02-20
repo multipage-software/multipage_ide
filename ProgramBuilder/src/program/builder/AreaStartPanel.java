@@ -478,7 +478,7 @@ public class AreaStartPanel extends JPanel implements EditorTabActions, Updatabl
 	private void reloadStartResourcesTable() {
 		try {
 			
-			// Clear table.
+			// Clear old table items.
 			tableModelStartResources.getDataVector().removeAllElements();
 			
 			// Reload area object.
@@ -507,7 +507,7 @@ public class AreaStartPanel extends JPanel implements EditorTabActions, Updatabl
 				return;
 			}
 			
-			// Insert table items.
+			// Insert new table items.
 			for (AreaSourceData areaSourceData : areaSourcesData) {
 				
 				insertAreaSourceTableItem(areaSourceData.resourceId, areaSourceData.versionId, areaSourceData.notLocalized);
@@ -1074,7 +1074,7 @@ public class AreaStartPanel extends JPanel implements EditorTabActions, Updatabl
 	private void reloadOldStartResource() {
 		try {
 			
-			// Check area.
+			// Check the area.
 			if (area == null) {
 				return;
 			}
@@ -1095,7 +1095,7 @@ public class AreaStartPanel extends JPanel implements EditorTabActions, Updatabl
 				return;
 			}
 			
-			// Update model.
+			// Update the resources model.
 			if (resourcesModel != null) {
 				// Set flag.
 				resourcesModel.update();
@@ -1148,9 +1148,6 @@ public class AreaStartPanel extends JPanel implements EditorTabActions, Updatabl
 					}
 				}
 			}
-			
-			// Update all components.
-			GeneratorMainFrame.updateAll();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);

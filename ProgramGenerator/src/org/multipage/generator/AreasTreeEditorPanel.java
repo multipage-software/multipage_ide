@@ -563,7 +563,7 @@ public class AreasTreeEditorPanel extends JPanel implements TabItemInterface, Pr
 	 */
 	protected void onTreeEscapeKey() {
 		try {
-			Safe.tryUpdate(tree, () -> {
+			Safe.tryToUpdate(tree, () -> {
 				tree.clearSelection();
 			});
 			displayAreaProperties();
@@ -578,7 +578,7 @@ public class AreasTreeEditorPanel extends JPanel implements TabItemInterface, Pr
 	 */
 	protected void onListEscapeKey() {
 		try {
-			Safe.tryUpdate(list, () -> {
+			Safe.tryToUpdate(list, () -> {
 				list.clearSelection();
 			});
 			displayAreaProperties();
@@ -667,7 +667,7 @@ public class AreasTreeEditorPanel extends JPanel implements TabItemInterface, Pr
 				if (newArea.ref != null) {
 					
 					reload();
-					Safe.tryUpdate(tree, () -> {
+					Safe.tryToUpdate(tree, () -> {
 						AreaTreeState.addSelectionAndExpandIt(tree, selectedPaths);
 					});
 				}
@@ -685,7 +685,7 @@ public class AreasTreeEditorPanel extends JPanel implements TabItemInterface, Pr
 		try {
 			
 			// Clear selection
-			Safe.tryUpdate(tree, () -> {
+			Safe.tryToUpdate(tree, () -> {
 				tree.clearSelection();
 			});
 			
@@ -702,7 +702,7 @@ public class AreasTreeEditorPanel extends JPanel implements TabItemInterface, Pr
 						boolean isHomeArea = ProgramGenerator.getAreasModel().isHomeAreaId(areaId);
 						if (isHomeArea) {
 							TreePath homeNodePath = new TreePath(node.getPath());
-							Safe.tryUpdate(tree, () -> {
+							Safe.tryToUpdate(tree, () -> {
 								tree.addSelectionPath(homeNodePath);
 							});
 							found.ref = true;
@@ -745,7 +745,7 @@ public class AreasTreeEditorPanel extends JPanel implements TabItemInterface, Pr
 			}
 			
 			// Clear selection
-			Safe.tryUpdate(tree, () -> {
+			Safe.tryToUpdate(tree, () -> {
 				tree.clearSelection();
 			});
 			
@@ -760,7 +760,7 @@ public class AreasTreeEditorPanel extends JPanel implements TabItemInterface, Pr
 						if (treeAreaId == areaId) {
 							
 							TreePath areaNodePath = new TreePath(node.getPath());
-							Safe.tryUpdate(tree, () -> {
+							Safe.tryToUpdate(tree, () -> {
 								tree.addSelectionPath(areaNodePath);
 							});
 							success.ref = true;
@@ -774,7 +774,7 @@ public class AreasTreeEditorPanel extends JPanel implements TabItemInterface, Pr
 			});
 			
 			// Clear list selection.
-			Safe.tryUpdate(list, () -> {
+			Safe.tryToUpdate(list, () -> {
 				list.clearSelection();
 			});
 			
@@ -790,7 +790,7 @@ public class AreasTreeEditorPanel extends JPanel implements TabItemInterface, Pr
 					
 					if (areaId == listAreaId) {
 						final int indexValue = index;
-						Safe.tryUpdate(list, () -> {
+						Safe.tryToUpdate(list, () -> {
 							list.setSelectedIndex(indexValue);
 						});
 						list.ensureIndexIsVisible(index);
@@ -825,7 +825,7 @@ public class AreasTreeEditorPanel extends JPanel implements TabItemInterface, Pr
 			getSubPaths((DefaultMutableTreeNode) treePath.getLastPathComponent(), treePaths);
 					
 			// Select sub nodes.
-			Safe.tryUpdate(tree, () -> {
+			Safe.tryToUpdate(tree, () -> {
 				tree.setSelectionPaths(treePaths.toArray(new TreePath [0]));
 			});
 		}
@@ -1416,7 +1416,7 @@ public class AreasTreeEditorPanel extends JPanel implements TabItemInterface, Pr
 			
 					// Set button state.
 					boolean showIds = message.getRelatedInfo();
-					Safe.tryUpdate(buttonShowIds, () -> {
+					Safe.tryToUpdate(buttonShowIds, () -> {
 						buttonShowIds.setSelected(showIds);
 					});
 					// Reload editor.
@@ -2010,7 +2010,7 @@ public class AreasTreeEditorPanel extends JPanel implements TabItemInterface, Pr
 			AreaTreeState treeState = AreaTreeState.getTreeState(tree);
 			
 			// Load tree.
-			Safe.tryUpdate(tree, () -> {
+			Safe.tryToUpdate(tree, () -> {
 				updateTreeModel(treeModel, areaId, isSubareas, inheritance);
 			});
 			
@@ -2019,7 +2019,7 @@ public class AreasTreeEditorPanel extends JPanel implements TabItemInterface, Pr
 			treeModel.reload();
 						
 			// Apply tree state.
-			Safe.tryUpdate(tree, () -> {
+			Safe.tryToUpdate(tree, () -> {
 				AreaTreeState.applyTreeState(treeState, tree);
 			});
 			
@@ -2137,7 +2137,7 @@ public class AreasTreeEditorPanel extends JPanel implements TabItemInterface, Pr
 					Resources.getString("org.multipage.generator.textFoundAreasCount"), areasSorted.size()));
 			
 			// Restore selection.
-			Safe.tryUpdate(list, () -> {
+			Safe.tryToUpdate(list, () -> {
 				list.setSelectedIndices(selectedIndices);
 			});
 		});
@@ -2213,7 +2213,7 @@ public class AreasTreeEditorPanel extends JPanel implements TabItemInterface, Pr
 					areas = area.getSuperareas();
 				}
 				else {
-					areas = area.getInheritsFrom();
+					areas = area.getInheritsFromSuper();
 				}
 			}
 			
@@ -2253,7 +2253,7 @@ public class AreasTreeEditorPanel extends JPanel implements TabItemInterface, Pr
 			
 			if (select) {
 				if (tabIndex == 0) {
-					Safe.tryUpdate(tree, () -> {
+					Safe.tryToUpdate(tree, () -> {
 						tree.clearSelection();
 						tree.addSelectionRow(0);
 					});
@@ -2261,19 +2261,19 @@ public class AreasTreeEditorPanel extends JPanel implements TabItemInterface, Pr
 				}
 				else if (tabIndex == 1) {
 					int itemCount = listModel.getSize();
-					Safe.tryUpdate(list, () -> {
+					Safe.tryToUpdate(list, () -> {
 						list.setSelectionInterval(0, itemCount - 1);
 					});
 				}
 			}
 			else {
 				if (tabIndex == 0) {
-					Safe.tryUpdate(tree, () -> {
+					Safe.tryToUpdate(tree, () -> {
 						tree.clearSelection();
 					});
 				}
 				else if (tabIndex == 1) {
-					Safe.tryUpdate(list, () -> {
+					Safe.tryToUpdate(list, () -> {
 						list.clearSelection();
 					});
 				}

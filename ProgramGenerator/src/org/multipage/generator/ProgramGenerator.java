@@ -205,6 +205,8 @@ public class ProgramGenerator {
 			GenKeyDialog.setDefaultData();
 			XdebugSessionDialog.setDefaultData();
 			AddDebugWatchDialog.setDefaultData();
+			ExportLegiblyDialog.setDefaultData();
+			ExportLegiblyDialog.setDefaultData();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
@@ -275,6 +277,8 @@ public class ProgramGenerator {
 		GenKeyDialog.serializeData(inputStream);
 		XdebugSessionDialog.serializeData(inputStream);
 		AddDebugWatchDialog.serializeData(inputStream);
+		ExportLegiblyDialog.serializeData(inputStream);
+		ExportLegiblyDialog.serializeData(inputStream);
 	}
 	
 	/**
@@ -340,6 +344,8 @@ public class ProgramGenerator {
 		GenKeyDialog.serializeData(outputStream);
 		XdebugSessionDialog.serializeData(outputStream);
 		AddDebugWatchDialog.serializeData(outputStream);
+		ExportLegiblyDialog.serializeData(outputStream);
+		ExportLegiblyDialog.serializeData(outputStream);
 	}
 	
 	/**

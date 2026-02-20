@@ -380,11 +380,14 @@ public class RepeatedTask {
 				catch (Exception e) {
 				}
 			}
+			
+			System.err.println("All tasks stopped");
+			return true;
 		}
 		catch (Throwable e) {
+			System.err.println("Error when stopping tasks");
 			Safe.exception(e);
 			return false;
 		}
-		return true;
 	}
 }

@@ -10,9 +10,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.ObjectOutputStream.PutField;
+import java.util.HashMap;
 
 import org.apache.commons.io.ByteOrderMark;
 import org.multipage.util.Resources;
+import org.multipage.util.Safe;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
@@ -46,6 +48,11 @@ public class StateOutputStreamImpl implements StateOutputStream {
 	private ObjectOutputStream objectOutputStream = null;
 	
 	/**
+	 * Class record counter.
+	 */
+	static HashMap<Class<?>, Integer> classRecordCounter = new HashMap<>();
+	
+	/**
 	 * Set alias used used with XStream writer when it writes objects of specified class.
 	 */
 	@Override
@@ -66,6 +73,8 @@ public class StateOutputStreamImpl implements StateOutputStream {
 		StateOutputStreamImpl thisObject = new StateOutputStreamImpl();
 		thisObject.xStream = new XStream(new DomDriver());
 		
+		thisObject.xStream.alias("record", StateStreamRecordInfo.class);
+		
 		thisObject.fileName = fileName;
 		thisObject.fileOutputStream = new FileOutputStream(fileName);
 		thisObject.objectOutputStream = thisObject.xStream.createObjectOutputStream(thisObject.fileOutputStream, rootNodeName);
@@ -76,12 +85,35 @@ public class StateOutputStreamImpl implements StateOutputStream {
 	/**
 	 * Check initialized reference to the output stream.
 	 */
-	private void checkInitialization()
+	private StateStreamRecordInfo checkInitialization()
 			throws IOException {
 		
+		// Check initialized reference to the output stream.
 		if (objectOutputStream == null) {
 			throw new IOException(Resources.getString("org.multipage.gui.messageObjectStreamForStatesNotInitialized"));
 		}
+		
+		// Get calling method information.
+		StateStreamRecordInfo callerInfo = null;
+		
+		// Stack Level 4.
+		final int STACK_INFO_LEVEL = 4;
+		
+	    StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+	    if (stackTrace.length > STACK_INFO_LEVEL) {
+	    	
+	        StackTraceElement caller = stackTrace[STACK_INFO_LEVEL];
+	        try {
+	        	
+	            Class<?> callerClass = Class.forName(caller.getClassName());
+                callerInfo = new StateStreamRecordInfo(callerClass);
+	        }
+	        catch (ClassNotFoundException e) {
+	            Safe.exception(e);
+	            throw new IOException(e);
+	        }
+	    }
+	    return callerInfo;
 	}
 	
 	/**
@@ -286,6 +318,22 @@ public class StateOutputStreamImpl implements StateOutputStream {
 			throw new IOException(e.getLocalizedMessage());
 		}
 	}
+	
+	/**
+	 * Delegate the method call to object output stream.
+	 * @param value
+	 * @throws IOException
+	 */
+	private void writeHelper(Object value) throws IOException {
+
+		StateStreamRecordInfo record = checkInitialization();
+		try {
+			objectOutputStream.writeObject(record.wrap(value));
+		}
+		catch (Exception e) {
+			throw new IOException(e.getLocalizedMessage());
+		}
+	}
 
 	/**
 	 * Delegate the method call to object output stream.
@@ -293,13 +341,7 @@ public class StateOutputStreamImpl implements StateOutputStream {
 	@Override
 	public void writeBoolean(boolean val) throws IOException {
 
-		checkInitialization();
-		try {
-			objectOutputStream.writeBoolean(val);
-		}
-		catch (Exception e) {
-			throw new IOException(e.getLocalizedMessage());
-		}
+		writeHelper(val);
 	}
 
 	/**
@@ -308,13 +350,7 @@ public class StateOutputStreamImpl implements StateOutputStream {
 	@Override
 	public void writeByte(int val) throws IOException {
 
-		checkInitialization();
-		try {
-			objectOutputStream.writeByte(val);
-		}
-		catch (Exception e) {
-			throw new IOException(e.getLocalizedMessage());
-		}
+		writeHelper(val);
 	}
 
 	/**
@@ -323,13 +359,7 @@ public class StateOutputStreamImpl implements StateOutputStream {
 	@Override
 	public void writeShort(int val) throws IOException {
 
-		checkInitialization();
-		try {
-			objectOutputStream.writeShort(val);
-		}
-		catch (Exception e) {
-			throw new IOException(e.getLocalizedMessage());
-		}
+		writeHelper(val);
 	}
 
 	/**
@@ -338,13 +368,7 @@ public class StateOutputStreamImpl implements StateOutputStream {
 	@Override
 	public void writeChar(int val) throws IOException {
 
-		checkInitialization();
-		try {
-			objectOutputStream.writeChar(val);
-		}
-		catch (Exception e) {
-			throw new IOException(e.getLocalizedMessage());
-		}
+		writeHelper(val);
 	}
 
 	/**
@@ -353,13 +377,7 @@ public class StateOutputStreamImpl implements StateOutputStream {
 	@Override
 	public void writeInt(int val) throws IOException {
 
-		checkInitialization();
-		try {
-			objectOutputStream.writeInt(val);
-		}
-		catch (Exception e) {
-			throw new IOException(e.getLocalizedMessage());
-		}
+		writeHelper(val);
 	}
 
 	/**
@@ -368,13 +386,7 @@ public class StateOutputStreamImpl implements StateOutputStream {
 	@Override
 	public void writeLong(long val) throws IOException {
 
-		checkInitialization();
-		try {
-			objectOutputStream.writeLong(val);
-		}
-		catch (Exception e) {
-			throw new IOException(e.getLocalizedMessage());
-		}
+		writeHelper(val);
 	}
 
 	/**
@@ -383,13 +395,7 @@ public class StateOutputStreamImpl implements StateOutputStream {
 	@Override
 	public void writeFloat(float val) throws IOException {
 
-		checkInitialization();
-		try {
-			objectOutputStream.writeFloat(val);
-		}
-		catch (Exception e) {
-			throw new IOException(e.getLocalizedMessage());
-		}
+		writeHelper(val);
 	}
 
 	/**
@@ -398,13 +404,7 @@ public class StateOutputStreamImpl implements StateOutputStream {
 	@Override
 	public void writeDouble(double val) throws IOException {
 
-		checkInitialization();
-		try {
-			objectOutputStream.writeDouble(val);
-		}
-		catch (Exception e) {
-			throw new IOException(e.getLocalizedMessage());
-		}
+		writeHelper(val);
 	}
 
 	/**
@@ -413,13 +413,7 @@ public class StateOutputStreamImpl implements StateOutputStream {
 	@Override
 	public void writeBytes(String str) throws IOException {
 
-		checkInitialization();
-		try {
-			objectOutputStream.writeBytes(str);
-		}
-		catch (Exception e) {
-			throw new IOException(e.getLocalizedMessage());
-		}
+		writeHelper(str);
 	}
 
 	/**
@@ -428,13 +422,7 @@ public class StateOutputStreamImpl implements StateOutputStream {
 	@Override
 	public void writeChars(String str) throws IOException {
 
-		checkInitialization();
-		try {
-			objectOutputStream.writeChars(str);
-		}
-		catch (Exception e) {
-			throw new IOException(e.getLocalizedMessage());
-		}
+		writeHelper(str);
 	}
 
 	/**
@@ -443,13 +431,7 @@ public class StateOutputStreamImpl implements StateOutputStream {
 	@Override
 	public void writeUTF(String str) throws IOException {
 
-		checkInitialization();
-		try {
-			objectOutputStream.writeUTF(str);
-		}
-		catch (Exception e) {
-			throw new IOException(e.getLocalizedMessage());
-		}
+		writeHelper(str);
 	}
 	
 	/**
@@ -458,12 +440,6 @@ public class StateOutputStreamImpl implements StateOutputStream {
 	@Override
 	public void writeObject(Object object) throws IOException {
 		
-		checkInitialization();
-		try {
-			objectOutputStream.writeObject(object);
-		}
-		catch (Exception e) {
-			throw new IOException(e.getLocalizedMessage());
-		}
+		writeHelper(object);
 	}
 }

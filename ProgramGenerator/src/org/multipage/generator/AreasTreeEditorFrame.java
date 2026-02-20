@@ -778,7 +778,7 @@ public class AreasTreeEditorFrame extends JFrame implements PreventEventEchos, R
 	 */
 	protected void onTreeEscapeKey() {
 		try {
-			Safe.tryUpdate(tree, () -> {
+			Safe.tryToUpdate(tree, () -> {
 				tree.clearSelection();
 			});
 			displayAreaProperties();
@@ -793,7 +793,7 @@ public class AreasTreeEditorFrame extends JFrame implements PreventEventEchos, R
 	 */
 	protected void onListEscapeKey() {
 		try {
-			Safe.tryUpdate(list, () -> {
+			Safe.tryToUpdate(list, () -> {
 				list.clearSelection();
 			});
 			displayAreaProperties();
@@ -879,7 +879,7 @@ public class AreasTreeEditorFrame extends JFrame implements PreventEventEchos, R
 				if (newArea.ref != null) {
 					
 					GeneratorMainFrame.updateAll();
-					Safe.tryUpdate(tree, () -> {
+					Safe.tryToUpdate(tree, () -> {
 						AreaTreeState.addSelectionAndExpandIt(tree, selectedPaths);
 					});
 				}
@@ -909,7 +909,7 @@ public class AreasTreeEditorFrame extends JFrame implements PreventEventEchos, R
 			getSubPaths((DefaultMutableTreeNode) treePath.getLastPathComponent(), treePaths);
 			
 			// Select sub nodes.
-			Safe.tryUpdate(tree, () -> {
+			Safe.tryToUpdate(tree, () -> {
 				tree.setSelectionPaths(treePaths.toArray(new TreePath [0]));
 			});
 		}
@@ -1068,29 +1068,29 @@ public class AreasTreeEditorFrame extends JFrame implements PreventEventEchos, R
 				radioSuperAreas.setSelected(true);
 			}
 			
-			Safe.tryUpdate(tabbedPane, () -> {
+			Safe.tryToUpdate(tabbedPane, () -> {
 				tabbedPane.setSelectedIndex(selectedTabIndexState);
 			});
 			
-			Safe.tryUpdate(checkInherits, () -> {
+			Safe.tryToUpdate(checkInherits, () -> {
 				checkInherits.setSelected(inheritState);
 			});
-			Safe.tryUpdate(checkShowIds, () -> {
+			Safe.tryToUpdate(checkShowIds, () -> {
 				checkShowIds.setSelected(showIdsState);
 			});
-			Safe.tryUpdate(checkCaseSensitive, () -> {
+			Safe.tryToUpdate(checkCaseSensitive, () -> {
 				checkCaseSensitive.setSelected(caseSensitiveState);
 			});
-			Safe.tryUpdate(checkWholeWords, () -> {
+			Safe.tryToUpdate(checkWholeWords, () -> {
 				checkWholeWords.setSelected(wholeWordsState);
 			});
-			Safe.tryUpdate(checkExactMatch, () -> {
+			Safe.tryToUpdate(checkExactMatch, () -> {
 				checkExactMatch.setSelected(exactMatchState);
 			});
-			Safe.tryUpdate(textFilter, () -> {
+			Safe.tryToUpdate(textFilter, () -> {
 				textFilter.setText(filterState);
 			});
-			Safe.tryUpdate(textLevels, () -> {
+			Safe.tryToUpdate(textLevels, () -> {
 				textLevels.setText(levelsState);
 			});
 			
@@ -2015,7 +2015,7 @@ public class AreasTreeEditorFrame extends JFrame implements PreventEventEchos, R
 				boolean exactMatch = checkExactMatch.isSelected();
 		
 				// Set inheritance and Drag and Drop.
-				Safe.tryUpdate(checkInherits, () -> {
+				Safe.tryToUpdate(checkInherits, () -> {
 					checkInherits.setEnabled(!isSubareas);
 				});
 				tree.enableDragAndDrop(isSubareas);
@@ -2027,12 +2027,12 @@ public class AreasTreeEditorFrame extends JFrame implements PreventEventEchos, R
 					AreaTreeState treeState = AreaTreeState.getTreeState(tree);
 					
 					// Load tree.
-					Safe.tryUpdate(tree, () -> {
+					Safe.tryToUpdate(tree, () -> {
 						updateTreeModel(treeModel, areaId, isSubareas, inheritance);
 					});
 								
 					// Apply tree state.
-					Safe.tryUpdate(tree, () -> {
+					Safe.tryToUpdate(tree, () -> {
 						AreaTreeState.applyTreeState(treeState, tree);
 					});
 					
@@ -2044,7 +2044,7 @@ public class AreasTreeEditorFrame extends JFrame implements PreventEventEchos, R
 				else {
 					// Update list.
 					// Cleare it.
-					Safe.tryUpdate(list, () -> {
+					Safe.tryToUpdate(list, () -> {
 						listModel.clear();
 					});
 					// Get areas.
@@ -2105,7 +2105,7 @@ public class AreasTreeEditorFrame extends JFrame implements PreventEventEchos, R
 					Collections.sort(areasSorted, new AreasComparator(!isDescription));
 					
 					// Load list.
-					Safe.tryUpdate(list, () -> {
+					Safe.tryToUpdate(list, () -> {
 						for (Area areaSorted : areasSorted) {
 							listModel.addElement(areaSorted);
 						}
@@ -2118,7 +2118,7 @@ public class AreasTreeEditorFrame extends JFrame implements PreventEventEchos, R
 					// Select area.
 					if (selectedAreaId != null) {
 						final long areaId = selectedAreaId;
-						Safe.tryUpdate(() -> {
+						Safe.tryToUpdate(() -> {
 							selectArea(areaId);
 						}, list, tree);
 					}
@@ -2205,7 +2205,7 @@ public class AreasTreeEditorFrame extends JFrame implements PreventEventEchos, R
 					areas = area.getSuperareas();
 				}
 				else {
-					areas = area.getInheritsFrom();
+					areas = area.getInheritsFromSuper();
 				}
 			}
 			

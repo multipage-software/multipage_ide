@@ -41,7 +41,7 @@ class AreaCoordinatesTableItem  {
 				Area parentArea = coordinate.getParentArea();
 				
 				if (parentArea != null) {
-					return parentArea.getDescriptionForDiagram();
+					return parentArea.getDescriptionForGui();
 				}
 			}
 		}

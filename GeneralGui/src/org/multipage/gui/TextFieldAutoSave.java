@@ -225,7 +225,7 @@ public class TextFieldAutoSave extends TextFieldEx {
 	 */
 	public void setText(String text) {
 		
-		Safe.tryUpdate(this, () -> {
+		Safe.tryToUpdate(this, () -> {
 			
 			String theText = text;
 			
@@ -416,7 +416,7 @@ public class TextFieldAutoSave extends TextFieldEx {
 	 */
 	public void setMessage(String message) {
 		
-		Safe.tryUpdate(this, () -> {
+		Safe.tryToUpdate(this, () -> {
 			
 			setEnabled(false);
 			setText(message);

@@ -26,6 +26,7 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
 import org.maclan.Area;
+import org.multipage.gui.ApplicationEvents;
 import org.multipage.gui.Images;
 import org.multipage.gui.Utility;
 import org.multipage.util.Resources;
@@ -1335,7 +1336,10 @@ public class AreaLocalMenu {
 			// Get selected area (can be null) and copy area tree.
 			Area area = callbacks.getCurrentArea();
 			GeneratorMainFrame frame = getMainFrame();
-			frame.copyAreaTrees(area);
+			boolean success = frame.copyAreaTrees(area);
+			if (!success) {
+				throw new UnknownError();
+			}
 			
 			// Update GUI components.
 			GeneratorMainFrame.updateAll();

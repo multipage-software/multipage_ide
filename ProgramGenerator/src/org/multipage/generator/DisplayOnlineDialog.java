@@ -39,12 +39,12 @@ import org.maclan.Language;
 import org.maclan.Middle;
 import org.maclan.MiddleResult;
 import org.maclan.VersionObj;
+import org.multipage.basic.LanguageRenderer;
 import org.multipage.basic.ProgramBasic;
 import org.multipage.gui.Images;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.Utility;
-import org.multipage.translator.LanguageRenderer;
 import org.multipage.util.Obj;
 import org.multipage.util.Safe;
 

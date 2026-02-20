@@ -427,7 +427,7 @@ public class ResourceAreasDialog extends JDialog {
 						boolean isSelected, boolean cellHasFocus) {
 					
 					try {
-						renderer.setText(area.getDescriptionForDiagram());
+						renderer.setText(area.getDescriptionForGui());
 						renderer.set(isSelected, cellHasFocus, index);
 					}
 					catch (Throwable e) {

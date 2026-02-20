@@ -34,6 +34,7 @@ import org.multipage.gui.Images;
 import org.multipage.gui.UpdatableComponent;
 import org.multipage.gui.Utility;
 import org.multipage.util.Closable;
+import org.multipage.util.Obj;
 import org.multipage.util.Safe;
 
 /**
@@ -52,7 +53,7 @@ public class DialogNavigator extends JWindow implements UpdatableComponent, Clos
 	/**
 	 * Navigator small and large widths.
 	 */
-	public static final int NAVIGATOR_SMALL_WIDTH = 20;
+	public static final int NAVIGATOR_SMALL_WIDTH = 6;
 	public static final int NAVIGATOR_LARGE_WIDTH = 100;
 	public static final int NAVIGATOR_FOLDER_TOP = 28;
 	
@@ -65,6 +66,12 @@ public class DialogNavigator extends JWindow implements UpdatableComponent, Clos
 	 * Delay between mouse watchdog ticks.
 	 */
 	private static final int MOUSE_WATCHDOG_MS = 200;
+	
+	/**
+	 * Animation parameters.
+	 */
+	private static final int ANIMATION_DELAY = 12;
+	private static final int ANIMATION_STEP = 8;
 	
 	/**
 	 * Singleton dialog navigator window.
@@ -80,6 +87,11 @@ public class DialogNavigator extends JWindow implements UpdatableComponent, Clos
 	 * Navigator panel with buttons.
 	 */
 	private NavigatorButtonsPanel navigatorButtonsPanel = null;
+	
+	/**
+	 * Animation timer.
+	 */
+	private Timer animationTimer = null;
 		
 	// $hide<<$
 	/**
@@ -268,6 +280,10 @@ public class DialogNavigator extends JWindow implements UpdatableComponent, Clos
 				}
 				navigatorWindow.setVisible(true);
 				navigatorWindow.mouseWatchdogTimer.start();
+				
+				navigatorWindow.enlargeWindow(true, () -> {
+					navigatorWindow.enlargeWindow(false);
+				});
 			}
 			else {
 				if (navigatorWindow != null) {
@@ -323,7 +339,7 @@ public class DialogNavigator extends JWindow implements UpdatableComponent, Clos
 					boolean isOnNavigatorWindow = windowRectangle.contains(mousePosition);
 					boolean isOnFolderWindow = folderRectangle != null ? folderRectangle.contains(mousePosition) : false;
 					
-					boolean enlargeWindow = isOnNavigatorWindow || isOnFolderWindow;
+					boolean enlargeWindow = (isOnNavigatorWindow || isOnFolderWindow) && animationTimer == null;
 					double currentWidth = windowRectangle.getWidth();
 					
 					if (enlargeWindow) {
@@ -365,21 +381,78 @@ public class DialogNavigator extends JWindow implements UpdatableComponent, Clos
 		}
 		return null;
 	}
-
+	
 	/**
 	 * Enlarge the navigator window.
-	 * @param enlarge
+	 * @param enlarge - true to enlarge, false to reduce.
 	 */
 	protected void enlargeWindow(boolean enlarge) {
 		try {
 			
+			enlargeWindow(enlarge, null);
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
+	}
+
+	/**
+	 * Enlarge the navigator window.
+	 * @param enlarge - true to enlarge, false to reduce.
+	 * @param completedLambda - Called when the animation is completed.
+	 */
+	protected void enlargeWindow(boolean enlarge, Runnable completedLambda) {
+		try {
+			
+			// If animation is in progress then ignore the call.
+			if (animationTimer != null) {
+				return;
+			}
+			
+			Obj<Integer> width = new Obj<>();
 			if (enlarge) {
-				setWindowBounds(NAVIGATOR_LARGE_WIDTH);
+				
+				width.ref = NAVIGATOR_SMALL_WIDTH;
+				animationTimer = new Timer(ANIMATION_DELAY, e -> {
+					
+					setWindowBounds(width.ref);
+					width.ref += ANIMATION_STEP;
+					if (width.ref >= NAVIGATOR_LARGE_WIDTH) {
+						
+						setWindowBounds(NAVIGATOR_LARGE_WIDTH);
+						animationTimer.stop();
+						animationTimer = null;
+						
+						// Call the completed lambda if any.
+						if (completedLambda != null) {
+							completedLambda.run();
+						}
+					}
+				});
 			}
 			else {
 				navigatorWindow.hideFolderWindows();
-				setWindowBounds(NAVIGATOR_SMALL_WIDTH);
+				
+				width.ref = NAVIGATOR_LARGE_WIDTH;
+				animationTimer = new Timer(ANIMATION_DELAY, e -> {
+					
+					setWindowBounds(width.ref);
+					width.ref -= ANIMATION_STEP;
+					if (width.ref <= NAVIGATOR_SMALL_WIDTH) {
+						
+						setWindowBounds(NAVIGATOR_SMALL_WIDTH);
+						animationTimer.stop();
+						animationTimer = null;
+						
+						// Call the completed lambda if any.
+						if (completedLambda != null) {
+							completedLambda.run();
+						}
+					}
+				});
 			}
+			animationTimer.start();
+			
 			// Set the navigator as top most window.
 			toFront();
 			navigatorWindow.setAlwaysOnTop(true);

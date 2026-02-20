@@ -38,7 +38,6 @@ import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.SpringLayout;
-import javax.swing.SwingUtilities;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -63,17 +62,19 @@ import org.multipage.gui.Images;
 import org.multipage.gui.StateInputStream;
 import org.multipage.gui.StateOutputStream;
 import org.multipage.gui.ToolBarKit;
+import org.multipage.gui.UpdatableComponent;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Resources;
 import org.multipage.util.Safe;
+import org.multipage.util.Saveable;
 
 /**
  * Editor panel that displays information about constructors of areas.
  * @author vakol
  *
  */
-public class ConstructorsPanel extends JPanel implements EditorTabActions {
+public class ConstructorsPanel extends JPanel implements EditorTabActions, Saveable, UpdatableComponent {
 
 	// $hide>>$
 	/**
@@ -118,7 +119,7 @@ public class ConstructorsPanel extends JPanel implements EditorTabActions {
 	public static void setDefaultData() {
 		
 		mainDividerLocation = -1;
-		expandedConstructorTreePaths = new IdentifierTreePath [0];
+		expandedConstructorTreePaths = new IdentifierTreePath[0];
 	}
 
 	/**
@@ -162,6 +163,11 @@ public class ConstructorsPanel extends JPanel implements EditorTabActions {
 	private ConstructorTreeModel constructorTreeModel;
 
 	/**
+	 * Constructor group panel.
+	 */
+	private ConstructorGroupPanel constructorGroupPanel;
+	
+	/**
 	 * Constructor properties panel.
 	 */
 	private ConstructorPropertiesPanel constructorPropertiesPanel;
@@ -175,11 +181,6 @@ public class ConstructorsPanel extends JPanel implements EditorTabActions {
 	 * Paste constructor button.
 	 */
 	private JButton buttonPasteConstructorHolder;
-	
-	/**
-	 * Constructor group panel.
-	 */
-	private ConstructorGroupPanel constructorGroupPanel;
 	
 	/**
 	 * Empty panel.
@@ -784,23 +785,26 @@ public class ConstructorsPanel extends JPanel implements EditorTabActions {
 		try {
 			
 			// Stop editing.
+			constructorGroupPanel.stopEditing();
 			constructorPropertiesPanel.stopEditing();
 			
+			// Get selected tree node.
 			Object selectedTreeObject = tree.getLastSelectedPathComponent();
 			
-			// If a reference to selected group should be set, do it.
-			if (buttonGroupReference.isSelected() && (selectedTreeObject instanceof ConstructorGroup)
+			// If a reference to selected group should be set, set it.
+			if (buttonGroupReference.isSelected()
+					&& (selectedTreeObject instanceof ConstructorGroup)
 					&& currentConstructorHolder != null) {
 				
 				ConstructorGroup selectedGroup = (ConstructorGroup) selectedTreeObject;
 				saveReferenceToGroup(currentConstructorHolder, selectedGroup);
 			}
 			
-			// If a link to constructor should be set, do it.
-			if (constructorLinkParentGroup != null && (selectedTreeObject instanceof ConstructorHolder)) {
+			// If a link to constructor should be set, set it.
+			if (constructorLinkParentGroup != null
+					&& (selectedTreeObject instanceof ConstructorHolder)) {
 				
 				ConstructorHolder linkedConstructorHolder = (ConstructorHolder) selectedTreeObject;
-				
 				saveLinkToContructor(constructorLinkParentGroup, linkedConstructorHolder);
 			}
 			
@@ -1203,7 +1207,7 @@ public class ConstructorsPanel extends JPanel implements EditorTabActions {
 	/**
 	 * Save data.
 	 */
-	public void save() {
+	public boolean save() {
 		try {
 			
 			// Stop editing.
@@ -1214,10 +1218,12 @@ public class ConstructorsPanel extends JPanel implements EditorTabActions {
 			
 			// Save constructors.
 			saveConstructors();
+			return true;
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
-		};
+			return false;
+		}
 	}
 	
 	/**
@@ -1290,25 +1296,24 @@ public class ConstructorsPanel extends JPanel implements EditorTabActions {
 			// Set old expanded paths and selection path.
 			Utility.setExpandedPaths(tree, expandedPaths);
 			Utility.setSelectedPaths(tree, selectedPaths);
-			
-			// Update information.
-			updateInformation();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
 		};
 	}
-
-	private void updateInformation() {
-		// TODO Auto-generated method stub
-		
-	}
-
+	
 	/**
 	 * Save constructors.
 	 */
 	private void saveConstructors() {
-
+		try {
+			
+			constructorPropertiesPanel.stopEditing();
+			constructorPropertiesPanel.save();
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+		}
 	}
 	
 	/**
@@ -1980,11 +1985,30 @@ public class ConstructorsPanel extends JPanel implements EditorTabActions {
 	public void onClose() {
 		try {
 			
-			constructorPropertiesPanel.onClose();
+			// Close panels.
+			constructorGroupPanel.close();
+			constructorPropertiesPanel.close();
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);
 		};
+	}
+	
+	/**
+	 * Check current editor panel.
+	 * @return
+	 */
+	private boolean isCurrentEditor(JPanel editorPanel)
+			throws Throwable {	
+		try {
+			
+			boolean isCurrent = editorPanel.equals(splitPaneMain.getRightComponent());
+			return isCurrent;
+		}
+		catch(Throwable e) {
+			Safe.exception(e);
+			throw e;
+		}
 	}
 
 	/**
@@ -1993,7 +2017,14 @@ public class ConstructorsPanel extends JPanel implements EditorTabActions {
 	public void updateComponents() {
 		try {
 			
-			// TODO: <---MAKE Update components.
+			// Update group editor.
+			if (isCurrentEditor(constructorGroupPanel)) {
+				constructorGroupPanel.updateComponents();
+			}
+			// Update constructor editor.
+			if (isCurrentEditor(constructorPropertiesPanel)) {
+				constructorPropertiesPanel.updateComponents();
+			}
 		}
 		catch (Throwable e) {
 			Safe.exception(e);

@@ -3037,7 +3037,7 @@ public class AreaDiagramPanel extends GeneralDiagramPanel implements TabItemInte
 		
 		try {
 			// Inform user.
-			Utility.show(parentComponent, "org.multipage.generator.messageCannotAddNewAreaToThisArea", parentArea.getDescriptionForDiagram());
+			Utility.show(parentComponent, "org.multipage.generator.messageCannotAddNewAreaToThisArea", parentArea.getDescriptionForGui());
 		}
 		catch (Throwable e) {
 			Safe.exception(e);

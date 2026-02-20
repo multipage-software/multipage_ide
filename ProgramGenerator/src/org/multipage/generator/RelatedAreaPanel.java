@@ -275,7 +275,7 @@ public class RelatedAreaPanel extends JPanel {
 			
 			// Set new area.
 			currentArea.setRelatedArea(relatedArea);
-			textRelatedArea.setText(relatedArea != null ? relatedArea.getDescriptionForDiagram() : "");
+			textRelatedArea.setText(relatedArea != null ? relatedArea.getDescriptionForGui() : "");
 		}
 		catch(Throwable expt) {
 			Safe.exception(expt);

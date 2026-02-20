@@ -185,7 +185,7 @@ public class AreaInheritancePanel extends JPanel implements EditorTabActions, Up
 						
 						// Set object, text and inheritance.
 						object.ref = superArea;
-						text.ref = superArea.getDescriptionForDiagram();
+						text.ref = superArea.getDescriptionForGui();
 						selected.ref = area.inheritsFrom(superArea);
 						
 						return true;

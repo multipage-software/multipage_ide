@@ -118,21 +118,13 @@ public class EnumerationsEditorDialog extends JDialog {
 		
 		splitPosition = inputStream.readInt();
 		
-		object = inputStream.readObject();
-		if (!(object instanceof Integer [])) {
-			throw new ClassNotFoundException();
-		}
-		Integer [] widths = (Integer []) object;
+		Integer [] widths = Utility.readInputStreamObject(inputStream, Integer [].class);
 		if (widths.length != 2) {
 			throw new ClassNotFoundException();
 		}
 		columnsWidthsTypes = widths;
 		
-		object = inputStream.readObject();
-		if (!(object instanceof Integer [])) {
-			throw new ClassNotFoundException();
-		}
-		widths = (Integer []) object;
+		widths = Utility.readInputStreamObject(inputStream, Integer [].class);
 		if (widths.length != 3) {
 			throw new ClassNotFoundException();
 		}

@@ -82,9 +82,11 @@ import org.maclan.SlotType;
 import org.maclan.TextHolderType;
 import org.maclan.VersionData;
 import org.maclan.VersionObj;
+import org.maclan.server.AreaServer;
 import org.multipage.gui.Utility;
 import org.multipage.util.ImgUtility;
 import org.multipage.util.Obj;
+import org.multipage.util.Resources;
 import org.multipage.util.SwingWorkerHelper;
 
 /**
@@ -410,6 +412,7 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 	private static final String selectConstructorHoldersNames = "SELECT name " +
 													            "FROM constructor_holder " +
 													            "WHERE group_id = ? " +
+													            "AND NOT invisible " +
 													            "ORDER BY name ASC";
 	
 	private static final String selectSlotAreaIdAndAlias = "SELECT area_id, alias "
@@ -551,6 +554,9 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 															 + "FROM area_slot "
 															 + "WHERE (area_id = ?) AND (alias = ?) "
 															 + "GROUP BY area_id, alias";
+	
+	private  static final String selectVersionsLegibly = "SELECT alias, get_localized_text(description_id, ?) AS description, id " +
+			   											 "FROM version";
 
 	private static final String insertNamespace = "INSERT INTO namespace (description, parent_id, id) " +
 	                                              "VALUES (?, ?, DEFAULT)";
@@ -20702,6 +20708,308 @@ public class MiddleImpl extends MiddleLightImpl implements Middle {
 			
 			set = statement.executeQuery();
 			slotExists.ref = set.next();
+		}
+		catch (Exception e) {
+			result = MiddleResult.sqlToResult(e);
+		}
+		finally {
+			
+			// Close result set.
+			try {
+				if (set != null) {
+					set.close();
+				}
+			}
+			catch (SQLException e) {
+			}
+			// Close statement.
+			try {
+				if (statement != null) {
+					statement.close();
+				}
+			}
+			catch (SQLException e) {
+			}
+		}
+				
+		return result;
+	}
+
+	/**
+	 * Select legibly.
+	 */
+	@Override
+	public MiddleResult selectLegibly(long rootAreaId, long languageId, StringBuilder exportText) {
+		
+		// Check connection.
+		MiddleResult result = checkConnection();
+		if (result.isNotOK()) {
+			return result;
+		}
+		
+		// Export versions legibly.
+		result = exportVersionsLegibly(rootAreaId, languageId, exportText);
+		if (result.isNotOK()) {
+			return result;
+		}
+		
+		exportText.append('\n');
+		
+		// Export areas legibly.
+		result = exportAreasLegibly(rootAreaId, languageId, exportText);
+		
+		return result;
+	}
+
+	/**
+	 * Export versions legibly.
+	 * @param rootAreaId
+	 * @param languageId
+	 * @param exportText
+	 * @return
+	 */
+	private MiddleResult exportVersionsLegibly(long rootAreaId, long languageId, StringBuilder exportText) {
+		
+		// Check connection.
+		MiddleResult result = checkConnection();
+		if (result.isNotOK()) {
+			return result;
+		}
+		
+		// Try to execute statement.
+		PreparedStatement statement = null;
+		ResultSet set = null;
+		try {
+			statement = connection.prepareStatement(selectVersionsLegibly);
+			statement.setLong(1, languageId);
+			
+			set = statement.executeQuery();
+			
+			// Legible introduction.
+			exportText.append(Resources.getString("org.maclan.textVersionListLegibly"));
+			exportText.append('\n');
+			// Start tag.
+			exportText.append(String.format(AreaServer.START_TAG_TEMPLATE, AreaServer.VERSION_LIST_DEFINITION));
+			exportText.append('\n');
+			
+			while (set.next()) {
+				
+				// Start tag for a version.
+				exportText.append(String.format(AreaServer.START_TAG_TEMPLATE, AreaServer.VERSION_DEFINITION));
+				exportText.append('\n');
+				
+				// Get version data.
+				String alias = String.format(AreaServer.START_TAG_TEMPLATE, AreaServer.ALIAS_DEFINITION) +
+							   set.getString("alias") +
+							   String.format(AreaServer.STOP_TAG_TEMPLATE, AreaServer.ALIAS_DEFINITION);
+				String description = String.format(AreaServer.START_TAG_TEMPLATE, AreaServer.DESCRIPTION_DEFINITION) + 
+						             set.getString("description") +
+						             String.format(AreaServer.STOP_TAG_TEMPLATE, AreaServer.DESCRIPTION_DEFINITION);
+				long versionId = set.getLong("id");
+				String versionIdText = String.format(AreaServer.START_TAG_TEMPLATE, AreaServer.ID_DEFINITION) +
+									   Long.toString(versionId) +
+									   String.format(AreaServer.STOP_TAG_TEMPLATE, AreaServer.ID_DEFINITION);
+				
+					
+				// Legible version.
+				exportText.append("- ");
+				String versionLegibly = String.format(
+						Resources.getString("org.maclan.textVersionLegibly"), description, alias, versionIdText);
+				exportText.append(versionLegibly);
+				exportText.append('\n');
+				
+				// Stop tag for the version.
+				exportText.append(String.format(AreaServer.STOP_TAG_TEMPLATE, AreaServer.VERSION_DEFINITION));
+				exportText.append('\n');
+			}
+			// Stop tag.
+			exportText.append(String.format(AreaServer.STOP_TAG_TEMPLATE, AreaServer.VERSION_LIST_DEFINITION));
+			exportText.append('\n');
+		}
+		catch (Exception e) {
+			result = MiddleResult.sqlToResult(e);
+		}
+		finally {
+			
+			// Close result set.
+			try {
+				if (set != null) {
+					set.close();
+				}
+			}
+			catch (SQLException e) {
+			}
+			// Close statement.
+			try {
+				if (statement != null) {
+					statement.close();
+				}
+			}
+			catch (SQLException e) {
+			}
+		}
+				
+		return result;
+	}
+	
+	/**
+	 * Export areas legibly.
+	 * @param areaId
+	 * @param languageId
+	 * @param exportText
+	 * @return
+	 */
+	private MiddleResult exportAreasLegibly(long areaId, long languageId, StringBuilder exportText) {
+		
+		// Check connection.
+		MiddleResult result = checkConnection();
+		if (result.isNotOK()) {
+			return result;
+		}
+		
+		// Try to execute statement.
+		PreparedStatement statement = null;
+		ResultSet set = null;
+		try {
+			String selectVersionsLegibly = "SELECT a.alias, get_localized_text(a.description_id, ?) AS description, a.guid, " + 
+										   "       a.visible, a.read_only, a.localized, a.can_import, a.project_root, a.enabled, " + 
+										   "       a.filename, a.file_extension, a.folder, a.help, ra.id AS rel_id, ra.alias AS rel_alias, " +
+										   "       get_localized_text(ra.description_id, ?) AS rel_description " +
+										   "FROM area AS a " +
+										   "LEFT JOIN area AS ra ON (a.related_area_id = ra.id) " +
+										   "WHERE a.id = ? ";
+			statement = connection.prepareStatement(selectVersionsLegibly);
+			statement.setLong(1, languageId);
+			statement.setLong(2, languageId);
+			statement.setLong(3, areaId);
+			
+			set = statement.executeQuery();
+			
+			// Legible introduction.
+			exportText.append(Resources.getString("org.maclan.textAreaListLegibly"));
+			exportText.append('\n');
+			// Start tag.
+			exportText.append(String.format(AreaServer.START_TAG_TEMPLATE, AreaServer.AREA_LIST_DEFINITION));
+			exportText.append('\n');
+			
+			while (set.next()) {
+				
+				// Start tag for an area.
+				exportText.append(String.format(AreaServer.START_TAG_TEMPLATE, AreaServer.AREA_DEFINITION));
+				exportText.append('\n');
+
+				// Get version data.
+				String alias = set.getString("alias");
+				if (alias == null) {
+					alias = "";
+				}
+				alias = String.format(AreaServer.START_TAG_TEMPLATE, AreaServer.ALIAS_DEFINITION) +
+					alias + 
+					String.format(AreaServer.STOP_TAG_TEMPLATE, AreaServer.ALIAS_DEFINITION);
+				String description = set.getString("description");
+				if (description == null) {
+					description = "";
+				}
+				description = String.format(AreaServer.START_TAG_TEMPLATE, AreaServer.DESCRIPTION_DEFINITION) +
+					description + 
+					String.format(AreaServer.STOP_TAG_TEMPLATE, AreaServer.DESCRIPTION_DEFINITION);
+				String areaIdText = String.format(AreaServer.START_TAG_TEMPLATE, AreaServer.ID_DEFINITION) +
+					Long.toString(areaId) +
+					String.format(AreaServer.STOP_TAG_TEMPLATE, AreaServer.ID_DEFINITION);
+				String guid = MiddleUtility.toGuidString(set.getObject("guid"));
+				if (guid == null) {
+					guid = "";
+				}
+				guid = String.format(AreaServer.START_TAG_TEMPLATE, AreaServer.GUID_DEFINITION) +
+					guid + 
+					String.format(AreaServer.STOP_TAG_TEMPLATE, AreaServer.GUID_DEFINITION);
+				boolean visible = set.getBoolean("visible");
+				String visibleText = String.format(AreaServer.START_TAG_TEMPLATE, AreaServer.VISIBLE_DEFINITION) +
+					Boolean.toString(visible) +
+					String.format(AreaServer.STOP_TAG_TEMPLATE, AreaServer.VISIBLE_DEFINITION);
+				boolean readOnly = set.getBoolean("read_only");
+				String readOnlyText = String.format(AreaServer.START_TAG_TEMPLATE, AreaServer.READONLY_DEFINITION) +
+					Boolean.toString(readOnly) +
+					String.format(AreaServer.STOP_TAG_TEMPLATE, AreaServer.READONLY_DEFINITION);
+				boolean localized = set.getBoolean("localized");
+				String localizedText = String.format(AreaServer.START_TAG_TEMPLATE, AreaServer.LOCALIZED_DEFINITION) +
+					Boolean.toString(localized) +
+					String.format(AreaServer.STOP_TAG_TEMPLATE, AreaServer.LOCALIZED_DEFINITION);
+				boolean canImport = set.getBoolean("can_import");
+				String canImportText = String.format(AreaServer.START_TAG_TEMPLATE, AreaServer.CANIMPORT_DEFINITION) +
+					Boolean.toString(canImport) +
+					String.format(AreaServer.STOP_TAG_TEMPLATE, AreaServer.CANIMPORT_DEFINITION);
+				boolean projectRoot = set.getBoolean("project_root");
+				String projectRootText = String.format(AreaServer.START_TAG_TEMPLATE, AreaServer.PROJECTROOT_DEFINITION) +
+					Boolean.toString(projectRoot) +
+					String.format(AreaServer.STOP_TAG_TEMPLATE, AreaServer.PROJECTROOT_DEFINITION);
+				boolean enabled = set.getBoolean("enabled");
+				String enabledText = String.format(AreaServer.START_TAG_TEMPLATE, AreaServer.ENABLED_DEFINITION) +
+					Boolean.toString(enabled) +
+					String.format(AreaServer.STOP_TAG_TEMPLATE, AreaServer.ENABLED_DEFINITION);
+				String filename = set.getString("filename");
+				if (filename == null) {
+					filename = "";
+				}
+				filename = String.format(AreaServer.START_TAG_TEMPLATE, AreaServer.FILENAME_DEFINITION) +
+					filename + 
+					String.format(AreaServer.STOP_TAG_TEMPLATE, AreaServer.FILENAME_DEFINITION);
+				String fileExtension = set.getString("file_extension");
+				if (fileExtension == null) {
+					fileExtension = "";
+				}
+				fileExtension = String.format(AreaServer.START_TAG_TEMPLATE, AreaServer.FILEEXTENSION_DEFINITION) +
+					fileExtension + 
+					String.format(AreaServer.STOP_TAG_TEMPLATE, AreaServer.FILEEXTENSION_DEFINITION);
+				String folder = set.getString("folder");
+				if (folder == null) {
+					folder = "";
+				}
+				folder = String.format(AreaServer.START_TAG_TEMPLATE, AreaServer.FOLDER_DEFINITION) +
+					folder + 
+					String.format(AreaServer.STOP_TAG_TEMPLATE, AreaServer.FOLDER_DEFINITION);
+				String help = set.getString("help");
+				if (help == null) {
+					help = "";
+				}
+				help = String.format(AreaServer.START_TAG_TEMPLATE, AreaServer.HELP_DEFINITION) +
+					help + 
+					String.format(AreaServer.STOP_TAG_TEMPLATE, AreaServer.HELP_DEFINITION);
+				long relId = set.getLong("rel_id");
+				String relIdText = String.format(AreaServer.START_TAG_TEMPLATE, AreaServer.RELATEDID_DEFINITION) +
+					Long.toString(relId) +
+					String.format(AreaServer.STOP_TAG_TEMPLATE, AreaServer.RELATEDID_DEFINITION);
+				String relAlias = set.getString("rel_alias");
+				if (relAlias == null) {
+					relAlias = "";
+				}
+				relAlias = String.format(AreaServer.START_TAG_TEMPLATE, AreaServer.RELALIAS_DEFINITION) +
+					relAlias + 
+					String.format(AreaServer.STOP_TAG_TEMPLATE, AreaServer.RELALIAS_DEFINITION);
+				String relDescription = set.getString("rel_description");
+				if (relDescription == null) {
+					relDescription = "";
+				}
+				relDescription = String.format(AreaServer.START_TAG_TEMPLATE, AreaServer.RELDESCRIPTION_DEFINITION) +
+					relDescription + 
+					String.format(AreaServer.STOP_TAG_TEMPLATE, AreaServer.RELDESCRIPTION_DEFINITION);
+				
+				// Legible version.
+				exportText.append("- ");
+				String areaLegibly = String.format(
+					Resources.getString("org.maclan.textAreaLegibly"), description, alias, areaIdText,
+					enabledText, guid, visibleText, readOnlyText, localizedText, canImportText, projectRootText,
+					filename, fileExtension, folder, relDescription, relAlias, relIdText, help);
+				exportText.append(areaLegibly);
+				exportText.append('\n');
+				
+				// Stop tag for the area.
+				exportText.append(String.format(AreaServer.STOP_TAG_TEMPLATE, AreaServer.AREA_DEFINITION));
+				exportText.append('\n');
+			}
+			// Stop tag.
+			exportText.append(String.format(AreaServer.STOP_TAG_TEMPLATE, AreaServer.AREA_LIST_DEFINITION));
+			exportText.append('\n');
 		}
 		catch (Exception e) {
 			result = MiddleResult.sqlToResult(e);

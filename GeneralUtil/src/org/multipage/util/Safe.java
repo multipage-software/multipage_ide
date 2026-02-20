@@ -61,7 +61,7 @@ public class Safe {
 	 * @param component
 	 * @param setLambda
 	 */
-	public static void tryUpdate(Object component, Runnable setLambda) {
+	public static void tryToUpdate(Object component, Runnable setLambda) {
 		
 		try {
 			// Exclude component from change actions.
@@ -93,7 +93,7 @@ public class Safe {
 	 * @param components
 	 * @param setLambda
 	 */
-	public static void tryUpdate(Runnable setLambda, Object ... components) {
+	public static void tryToUpdate(Runnable setLambda, Object ... components) {
 		
 		try {
 			// Exclude component from change actions.
@@ -217,7 +217,7 @@ public class Safe {
 	 */
 	public static void setText(JTextField textField, String content) {
 		
-		tryUpdate(textField, () -> {
+		tryToUpdate(textField, () -> {
 			textField.setText(content);
 		});
 	}
@@ -229,7 +229,7 @@ public class Safe {
 	 */
 	public static void setSelected(JCheckBox checkBox, boolean selected) {
 		
-		tryUpdate(checkBox, () -> {
+		tryToUpdate(checkBox, () -> {
 			checkBox.setSelected(selected);
 		});
 	}
@@ -240,7 +240,7 @@ public class Safe {
 	 */
 	public static void setSelectedIndex(JComboBox<?> comboBox, int index) {
 
-		tryUpdate(comboBox, () -> {
+		tryToUpdate(comboBox, () -> {
 			comboBox.setSelectedIndex(index);
 		});
 	}
@@ -252,7 +252,7 @@ public class Safe {
 	 */
 	public static void setSelectedItem(JComboBox<?> comboBox, Object selectedObject) {
 
-		tryUpdate(comboBox, () -> {
+		tryToUpdate(comboBox, () -> {
 			comboBox.setSelectedItem(selectedObject);
 		});
 	}
@@ -264,7 +264,7 @@ public class Safe {
 	 */
 	public static void setSelected(JToggleButton togglebotton, boolean selected) {
 		
-		tryUpdate(togglebotton, () -> {
+		tryToUpdate(togglebotton, () -> {
 			togglebotton.setSelected(selected);
 		});
 	}

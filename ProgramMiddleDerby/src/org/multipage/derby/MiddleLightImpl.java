@@ -1581,7 +1581,7 @@ public class MiddleLightImpl implements MiddleLight {
 		}
 		
 		// Do loop for inherited non-visited areas.
-		for (Area areaItem : area.getInheritsFrom()) {
+		for (Area areaItem : area.getInheritsFromSuper()) {
 			if (!visitedAreasIds.contains(areaItem.getId())) {
 				
 				// Call this method recursively.
@@ -2499,14 +2499,14 @@ public class MiddleLightImpl implements MiddleLight {
 	}
 
 	/**
-	 * Load area slot.
+	 * Load area slot. Based on "hint" inherit it from super or sub areas.
 	 * @param area
 	 * @param alias
 	 * @param inherit
 	 * @param skipDefault 
 	 * @param slot 
 	 * @param lastFoundDefaultSlot
-	 * @param isInheritance
+	 * @param isInheritanceInRecursion
 	 * @param inheritanceLevel
 	 * @param skipCurrentArea
 	 * @param loadValue
@@ -2514,9 +2514,9 @@ public class MiddleLightImpl implements MiddleLight {
 	 */
 	private MiddleResult loadSlotPrivate(Area area, String alias,
 			boolean inherit, boolean skipDefault, Obj<Slot> slot,
-			Obj<Slot> lastFoundDefaultSlot, int hint, boolean isInheritance,
+			Obj<Slot> lastFoundDefaultSlot, int hint, boolean isInheritanceInRecursion,
 			Long inheritanceLevel, boolean skipCurrentArea, boolean loadValue) {
-
+		
 		MiddleResult result;
 		
 		// If not to skip current area...
@@ -2541,7 +2541,7 @@ public class MiddleLightImpl implements MiddleLight {
 			
 			if (existingSlot != null) {
 				
-				if (isInheritance && !existingSlot.isInheritable()) {
+				if (isInheritanceInRecursion && !existingSlot.isInheritable()) {
 					return MiddleResult.OK;
 				}
 				
@@ -2566,37 +2566,75 @@ public class MiddleLightImpl implements MiddleLight {
 			return MiddleResult.OK;
 		}
 		
-		// Load super areas and call this method recursively for inherited areas.
+		// Load super and sub areas and call this method recursively for inherited areas.
 		result = MiddleResult.OK;
 		if ((LoadSlotHint.superAreas & hint) != 0) {
 			result = loadSuperAreasData(area);
+			
+			// Try to inherit from super areas.
+			for (Area inheritedSuperArea : area.getInheritsFromSuper()) {
+				
+				result = loadSlotPrivate(inheritedSuperArea, alias, true, skipDefault,
+						slot, lastFoundDefaultSlot, hint & ~LoadSlotHint.subAreas, true, inheritanceLevel, false, loadValue);
+				if (result.isNotOK()) {
+					return result;
+				}
+				
+				// If slot is found, return it.
+				if (slot.ref != null) {
+					return MiddleResult.OK;
+				}
+			}
 		}
-		else if ((LoadSlotHint.subAreas & hint) != 0) {
+		if ((LoadSlotHint.subAreas & hint) != 0) {
 			result = loadSubAreasData(area);
-		}
-		else {
-			return MiddleResult.FOUND_NO_HINT;
-		}
-		if (result.isNotOK()) {
-			return result;
+			
+			// Try to inherit from sub areas.
+			for (Area inheritedSubArea : area.getInheritsFromSub()) {
+				
+				result = loadSlotPrivate(inheritedSubArea, alias, true, skipDefault,
+						slot, lastFoundDefaultSlot, hint & ~LoadSlotHint.superAreas, true, inheritanceLevel, false, loadValue);
+				if (result.isNotOK()) {
+					return result;
+				}
+				
+				// If slot is found, return it.
+				if (slot.ref != null) {
+					return MiddleResult.OK;
+				}
+			}
 		}
 		
-		for (Area inheritedSuperArea : area.getInheritsFrom()) {
-			
-			result = loadSlotPrivate(inheritedSuperArea, alias, true, skipDefault,
-					slot, lastFoundDefaultSlot, hint, true, inheritanceLevel, false, loadValue);
-			if (result.isNotOK()) {
-				return result;
-			}
-			
-			if (slot.ref != null) {
-				break;
-			}
-		}
-
 		return result;
 	}
 
+	/**
+	 * Load area slot.
+	 * @param area
+	 * @param alias
+	 * @param inherit
+	 * @param parent
+	 * @param skipDefault
+	 * @param slot 
+	 * @param loadValue
+	 * @param hint
+	 * @param inheritanceLevel
+	 * @return
+	 */
+	@Override
+	public MiddleResult loadSlot(Area area, String alias,
+			boolean inherit, boolean parent, boolean skipDefault,
+			Obj<Slot> slot, boolean loadValue,
+			int hint, Long inheritanceLevel) {
+
+		Obj<Slot> lastFoundDefaultSlot = new Obj<Slot>();
+		
+		MiddleResult result = loadSlotPrivate(area, alias, inherit, skipDefault, slot,
+				lastFoundDefaultSlot, hint, false, inheritanceLevel, parent, loadValue);
+		
+		return result;
+	}
+	
 	/**
 	 * Load area slot.
 	 * @param area
@@ -2615,7 +2653,30 @@ public class MiddleLightImpl implements MiddleLight {
 		Obj<Slot> lastFoundDefaultSlot = new Obj<Slot>();
 		
 		MiddleResult result = loadSlotPrivate(area, alias, inherit, skipDefault, slot,
-				lastFoundDefaultSlot, LoadSlotHint.area | LoadSlotHint.superAreas | LoadSlotHint.subAreas, false, null, parent, loadValue);
+				lastFoundDefaultSlot, LoadSlotHint.area | LoadSlotHint.superAreas, false, null, parent, loadValue);
+		
+		return result;
+	}
+	
+	/**
+	 * Load area slot.
+	 * @param area
+	 * @param alias
+	 * @param hint
+	 * @param parent
+	 * @param skipDefault
+	 * @param slot 
+	 * @param loadValue 
+	 * @return
+	 */
+	@Override
+	public MiddleResult loadSlot(Area area, String alias,
+			int hint, boolean parent, boolean skipDefault, Obj<Slot> slot, boolean loadValue) {
+
+		Obj<Slot> lastFoundDefaultSlot = new Obj<Slot>();
+		
+		MiddleResult result = loadSlotPrivate(area, alias, hint != 0, skipDefault, slot,
+				lastFoundDefaultSlot, hint, false, null, parent, loadValue);
 		
 		return result;
 	}

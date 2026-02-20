@@ -7,7 +7,7 @@
 package org.multipage.gui;
 
 /**
- * Interface for recever object that can be removed automatically.
+ * Interface for receiver object that can be removed automatically.
  * @author vakol
  */
 public interface ReceiverAutoRemove {

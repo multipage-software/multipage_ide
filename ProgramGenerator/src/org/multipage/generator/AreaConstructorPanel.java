@@ -24,13 +24,14 @@ import org.multipage.gui.TextFieldEx;
 import org.multipage.gui.Utility;
 import org.multipage.util.Obj;
 import org.multipage.util.Safe;
+import org.multipage.util.Saveable;
 
 /**
  * Panel that edits area construtor.
  * @author vakol
  *
  */
-public class AreaConstructorPanel extends JPanel {
+public class AreaConstructorPanel extends JPanel implements Saveable {
 	
 	// $hide>>$
 	/**
@@ -293,6 +294,22 @@ public class AreaConstructorPanel extends JPanel {
 			Safe.exception(e);
 		}
 		return "";
+	}
+	
+	/**
+	 * Save changes.
+	 * @return
+	 */
+	@Override
+	public boolean save() {
+		try {
+			// TODO: Implement saving of changes.
+			return true;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+			return false;
+		}
 	}
 	
 	/**

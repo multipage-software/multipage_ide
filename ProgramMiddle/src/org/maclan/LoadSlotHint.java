@@ -6,6 +6,8 @@
  */
 package org.maclan;
 
+import org.multipage.util.Safe;
+
 /**
  * Tells area server where to find slots.
  * @author vakol
@@ -29,5 +31,33 @@ public class LoadSlotHint {
 	LoadSlotHint(int code) {
 		
 		this.code = code;
+	}
+	
+	/**
+	 * Create hint code.
+	 * @param thisArea
+	 * @param superInheritance
+	 * @param subInheritance
+	 * @return
+	 */
+	public static int getHint(boolean thisArea, boolean superInheritance, boolean subInheritance) {
+		try {
+			
+			int hint = 0;
+			if (thisArea) {
+				hint = hint | LoadSlotHint.area;
+			}
+			if (superInheritance) {
+				hint = hint | LoadSlotHint.superAreas;
+			}
+			if (subInheritance) {
+				hint = hint | LoadSlotHint.subAreas;
+			}
+			return hint;
+		}
+		catch (Throwable e) {
+			Safe.exception(e);
+			return area;
+		}
 	}
 }

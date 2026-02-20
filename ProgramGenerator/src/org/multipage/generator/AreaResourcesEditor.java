@@ -142,7 +142,7 @@ public class AreaResourcesEditor extends JPanel implements SearchableResourcesLi
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
-					onEditResource();
+					onEditText();
 				}
 			}
 		});
@@ -1004,9 +1004,10 @@ public class AreaResourcesEditor extends JPanel implements SearchableResourcesLi
 			// Get selected text.
 			AreaResource resource = (AreaResource) list.getSelectedValue();
 			
-			// Check the resource and inform user.
+			// Check if the resource is text and inform user if not.
 			if (resource == null || !resource.isSavedAsText()) {
 				Utility.show(this, "org.multipage.generator.messageSelectResourceSavedAsText");
+				onEditResource();
 				return;
 			}
 			

@@ -125,7 +125,7 @@ public class SelectNewTextResourceDialog extends JDialog {
 	/**
 	 * Bounds.
 	 */
-	private static Rectangle bounds;
+	private static Rectangle bounds = null;
 
 	/**
 	 * Set default data.
@@ -144,9 +144,6 @@ public class SelectNewTextResourceDialog extends JDialog {
 			throws IOException, ClassNotFoundException {
 		
 		Object object = inputStream.readObject();
-		if (!(object instanceof Rectangle)) {
-			throw new ClassNotFoundException();
-		}
 		bounds = (Rectangle) object;
 	}
 

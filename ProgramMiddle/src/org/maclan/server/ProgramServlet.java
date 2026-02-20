@@ -567,13 +567,21 @@ public class ProgramServlet extends FastCGIServlet {
 				// On error do output
 				pageError += error.toString();
 				
+				// Add link to temporary script if debugging is enabled.
+				boolean isDebugging = isDebuggingEnabled();
+				
 				if (!pageError.isEmpty()) {
 					isError = true;
+					if (isDebugging) {
+						pageError += "[" + temporaryPhpFile + "]";
+					}
 					_response.getOutputStream().write(String.format("<html><body><span style=\"color: red\">%s</span></body></html>", pageError).getBytes("UTF-8"));
 				}
 				
-				// Remove the script
-				removeTemporaryPhpScript(temporaryPhpFile);
+				// Remove the script only if the debugger is disabled.
+				if (!isDebugging) {
+					removeTemporaryPhpScript(temporaryPhpFile);
+				}
 			}
 			// If no PHP commands
 			else {

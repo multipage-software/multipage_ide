@@ -103,12 +103,12 @@ public class SlotListPanel extends JPanel implements PreventEventEchos, Receiver
 	/**
 	 * An array of table column positions.
 	 */
-	private static int [] tableColumnPositions;
+	private static Integer [] tableColumnPositions;
 	
 	/**
 	 * Column widths.
 	 */
-	private static int [] columnWidthsState;
+	private static Integer [] columnWidthsState;
 	
 	/**
 	 * Show preferred slots.
@@ -147,12 +147,12 @@ public class SlotListPanel extends JPanel implements PreventEventEchos, Receiver
 		
 		if (ProgramGenerator.isExtensionToBuilder()) {
 			
-			columnWidthsState = new int [] {50, 150, 100, 100, 70, 150};
-			tableColumnPositions = new int [] {0, 1, 2, 3, 4, 5};
+			columnWidthsState = new Integer [] {50, 150, 100, 100, 70, 150};
+			tableColumnPositions = new Integer [] {0, 1, 2, 3, 4, 5};
 		}
 		else {
-			columnWidthsState = new int [] {128, 128, 100, 128};
-			tableColumnPositions = new int [] {0, 1, 2, 3};
+			columnWidthsState = new Integer [] {128, 128, 100, 128};
+			tableColumnPositions = new Integer [] {0, 1, 2, 3};
 		}
 		
 		showUserSlots = false;
@@ -168,8 +168,8 @@ public class SlotListPanel extends JPanel implements PreventEventEchos, Receiver
 			throws IOException, ClassNotFoundException {
 		
 		splitterPositionFromEnd = inputStream.readInt();
-		columnWidthsState = Utility.readInputStreamObject(inputStream, int [].class);
-		tableColumnPositions = Utility.readInputStreamObject(inputStream, int [].class);
+		columnWidthsState = Utility.readInputStreamObject(inputStream, Integer [].class);
+		tableColumnPositions = Utility.readInputStreamObject(inputStream, Integer [].class);
 		showUserSlots = inputStream.readBoolean();
 	}
 
@@ -944,11 +944,11 @@ public class SlotListPanel extends JPanel implements PreventEventEchos, Receiver
 	 * on given view position.
 	 * @return
 	 */
-	protected int [] getTableColumnPositions() {
+	protected Integer [] getTableColumnPositions() {
 		
 		try {
 			int columnCount = tableSlots.getColumnCount();
-			int [] columnModelIndices = new int [columnCount];
+			Integer [] columnModelIndices = new Integer [columnCount];
 			
 			for (int viewIndex = 0; viewIndex < columnCount; viewIndex++) {
 				columnModelIndices[viewIndex] = tableSlots.convertColumnIndexToModel(viewIndex);
@@ -965,7 +965,7 @@ public class SlotListPanel extends JPanel implements PreventEventEchos, Receiver
 	 * Move table columns.
 	 * @param columnModelIndices
 	 */
-	protected void moveTableColumns(int[] columnModelIndices) {
+	protected void moveTableColumns(Integer[] columnModelIndices) {
 		try {
 			
 			TableColumnModel columnModel = tableSlots.getColumnModel();
@@ -1777,7 +1777,7 @@ public class SlotListPanel extends JPanel implements PreventEventEchos, Receiver
 					if (slot.equals(oldSlot)) {
 						
 						int viewRow = tableSlots.convertRowIndexToView(row);
-						Safe.tryUpdate(tableSlots, () -> {
+						Safe.tryToUpdate(tableSlots, () -> {
 							tableSlots.getSelectionModel().addSelectionInterval(viewRow, viewRow);
 						});
 					}
@@ -2370,7 +2370,7 @@ public class SlotListPanel extends JPanel implements PreventEventEchos, Receiver
 	 * Get table columns.
 	 * @param columnWidths
 	 */
-	public void getTableColumnWidths(int[] columnWidths) {
+	public void getTableColumnWidths(Integer[] columnWidths) {
 		try {
 			
 			int length = columnWidths.length;
